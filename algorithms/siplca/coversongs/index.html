@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Dan Ellis <dpwe@ee.columbia.edu>">
+   <meta name="Description" content="Describes Matlab-based system for extracting beat-synchronous chroma features from music audio and using this representation to identify cover tracks.">
+   <meta name="KeyWords" content="Matlab, beat tracking, tempo estimation, chroma features, cover song identification, music similarity">
+   <title>Music Cover Song Identification, Tempo Estimation, and Beat Tracking in Matlab</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000FF" vlink="#551A8B" alink="#0000FF">
+<a href="http://www.ee.columbia.edu/~dpwe/">Dan Ellis</a> :
+<a href="http://www.ee.columbia.edu/~dpwe/research">Research</a> :
+
+<H1>
+<IMG SRC="coversong.gif" ALIGN="MIDDLE" ALT="[cover song image]">
+Music Beat Tracking and Cover Song Identification</H1>
+
+<hr WIDTH="100%">
+
+<P>
+When different musicians or groups perform the same songs or 
+pieces, they may change the tempo, style, instrumentation of the 
+song, but typically retain enough of the melodic and harmonic 
+content to preserve the identity of the piece.  This project 
+is concerned with automatic identification of cover versions 
+through cross-correlation of beat-synchronous chroma representations.
+</P>
+
+<P>
+See the <A HREF="overview.html">overview description</A> for more details.
+</P>
+
+<HR>
+<H3>Code</H3>
+
+<P>
+We are making the entire MATLAB code for our cover song system available
+under Gnu GPL.  You can download the whole thing in a tar-gzip-ball, 
+<A HREF="labrosa-coversongid.tgz">labrosa-coversongid.tgz</A>.
+Here is its <A HREF="README">README file</A>.
+</P>
+
+<P>
+Note that the beat tracking (but not the IF chroma extraction or 
+song matching) has been ported to Java as part of 
+<A HREF="http://labrosa.ee.columbia.edu/meapsoft/">MEAPsoft</A>.
+</P>
+
+</P>
+<H4>Main routines</H4>
+<UL>
+<LI><A HREF="tempo.m"><B>t = tempo(d,sr)</B></A> - Estimates the tempo of 
+the audio waveform in d (at sampling rate sr) and returns two tempo 
+estimates in BPM as t(1) and t(2), with the relative strength of t(1) 
+given by t(3) (i.e. t(1) is the preferred tempo if t(3) > 0.5).</LI>
+<LI><A HREF="beat.m"><B>b = beat(d,sr)</B></A> - Extract the beat times 
+in the audio waveform d (at sampling rate sr).  It operates by first 
+calling tempo() (above), then using dynamic programming to find the 
+sequence of beat times that both approximately follow the estimated 
+tempo, and lie on or close to maxima of the "onset strength waveform".</LI>
+<LI><A HREF="chrombeatftrs.m"><B>F = chrombeatftrs(d,sr)</B></A> 
+ - Returns the beat-synchronous chroma feature matrix for the audio 
+   waveform d (sampled at sr).  First the beat positions are tracked, 
+   then a 12-dimensional chroma feature is averaged across each beat 
+   interval.
+<LI><A HREF="calclistftrs.m"><B>qlist = calclistftrs(querylistfilename)</B></A>
+ - Calculates beat-synchronous chroma feature matrices for all the wav or mp3 
+   files listed, one per line, in the named file, returning a list of 
+   calculated feature files, then...</LI>
+<LI><A HREF="coverTestLists.m"><B>R = coverTestLists(qlist)</B></A>
+ - Compares each feature file named in the qlist against every item
+   and returns R as a square matrix of distances between each pair.</LI>
+</UL>
+<H4>Example Usage</H4>
+<P>
+Here's an example of beat-tracking a music sample, then playing it along 
+with its extracted click-track:
+</P>
+<TT><PRE>
+>> <FONT COLOR="#FF0000">% Load a song</FONT>
+>> [d,sr] = wavread('train/train2.wav');
+>> <FONT COLOR="#FF0000">% Calculate the beat times</FONT>
+>> b = beat(d,sr);
+>> <FONT COLOR="#FF0000">% Resynthesize a blip-track of the same length</FONT>
+>> db = <A HREF="mkblips.m">mkblips</A>(b,sr,length(d))
+>> <FONT COLOR="#FF0000">% Listen to them mixed together</FONT>
+>> soundsc(d+db,sr);
+</PRE></TT>
+<P>
+A simple cover song test might look like this:
+</P>
+<TT><PRE>
+>> <FONT COLOR="#FF0000">% Check the contents of the file containing the list of soundfiles</FONT>
+>> type list.txt
+<FONT COLOR="#008000">
+bars_smith.mp3
+bars_phillips.mp3
+river_green.mp3
+river_lennox.mp3
+</FONT>
+>> <FONT COLOR="#FF0000">% Calculate beat-synchronous chroma features for all files</FONT>
+>> qlist = calclistftrs('list.txt');
+<FONT COLOR="#008000">song 1 bars_smith.mp3 -> bars_smith
+22:30:31 bars_smith.mp3 ncols=313 bpm=136.3636
+song 2 bars_phillips.mp3 -> bars_phillips
+22:31:13 bars_phillips.mp3 ncols=354 bpm=138.8889
+song 3 river_green.mp3 -> river_green
+22:32:31 river_green.mp3 ncols=884 bpm=238.0952
+song 4 river_lennox.mp3 -> river_lennox
+22:33:33 river_lennox.mp3 ncols=767 bpm=217.3913</FONT>
+>> <FONT COLOR="#FF0000">% Calculate the matrix of cover song similarities</FONT>
+>> R = coverTestLists(qlist)
+<FONT COLOR="#008000">
+R =
+
+    0.3852    0.1482    0.0416    0.0364
+    0.1444    0.3148    0.0330    0.0376
+    0.0337    0.0290    0.2307    0.0208
+    0.0376    0.0325    0.0203    0.2373
+</FONT>
+>> <FONT COLOR="#FF0000">% Leading diagonal is self similarity; first pair match well, second doesn't</FONT>
+</PRE></TT>
+
+<HR>
+<H3>Papers</H3>
+
+<P>See also the 
+<A HREF="ellis-coversong-mirex06-poster.pdf">poster</A>
+we made describing our system and its top-ranked performance 
+in the 
+<A HREF="http://www.music-ir.org/mirex2006/index.php/Audio_Cover_Song">MIREX-06 Cover Song Identification Evaluation.</A>
+</P>
+
+<DL>
+   <DT>D. Ellis & G. Poliner (2007). 
+   <A HREF="http://www.ee.columbia.edu/~dpwe/pubs/EllisP07-coversongs.pdf">
+     Identifying `Cover Songs' with Chroma Features and Dynamic 
+     Programming Beat Tracking</A></DT>
+   <DD><I>Proc. Int. Conf. on Acous., Speech, &amp; Sig. Proc. ICASSP-07</I>, Hawai'i, April 2007 (submitted, 4pp)</DD>
+</DL>
+
+<H4>Acknowledgment</H4>
+
+<P>
+This material is based in part upon work supported by the National
+Science Foundation under Grant No. IIS-0238301.  Any opinions, findings
+and conclusions or recomendations expressed in this material are those
+of the author(s) and do not necessarily reflect the views of the
+National Science Foundation (NSF).
+</P>
+<P>
+This work was also supported by the Columbia Academic Quality Fund.
+</P>
+
+<hr ALIGN=LEFT>
+<address>
+      <a href="http://validator.w3.org/check/referer"><img border="0"
+          src="http://www.w3.org/Icons/valid-html40"
+          alt="Valid HTML 4.0!" height="31" width="88" align="right"></a>
+Last updated: $Date: 2007/02/06 03:36:03 $
+
+<br><a href="http://www.ee.columbia.edu/~dpwe/">Dan Ellis</a> &lt;<a href="mailto:dpwe@ee.columbia.edu">dpwe@ee.columbia.edu</a>&gt;</address>
+    
+</body>
+</html>

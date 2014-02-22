@@ -1,0 +1,33 @@
+\begin{table}
+\centering
+\caption{Segmentation performance. Best scores are indicated in bold; significance is assessed with a Bonferroni-corrected Wilcoxon
+signed-rank test at $\alpha=0.05$.\label{tab:results}}
+% \footnotesize
+\begin{tabular}{lrrrr}
+% \bottomrule%
+\multicolumn{5}{c}{Beatles-ISO}\\
+\toprule%
+Algorithm   & $F_{0.5s}$ & $F_{3s}$   & $S_F$ & $F_C$\\
+\hline
+Unweighted  & 0.264             & 0.497             & 0.789             & 0.662\\
+FDA         & \textbf{0.292}    & 0.537             & 0.807             & 0.685\\
+OLDA        & \textbf{0.306}    & 0.547             & 0.812             & 0.690\\
+\hline
+SMGA~\hfill\cite{serra2012unsupervised} 
+            & 0.153             & \textbf{0.658}    & \textbf{0.829}    & \textbf{0.729}\\
+\toprule%
+\multicolumn{5}{c}{SALAMI-free}\\
+\toprule%
+Unweighted  & 0.200             & 0.427             & 0.791             & 0.622\\
+FDA         & \textbf{0.230}    & 0.467             & \textbf{0.806}    & \textbf{0.635}\\
+OLDA        & \textbf{0.240}    & 0.468             & \textbf{0.807}    & \textbf{0.636}\\
+\hline
+SMGA~\hfill\cite{serra2012unsupervised} 
+            & 0.134             & \textbf{0.508}    & 0.786             & 0.550\\
+C-NMF~\hfill\cite{nieto2013convex}  
+            & 0.110             & 0.463             & 0.767             & 0.550\\
+SI-PLCA~\hfill\cite{weiss2011unsupervised}  
+            & 0.128             & 0.286             & 0.643             & 0.459\\
+\bottomrule%
+\end{tabular}
+\end{table}
