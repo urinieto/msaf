@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Dan Ellis <dpwe@ee.columbia.edu>">
+   <meta name="Description" content="Describes Matlab-based system for extracting beat-synchronous chroma features from music audio and using this representation to identify cover tracks.">
+   <meta name="KeyWords" content="Matlab, beat tracking, tempo estimation, chroma features, cover song identification, music similarity">
+   <title>Music Cover Song Identification</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000FF" vlink="#551A8B" alink="#0000FF">
+<a href="http://www.ee.columbia.edu/~dpwe/">Dan Ellis</a> :
+<a href="http://www.ee.columbia.edu/~dpwe/research">Research</a> :
+
+<H1>
+<IMG SRC="coversong.gif" ALIGN="MIDDLE" ALT="[cover song image]">
+Matching "Cover Songs" : An Overview</H1>
+
+<hr WIDTH="100%">
+
+<P>
+As part of our project to identify and represent the essential content
+of music audio, we have been looking at the problem of matching "cover
+versions" of popular music i.e. performances of the same piece of music
+by different artists with varying interpretations, styles,
+instrumentation, and tempos.  If we can successfully recognize the
+common factors between two pieces differing along these axes, then we
+may have a description closer to what a listener `gets' from music.
+</P>
+
+<P>
+Our approach is to (a) fold down the musical spectrum at each instant 
+into 12 values corresponding to the intensity of each semitone of the 
+musical octave (but removing the distinction between different
+octaves).  This helps normalize for variations in instruments and
+different ways of realizing the same harmonic 'color'.  (b) We track the
+beats by looking for regularly-spaced moments of maximal change in 
+the sound, then average the 12-dimensional harmonic description to a 
+single value for each beat.  Provided the beats are correctly located, 
+this removes the effect of tempo variations.  We use a couple of
+possible tempos to protect against major changes in rhythmic `feel'. 
+Finally, a cover song is identified by sliding the entire
+semitone-by-beat matrix for two songs over each other, looking for a
+good match.  This includes a search over shifts in time (e.g. to find a
+section that matches even though it may occur at a different point in
+the music) and shifts in the (circular) semitone axis.  A close match, 
+even over only part of the music, is strongly indicative of a genuine
+cover version.
+</P>
+
+<P>
+This algorithm came top in the 2006 international <A HREF="http://www.music-ir.org/mirex2006/index.php/">Music Information
+Retrieval Evaluation</A> for cover song detection, held in Victoria, BC, in
+October.  Our system found more than twice as many cover versions (from
+a database of 300) than the next best entrant.  We are also interested in
+using these approaches to find similarities between different pieces of
+music, and to construct a `dictionary' of melodic and harmonic fragments
+with which large collections of music can efficiently be described.
+</P>
+
+<TABLE>
+<TR>
+<TD>
+<IMG SRC="LIB-beatles-cave.jpg" ALT="[beat-sync chromagram image]">
+</TD>
+<TD>
+The top pane shows the spectrogram - the distribution of energy in time
+and frequency - for the 2 minutes or so of "Let It Be" by The Beatles.  
+After the piano intro, the vocals start at around 15 sec, the drums 
+come in at around 75 sec, and the organ "bridge" is clearly visible at 
+around 115 sec.  
+<BR>
+<BR>
+The second pane shows the Chromagram - energy from 
+the spectrogram folded into 12 bins, labeled A through G according to
+the piano keyboard.  The next two panes show Chromagrams where time has 
+been quantized to beat-length segments as found by the beat tracker - at
+71.4 BPM for the Beatles, then at 68.2 BPM for a cover version of "Let
+It Be" by Nick Cave.  
+<BR>
+<BR>
+The bottom pane shows the cross-correlation
+(similarity score) between the previous two representations for time
+offsets of +/- 160 beats, and at all possible relative semitone
+transpositions.  The sharp maximum at 0 transposition and +2 beat skew 
+shows a clear match between these two pieces, despite a considerable
+variation in style, instrumentation, and even vocal melody in the Nick
+Cave rendition.
+</TD>
+</TR>
+</TABLE>
+
+<P>See also the <A HREF="index.html">main cover song project page</A>
+
+
+<H4>Acknowledgment</H4>
+
+<P>
+This material is based in part upon work supported by the National
+Science Foundation under Grant No. IIS-0238301.  Any opinions, findings
+and conclusions or recomendations expressed in this material are those
+of the author(s) and do not necessarily reflect the views of the
+National Science Foundation (NSF).
+</P>
+<P>
+This work was also supported by the Columbia Academic Quality Fund.
+</P>
+
+<hr ALIGN=LEFT>
+<address>
+      <a href="http://validator.w3.org/check/referer"><img border="0"
+          src="http://www.w3.org/Icons/valid-html40"
+          alt="Valid HTML 4.0!" height="31" width="88" align="right"></a>
+Last updated: $Date: 2005/11/16 19:16:52 $
+
+<br><a href="http://www.ee.columbia.edu/~dpwe/">Dan Ellis</a> &lt;<a href="mailto:dpwe@ee.columbia.edu">dpwe@ee.columbia.edu</a>&gt;</address>
+    
+</body>
+</html>

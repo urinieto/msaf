@@ -1,0 +1,36 @@
+\begin{table*}
+\centering
+\caption{Segmentation results. Best scores are indicated in bold; significance is assessed with a Bonferroni-corrected Wilcoxon
+signed-rank test at $\alpha=0.05$.\label{tab:results}}
+\footnotesize
+\begin{tabular}{lrrrrrrrrrrrr}
+% \bottomrule%
+\multicolumn{13}{c}{Beatles-ISO}\\
+\toprule%
+Algorithm   &   $P_{0.5s}$ & $R_{0.5s}$ & $F_{0.5s}$ & $P_{3s}$     & $R_{3s}$  & $F_{3s}$   & $S_O$ & $S_U$ & $S_F$ & $P_C$& $R_C$& $F_C$\\
+\hline
+Unweighted  &   \textbf{0.446} & 0.390 & 0.408 & 0.704   & 0.603 & 0.640 & \textbf{0.842} & 0.755 & 0.791 & \textbf{0.780} & 0.613 & 0.668\\
+FDA         &   \textbf{0.455} & 0.416 & \textbf{0.427} & 0.688 & 0.620 & 0.642 & \textbf{0.839} & 0.778 & 0.802 & \textbf{0.774} & 0.653 & 0.691\\
+OLDA        &   0.438 & \textbf{0.447} & \textbf{0.434} & 0.685   & 0.680 & 0.670 & 0.828 & 0.808 & 0.813 & 0.744 & 0.686 & 0.694\\
+\hline
+SMGA~\hfill\cite{serra2012unsupervised}
+            &   0.358 & 0.393 & 0.370 & \textbf{0.769}   & \textbf{0.808} & \textbf{0.780} & 0.811 & \textbf{0.858} & \textbf{0.829} & 0.702 & \textbf{0.798} &
+            \textbf{0.729}\\
+\toprule%
+\multicolumn{13}{c}{SALAMI-free}\\
+\toprule%
+Unweighted  & 0.400 & 0.364 & 0.372 & 0.610 & 0.557 & 0.570 & 0.812 & 0.795 & 0.794 & 0.666 & 0.652 & 0.626\\
+FDA     &  \textbf{0.492} & 0.349 & \textbf{0.397} & \textbf{0.694} & 0.511 & 0.574 & 0.849 & 0.729 & 0.771 &
+0.751  & 0.566 & 0.603\\
+OLDA    &  0.406 & \textbf{0.407} & \textbf{0.396} & 0.610 & 0.611 & \textbf{0.597} & 0.804 & 0.829 & \textbf{0.808} & 0.640 & 0.707 & \textbf{0.640}\\
+\hline
+SMGA~\hfill\cite{serra2012unsupervised}
+        & 0.209 & 0.360 & 0.256 & 0.512 & \textbf{0.733} & \textbf{0.589} & 0.714 & \textbf{0.895} & 0.786 & 0.448 & \textbf{0.822} & 0.550\\
+C-NMF~\hfill\cite{nieto2013convex}  &
+0.225 & 0.296 & 0.243 & 0.537 & 0.607 & 0.546  & 0.767 & 0.797 & 0.767 & 0.576 & 0.639 & 0.550\\
+
+SI-PLCA~\hfill\cite{weiss2011unsupervised}  &
+0.448 & 0.268 & 0.320 & 0.650 & 0.337 & 0.430 & \textbf{0.873} & 0.538 & 0.643 & \textbf{0.814} & 0.362 & 0.459\\
+\bottomrule%
+\end{tabular}
+\end{table*}

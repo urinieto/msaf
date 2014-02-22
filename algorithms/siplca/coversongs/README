@@ -1,0 +1,20 @@
+README for LabROSA-coversongID
+
+See http://labrosa.ee.columbia.edu/projects/coversongs/ for more info.
+
+Key functions:
+
+t = tempo(d,sr);  estimates the tempo in BPM of audio waveform d at sample 
+                  rate sr
+
+b = beat(d,sr);   estimates the beat times (in sec) of audio waveform d at 
+                  sample rate sr
+
+qlist = calclistftrs(querylistfilename);
+   calculates beat-synchronous chroma feature matrices for all the wav or mp3 
+   files listed, one per line, in the named file, returning a list of 
+   calculated feature files, then...
+
+R = coverTestLists(qlist); 
+   compares each feature file named in the qlist against every item
+   and returns R as a square matrix of distance between each pair.

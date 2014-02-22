@@ -1,0 +1,107 @@
+\usepackage{amsmath,amssymb, amsthm}
+% \usepackage[noabbrev]{cleveref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{multirow}
+\usepackage{rotating}
+\usepackage{dsfont}
+\usepackage{nicefrac}
+\usepackage{stmaryrd}
+\usepackage{braket}
+\usepackage{color}
+% \usepackage{cleveref}
+
+\def\A{\ensuremath{\mathcal{A}}}
+\def\B{\ensuremath{\mathcal{B}}}
+\def\C{\ensuremath{\mathcal{C}}}
+\def\G{\ensuremath{\mathcal{G}}}
+\def\H{\ensuremath{\mathcal{H}}}
+\def\K{\ensuremath{\mathcal{K}}}
+\def\Ell{\ensuremath{\mathcal{L}}}
+\def\N{\ensuremath{\mathcal{N}}}
+\def\Oh{\ensuremath{\mathcal{O}}}
+\def\calS{\ensuremath{\mathcal{S}}}
+\def\V{\ensuremath{\mathcal{V}}}
+\def\W{\ensuremath{\mathcal{W}}}
+\def\X{\ensuremath{\mathcal{X}}}
+\def\Y{\ensuremath{\mathcal{Y}}}
+\def\bigO{\ensuremath{\mathcal{O}}}
+
+\newcommand{\xx}[1]{\textcolor{red}{[XXX] #1}}
+\def\S{\ensuremath{\mathbb{S}}}
+\def\E{\ensuremath{\mathbb{E}}}
+\def\R{\ensuremath{\mathbb{R}}}
+\def\Z{\ensuremath{\mathbb{Z}}}
+
+\def\P{\ensuremath{\mathbf{P}}}
+\def\one{\ensuremath{\mathbf{1}}}
+\def\zero{\ensuremath{\mathbf{0}}}
+
+\def\e{\ensuremath{\mathsf{e}}}
+\def\dd{\ensuremath{\mathbf{d}}}
+
+\def\trans{\ensuremath{^\mathsf{T}}}
+\def\strans{\ensuremath{\mathsf{T}}}
+\def\D{\ensuremath{\mathsf{D}}}
+\def\F{\ensuremath{\mathsf{F}}}
+\def\FT{\ensuremath{\mathcal{F}}}
+\def\HS{\ensuremath{\mathsf{HS}}}
+\def\PO{\ensuremath{\mathsf{po}}}
+\def\M{\ensuremath{\mathsf{M}}}
+\def\rev{\ensuremath{^\mathsf{R}}}
+
+\def\nth{\ensuremath{^\text{th}}}
+
+\newcommand{\ind}[1]{\ensuremath{\left\llbracket#1\right\rrbracket}}
+\def\given{\ensuremath{|~}}
+
+
+\def\subgrad{\mathrel{%
+    \mathchoice{\SUBGRAD}{\SUBGRAD}{\scriptsize\SUBGRAD}{\tiny\SUBGRAD}%
+}}
+\def\SUBGRAD{{%
+    \,\setbox0\hbox{\raisebox{0.35ex}{$\cdot$}}%
+    \rlap{\hbox to \wd0{\hss$\nabla$\hss}}\box0\!%
+}}
+
+
+\newcommand*{\defeq}{\mathrel{\rlap{%
+                    \raisebox{0.25ex}{$\m@th\cdot$}}%
+                    \raisebox{-0.25ex}{$\m@th\cdot$}}%
+                    =}
+
+\DeclareMathOperator{\trace}{tr}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator{\suchthat}{s.t.}
+\DeclareMathOperator{\median}{median}
+\DeclareMathOperator{\quantile}{quantile}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spl}{split}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\prox}{prox}
+
+\def\eg{\emph{e.g.\/}}
+\def\ie{\emph{i.e.\/}}
+\def\etc{\emph{etc.\/}}
+\def\etal{\emph{et al.\/}}
+
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+
+\usepackage{eqparbox}
+\renewcommand{\algorithmiccomment}[1]{\hfill\eqparbox{COMMENT}{$\sslash$ #1}}
+
+\newtheorem{lemma}{Lemma}[section]
+\def\lemmaautorefname{Lemma}
+\newtheorem{corollary}{Corollary}[section]
+\def\corollaryautorefname{Corollary}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+
+\usepackage{hyperref}
+

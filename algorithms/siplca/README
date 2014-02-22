@@ -1,0 +1,93 @@
+SIPLCA Music Analysis
+=====================
+
+This package contains the implementation of the algorithm for
+identifying repeated harmonic patterns in music and structure
+segmentation described in [1].  It is primarily written in Python but
+calls Matlab for feature extraction and performance evaluation.
+
+It depends on NumPy and SciPy (http://www.scipy.org/), Matplotlib
+(http://matplotlib.sourceforge.net/) for plotting, and the mlabwrap
+package (http://mlabwrap.sourceforge.net/) for running Matlab code.
+
+Included is Dan Ellis' beat-synchronous chroma feature extraction
+code, also available from:
+http://labrosa.ee.columbia.edu/projects/coversongs/
+
+Also useful (but not included) is Dan's code for resynthesizing
+chroma:
+http://labrosa.ee.columbia.edu/matlab/chroma-ansyn/
+
+All code in this package is distributed under the terms of the GNU
+General Public License.  See the file COPYING for details.
+
+
+Example usage
+-------------
+
+From the command line
+`````````````````````
+segmenter.py can be run as a script to run the structure segmentation
+algorithm on a single audio file.  The usage is as follows:
+
+segmenter.py -i inputfile.wav -o outputfile [-param1 val1] [-param2 val2] ...
+
+Where parameters "-param1", etc. are optional and are defined in the
+docstring for segmenter.segment_song.
+    
+For MIREX 2010, please run the shell script runme_mirex2010.sh as follows:
+runme_mirex2010.sh inputfile.wav outputfile
+
+
+From Python
+`````````
+>>> import segmenter
+>>> wavfile = '/path/to/come_together.wav'
+>>> rank = 4  # rank corresponds to the number of segments
+>>> win = 60  # win controls the length of each chroma pattern
+>>> niter = 200  # number of iterations to perform
+>>> np.random.seed(123)  # Make this reproduceable
+>>> labels = segmenter.segment_wavfile(wavfile, win=win, rank=rank,
+...                                    niter=niter, plotiter=10)
+INFO:plca:Iteration 0: divergence = 10.065992
+INFO:plca:Iteration 50: divergence = 9.468196
+INFO:plca:Iteration 100: divergence = 9.421632
+INFO:plca:Iteration 150: divergence = 9.409279
+INFO:root:Iteration 199: final divergence = 9.404961
+INFO:segmenter:Removing 2 segments shorter than 32 frames
+
+.. image::come_together-segmentation.png
+
+>>> print labels
+0.0000 21.7480 segment0
+21.7480 37.7640 segment1
+37.7640 55.1000 segment0
+55.1000 76.1440 segment1
+76.1440 95.1640 segment0
+95.1640 121.2360 segment1
+121.2360 158.5360 segment2
+158.5360 180.8520 segment1
+180.8520 196.5840 segment0
+196.5840 255.8160 segment3
+
+See the docstrings in segmenter.py and plca.py for more detailed
+documentation.
+
+
+Acknowledgments
+---------------
+This material is based upon work supported by the NSF (grant
+IIS-0844654) and by the IMLS (grant LG-06-08-0073-08).
+
+
+References
+----------
+
+ [1] R. J. Weiss and J. P. Bello. "Identifying Repeated Patterns in
+     Music Using Sparse Convolutive Non-Negative Matrix
+     Factorization". In Proc. International Conference on Music
+     Information Retrieval (ISMIR), 2010.
+
+
+2010-05-27 Ron Weiss <ronw@nyu.edu>
+
