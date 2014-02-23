@@ -22,12 +22,15 @@ import essentia.standard as ES
 from essentia.standard import YamlOutput
 import pylab as plt
 import logging
+import numpy as np
 import time
+import utils
 
 class STFTFeature:
     """Class to easily compute the features that require a frame based 
         spectrum process (or STFT)."""
-    def __init__(self, frame_size, hop_size, window_type, feature):
+    def __init__(self, frame_size, hop_size, window_type, feature, 
+            beats, sample_rate):
         """STFTFeature constructor."""
         self.frame_size = frame_size
         self.hop_size = hop_size
@@ -35,6 +38,8 @@ class STFTFeature:
         self.w = ES.Windowing(type=window_type)
         self.spectrum = ES.Spectrum()
         self.feature = feature # Essentia feature object
+        self.beats = beats
+        self.sample_rate = sample_rate
 
     def compute_features(self, audio):
         """Computes the specified Essentia features from the audio array."""
@@ -53,6 +58,12 @@ class STFTFeature:
         # Convert to Numpy array
         features = essentia.array(features)
 
+
+        if self.beats != []:
+            framerate = self.sample_rate / float(self.hop_size)
+            tframes = np.arange(features.shape[0]) / float(framerate)
+            features = utils.resample_mx(features.T, tframes, self.beats).T
+
         return features
 
 def process(audio_file, out_file, save_beats=False):
@@ -68,23 +79,28 @@ def process(audio_file, out_file, save_beats=False):
     logging.info("Loading Audio")
     audio = ES.MonoLoader(filename=audio_file, sampleRate=sample_rate)()
 
-    # Compute Features
-    MFCC = STFTFeature(frame_size, hop_size, window_type, ES.MFCC())
-    HPCP = STFTFeature(frame_size, hop_size, window_type, ES.HPCP())
-    logging.info("Computing MFCCs...")
+    # Compute Beats
+    logging.info("Computing Beats...")
+    ticks, conf = ES.BeatTrackerMultiFeature()(audio)
+
+    # Compute Beat-sync features
+    MFCC = STFTFeature(frame_size, hop_size, window_type, ES.MFCC(), 
+        ticks, sample_rate)
+    HPCP = STFTFeature(frame_size, hop_size, window_type, ES.HPCP(), 
+        ticks, sample_rate)
+    logging.info("Computing Beat-synchronous MFCCs...")
     mfcc = MFCC.compute_features(audio)
-    logging.info("Computing HPCPs...")
+    logging.info("Computing Beat-synchronous HPCPs...")
     hpcp = HPCP.compute_features(audio)
     plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
-    logging.info("Obtaining Beats...")
-    ticks, conf = ES.BeatTrackerMultiFeature()(audio)
+    
 
     # Save output as audio file
     if save_beats:
         logging.info("Saving Beats as an audio file")
         marker = ES.AudioOnsetsMarker(onsets=ticks, type='beep')
         marked_audio = marker(audio)
-        ES.MonoWriter(filename='beats.wav')(marked_audio)
+        ES.MonoWriter(filename='beats.wav', sampleRate=sample_rate)(marked_audio)
 
     # Save output as json file
     logging.info("Saving the JSON file")
@@ -105,6 +121,8 @@ def main():
         help="Input audio file")
     parser.add_argument("-o", action="store", dest="out_file", 
         default="output.json", help="Output JSON file")
+    parser.add_argument("-b", action="store_true", dest="save_beats", 
+        help="Output audio file with estimated beats")
     args = parser.parse_args()
     start_time = time.time()
    
@@ -112,7 +130,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
 
     # Run the algorithm
-    process(args.audio_file, args.out_file)
+    process(args.audio_file, args.out_file, args.save_beats)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
