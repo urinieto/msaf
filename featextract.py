@@ -82,6 +82,7 @@ def process(audio_file, out_file, save_beats=False):
     # Compute Beats
     logging.info("Computing Beats...")
     ticks, conf = ES.BeatTrackerMultiFeature()(audio)
+    #ticks = ES.BeatTrackerDegara()(audio)
 
     # Compute Beat-sync features
     MFCC = STFTFeature(frame_size, hop_size, window_type, ES.MFCC(), 
