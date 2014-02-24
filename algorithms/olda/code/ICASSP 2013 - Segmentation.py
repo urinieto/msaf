@@ -21,7 +21,7 @@ def load_annotations(path):
     
     files = sorted(glob.glob(path))
     
-    data = [np.unique(mir_eval.io.load_annotation(f)[0].ravel()) for f in files]
+    data = [mir_eval.io.load_annotation(f) for f in files]
     
     return data
 
@@ -42,20 +42,22 @@ def evaluate_set(SETNAME, agg=True):
         
         # Scrub the predictions to valid ranges
         for i in range(len(predictions)):
-            predictions[i] = mir_eval.util.adjust_times(predictions[i], t_max=truth[i][-1])[0]
+            predictions[i] = mir_eval.util.adjust_intervals(predictions[i][0], 
+                                                            labels=predictions[i][1], 
+                                                            t_max=truth[i][0][-1, -1])
             
         # Compute metrics
         my_scores = []
         
         for t, p in zip(truth, predictions):
             S = []
-            S.extend(mir_eval.segment.boundary_detection(t, p, window=0.5))
-            S.extend(mir_eval.segment.boundary_detection(t, p, window=3.0))
-            S.extend(mir_eval.segment.boundary_deviation(t, p))
-            S.extend(mir_eval.segment.frame_clustering_nce(t, p))
-            S.extend(mir_eval.segment.frame_clustering_pairwise(t, p))
-            S.extend(mir_eval.segment.frame_clustering_mi(t, p))
-            S.append(mir_eval.segment.frame_clustering_ari(t, p))
+            S.extend(mir_eval.segment.boundary_detection(t[0], p[0], window=0.5))
+            S.extend(mir_eval.segment.boundary_detection(t[0], p[0], window=3.0))
+            S.extend(mir_eval.segment.boundary_deviation(t[0], p[0]))
+            #S.extend(mir_eval.segment.frame_clustering_nce(t[0], t[1], p[0], p[1]))
+            #S.extend(mir_eval.segment.frame_clustering_pairwise(t[0], t[1], p[0], p[1]))
+            #S.extend(mir_eval.segment.frame_clustering_mi(t[0], t[1], p[0], p[1]))
+            #S.append(mir_eval.segment.frame_clustering_ari(t[0], t[1], p[0], p[1]))
             my_scores.append(S)
             
         my_scores = np.array(my_scores)
@@ -70,10 +72,10 @@ def evaluate_set(SETNAME, agg=True):
 
 METRICS = ['BD.5 P', 'BD.5 R', 'BD.5 F', 
            'BD3 P', 'BD3 R', 'BD3 F', 
-           'BDev T2P', 'BDev P2T', 
-           'S_O', 'S_U', 'S_F', 
-           'Pair_P', 'Pair_R', 'Pair_F', 
-           'MI', 'AMI', 'NMI', 'ARI']
+           'BDev T2P', 'BDev P2T']
+           #'S_O', 'S_U', 'S_F', 
+           #'Pair_P', 'Pair_R', 'Pair_F', 
+           #'MI', 'AMI', 'NMI', 'ARI']
 
 # <codecell>
 
@@ -125,9 +127,12 @@ def get_top_sig(SETNAME, perfs, idx, p=0.05):
     best_mean = -np.inf
     best_alg  = None
     n_algs    = len(perfs)
+    flip      = np.ones(len(METRICS))
     
+    flip[6]   = -1  #Boundary deviation should be sign-flipped
+    flip[7]   = -1
     for k in perfs:
-        data[k] = perfs[k][:, idx]
+        data[k] = flip[idx] * perfs[k][:, idx]
         mean[k] = np.mean(data[k])
         if mean[k] > best_mean:
             best_mean = mean[k]
@@ -169,23 +174,6 @@ def get_worst_examples(SETNAME, perfs, algorithm, idx, k=10):
 
 # <codecell>
 
-ind_perfs_billboard = evaluate_set('BILLBOARD', agg=False)
-perfs_billboard = {}
-for alg in ind_perfs_billboard:
-    perfs_billboard[alg] = np.mean(ind_perfs_billboard[alg], axis=0)
-
-# <codecell>
-
-pprint(perfs_billboard)
-
-# <codecell>
-
-for idx in range(len(METRICS)):
-    get_top_sig('BILLBOARD', ind_perfs_billboard, idx=idx)
-    print
-
-# <codecell>
-
 ind_perfs_beatles = evaluate_set('BEATLES', agg=False)
 perfs_beatles = {}
 for alg in ind_perfs_beatles:
@@ -216,7 +204,7 @@ plot_boxes(ind_perfs_beatles)
 # <codecell>
 
 for alg in sorted(ind_perfs_beatles.keys()):
-    get_worst_examples('BEATLES', ind_perfs_beatles, alg, 10, 10)
+    get_worst_examples('BEATLES', ind_perfs_beatles, alg, 2, 10)
     print
 
 # <codecell>
@@ -237,7 +225,7 @@ save_results('/home/bmcfee/git/olda/data/final_salami_scores.csv', perfs_salami)
 # <codecell>
 
 for alg in sorted(ind_perfs_salami.keys()):
-    get_worst_examples('SALAMI', ind_perfs_salami, alg, 10, 5)
+    get_worst_examples('SALAMI', ind_perfs_salami, alg, 2, 5)
     print
 
 # <codecell>
@@ -280,8 +268,8 @@ def get_beat_mfccs(filename):
 # <codecell>
 
 def compress_data(X, k):
-    sigma = np.cov(X)
-    e_vals, e_vecs = scipy.linalg.eig(sigma)
+    e_vals, e_vecs = scipy.linalg.eig(X.dot(X.T))
+    #e_vals, e_vecs = scipy.linalg.eig(np.cov(X))
         
     e_vals = np.maximum(0.0, np.real(e_vals))
     e_vecs = np.real(e_vecs)
@@ -308,6 +296,7 @@ def compress_data(X, k):
 
 def make_rep_feature_plot(M):
     
+    #R = librosa.segment.recurrence_matrix(librosa.segment.stack_memory(M), metric='seuclidean')
     R = librosa.segment.recurrence_matrix(M, metric='seuclidean')
     
     Rskew = librosa.segment.structure_feature(R)
@@ -345,7 +334,7 @@ def make_rep_feature_plot(M):
     xlabel('Beat'), ylabel('Factor'), yticks(range(Rlatent.shape[0]))
     tight_layout()
     
-    savefig('/home/bmcfee/git/olda/paper/figs/rep.pdf', format='pdf', pad_inches=0, transparent=True)
+    #savefig('/home/bmcfee/git/olda/paper/figs/rep.pdf', format='pdf', pad_inches=0, transparent=True)
     #savefig('/home/bmcfee/git/olda/paper/figs/rep.svg', format='svg', pad_inches=0, transparent=True, dpi=200)
 
 # <codecell>
@@ -359,6 +348,33 @@ make_rep_feature_plot(M)
 # <codecell>
 
 make_rep_feature_plot(M[:,40:137])
+
+# <codecell>
+
+import librosa
+
+# <codecell>
+
+model_olda  = np.load('/home/bmcfee/git/olda/data/model_olda_beatles.npy')
+figure(figsize=(8,5))
+librosa.display.specshow(model_olda, origin='upper')
+colorbar()
+yticks([])
+xticks([0, 32, 44, 76, 108], ['MFCC', 'Chroma', 'R-MFCC', 'R-Chroma', 'Time'], horizontalalignment='left')
+
+tight_layout()
+#savefig('/home/bmcfee/git/olda/model_olda_salami_w.png', format='png', pad_inches=0, transparent=True)
+
+# <codecell>
+
+librosa.display.specshow(model_olda.T.dot(model_olda), origin='upper')
+
+# <codecell>
+
+v, e = scipy.linalg.eig(model_olda.dot(model_olda.T))
+
+plot(np.sort(v)[::-1])
+axis('tight')
 
 # <codecell>
 
@@ -519,5 +535,5 @@ def rep_feature_svd(M):
 
 # <codecell>
 
-rep_feature_svd(M)#[:,40:137])
+rep_feature_svd(M[:,40:137])
 
