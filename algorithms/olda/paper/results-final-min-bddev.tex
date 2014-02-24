@@ -1,0 +1,26 @@
+\begin{table}
+\centering
+\caption{Boundary detection accuracy. Best scores are indicated in bold; significance is assessed with a Bonferroni-corrected Wilcoxon signed-rank test at $\alpha=0.05$.\label{tab:results}}
+\begin{tabular}{lrrrr}
+\multicolumn{5}{c}{Beatles-ISO}\\
+\toprule%
+Algorithm & $F_{0.5}$       & $F_3$             & T2P               & P2T\\
+\hline
+Native  & 0.263             & 0.497             & 4.427             & 2.998\\
+FDA     & \textbf{0.300}    & 0.553             & 2.776             & 3.129\\
+OLDA    & \textbf{0.304}    & 0.551             & 2.692             & 3.144\\
+\hline
+SMGA    & 0.153             & \textbf{0.658}    & \textbf{1.875}    & 3.191\\
+\toprule%
+\multicolumn{5}{c}{SALAMI-free}\\
+\hline
+Native  & 0.200             & 0.427             & 6.819             & \textbf{5.796}\\
+FDA     & \textbf{0.237}    & 0.464             & 5.108             & \textbf{5.326}\\
+OLDA    & \textbf{0.241}    & 0.471             & 4.401             & \textbf{5.457}\\
+\hline
+SMGA    & 0.134             & \textbf{0.508}    & \textbf{2.098}    & 7.151\\
+CNMF    & 0.110             & 0.463             & 4.167             & 5.946\\
+SIPLCA  & 0.128             & 0.286             & 16.934            & 5.807\\
+\bottomrule%
+\end{tabular}
+\end{table}

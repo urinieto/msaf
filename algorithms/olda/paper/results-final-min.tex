@@ -1,0 +1,27 @@
+\begin{table}
+\centering
+\caption{Boundary detection accuracy. Best scores are indicated in bold; significance is assessed with a Bonferroni-corrected Wilcoxon signed-rank test at $\alpha=0.05$.\label{tab:results}}
+\small
+\begin{tabular}{lrrrrrr}
+\multicolumn{7}{c}{Beatles-ISO}\\
+\toprule%
+Method & $P_{0.5}$       & $R_{0.5}$         & $F_{0.5}$         & $P_3$             & $R_3$             & $F_3$             \\
+\hline
+Native  & \textbf{0.278}    & 0.271             & 0.266             & 0.560             & 0.510             & 0.522             \\
+FDA     & \textbf{0.304}    & \textbf{0.310}    & \textbf{0.296}    & 0.555             & 0.536             & 0.530             \\
+OLDA    & \textbf{0.297}    & \textbf{0.320}    & \textbf{0.296}    & 0.553             & 0.550             & 0.535             \\
+\hline
+SMGA    & 0.144             & 0.169             & 0.153             & \textbf{0.621}    & \textbf{0.728}    & \textbf{0.658}    \\
+\toprule%
+\multicolumn{7}{c}{SALAMI-free}\\
+\hline
+Native  & 0.233             & 0.188             & 0.202             & 0.492             & 0.406             & 0.431             \\
+FDA     & \textbf{0.290}    & 0.222             & \textbf{0.243}    & \textbf{0.552}    & 0.429             & 0.466             \\
+OLDA    & 0.255             & \textbf{0.248}    & \textbf{0.247}    & 0.505             & 0.483             & 0.477             \\
+\hline
+SMGA    & 0.115             & 0.178             & 0.134             & 0.434             & \textbf{0.666}    & \textbf{0.508}    \\
+CNMF    & 0.105             & 0.133             & 0.110             & 0.450             & 0.543             & 0.463             \\
+SI-PLCA & 0.210             & 0.102             & 0.128             & 0.451             & 0.228             & 0.286             \\
+\bottomrule%
+\end{tabular}
+\end{table}

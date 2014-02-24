@@ -1,0 +1,26 @@
+\begin{table*}
+\centering
+\caption{Boundary detection accuracy. Best scores are indicated in bold; significance is assessed with a Bonferroni-corrected Wilcoxon signed-rank test at $\alpha=0.05$.\label{tab:results}}
+\begin{tabular}{lrrrrrrrr}
+\multicolumn{9}{c}{Beatles-ISO}\\
+\toprule%
+Algorithm & $P_{0.5}$       & $R_{0.5}$         & $F_{0.5}$         & $P_3$             & $R_3$             & $F_3$             & T2P               & P2T\\
+\hline
+Native  & \textbf{0.307}    & 0.243             & 0.263             & 0.584             & 0.450             & 0.497             & 4.427             & 2.998\\
+FDA     & \textbf{0.304}    & \textbf{0.320}    & \textbf{0.300}    & 0.575             & 0.563             & 0.553             & 2.776             & 3.129\\
+OLDA    & \textbf{0.307}    & \textbf{0.326}    & \textbf{0.304}    & 0.574             & 0.562             & 0.551             & 2.692             & 3.144\\
+\hline
+SMGA    & 0.144             & 0.169             & 0.153             & \textbf{0.621}    & \textbf{0.728}    & \textbf{0.658}    & \textbf{1.875}    & 3.191\\
+\toprule%
+\multicolumn{9}{c}{SALAMI-free}\\
+\hline
+Native  & 0.237             & 0.183             & 0.200             & \textbf{0.500}    & 0.394             & 0.427             & 6.819             & \textbf{5.796}\\
+FDA     & \textbf{0.259}    & \textbf{0.232}    & \textbf{0.237}    & \textbf{0.500}    & 0.461             & 0.464             & 5.108             & \textbf{5.326}\\
+OLDA    & \textbf{0.255}    & \textbf{0.240}    & \textbf{0.241}    & \textbf{0.497}    & 0.475             & 0.471             & 4.401             & \textbf{5.457}\\
+\hline
+SMGA    & 0.115             & 0.178             & 0.134             & 0.434             & \textbf{0.666}    & \textbf{0.508}    & \textbf{2.098}    & 7.151\\
+CNMF    & 0.105             & 0.133             & 0.110             & 0.450             & 0.543             & 0.463             & 4.167             & 5.946\\
+SIPLCA  & 0.210             & 0.102             & 0.128             & 0.451             & 0.228             & 0.286             & 16.934            & 5.807\\
+\bottomrule%
+\end{tabular}
+\end{table*}

@@ -23,7 +23,6 @@ class RFDA(BaseEstimator, TransformerMixin):
         self.scatter_restricted_ = None
         self.scatter_within_ = None
 
-
     def fit(self, X, Y):
         '''Fit the RFDA model
 
@@ -108,7 +107,6 @@ class RFDA(BaseEstimator, TransformerMixin):
         self.components_ = e_vecs.T
         return self
 
-    
     def transform(self, X):
         '''Transform data by FDA
 

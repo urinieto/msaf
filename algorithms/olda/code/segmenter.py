@@ -67,8 +67,7 @@ def features(filename):
     
 
     def compress_data(X, k):
-        sigma = np.cov(X)
-        e_vals, e_vecs = scipy.linalg.eig(sigma)
+        e_vals, e_vecs = scipy.linalg.eig(X.dot(X.T))
         
         e_vals = np.maximum(0.0, np.real(e_vals))
         e_vecs = np.real(e_vecs)
@@ -136,14 +135,14 @@ def features(filename):
                                             resolution=NOTE_RES,
                                             hop_length=HOP_LENGTH,
                                             fmin=NOTE_MIN,
-                                            n_bins=NOTE_NUM))**2
+                                            n_bins=NOTE_NUM))
 
         C_to_Chr = librosa.filters.cq_to_chroma(CQT.shape[0], n_chroma=N_CHROMA) 
 
-        return librosa.util.normalize(C_to_Chr.dot(CQT))
+        return librosa.logamplitude(librosa.util.normalize(C_to_Chr.dot(CQT)))
 
     # Latent factor repetition features
-    def repetition(X, metric='sqeuclidean'):
+    def repetition(X, metric='seuclidean'):
         R = librosa.segment.recurrence_matrix(X, 
                                             k=2 * int(np.ceil(np.sqrt(X.shape[1]))), 
                                             width=REP_WIDTH, 
@@ -205,8 +204,8 @@ def features(filename):
     
     # Beat-synchronous repetition features
     print '\t[6/6] generating structure features'
-    R_timbre = repetition(M)
-    R_chroma = repetition(librosa.segment.stack_memory(C), metric='cosine')
+    R_timbre = repetition(librosa.segment.stack_memory(M))
+    R_chroma = repetition(librosa.segment.stack_memory(C))
     
     # Stack it all up
     X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beats)])

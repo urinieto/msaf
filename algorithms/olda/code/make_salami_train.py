@@ -9,6 +9,7 @@ from joblib import Parallel, delayed
 import cPickle as pickle
 
 import mir_eval
+import librosa
 
 from segmenter import features
 
@@ -32,12 +33,35 @@ def align_segmentation(filename, beat_times):
     
     segment_times, segment_labels = mir_eval.io.load_events(filename)
 
+    # Map to intervals, clip the last label marker
+    segment_intervals = np.asarray(zip(segment_times[:-1], segment_times[1:]))
+    segment_labels    = segment_labels[:-1]
+
+    # Map beats to intervals
+    beat_intervals    = np.asarray(zip(beat_times[:-1], beat_times[1:]))
+
+    # Map beats to segments
+    beat_segment_ids  = librosa.util.match_intervals(beat_intervals, segment_intervals)
+
     segment_beats = []
-    for t in segment_times:
-        # Find the closest beat
-        segment_beats.append( np.argmin((beat_times - t)**2))
-        
-    return segment_beats, segment_times, segment_labels
+    segment_times_out = []
+    segment_labels_out = []
+
+    for i in range(segment_times.shape[0]):
+        hits = np.argwhere(beat_segment_ids == i)
+        if len(hits) > 0:
+            segment_beats.extend(hits[0])
+            segment_times_out.append(segment_intervals[i,:])
+            segment_labels_out.append(segment_labels[i])
+
+    # Pull out the segment start times
+    segment_beats = list(segment_beats)
+    segment_times_out = np.asarray(segment_times_out)[:, 0].squeeze().reshape((-1, 1))
+
+    if segment_times_out.ndim == 0:
+        segment_times_out = segment_times_out[np.newaxis]
+
+    return segment_beats, segment_times_out, segment_labels_out
 
 # <codecell>
 
