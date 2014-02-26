@@ -66,6 +66,11 @@ class STFTFeature:
 
         return features
 
+def compute_beats(audio):
+    logging.info("Computing Beats...")
+    ticks, conf = ES.BeatTrackerMultiFeature()(audio)
+    #ticks = ES.BeatTrackerDegara()(audio)
+
 def process(audio_file, out_file, save_beats=False):
     """Main process."""
 
@@ -80,9 +85,7 @@ def process(audio_file, out_file, save_beats=False):
     audio = ES.MonoLoader(filename=audio_file, sampleRate=sample_rate)()
 
     # Compute Beats
-    logging.info("Computing Beats...")
-    ticks, conf = ES.BeatTrackerMultiFeature()(audio)
-    #ticks = ES.BeatTrackerDegara()(audio)
+    ticks, conf = compute_beats(audio)
 
     # Compute Beat-sync features
     MFCC = STFTFeature(frame_size, hop_size, window_type, ES.MFCC(), 
