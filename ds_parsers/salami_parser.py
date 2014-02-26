@@ -28,10 +28,32 @@ def fill_global_metadata(jam, metadata):
     # TODO: extra info
     #jam.metadata.genre = metadata[14]
 
-def fill_annotation(path, annot, annotator):
+def fill_annotation(path, annot, annotation_id):
     """Fills the JAMS annot annotation given a path to the original 
     SALAMI annotations. The variable "annotator" let's you choose which
-    SALAMI annotation to use."""
+    SALAMI annotation to use.
+
+    Parameters
+    ----------
+
+    annotation_id: int
+        0 or 1 depending on which annotation to use
+
+    """
+
+    # Annotation Metadata
+    annot.annotation_metadata.attribute = "sections"
+    annot.annotation_metadata.corpus = "SALAMI"
+    annot.annotation_metadata.version = "1.2"
+    annot.annotation_metadata.annotation_tools = "Sonic Visualizer"
+    annot.annotation_metadata.annotation_rules = "" #TODO
+    annot.annotation_metadata.validation_and_reliability = "" #TODO
+    annot.annotation_metadata.origin = metadata[1]
+    annot.annotation_metadata.annotator.name = metadata[annotation_id + 2]
+    annot.annotation_metadata.annotator.email = "" #TODO
+
+    #TODO:
+    #time = metadata[annotation_id + 15]
 
     pass
 
