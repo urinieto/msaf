@@ -51,7 +51,7 @@ def fill_global_metadata(jam, lab_file):
     """Fills the global metada into the JAMS jam."""
     jam.metadata.artist = lab_file.split("/")[-3]
     jam.metadata.duration = -1 # In seconds
-    jam.metadata.title = os.path.basename(lab_file).strip(".lab")
+    jam.metadata.title = os.path.basename(lab_file).replace(".lab","")
 
     # TODO: extra info
     #jam.metadata.genre = metadata[14]
@@ -179,6 +179,8 @@ def process(in_dir, out_dir):
     annots_folder = glob.glob(os.path.join(in_dir, "*"))
     for annot_folder in annots_folder:
         if not os.path.isdir(annot_folder): continue
+        if os.path.basename(annot_folder) == "jams": continue
+        if os.path.basename(annot_folder) == "audio": continue
 
         # Check whether we need to parse the beats
         parse_beats = os.path.isdir(os.path.join(annot_folder, "beat"))
@@ -200,12 +202,12 @@ def process(in_dir, out_dir):
 
             # Get all the lab files
             lab_files = glob.glob(os.path.join(subfolder, "*.lab"))
+            print subfolder, lab_files
             for lab_file in lab_files:
-
                 #Create a JAMS file for this track
                 create_JAMS(lab_file, 
                             os.path.join(out_dir, 
-                                os.path.basename(lab_file).strip(".lab") + \
+                                os.path.basename(lab_file).replace(".lab","") + \
                                 ".jams"),
                             parse_beats)
 
