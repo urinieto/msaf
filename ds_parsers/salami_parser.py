@@ -160,7 +160,7 @@ def process(in_dir, out_dir):
         # Create a JAMS file for this track
         create_JAMS(in_dir, metadata, 
                     os.path.join(out_dir, 
-                        "SALAMI_" + os.path.basename(metadata[0]) + ".jams"))
+                        os.path.basename(metadata[0]) + ".jams"))
     # Close metadata
     fh.close()
 

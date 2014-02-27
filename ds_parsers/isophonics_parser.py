@@ -116,7 +116,7 @@ def process(in_dir, out_dir):
                 #Create a JAMS file for this track
                 create_JAMS(lab_file, 
                             os.path.join(out_dir, 
-                                "Isophonics_" + os.path.basename(lab_file) + \
+                                os.path.basename(lab_file).strip(".lab") + \
                                 ".jams"))
 
 
