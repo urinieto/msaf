@@ -19,54 +19,6 @@ import os
 import sys
 import time
 
-def parse_annotation_level(annot, path, annotation_id, level):
-    """Parses one specific level of annotation and puts it into annot.
-
-    Parameters
-    ----------
-
-    annot: Annotation
-    path: str
-        path to the track in the SALAMI dataset
-    annotation_id: int
-        Whether to use the first or the second annotation
-    level: str
-        Level of annotation
-    """
-    level_dict = {
-        "function": "_functions",
-        "large_scale": "_uppercase",
-        "small_scale": "_lowercase"
-    }
-
-    # File to open
-    file_path = os.path.join(path, "parsed", 
-        "textfile" + str(annotation_id+1) + level_dict[level] + ".txt")
-
-    # Open file
-    try:
-        f = open(file_path, "r")
-    except IOError:
-        logging.warning("Annotation doesn't exist: %s", file_path)
-        return
-
-    # Parse file
-    lines = f.readlines()
-    for i, line in enumerate(lines[:-1]):
-        start_time, label = line.strip("\n").split("\t")
-        end_time = lines[i+1].split("\t")[0]
-        section = annot.create_datapoint()
-        section.start.value = float(start_time)
-        section.start.confidence = 1.0
-        section.end.value = float(end_time)
-        section.end.confidence = 1.0
-        section.label.value = label
-        section.label.confidence = 1.0
-        section.level = level
-        #print start_time, end_time, label
-
-    f.close()
-
 
 def fill_global_metadata(jam, lab_file):
     """Fills the global metada into the JAMS jam."""
@@ -77,36 +29,46 @@ def fill_global_metadata(jam, lab_file):
     # TODO: extra info
     #jam.metadata.genre = metadata[14]
 
-def fill_annotation(path, annot, annotation_id, metadata):
-    """Fills the JAMS annot annotation given a path to the original 
-    SALAMI annotations. The variable "annotator" let's you choose which
-    SALAMI annotation to use.
-
-    Parameters
-    ----------
-
-    annotation_id: int
-        0 or 1 depending on which annotation to use
-
-    """
+def fill_annotation(lab_file, annot):
+    """Fills the JAMS annot annotation given a lab file."""
 
     # Annotation Metadata
     annot.annotation_metadata.attribute = "sections"
-    annot.annotation_metadata.corpus = "SALAMI"
-    annot.annotation_metadata.version = "1.2"
+    annot.annotation_metadata.corpus = "Isophonics"
+    annot.annotation_metadata.version = "1.0"
     annot.annotation_metadata.annotation_tools = "Sonic Visualizer"
     annot.annotation_metadata.annotation_rules = "TODO" #TODO
     annot.annotation_metadata.validation_and_reliability = "TODO" #TODO
-    annot.annotation_metadata.origin = metadata[1]
-    annot.annotation_metadata.annotator.name = metadata[annotation_id + 2]
+    annot.annotation_metadata.origin = "Centre for Digital Music"
+    annot.annotation_metadata.annotator.name = "TODO"
     annot.annotation_metadata.annotator.email = "TODO" #TODO
     #TODO:
-    #time = metadata[annotation_id + 15]
+    #time = "TODO"
 
-    # Parse all level annotations
-    levels = ["function", "large_scale", "small_scale"]
-    [parse_annotation_level(annot, path, annotation_id, level) \
-        for level in levels]
+    # Open lab file
+    try:
+        f = open(lab_file, "r")
+    except IOError:
+        logging.warning("Annotation doesn't exist: %s", lab_file)
+        return
+
+    # Convert to JAMS
+    lines = f.readlines()
+    for line in lines:
+        section_raw = line.strip("\n").split("\t")
+        start_time = section_raw[0]
+        end_time = section_raw[1]
+        label = section_raw[3]
+        section = annot.create_datapoint()
+        section.start.value = float(start_time)
+        section.start.confidence = 1.0
+        section.end.value = float(end_time)
+        section.end.confidence = 1.0
+        section.label.value = label
+        section.label.confidence = 1.0
+        section.level = "function" # Only function level of annotation
+
+    f.close()
 
 
 def create_JAMS(lab_file, out_file):
@@ -115,18 +77,12 @@ def create_JAMS(lab_file, out_file):
     # New JAMS and annotation
     jam = jams.Jams()
 
-    print lab_file.split("/")
-
-    # # Global file metadata
+    # Global file metadata
     fill_global_metadata(jam, lab_file)
 
-    # # Create Annotations if they exist
-    # # Maximum 3 annotations per file
-    # for possible_annot in xrange(3):
-    #     if os.path.isfile(os.path.join(path, 
-    #             "textfile" + str(possible_annot+1) + ".txt")):
-    #         annot = jam.sections.create_annotation()
-    #         fill_annotation(path, annot, possible_annot, metadata)
+    # Create Annotations
+    annot = jam.sections.create_annotation()
+    fill_annotation(lab_file, annot)
 
     # Save JAMS
     f = open(out_file, "w")
