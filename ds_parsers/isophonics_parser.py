@@ -38,7 +38,6 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
-import csv
 import glob
 import jams
 import json
@@ -177,8 +176,8 @@ def process(in_dir, out_dir):
         os.makedirs(out_dir)
 
     # Get all the higher level annotation folders
-    annot_folder = glob.glob(os.path.join(in_dir, "*"))
-    for annot_folder in annot_folder:
+    annots_folder = glob.glob(os.path.join(in_dir, "*"))
+    for annot_folder in annots_folder:
         if not os.path.isdir(annot_folder): continue
 
         # Check whether we need to parse the beats
@@ -192,7 +191,6 @@ def process(in_dir, out_dir):
 
         # Get all the subfolders (where the lab/txt files are)
         album_folder = glob.glob(os.path.join(artist_folder, "*"))
-
 
         for subfolder in album_folder:
             if not os.path.isdir(subfolder): continue
