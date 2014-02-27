@@ -1,6 +1,34 @@
 #!/usr/bin/env python
 """
- TODO: Write me, I'm a lonely docstring!
+Saves all the Isophonics dataset into a jams. The structure of the Isophonics
+dataset is:
+
+/Isophonics
+    /Artist Annotations
+        /feature
+            /Artist
+                /Album
+                    /lab (or text) files
+
+Example:
+
+/Isophonics
+    /The Beatles Annotations
+        /seglab
+            /The Beatles
+                /01_-_Please_Please_Me
+                    /01_-_I_Saw_Her_Standing_There.lab
+        /beat
+            /The Beatles
+                /01_-_Please_Please_Me
+                    /01_-_I_Saw_Her_Standing_There.txt
+
+To parse the entire dataset, you simply need the path to the Isophonics dataset
+and an output folder.
+
+Example:
+./isohpnics_parser.py ~/datasets/Isophonics -o ~/datasets/Isophonics/outJAMS
+
 """
 
 __author__ = "Oriol Nieto"
@@ -29,11 +57,9 @@ def fill_global_metadata(jam, lab_file):
     # TODO: extra info
     #jam.metadata.genre = metadata[14]
 
-def fill_annotation(lab_file, annot):
-    """Fills the JAMS annot annotation given a lab file."""
-
-    # Annotation Metadata
-    annot.annotation_metadata.attribute = "sections"
+def fill_annoatation_metadata(annot, attribute):
+    """Fills the annotation metadata."""
+    annot.annotation_metadata.attribute = attribute
     annot.annotation_metadata.corpus = "Isophonics"
     annot.annotation_metadata.version = "1.0"
     annot.annotation_metadata.annotation_tools = "Sonic Visualizer"
@@ -45,6 +71,12 @@ def fill_annotation(lab_file, annot):
     #TODO:
     #time = "TODO"
 
+def fill_section_annotation(lab_file, annot):
+    """Fills the JAMS annot annotation given a lab file."""
+
+    # Annotation Metadata
+    fill_annoatation_metadata(annot, "sections")
+    
     # Open lab file
     try:
         f = open(lab_file, "r")
@@ -70,8 +102,46 @@ def fill_annotation(lab_file, annot):
 
     f.close()
 
+def fill_beat_annotation(txt_file, annot):
+    """Fills the JAMS annot annotation given a txt file."""
 
-def create_JAMS(lab_file, out_file):
+    # Annotation Metadata
+    fill_annoatation_metadata(annot, "beats")
+    
+    # Open txt file
+    try:
+        f = open(txt_file, "r")
+    except IOError:
+        logging.warning("Annotation doesn't exist: %s", txt_file)
+        return
+
+    # Convert to JAMS
+    lines = f.readlines()
+    for line in lines:
+        line = line.strip("\n")
+        if " " in line:
+            time = line.split(" ")[0]
+            downbeat = line.split(" ")[-1]
+        elif "\t" in line:
+            time = line.split("\t")[0]
+            downbeat = line.split("\t")[-1]
+        beat = annot.create_datapoint()
+        try:
+            # Problem with 11_-_When_I_Get_Home (starting with upbeat)
+            beat.time.value = float(time)
+        except ValueError:
+            beat.time.value = float(time[0])
+        beat.time.confidence = 1.0
+        try:
+            beat.label.value = int(downbeat)
+        except ValueError:
+            beat.label.value = int(-1)
+        beat.label.confidence = 1.0
+
+    f.close()
+
+
+def create_JAMS(lab_file, out_file, parse_beats=False):
     """Creates a JAMS file given the Isophonics lab file."""
 
     # New JAMS and annotation
@@ -80,9 +150,17 @@ def create_JAMS(lab_file, out_file):
     # Global file metadata
     fill_global_metadata(jam, lab_file)
 
-    # Create Annotations
+    # Create Section annotations
     annot = jam.sections.create_annotation()
-    fill_annotation(lab_file, annot)
+    fill_section_annotation(lab_file, annot)
+
+    # Create Beat annotations if needed
+    if parse_beats:
+        annot = jam.beats.create_annotation()
+        txt_file = lab_file.replace("seglab", "beat").replace(".lab",".txt")
+        fill_beat_annotation(txt_file, annot)
+
+    # TODO: Create Chord and Key annotations
 
     # Save JAMS
     f = open(out_file, "w")
@@ -98,16 +176,29 @@ def process(in_dir, out_dir):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    # Get all the higher level folders
-    folders = glob.glob(os.path.join(in_dir, "*"))
-    for folder in folders:
-        if not os.path.isdir(folder): continue
+    # Get all the higher level annotation folders
+    annot_folder = glob.glob(os.path.join(in_dir, "*"))
+    for annot_folder in annot_folder:
+        if not os.path.isdir(annot_folder): continue
 
-        # Get all the subfolders (where the lab files are)
-        subfolders = glob.glob(os.path.join(folder, "*"))
-        for subfolder in subfolders:
+        # Check whether we need to parse the beats
+        parse_beats = os.path.isdir(os.path.join(annot_folder, "beat"))
+
+        # Step into the segments folder
+        annot_folder = os.path.join(annot_folder, "seglab")
+
+        # Step into the artist folder
+        artist_folder = glob.glob(os.path.join(annot_folder, "*"))[0]
+
+        # Get all the subfolders (where the lab/txt files are)
+        album_folder = glob.glob(os.path.join(artist_folder, "*"))
+
+
+        for subfolder in album_folder:
             if not os.path.isdir(subfolder): continue
             if os.path.basename(subfolder) == "audio": continue
+
+            logging.info("Parsing album %s" % os.path.basename(subfolder))
 
             # Get all the lab files
             lab_files = glob.glob(os.path.join(subfolder, "*.lab"))
@@ -117,7 +208,8 @@ def process(in_dir, out_dir):
                 create_JAMS(lab_file, 
                             os.path.join(out_dir, 
                                 os.path.basename(lab_file).strip(".lab") + \
-                                ".jams"))
+                                ".jams"),
+                            parse_beats)
 
 
 def main():
