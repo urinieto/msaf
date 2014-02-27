@@ -68,12 +68,11 @@ def parse_annotation_level(annot, path, annotation_id, level):
     f.close()
 
 
-def fill_global_metadata(jam, metadata):
+def fill_global_metadata(jam, lab_file):
     """Fills the global metada into the JAMS jam."""
-    if metadata[5] == "": metadata[5] = -1
-    jam.metadata.artist = metadata[8]
-    jam.metadata.duration = float(metadata[5]) # In seconds
-    jam.metadata.title = metadata[7]
+    jam.metadata.artist = lab_file.split("/")[-3]
+    jam.metadata.duration = -1 # In seconds
+    jam.metadata.title = os.path.basename(lab_file).strip(".lab")
 
     # TODO: extra info
     #jam.metadata.genre = metadata[14]
@@ -110,32 +109,24 @@ def fill_annotation(path, annot, annotation_id, metadata):
         for level in levels]
 
 
-def create_JAMS(in_dir, metadata, out_file):
-    """Creates a JAMS file given the path to a SALAMI track."""
-    path = os.path.join(in_dir, "data", metadata[0])
-
-    # Sanity check
-    if not os.path.exists(path):
-        logging.warning("Path not found %s", path)
-        return
-
-    # Do not parse Isophonics data
-    if metadata[1] == "Isophonics":
-        return
+def create_JAMS(lab_file, out_file):
+    """Creates a JAMS file given the Isophonics lab file."""
 
     # New JAMS and annotation
     jam = jams.Jams()
 
-    # Global file metadata
-    fill_global_metadata(jam, metadata)
+    print lab_file.split("/")
 
-    # Create Annotations if they exist
-    # Maximum 3 annotations per file
-    for possible_annot in xrange(3):
-        if os.path.isfile(os.path.join(path, 
-                "textfile" + str(possible_annot+1) + ".txt")):
-            annot = jam.sections.create_annotation()
-            fill_annotation(path, annot, possible_annot, metadata)
+    # # Global file metadata
+    fill_global_metadata(jam, lab_file)
+
+    # # Create Annotations if they exist
+    # # Maximum 3 annotations per file
+    # for possible_annot in xrange(3):
+    #     if os.path.isfile(os.path.join(path, 
+    #             "textfile" + str(possible_annot+1) + ".txt")):
+    #         annot = jam.sections.create_annotation()
+    #         fill_annotation(path, annot, possible_annot, metadata)
 
     # Save JAMS
     f = open(out_file, "w")
@@ -143,36 +134,44 @@ def create_JAMS(in_dir, metadata, out_file):
     f.close()
 
 
-
 def process(in_dir, out_dir):
-    """Converts the original SALAMI files into the JAMS format, and saves
+    """Converts the original Isophonic files into the JAMS format, and saves
     them in the out_dir folder."""
 
     # Check if output folder and create it if needed:
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    # Open CSV with metadata
-    fh = open(os.path.join(in_dir, "metadata.csv"))
-    csv_reader = csv.reader(fh)
+    # Get all the higher level folders
+    folders = glob.glob(os.path.join(in_dir, "*"))
+    for folder in folders:
+        if not os.path.isdir(folder): continue
 
-    for metadata in csv_reader:
-        # Create a JAMS file for this track
-        create_JAMS(in_dir, metadata, 
-                    os.path.join(out_dir, 
-                        "SALAMI_" + os.path.basename(metadata[0]) + ".jams"))
-    # Close metadata
-    fh.close()
+        # Get all the subfolders (where the lab files are)
+        subfolders = glob.glob(os.path.join(folder, "*"))
+        for subfolder in subfolders:
+            if not os.path.isdir(subfolder): continue
+            if os.path.basename(subfolder) == "audio": continue
+
+            # Get all the lab files
+            lab_files = glob.glob(os.path.join(subfolder, "*.lab"))
+            for lab_file in lab_files:
+
+                #Create a JAMS file for this track
+                create_JAMS(lab_file, 
+                            os.path.join(out_dir, 
+                                "Isophonics_" + os.path.basename(lab_file) + \
+                                ".jams"))
 
 
 def main():
     """Main function to convert the dataset into JAMS."""
     parser = argparse.ArgumentParser(description=
-        "Converts the SALAMI dataset to the JAMS format",
+        "Converts the Isophonics dataset to the JAMS format",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_dir",
                         action="store",
-                        help="SALAMI main folder")
+                        help="Isophonics main folder")
     parser.add_argument("-o", 
                         action="store", 
                         dest="out_dir", 
