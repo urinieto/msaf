@@ -35,7 +35,8 @@ def fill_global_metadata(jam, txt_file):
     """Fills the global metada into the JAMS jam."""
     jam.metadata.artist = "" #TODO
     jam.metadata.duration = -1 # In seconds
-    jam.metadata.title = os.path.basename(txt_file).strip(".txt").split("_")[-1]
+    jam.metadata.title = \
+        os.path.basename(txt_file).replace(".txt", "").split("_")[-1]
     jam.metadata.duration = -1 # In seconds
     jam.metadata.md5 = "" #TODO
     jam.metadata.echonest_id = "" #TODO
@@ -156,7 +157,8 @@ def process(in_dir, out_dir):
         #Create a JAMS file for this track
         create_JAMS(segment_file, beat_file,
                     os.path.join(out_dir,  
-                        os.path.basename(segment_file).strip(".txt") + ".jams"))
+                        os.path.basename(segment_file).replace(".txt","") + \
+                            ".jams"))
 
 
 def main():

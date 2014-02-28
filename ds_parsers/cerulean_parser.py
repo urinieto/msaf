@@ -33,7 +33,7 @@ def fill_global_metadata(jam, json_file):
     # Open JSON
     f = open(json_file, "r")
     annot = json.load(f)
-    basename = os.path.basename(json_file).strip(".json")
+    basename = os.path.basename(json_file).replace(".json","")
 
     if "-" in basename:
         token = "-"
@@ -145,7 +145,7 @@ def process(in_dir, out_dir):
         #Create a JAMS file for this track
         create_JAMS([json_file1, json_file2], 
                     os.path.join(out_dir, 
-                        os.path.basename(json_file1).strip(".json") + \
+                        os.path.basename(json_file1).replace(".json","") + \
                         ".jams"))
 
 
