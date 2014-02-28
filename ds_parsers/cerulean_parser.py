@@ -89,7 +89,7 @@ def fill_section_annotation(json_file, annot):
         section.end.confidence = 1.0
         section.label.value = function_label
         section.label.confidence = 1.0
-        section.level = "function" # Only function level of annotation
+        section.level = "function" 
 
         section = annot.create_datapoint()
         section.start.value = float(start_time)
@@ -98,7 +98,7 @@ def fill_section_annotation(json_file, annot):
         section.end.confidence = 1.0
         section.label.value = label
         section.label.confidence = 1.0
-        section.level = "large_scale" # Only function level of annotation
+        section.level = "large_scale"
 
     f.close()
 
