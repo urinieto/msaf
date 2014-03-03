@@ -20,11 +20,19 @@ import argparse
 import essentia
 import essentia.standard as ES
 from essentia.standard import YamlOutput
-import pylab as plt
+import jams
 import logging
+import os
+import pylab as plt
 import numpy as np
 import time
 import utils
+
+# Setup main params
+SAMPLE_RATE = 11025
+FRAME_SIZE = 2048
+HOP_SIZE = 512
+WINDOW_TYPE = "blackmanharris74"
 
 class STFTFeature:
     """Class to easily compute the features that require a frame based 
@@ -58,7 +66,6 @@ class STFTFeature:
         # Convert to Numpy array
         features = essentia.array(features)
 
-
         if self.beats != []:
             framerate = self.sample_rate / float(self.hop_size)
             tframes = np.arange(features.shape[0]) / float(framerate)
@@ -66,75 +73,149 @@ class STFTFeature:
 
         return features
 
+
+def double_beats(ticks):
+    """Double the beats."""
+    new_ticks = []
+    for i, tick in enumerate(ticks[:-1]):
+        new_ticks.append(tick)
+        new_ticks.append((tick + ticks[i+1]) / 2.0)
+    return essentia.array(new_ticks)
+
+
 def compute_beats(audio):
+    """Computes the beats using Essentia."""
     logging.info("Computing Beats...")
     ticks, conf = ES.BeatTrackerMultiFeature()(audio)
-    #ticks = ES.BeatTrackerDegara()(audio)
+    ticks *= 44100 / SAMPLE_RATE # Essentia requires 44100 input (-.-')
 
-def process(audio_file, out_file, save_beats=False):
-    """Main process."""
+    # Double the beats if found beats are too little
+    th = 0.9 # 1 would equal to at least 1 beat per second
+    while ticks.shape[0] / (audio.shape[0]/float(SAMPLE_RATE)) < th:
+        ticks = double_beats(ticks)
+    return ticks, conf
 
-    # Setup main params
-    sample_rate = 11025
-    frame_size = 2048
-    hop_size = 512
-    window_type = "blackmanharris74"
 
-    # Load Audio
-    logging.info("Loading Audio")
-    audio = ES.MonoLoader(filename=audio_file, sampleRate=sample_rate)()
-
-    # Compute Beats
-    ticks, conf = compute_beats(audio)
-
-    # Compute Beat-sync features
-    MFCC = STFTFeature(frame_size, hop_size, window_type, ES.MFCC(), 
-        ticks, sample_rate)
-    HPCP = STFTFeature(frame_size, hop_size, window_type, ES.HPCP(), 
-        ticks, sample_rate)
+def compute_beatsync_features(ticks, audio):
+    """Computes the HPCP and MFCC beat-synchronous features given a set
+        of beats (ticks)."""
+    MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.MFCC(), 
+        ticks, SAMPLE_RATE)
+    HPCP = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.HPCP(), 
+        ticks, SAMPLE_RATE)
     logging.info("Computing Beat-synchronous MFCCs...")
     mfcc = MFCC.compute_features(audio)
     logging.info("Computing Beat-synchronous HPCPs...")
     hpcp = HPCP.compute_features(audio)
-    plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
-    
+    #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
+
+    return mfcc, hpcp
+
+
+def compute_all_features(jam_file, audio_file, audio_beats):
+    """Computes all the features for a specific audio file and its respective
+        human annotations. It creates an audio file with the estimated
+        beats if needed."""
+
+    # Load Audio
+    logging.info("Loading audio file %s" % os.path.basename(audio_file))
+    audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
+
+    # Estimate Beats
+    ticks, conf = compute_beats(audio)
+
+    # Compute Beat-sync features
+    mfcc, hpcp = compute_beatsync_features(ticks, audio)
 
     # Save output as audio file
-    if save_beats:
+    if audio_beats:
         logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=ticks, type='beep')
+        marker = ES.AudioOnsetsMarker(onsets=ticks, type='beep', 
+                                      sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
-        ES.MonoWriter(filename='beats.wav', sampleRate=sample_rate)(marked_audio)
+        ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
+
+    # Load Annotations
+    jam = jams.load(jam_file)
+
+    # If beat annotations, compute also annotated beatsynchronous features
+    if jam.beats != []:
+        logging.info("Reading beat annotations from JAMS")
+        annot = jam.beats[0]
+        annot_ticks = []
+        for data in annot.data:
+            annot_ticks.append(data.time.value)
+        annot_ticks = essentia.array(annot_ticks)
+        annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks, audio)
 
     # Save output as json file
-    logging.info("Saving the JSON file")
+    out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
+                        "estimations", 
+                        os.path.basename(audio_file)[:-4] + ".json")
+    logging.info("Saving the JSON file in %s" % out_file)
     yaml = YamlOutput(filename=out_file, format='json')
     pool = essentia.Pool()
     pool.add("beats.ticks", ticks)
     pool.add("beats.confidence", conf)
+    [pool.add("est_beatsync.mfcc", essentia.array(mfcc_coeff)) \
+        for mfcc_coeff in mfcc]
+    [pool.add("est_beatsync.hpcp", essentia.array(hpcp_coeff)) \
+        for hpcp_coeff in hpcp]
+    if jam.beats != []:
+        [pool.add("ann_beatsync.mfcc", essentia.array(mfcc_coeff)) \
+            for mfcc_coeff in annot_mfcc]
+        [pool.add("ann_beatsync.hpcp", essentia.array(hpcp_coeff)) \
+            for hpcp_coeff in annot_hpcp]
     yaml(pool)
+
+
+def process(in_path, audio_beats=False):
+    """Main process."""
+
+    # If in_path it's a file, we only compute one file
+    if os.path.isfile(in_path):
+        jam_file = os.path.join(os.path.dirname(os.path.dirname(in_path)), 
+                                "annotations", 
+                                os.path.basename(in_path)[:-4] + ".jams")
+        compute_all_features(jam_file, in_path, audio_beats)
+
+    elif os.path.isdir(in_path):
+        # Check that in_path exists
+        utils.ensure_dir(in_path)
+
+        # Get files
+        jam_files = glob.glob(os.path.join(in_path), "annotations", "*.jams")
+        audio_files = glob.glob(os.path.join(in_path), "audio", 
+                                                    "*.[wm][ap][v3]")
+
+        # Compute features for each file
+        for jam_file, audio_file in zip(jam_files, audio_files):
+            compute_all_features(jam_file, audio_file, audio_beats)
 
 
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
-        "Extracts a set of features from an audio file and saves them " \
-            "into a JSON file",
+        "Extracts a set of features from the Segmentation dataset or a given " \
+        "audio file and saves them into the 'features' folder of the dataset",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("audio_file",action="store",
-        help="Input audio file")
-    parser.add_argument("-o", action="store", dest="out_file", 
-        default="output.json", help="Output JSON file")
-    parser.add_argument("-b", action="store_true", dest="save_beats", 
-        help="Output audio file with estimated beats")
+    parser.add_argument("in_path",
+                        action="store",
+                        help="Input dataset dir or audio file")
+    parser.add_argument("-a", 
+                        action="store_true", 
+                        dest="audio_beats", 
+                        help="Output audio file with estimated beats",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
    
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+        level=logging.INFO)
 
     # Run the algorithm
-    process(args.audio_file, args.out_file, args.save_beats)
+    process(args.in_path, args.audio_beats)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

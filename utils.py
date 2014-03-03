@@ -11,6 +11,11 @@ __email__ = "oriol@nyu.edu"
 import copy
 import numpy as np
 
+def ensure_dir(directory):
+    """Makes sure that the given directory exists."""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 def resample_mx(X, incolpos, outcolpos):
     """
     Y = resample_mx(X, incolpos, outcolpos)
