@@ -20,6 +20,7 @@ import argparse
 import essentia
 import essentia.standard as ES
 from essentia.standard import YamlOutput
+import glob
 import jams
 import logging
 import os
@@ -184,12 +185,14 @@ def process(in_path, audio_beats=False):
         utils.ensure_dir(in_path)
 
         # Get files
-        jam_files = glob.glob(os.path.join(in_path), "annotations", "*.jams")
-        audio_files = glob.glob(os.path.join(in_path), "audio", 
-                                                    "*.[wm][ap][v3]")
+        jam_files = glob.glob(os.path.join(in_path, "annotations", "*.jams"))
+        audio_files = glob.glob(os.path.join(in_path, "audio", 
+                                                    "*.[wm][ap][v3]"))
 
         # Compute features for each file
         for jam_file, audio_file in zip(jam_files, audio_files):
+            assert os.path.basename(audio_file)[:-4] == \
+                os.path.basename(jam_file)[:-5]
             compute_all_features(jam_file, audio_file, audio_beats)
 
 
