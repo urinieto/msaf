@@ -59,7 +59,7 @@ def add_last_segment(jam, jam_file, duration):
            section.end.confidence = 1.0
            section.label.value = function_label
            section.label.confidence = 1.0
-           section.level = "function" 
+           section.context = "function" 
 
            section = annot.create_datapoint()
            section.start.value = float(start_time)
@@ -68,7 +68,7 @@ def add_last_segment(jam, jam_file, duration):
            section.end.confidence = 1.0
            section.label.value = label
            section.label.confidence = 1.0
-           section.level = "large_scale"
+           section.context = "large_scale"
 
         f.close()
 
@@ -122,7 +122,8 @@ def process(in_dir):
 
         #Enrich JAMS with audio file
         #if os.path.basename(audio_file)[:9] != "Cerulean_":
-        enrich_jam(audio_file, jam_file)
+        if os.path.basename(audio_file)[:7] == "SALAMI_":
+            enrich_jam(audio_file, jam_file)
 
 
 def main():

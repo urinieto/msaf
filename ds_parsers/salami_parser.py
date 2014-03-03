@@ -62,7 +62,7 @@ def parse_annotation_level(annot, path, annotation_id, level):
         section.end.confidence = 1.0
         section.label.value = label
         section.label.confidence = 1.0
-        section.level = level
+        section.label.context = level
         #print start_time, end_time, label
 
     f.close()
