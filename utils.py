@@ -10,6 +10,7 @@ __email__ = "oriol@nyu.edu"
 
 import copy
 import numpy as np
+import os
 
 def ensure_dir(directory):
     """Makes sure that the given directory exists."""
