@@ -121,9 +121,7 @@ def process(in_dir):
         logging.info("Processing %s...", os.path.basename(jam_file))
 
         #Enrich JAMS with audio file
-        #if os.path.basename(audio_file)[:9] != "Cerulean_":
-        if os.path.basename(audio_file)[:7] == "SALAMI_":
-            enrich_jam(audio_file, jam_file)
+        enrich_jam(audio_file, jam_file)
 
 
 def main():

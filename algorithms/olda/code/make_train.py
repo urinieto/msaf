@@ -91,6 +91,7 @@ def import_data(song, rootpath, output_path, ds_name):
         else:
             #try:
             X, B     = features(song)
+            print X.shape
             Y, T, L  = align_segmentation(get_annotation(song, rootpath), B,
                             ds_name)
             
@@ -122,6 +123,7 @@ def make_dataset(n=None, n_jobs=1, ds_name='', rootpath='', output_path=''):
             filter(
                 lambda x: os.path.exists(get_annotation(x, rootpath)), 
                 glob.iglob('%s/audio/%s_*.%s' % (rootpath, ds_name, e))
+                #glob.iglob('%s/audio/Isophonics_17_-_Her_Majesty.%s' % (rootpath, e))
             )
         )
     files = sorted(files)
@@ -134,6 +136,8 @@ def make_dataset(n=None, n_jobs=1, ds_name='', rootpath='', output_path=''):
     X, Y, B, T, F, L = [], [], [], [], [], []
     for d in data:
         if d is None:
+            continue
+        if d['features'].shape[0] != 93:
             continue
         X.append(d['features'])
         Y.append(d['segments'])
@@ -165,7 +169,7 @@ if __name__ == '__main__':
                         type=int,
                         help="Number of files to process (None for all)",
                         default=None)
-    parser.add_argument("-nj", 
+    parser.add_argument("-j", 
                         action="store", 
                         dest="n_jobs",
                         type=int,
@@ -180,5 +184,5 @@ if __name__ == '__main__':
                             ds_name=args.ds_name,
                             rootpath=args.ds_path, 
                             output_path=args.output_path)
-    with open('%s/%s_data.pickle' % output_path, args.ds_name, 'w') as f:
+    with open('%s/%s_data.pickle' % (output_path, args.ds_name), 'w') as f:
         pickle.dump( (X, Y, B, T, F, L), f)
