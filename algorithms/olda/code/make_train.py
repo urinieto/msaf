@@ -81,7 +81,7 @@ def get_annotation(song, rootpath):
     return '%s/annotations/%s.jams' % (rootpath, os.path.basename(song)[:-4])
 
 
-def import_data(song, rootpath, output_path, ds_name):
+def import_data(song, rootpath, output_path, ds_name, annot_beats):
         data_file = '%s/features/%s.pickle' % (output_path, os.path.splitext(os.path.basename(song))[0])
 
         if os.path.exists(data_file):
@@ -90,7 +90,7 @@ def import_data(song, rootpath, output_path, ds_name):
                 print song, 'cached!'
         else:
             #try:
-            X, B     = features(song)
+            X, B     = features(song, annot_beats)
             print X.shape
             Y, T, L  = align_segmentation(get_annotation(song, rootpath), B,
                             ds_name)
@@ -113,25 +113,22 @@ def import_data(song, rootpath, output_path, ds_name):
         return Data
 
 
-def make_dataset(n=None, n_jobs=1, ds_name='', rootpath='', output_path=''):
+def make_dataset(n=None, n_jobs=1, ds_name='', rootpath='', output_path='',
+        annot_beats=False):
     
-#    EXTS = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac']
-    EXTS = ['wav', 'mp3']
-    files = []
-    for e in EXTS:
-        files.extend(
-            filter(
-                lambda x: os.path.exists(get_annotation(x, rootpath)), 
-                glob.iglob('%s/audio/%s_*.%s' % (rootpath, ds_name, e))
-                #glob.iglob('%s/audio/Isophonics_17_-_Her_Majesty.%s' % (rootpath, e))
-            )
-        )
-    files = sorted(files)
+    if annot_beats:
+        # We don't care about prefix, only those which have annot beats
+        audio_files = glob.glob('%s/audio/*.[wm][ap][v3]' % (rootpath))
+    else:
+        audio_files = glob.glob('%s/audio/%s_*.[wm][ap][v3]' % (rootpath, 
+                                                                ds_name))
+
     if n is None:
-        n = len(files)
+        n = len(audio_files)
 
     data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song, 
-            rootpath, output_path, ds_name) for song in files[:n])
+            rootpath, output_path, ds_name, annot_beats) \
+            for song in audio_files[:n])
     
     X, Y, B, T, F, L = [], [], [], [], [], []
     for d in data:
@@ -175,6 +172,12 @@ if __name__ == '__main__':
                         type=int,
                         help="Number of jobs (threads)",
                         default=8)
+    parser.add_argument("-b", 
+                        action="store_true", 
+                        dest="annot_beats",
+                        type=bool,
+                        help="Use annotated beats",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
     salami_path = sys.argv[1]
@@ -183,6 +186,7 @@ if __name__ == '__main__':
                             n_jobs=args.n_jobs,
                             ds_name=args.ds_name,
                             rootpath=args.ds_path, 
-                            output_path=args.output_path)
+                            output_path=args.output_path,
+                            annot_beats=args.annot_beats)
     with open('%s/%s_data.pickle' % (output_path, args.ds_name), 'w') as f:
         pickle.dump( (X, Y, B, T, F, L), f)
