@@ -12,13 +12,18 @@ If run as a program, usage is:
 import sys
 import os
 import argparse
+import json
 
 import numpy as np
 import scipy.signal
 import scipy.linalg
 
+import pylab as plt
+
 # Requires librosa-develop 0.3 branch
 import librosa
+
+import jams
 
 SR          = 22050
 N_FFT       = 2048
@@ -41,11 +46,11 @@ NOTE_RES    = 2                     # CQT filter resolution
 # mfcc, chroma, repetitions for each, and 4 time features
 __DIMENSION = N_MFCC + N_CHROMA + 2 * N_REP + 4
 
-def features(filename):
+def features(audio_path):
     '''Feature-extraction for audio segmentation
     Arguments:
-        filename -- str
-        path to the input song
+        audio_path -- str
+        path to the input song in the Segmentation dataset
 
     Returns:
         - X -- ndarray
@@ -158,60 +163,71 @@ def features(filename):
         return compress_data(P, N_REP)
 
 
-    print '\t[1/6] loading audio'
-    # Load the waveform
-    y, sr = librosa.load(filename, sr=SR)
+    print '\t[1/5] loading annotations and features'
+    ds_path = os.path.dirname(os.path.dirname(audio_path))
+    annotation_path = os.path.join(ds_path, "annotations", 
+        os.path.basename(audio_path)[:-4]+".jams")
+    estimation_path = os.path.join(ds_path, "features", 
+        os.path.basename(audio_path)[:-4]+".json")
 
-    # Compute duration
-    duration = float(len(y)) / sr
+    # Read annotations
+    jam = jams.load(annotation_path)
 
-    print '\t[2/6] Separating harmonic and percussive signals'
-    # Separate signals
-    y_harm, y_perc = hpss_wav(y)
+    # Read features
+    f = open(estimation_path, "r")
+    est = json.load(f)
+    
+    # Sampling Rate
+    sr = 11025
+
+    # Duration
+    duration = jam.metadata.duration
 
     
-    
-    print '\t[3/6] detecting beats'
+    print '\t[2/5] reading beats'
     # Get the beats
-    bpm, beats = get_beats(y_perc)
+    beats = np.asarray(est["beats"]["ticks"]).flatten()
 
     # augment the beat boundaries with the starting point
-    beats = np.unique(np.concatenate([ [0], beats]))
+    #B = np.unique(np.concatenate([ [0], beats]))
+    B = beats
 
-    B = librosa.frames_to_time(beats, sr=SR, hop_length=HOP_BEATS)
+    #B = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_BEATS)
 
-    beat_frames = np.unique(librosa.time_to_frames(B, sr=SR, hop_length=HOP_LENGTH))
+    beat_frames = np.unique(librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH))
 
     # Stash beat times aligned to the longer hop lengths
-    B = librosa.frames_to_time(beat_frames, sr=SR, hop_length=HOP_LENGTH)
+    #B = librosa.frames_to_time(beat_frames, sr=sr, hop_length=HOP_LENGTH)
 
-    print '\t[4/6] generating MFCC'
-    # Get the MFCCs
-    M = get_mfcc(y)
-
-    # Beat-synchronize the features
-    M = librosa.feature.sync(M, beat_frames, aggregate=np.mean)
+    print '\t[3/5] generating MFCC'
+    # Get the beat-sync MFCCs
+    M = np.asarray(est["est_beatsync"]["mfcc"]).T
     
-    print '\t[5/6] generating chroma'
-    # Get the chroma from the harmonic component
-    C = chroma(y_harm)
-
-    # Beat-synchronize the features
-    C = librosa.feature.sync(C, beat_frames, aggregate=np.median)
+    print '\t[4/5] generating chroma'
+    # Get the beat-sync chroma
+    C = np.asarray(est["est_beatsync"]["hpcp"]).T
     
     # Time-stamp features
     N = np.arange(float(len(beat_frames)))
     
     # Beat-synchronous repetition features
-    print '\t[6/6] generating structure features'
+    print '\t[5/5] generating structure features'
+
+
     R_timbre = repetition(librosa.segment.stack_memory(M))
     R_chroma = repetition(librosa.segment.stack_memory(C))
-    
+
+    # plt.imshow(C, interpolation="nearest", aspect="auto")
+    # plt.show()
+
     # Stack it all up
-    X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beats)])
+    X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beat_frames)])
 
     # Add on the end-of-track timestamp
     B = np.concatenate([B, [duration]])
+
+    # Close features file
+    f.close()
 
     return X, B
 

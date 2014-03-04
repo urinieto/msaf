@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import argparse
 import numpy as np
 import glob
 import os
 import sys
+import time
 
 from joblib import Parallel, delayed
 import cPickle as pickle
@@ -13,12 +15,13 @@ import librosa
 
 from segmenter import features
 
-def align_segmentation(filename, beat_times):
+def align_segmentation(filename, beat_times, ds_name):
     '''Load a ground-truth segmentation, and align times to the nearest detected beats
     
     Arguments:
         filename -- str
         beat_times -- array
+        ds_name -- str
 
     Returns:
         segment_beats -- array
@@ -30,10 +33,17 @@ def align_segmentation(filename, beat_times):
         segment_labels -- array
             list of segment labels
     '''
+
+    context_dict = {
+        "Isophonics" : "function",
+        "SALAMI" : "small_case",
+        "Cerulean" : "large_case",
+        "Epiphyte" : "function"
+    }
     
     segment_times, segment_labels = mir_eval.io.load_jams_range(filename, 
                     "sections", annotator=0, converter=None, 
-                    label_prefix='__', context='small_scale')
+                    label_prefix='__', context=context_dict[ds_name])
 
     # Map to intervals, clip the last label marker
     segment_intervals = np.asarray(zip(segment_times[:-1], segment_times[1:]))
@@ -71,7 +81,7 @@ def get_annotation(song, rootpath):
     return '%s/annotations/%s.jams' % (rootpath, os.path.basename(song)[:-4])
 
 
-def import_data(song, rootpath, output_path):
+def import_data(song, rootpath, output_path, ds_name):
         data_file = '%s/features/%s.pickle' % (output_path, os.path.splitext(os.path.basename(song))[0])
 
         if os.path.exists(data_file):
@@ -81,7 +91,8 @@ def import_data(song, rootpath, output_path):
         else:
             #try:
             X, B     = features(song)
-            Y, T, L  = align_segmentation(get_annotation(song, rootpath), B)
+            Y, T, L  = align_segmentation(get_annotation(song, rootpath,
+                            ds_name), B)
             
             Data = {'features': X, 
                     'beats': B, 
@@ -101,7 +112,7 @@ def import_data(song, rootpath, output_path):
         return Data
 
 
-def make_dataset(n=None, n_jobs=16, rootpath='/SALAMI/', output_path='data/'):
+def make_dataset(n=None, n_jobs=1, ds_name='', rootpath='', output_path=''):
     
 #    EXTS = ['mp3', 'wav', 'ogg', 'flac', 'm4a', 'aac']
     EXTS = ['wav', 'mp3']
@@ -110,14 +121,15 @@ def make_dataset(n=None, n_jobs=16, rootpath='/SALAMI/', output_path='data/'):
         files.extend(
             filter(
                 lambda x: os.path.exists(get_annotation(x, rootpath)), 
-                glob.iglob('%s/audio/SALAMI_*.%s' % (rootpath, e))
+                glob.iglob('%s/audio/%s_*.%s' % (rootpath, ds_name, e))
             )
         )
     files = sorted(files)
     if n is None:
         n = len(files)
 
-    data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song, rootpath, output_path) for song in files[:n])
+    data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song, 
+            rootpath, output_path, ds_name) for song in files[:n])
     
     X, Y, B, T, F, L = [], [], [], [], [], []
     for d in data:
@@ -134,8 +146,39 @@ def make_dataset(n=None, n_jobs=16, rootpath='/SALAMI/', output_path='data/'):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=
+        "Extracts a set of features from the Segmentation dataset or a given " \
+        "audio file and saves them into the 'features' folder of the dataset",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("ds_path",
+                        action="store",
+                        help="Input dataset dir or audio file")
+    parser.add_argument("output_path",
+                        action="store",
+                        help="Output dir to store the features")
+    parser.add_argument("ds_name",
+                        action="store",
+                        help="Dataset name to use (e.g. Isophonics, SALAMI)")
+    parser.add_argument("-n", 
+                        action="store", 
+                        dest="n",
+                        type=int,
+                        help="Number of files to process (None for all)",
+                        default=None)
+    parser.add_argument("-nj", 
+                        action="store", 
+                        dest="n_jobs",
+                        type=int,
+                        help="Number of jobs (threads)",
+                        default=8)
+    args = parser.parse_args()
+    start_time = time.time()
     salami_path = sys.argv[1]
     output_path = sys.argv[2]
-    X, Y, B, T, F, L = make_dataset(rootpath=salami_path, output_path=output_path)
-    with open('%s/salami_data.pickle' % output_path, 'w') as f:
+    X, Y, B, T, F, L = make_dataset(n=args.n,
+                            n_jobs=args.n_jobs,
+                            ds_name=args.ds_name,
+                            rootpath=args.ds_path, 
+                            output_path=args.output_path)
+    with open('%s/%s_data.pickle' % output_path, args.ds_name, 'w') as f:
         pickle.dump( (X, Y, B, T, F, L), f)
