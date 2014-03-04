@@ -91,8 +91,8 @@ def import_data(song, rootpath, output_path, ds_name):
         else:
             #try:
             X, B     = features(song)
-            Y, T, L  = align_segmentation(get_annotation(song, rootpath,
-                            ds_name), B)
+            Y, T, L  = align_segmentation(get_annotation(song, rootpath), B,
+                            ds_name)
             
             Data = {'features': X, 
                     'beats': B, 
