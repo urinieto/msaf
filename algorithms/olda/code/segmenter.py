@@ -45,7 +45,7 @@ NOTE_RES    = 2                     # CQT filter resolution
 # mfcc, chroma, repetitions for each, and 4 time features
 __DIMENSION = N_MFCC + N_CHROMA + 2 * N_REP + 4
 
-def features(audio_path):
+def features(audio_path, annot_beats=False):
     '''Feature-extraction for audio segmentation
     Arguments:
         audio_path -- str
@@ -192,7 +192,14 @@ def features(audio_path):
     
     print '\t[2/5] reading beats'
     # Get the beats
-    beats = np.asarray(est["beats"]["ticks"]).flatten()
+    if annot_beats:
+        try:
+            beats = []
+            beat_data = jam.beats[0].data[0]
+            for data in beat_data:
+                beats.append(data.time.value)
+    else:
+        beats = np.asarray(est["beats"]["ticks"]).flatten()
 
     # augment the beat boundaries with the starting point
     #B = np.unique(np.concatenate([ [0], beats]))
