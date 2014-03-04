@@ -88,11 +88,13 @@ def compute_beats(audio):
     """Computes the beats using Essentia."""
     logging.info("Computing Beats...")
     ticks, conf = ES.BeatTrackerMultiFeature()(audio)
+    #ticks, conf = ES.BeatTrackerMultiFeature()(audio)
     ticks *= 44100 / SAMPLE_RATE # Essentia requires 44100 input (-.-')
 
     # Double the beats if found beats are too little
     th = 0.9 # 1 would equal to at least 1 beat per second
-    while ticks.shape[0] / (audio.shape[0]/float(SAMPLE_RATE)) < th:
+    while ticks.shape[0] / (audio.shape[0]/float(SAMPLE_RATE)) < th and \
+            ticks.shape[0] > 2:
         ticks = double_beats(ticks)
     return ticks, conf
 
@@ -152,7 +154,7 @@ def compute_all_features(jam_file, audio_file, audio_beats):
 
     # Save output as json file
     out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
-                        "estimations", 
+                        "features", 
                         os.path.basename(audio_file)[:-4] + ".json")
     logging.info("Saving the JSON file in %s" % out_file)
     yaml = YamlOutput(filename=out_file, format='json')
@@ -194,7 +196,7 @@ def process(in_path, audio_beats=False):
         for jam_file, audio_file in zip(jam_files, audio_files):
             assert os.path.basename(audio_file)[:-4] == \
                 os.path.basename(jam_file)[:-5]
-            if os.path.basename(jam_file) >= "Isophonics_11_-_Tell_Me_What_You_See.jams":
+            if os.path.basename(jam_file) >= "SALAMI_724.jams":
                 compute_all_features(jam_file, audio_file, audio_beats)
 
 
