@@ -25,7 +25,6 @@ import librosa
 
 import jams
 
-SR          = 22050
 N_FFT       = 2048
 HOP_LENGTH  = 512
 HOP_BEATS   = 64
@@ -162,6 +161,13 @@ def features(audio_path):
 
         return compress_data(P, N_REP)
 
+    def ensure_size(X, size):
+        if X.shape[0] != size:
+            XX = np.zeros((size, size))
+            XX[:X.shape[0], :X.shape[1]] = X
+            X = XX
+        return X
+
 
     print '\t[1/5] loading annotations and features'
     ds_path = os.path.dirname(os.path.dirname(audio_path))
@@ -202,15 +208,15 @@ def features(audio_path):
     print '\t[3/5] generating MFCC'
     # Get the beat-sync MFCCs
     M = np.asarray(est["est_beatsync"]["mfcc"]).T
-    M += M.min()
-    M = M/M.max(axis=0)
-    plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
+    #plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
     
     print '\t[4/5] generating chroma'
     # Get the beat-sync chroma
     C = np.asarray(est["est_beatsync"]["hpcp"]).T
+    C += C.min() + 0.1
     C = C/C.max(axis=0)
-    plt.imshow(C, interpolation="nearest", aspect="auto"); plt.show()
+    C = 80*np.log10(C) # Normalize from -80 to 0
+    #plt.imshow(C, interpolation="nearest", aspect="auto"); plt.show()
     
     # Time-stamp features
     N = np.arange(float(len(beat_frames)))
@@ -218,15 +224,25 @@ def features(audio_path):
     # Beat-synchronous repetition features
     print '\t[5/5] generating structure features'
 
-
     R_timbre = repetition(librosa.segment.stack_memory(M))
     R_chroma = repetition(librosa.segment.stack_memory(C))
 
-    # plt.imshow(C, interpolation="nearest", aspect="auto")
-    # plt.show()
+    R_timbre += R_timbre.min()
+    R_timbre /= R_timbre.max()
+    R_chroma += R_chroma.min()
+    R_chroma /= R_chroma.max()
+    #print R_timbre.min(), R_chroma.min()
+    #plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
+
+    # Make sure that size is actually N_REP (could be less if song is too short)
+    #R_timbre = ensure_size(R_timbre, N_REP)
+    #R_chroma = ensure_size(R_chroma, N_REP)
 
     # Stack it all up
+    #print M.shape, C.shape, R_timbre.shape
     X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beat_frames)])
+
+    #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
 
     # Add on the end-of-track timestamp
     B = np.concatenate([B, [duration]])
@@ -346,9 +362,8 @@ if __name__ == '__main__':
 
     X, beats    = features(parameters['input_song'])
 
-    print X.shape
-    plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
-    sys.exit()
+    #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
+    #sys.exit()
     # Load the transformation
     W           = load_transform(parameters['transform'])
 

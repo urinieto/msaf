@@ -3,6 +3,8 @@
 import sys
 import argparse
 import numpy as np
+import glob
+import os
 
 import mir_eval
 import cPickle as pickle
@@ -50,6 +52,7 @@ def load_data(input_file):
 def score_model(model, x, b, t):
 
     # First, transform the data
+    print x, x.shape
     if model is not None:
         xt = model.dot(x)
     else:
@@ -62,6 +65,10 @@ def score_model(model, x, b, t):
     if len(boundary_beats) < 2 or len(t) < 2:
         return 0.0
 
+    # Uri fix
+    tt = [x[0] for x in t]
+    t = np.unique(tt)
+    print t
     boundary_times = mir_eval.util.adjust_events(b[boundary_beats], t_min=0.0, t_max=t[-1])[0]
 
     truth_intervals = mir_eval.util.boundaries_to_intervals(t)[0]
@@ -82,7 +89,12 @@ def fit_model(X, Y, B, T, n_jobs):
         O = OLDA.OLDA(sigma=sig)
         O.fit(X, Y)
 
-        scores = Parallel(n_jobs=n_jobs)( delayed(score_model)(O.components_, *z) for z in zip(X, B, T))
+        scores = []
+        files = glob.glob("/Users/uri/datasets/Segments/annotations/Isophonics_*.jams")
+        for f, z in zip(files, zip(X, B, T)):
+            print "Inside loop", os.path.basename(f)
+            scores.append(score_model(O.components_, *z))
+        #scores = Parallel(n_jobs=n_jobs)( delayed(score_model)(O.components_, *z) for z in zip(X, B, T))
 
         mean_score = np.mean(scores)
         print 'Sigma=%.2e, score=%.3f' % (sig, mean_score)
@@ -98,8 +110,12 @@ def fit_model(X, Y, B, T, n_jobs):
 if __name__ == '__main__':
     parameters = process_arguments()
 
+    print "Loading data from %s ..." % parameters["input_file"]
     X, Y, B, T = load_data(parameters['input_file'])[:4]
 
+    print len(X), len(Y), len(B), len(T)
+
+    print "Fitting model..."
     model = fit_model(X, Y, B, T, parameters['num_jobs'])
 
     np.save(parameters['output_file'], model)
