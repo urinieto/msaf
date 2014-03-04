@@ -202,10 +202,15 @@ def features(audio_path):
     print '\t[3/5] generating MFCC'
     # Get the beat-sync MFCCs
     M = np.asarray(est["est_beatsync"]["mfcc"]).T
+    M += M.min()
+    M = M/M.max(axis=0)
+    plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
     
     print '\t[4/5] generating chroma'
     # Get the beat-sync chroma
     C = np.asarray(est["est_beatsync"]["hpcp"]).T
+    C = C/C.max(axis=0)
+    plt.imshow(C, interpolation="nearest", aspect="auto"); plt.show()
     
     # Time-stamp features
     N = np.arange(float(len(beat_frames)))
@@ -341,8 +346,13 @@ if __name__ == '__main__':
 
     X, beats    = features(parameters['input_song'])
 
+    print X.shape
+    plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
+    sys.exit()
     # Load the transformation
     W           = load_transform(parameters['transform'])
+
+    print W.shape
     print '\tapplying transformation...'
     X           = W.dot(X)
 
