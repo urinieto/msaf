@@ -24,6 +24,8 @@ import pylab as plt
 
 import segmenter as S
 
+VERSION = "1.0"
+
 def create_estimation(times, t_path, annot_beats):
     """Creates a new estimation (dictionary)."""
     est = {}
@@ -31,6 +33,7 @@ def create_estimation(times, t_path, annot_beats):
     est["annot_beats"] = annot_beats
     est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
     est["data"] = list(times)
+    est["version"] = VERSION
     return est
 
 
@@ -101,18 +104,18 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
         logging.info("Segmenting %s" % audio_file)
 
         # Get audio features
-        # try:
-        X, beats = S.features(audio_file, annot_beats)
+        try:
+            X, beats = S.features(audio_file, annot_beats)
 
-        # Get segments
-        kmin, kmax  = S.get_num_segs(beats[-1])
-        segments    = S.get_segments(X, kmin=kmin, kmax=kmax)
-        times       = beats[segments]
-        # except:
-        #     # The audio file is too short, only beginning and end
-        #     logging.warning("Audio file too short! Only start and end boundaries.")
-        #     jam = jams.load(jam_file)
-        #     times = [0, jam.metadata.duration]
+            # Get segments
+            kmin, kmax  = S.get_num_segs(beats[-1])
+            segments    = S.get_segments(X, kmin=kmin, kmax=kmax)
+            times       = beats[segments]
+        except:
+            # The audio file is too short, only beginning and end
+            logging.warning("Audio file too short! Only start and end boundaries.")
+            jam = jams.load(jam_file)
+            times = [0, jam.metadata.duration]
 
         # Save segments
         out_file = os.path.join(in_path, "estimations", 
