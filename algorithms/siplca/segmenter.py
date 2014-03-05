@@ -86,32 +86,61 @@ import scipy as sp
 import scipy.io
 
 import plca
+import jams
+import json
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s %(name)s %(asctime)s '
                     '%(filename)s:%(lineno)d  %(message)s')
 logger = logging.getLogger('segmenter')
 
-try:
-    from mlabwrap import mlab
-    mlab.addpath('coversongs')
-except:
-    logger.warning('Unable to import mlab module.  Feature extraction '
-                   'and evaluation will not work.')
 
-
-def extract_features(wavfilename, fctr=400, fsd=1.0, type=1):
+def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False):
     """Computes beat-synchronous chroma features from the given wave file
 
     Calls Dan Ellis' chrombeatftrs Matlab function.
     """
     logger.info('Extracting beat-synchronous chroma features from %s',
                 wavfilename)
-    x,fs = mlab.wavread(wavfilename, nout=2)
-    feats,beats = mlab.chrombeatftrs(x.mean(1)[:,np.newaxis], fs, fctr, fsd,
-                                     type, nout=2)
-    songlen = x.shape[0] / fs
-    return feats, beats.flatten(), songlen
+    # x,fs = mlab.wavread(wavfilename, nout=2)
+    # feats,beats = mlab.chrombeatftrs(x.mean(1)[:,np.newaxis], fs, fctr, fsd,
+    #                                  type, nout=2)
+    # songlen = x.shape[0] / fs
+
+    # Dataset path
+    ds_path = os.path.dirname(os.path.dirname(wavfilename))
+
+    # Read annotations
+    annotation_path = os.path.join(ds_path, "annotations",
+        os.path.basename(wavfilename)[:-4]+".jams")
+    jam = jams.load(annotation_path)
+
+    # Read Estimations
+    features_path = os.path.join(ds_path, "features", 
+        os.path.basename(wavfilename)[:-4]+".json")
+    f = open(features_path, "r")
+    feats = json.load(f)
+
+    # Beat Synchronous Chroma
+    if annot_beats:
+        X = np.asarray(feats["ann_beatsync"]["hpcp"])
+        beats = []
+        beat_data = jam.beats[0].data
+        if beat_data == []: raise ValueError
+        for data in beat_data:
+            if data.label.value != -1:
+                beats.append(data.time.value)
+        beats = np.asarray(beats)
+    else:
+        X = np.asarray(feats["est_beatsync"]["hpcp"])
+        beats = np.asarray(feats["beats"]["ticks"])
+
+    # Duration
+    songlen = jam.metadata.duration
+
+    f.close()
+
+    return X.T, beats.flatten(), songlen
 
 def segment_song(seq, rank=4, win=32, seed=None,
                  nrep=1, minsegments=3, maxlowen=10, maxretries=5,
@@ -487,7 +516,7 @@ def segment_wavfile(wavfile, **kwargs):
 
     Returns a string containing list of segments in HTK label format.
     """
-    features, beattimes, songlen = extract_features(wavfile)
+    features, beattimes, songlen = extract_features(wavfile, annot_beats=kwargs["b"])
     labels, W, Z, H, segfun, norm = segment_song(features, **kwargs)
     segments = convert_labels_to_segments(labels, beattimes, songlen)
     return segments
@@ -509,6 +538,9 @@ def _parse_args(args):
         else:
             kwargs[key[1:]] = eval(value)
 
+    if "b" not in kwargs:
+        kwargs["b"] = False
+ 
     return inputfilename, outputfilename, kwargs
 
 def _die_with_usage():
