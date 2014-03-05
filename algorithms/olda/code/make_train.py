@@ -15,7 +15,7 @@ import librosa
 
 from segmenter import features
 
-def align_segmentation(filename, beat_times, ds_name):
+def align_segmentation(filename, beat_times):
     '''Load a ground-truth segmentation, and align times to the nearest detected beats
     
     Arguments:
@@ -43,7 +43,7 @@ def align_segmentation(filename, beat_times, ds_name):
     
     segment_times, segment_labels = mir_eval.io.load_jams_range(filename, 
                     "sections", annotator=0, converter=None, 
-                    label_prefix='__', context=context_dict[ds_name])
+                    label_prefix='__', context="function")
 
     # Map to intervals, clip the last label marker
     segment_intervals = np.asarray(zip(segment_times[:-1], segment_times[1:]))
@@ -81,67 +81,70 @@ def get_annotation(song, rootpath):
     return '%s/annotations/%s.jams' % (rootpath, os.path.basename(song)[:-4])
 
 
-def import_data(song, rootpath, output_path, ds_name, annot_beats):
-        data_file = '%s/features/%s.pickle' % (output_path, os.path.splitext(os.path.basename(song))[0])
+def import_data(song, rootpath, output_path, annot_beats):
+    data_file = '%s/features/%s_annotbeatsE%d.pickle' % (output_path, 
+                    os.path.splitext(os.path.basename(song))[0], 
+                    annot_beats)
 
-        if os.path.exists(data_file):
-            with open(data_file, 'r') as f:
-                Data = pickle.load(f)
-                print song, 'cached!'
-        else:
-            #try:
-            X, B     = features(song, annot_beats)
-            print X.shape
-            Y, T, L  = align_segmentation(get_annotation(song, rootpath), B,
-                            ds_name)
-            
-            Data = {'features': X, 
-                    'beats': B, 
-                    'filename': song, 
-                    'segment_times': T,
-                    'segment_labels': L,
-                    'segments': Y}
-            print song, 'processed!'
-    
-            with open(data_file, 'w') as f:
-                pickle.dump( Data, f )
-            #except Exception as e:
-            #    print song, 'failed!'
-            #    print e
-            #    Data = None
-
-        return Data
-
-
-def make_dataset(n=None, n_jobs=1, ds_name='', rootpath='', output_path='',
-        annot_beats=False):
-    
-    if annot_beats:
-        # We don't care about prefix, only those which have annot beats
-        audio_files = glob.glob('%s/audio/*.[wm][ap][v3]' % (rootpath))
+    if os.path.exists(data_file):
+        with open(data_file, 'r') as f:
+            Data = pickle.load(f)
+            print song, 'cached!'
     else:
-        audio_files = glob.glob('%s/audio/%s_*.[wm][ap][v3]' % (rootpath, 
-                                                                ds_name))
+        #try:
+        X, B     = features(song, annot_beats)
+        if X is None:
+            return X
+
+        Y, T, L  = align_segmentation(get_annotation(song, rootpath), B,
+                        os.path.basename(song).split("_")[0])
+        
+        Data = {'features': X, 
+                'beats': B, 
+                'filename': song, 
+                'segment_times': T,
+                'segment_labels': L,
+                'segments': Y}
+        print song, 'processed!'
+
+        with open(data_file, 'w') as f:
+            pickle.dump( Data, f )
+        #except Exception as e:
+        #    print song, 'failed!'
+        #    print e
+        #    Data = None
+
+    return Data
+
+
+def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
+                 annot_beats=False):
+    
+    # We don't care about prefix, only those which have annot beats
+    audio_files = glob.glob('%s/audio/Isophonics_*.[wm][ap][v3]' % (rootpath))
 
     if n is None:
         n = len(audio_files)
 
     data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song, 
-            rootpath, output_path, ds_name, annot_beats) \
+            rootpath, output_path, annot_beats) \
             for song in audio_files[:n])
     
     X, Y, B, T, F, L = [], [], [], [], [], []
+    k = 0
     for d in data:
         if d is None:
             continue
         if d['features'].shape[0] != 93:
             continue
+        if k >= 500: break
         X.append(d['features'])
         Y.append(d['segments'])
         B.append(d['beats'])
         T.append(d['segment_times'])
         F.append(d['filename'])
         L.append(d['segment_labels'])
+        k += 1
     
     return X, Y, B, T, F, L
 
@@ -157,9 +160,6 @@ if __name__ == '__main__':
     parser.add_argument("output_path",
                         action="store",
                         help="Output dir to store the features")
-    parser.add_argument("ds_name",
-                        action="store",
-                        help="Dataset name to use (e.g. Isophonics, SALAMI)")
     parser.add_argument("-n", 
                         action="store", 
                         dest="n",
@@ -175,7 +175,6 @@ if __name__ == '__main__':
     parser.add_argument("-b", 
                         action="store_true", 
                         dest="annot_beats",
-                        type=bool,
                         help="Use annotated beats",
                         default=False)
     args = parser.parse_args()
@@ -184,9 +183,12 @@ if __name__ == '__main__':
     output_path = sys.argv[2]
     X, Y, B, T, F, L = make_dataset(n=args.n,
                             n_jobs=args.n_jobs,
-                            ds_name=args.ds_name,
                             rootpath=args.ds_path, 
                             output_path=args.output_path,
                             annot_beats=args.annot_beats)
-    with open('%s/%s_data.pickle' % (output_path, args.ds_name), 'w') as f:
+    if args.annot_beats:
+        out_path = '%s/AnnotBeats_data.pickle' % (output_path)
+    else:
+        out_path = '%s/EstBeats_data.pickle' % (output_path)
+    with open( out_path, 'w') as f:
         pickle.dump( (X, Y, B, T, F, L), f)

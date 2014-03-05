@@ -13,6 +13,7 @@ from joblib import Parallel, delayed
 
 import OLDA
 import segmenter
+import jams
 
 def process_arguments():
     parser = argparse.ArgumentParser(description='OLDA fit for music segmentation')
@@ -33,6 +34,11 @@ def process_arguments():
                             required=   False,
                             default =   '4',
                             help    =   'Number of parallel jobs')
+    parser.add_argument(    "-b", 
+                            action  =   "store_true", 
+                            dest    =   "annot_beats",
+                            help    =   "Use annotated beats",
+                            default =   False)
 
     return vars(parser.parse_args(sys.argv[1:]))
 
@@ -68,7 +74,6 @@ def score_model(model, x, b, t):
     # Uri fix
     tt = [x[0] for x in t]
     t = np.unique(tt)
-    print t
     boundary_times = mir_eval.util.adjust_events(b[boundary_beats], t_min=0.0, t_max=t[-1])[0]
 
     truth_intervals = mir_eval.util.boundaries_to_intervals(t)[0]
@@ -77,7 +82,7 @@ def score_model(model, x, b, t):
 
     return score
 
-def fit_model(X, Y, B, T, n_jobs):
+def fit_model(X, Y, B, T, n_jobs, annot_beats):
 
     SIGMA = 10**np.arange(0, 10)
 
@@ -90,9 +95,14 @@ def fit_model(X, Y, B, T, n_jobs):
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("/Users/uri/datasets/Segments/annotations/Isophonics_*.jams")
+        files = glob.glob("/Users/uri/datasets/Segments/annotations/*.jams")
         for f, z in zip(files, zip(X, B, T)):
-            print "Inside loop", os.path.basename(f)
+            if annot_beats:
+                jam = jams.load(f)
+                if jam.beats == []:
+                    continue
+                if jam.beats[0].data == []:
+                    continue    
             scores.append(score_model(O.components_, *z))
         #scores = Parallel(n_jobs=n_jobs)( delayed(score_model)(O.components_, *z) for z in zip(X, B, T))
 
@@ -116,6 +126,7 @@ if __name__ == '__main__':
     print len(X), len(Y), len(B), len(T)
 
     print "Fitting model..."
-    model = fit_model(X, Y, B, T, parameters['num_jobs'])
+    model = fit_model(X, Y, B, T, parameters['num_jobs'], 
+                parameters['annot_beats'])
 
     np.save(parameters['output_file'], model)
