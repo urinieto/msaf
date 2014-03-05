@@ -112,7 +112,7 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                     if est["annot_beats"] == annot_beats:
                         found = True
                         res["boundaries"][alg_name][i] = \
-                            create_estimation(times, t_path, annot_beats)
+                            create_estimation(times, annot_beats, **params)
                         break
                 if not found:
                     res["boundaries"][alg_name].append(create_estimation(times, 
@@ -134,12 +134,6 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
         res["boundaries"][alg_name] = []
         res["boundaries"][alg_name].append(create_estimation(times,
                                             annot_beats, **params))
-
-    for key, car in res.items():
-        print(key)
-        for attribute, value in car.items():
-            print('{} : {}'.format(attribute, value))
-
 
     # Save dictionary to disk
     f = open(out_file, "w")
