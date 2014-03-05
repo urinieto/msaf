@@ -169,7 +169,7 @@ def features(audio_path, annot_beats=False):
         return X
 
 
-    print '\t[1/5] loading annotations and features'
+    print '\t[1/5] loading annotations and features of ', audio_path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
     annotation_path = os.path.join(ds_path, "annotations", 
         os.path.basename(audio_path)[:-4]+".jams")
@@ -189,17 +189,25 @@ def features(audio_path, annot_beats=False):
     # Duration
     duration = jam.metadata.duration
 
-    
     print '\t[2/5] reading beats'
     # Get the beats
     if annot_beats:
         try:
             beats = []
-            beat_data = jam.beats[0].data[0]
+            beat_data = jam.beats[0].data
+            if beat_data == []: raise ValueError
             for data in beat_data:
-                beats.append(data.time.value)
+                if data.label.value != -1:
+                    beats.append(data.time.value)
+            beats = np.asarray(beats)
+            beatsync_key = "ann_beatsync"
+        except:
+            # This track doesn't have annotated beats!
+            print "Warning: Beat annotations not found in ", annotation_path
+            return None, []
     else:
         beats = np.asarray(est["beats"]["ticks"]).flatten()
+        beatsync_key = "est_beatsync"
 
     # augment the beat boundaries with the starting point
     #B = np.unique(np.concatenate([ [0], beats]))
@@ -207,19 +215,21 @@ def features(audio_path, annot_beats=False):
 
     #B = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_BEATS)
 
-    beat_frames = np.unique(librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH))
+    #beat_frames2, uidx = np.unique(librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH), return_index=True)
+    beat_frames = librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH)
+    #print beat_frames, len(beat_frames), uidx
 
     # Stash beat times aligned to the longer hop lengths
     #B = librosa.frames_to_time(beat_frames, sr=sr, hop_length=HOP_LENGTH)
 
     print '\t[3/5] generating MFCC'
     # Get the beat-sync MFCCs
-    M = np.asarray(est["est_beatsync"]["mfcc"]).T
+    M = np.asarray(est[beatsync_key]["mfcc"]).T
     #plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
     
     print '\t[4/5] generating chroma'
     # Get the beat-sync chroma
-    C = np.asarray(est["est_beatsync"]["hpcp"]).T
+    C = np.asarray(est[beatsync_key]["hpcp"]).T
     C += C.min() + 0.1
     C = C/C.max(axis=0)
     C = 80*np.log10(C) # Normalize from -80 to 0
@@ -246,7 +256,6 @@ def features(audio_path, annot_beats=False):
     #R_chroma = ensure_size(R_chroma, N_REP)
 
     # Stack it all up
-    #print M.shape, C.shape, R_timbre.shape
     X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beat_frames)])
 
     #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()

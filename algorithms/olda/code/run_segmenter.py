@@ -24,17 +24,17 @@ import pylab as plt
 
 import segmenter as S
 
-def create_estimation(times, t_path):
+def create_estimation(times, t_path, annot_beats):
     """Creates a new estimation (dictionary)."""
     est = {}
     est["transform"] = t_path
-    est["annot_beats"] = False
+    est["annot_beats"] = annot_beats
     est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
     est["data"] = list(times)
     return est
 
 
-def save_segments(out_file, times, t_path):
+def save_segments(out_file, times, t_path, annot_beats):
     """Saves the segment times in the out_file using a JSON format. If file
         exists, update with new annotation."""
     if os.path.isfile(out_file):
@@ -47,36 +47,37 @@ def save_segments(out_file, times, t_path):
             if "olda" in res["boundaries"]:
                 found = False
                 for i, est in enumerate(res["boundaries"]["olda"]):
-                    if est["transform"] == t_path and not est["annot_beats"]:
+                    if est["transform"] == t_path and \
+                            est["annot_beats"] == annot_beats:
                         found = True
                         res["boundaries"]["olda"][i] = \
-                            create_estimation(times, t_path)
+                            create_estimation(times, t_path, annot_beats)
                         break
                 if not found:
                     res["boundaries"]["olda"].append(create_estimation(times, 
-                                                                       t_path))
+                                                        t_path, annot_beats))
 
         else:
             res["boundaries"] = {}
             res["boundaries"]["olda"] = []
-            res["boundaries"]["olda"].append(create_estimation(times, t_path))
+            res["boundaries"]["olda"].append(create_estimation(times, t_path,
+                                                annot_beats))
         f.close()
     else:
         # Create new estimation
         res = {}
         res["boundaries"] = {}
         res["boundaries"]["olda"] = []
-        res["boundaries"]["olda"].append(create_estimation(times, t_path))
+        res["boundaries"]["olda"].append(create_estimation(times, t_path,
+                                            annot_beats))
 
     # Save dictionary to disk
     f = open(out_file, "w")
     json.dump(res, f, indent=2)
     f.close()
 
-    pass
 
-
-def process(in_path, t_path, ds_prefix="SALAMI"):
+def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
     """Main process."""
     W = S.load_transform(t_path)
 
@@ -89,26 +90,34 @@ def process(in_path, t_path, ds_prefix="SALAMI"):
         assert os.path.basename(audio_file)[:-4] == \
             os.path.basename(jam_file)[:-5]
 
+        # Only analize files with annotated beats
+        if annot_beats:
+            jam = jams.load(jam_file)
+            if jam.beats == []:
+                continue
+            if jam.beats[0].data == []:
+                continue   
+
         logging.info("Segmenting %s" % audio_file)
 
         # Get audio features
-        try:
-            X, beats = S.features(audio_file)
+        # try:
+        X, beats = S.features(audio_file, annot_beats)
 
-            # Get segments
-            kmin, kmax  = S.get_num_segs(beats[-1])
-            segments    = S.get_segments(X, kmin=kmin, kmax=kmax)
-            times       = beats[segments]
-        except:
-            # The audio file is too short, only beginning and end
-            logging.warning("Audio file too short! Only start and end boundaries.")
-            jam = jams.load(jam_file)
-            times = [0, jam.metadata.duration]
+        # Get segments
+        kmin, kmax  = S.get_num_segs(beats[-1])
+        segments    = S.get_segments(X, kmin=kmin, kmax=kmax)
+        times       = beats[segments]
+        # except:
+        #     # The audio file is too short, only beginning and end
+        #     logging.warning("Audio file too short! Only start and end boundaries.")
+        #     jam = jams.load(jam_file)
+        #     times = [0, jam.metadata.duration]
 
         # Save segments
         out_file = os.path.join(in_path, "estimations", 
             os.path.basename(jam_file).replace(".jams", ".json"))
-        save_segments(out_file, times, t_path)
+        save_segments(out_file, times, t_path, annot_beats)
 
 
 
@@ -130,6 +139,11 @@ def main():
                         help="Prefix to the dataset to be computed "\
                             "(e.g. SALAMI, Isophonics)",
                         default="*")
+    parser.add_argument("-b", 
+                        action="store_true", 
+                        dest="annot_beats",
+                        help="Use annotated beats",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
     
@@ -138,7 +152,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.t_path, ds_prefix=args.ds_prefix)
+    process(args.in_path, args.t_path, ds_prefix=args.ds_prefix, 
+            annot_beats=args.annot_beats)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
