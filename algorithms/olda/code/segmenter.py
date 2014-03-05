@@ -173,14 +173,14 @@ def features(audio_path, annot_beats=False):
     ds_path = os.path.dirname(os.path.dirname(audio_path))
     annotation_path = os.path.join(ds_path, "annotations", 
         os.path.basename(audio_path)[:-4]+".jams")
-    estimation_path = os.path.join(ds_path, "features", 
+    features_path = os.path.join(ds_path, "features", 
         os.path.basename(audio_path)[:-4]+".json")
 
     # Read annotations
     jam = jams.load(annotation_path)
 
     # Read features
-    f = open(estimation_path, "r")
+    f = open(features_path, "r")
     est = json.load(f)
     
     # Sampling Rate
