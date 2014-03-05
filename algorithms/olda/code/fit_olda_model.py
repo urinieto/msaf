@@ -18,6 +18,10 @@ import jams
 def process_arguments():
     parser = argparse.ArgumentParser(description='OLDA fit for music segmentation')
 
+    parser.add_argument("ds_path",
+                        action="store",
+                        help="Input dataset")
+
     parser.add_argument(    'input_file',
                             action  =   'store',
                             help    =   'path to training data (from make_*_train.py)')
@@ -58,7 +62,6 @@ def load_data(input_file):
 def score_model(model, x, b, t):
 
     # First, transform the data
-    print x, x.shape
     if model is not None:
         xt = model.dot(x)
     else:
@@ -82,7 +85,7 @@ def score_model(model, x, b, t):
 
     return score
 
-def fit_model(X, Y, B, T, n_jobs, annot_beats):
+def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
 
     SIGMA = 10**np.arange(0, 10)
 
@@ -95,14 +98,15 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats):
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("/Users/uri/datasets/Segments/annotations/*.jams")
+        files = glob.glob("%s/annotations/Isophonics_*.jams" % ds_path)
         for f, z in zip(files, zip(X, B, T)):
             if annot_beats:
                 jam = jams.load(f)
                 if jam.beats == []:
                     continue
                 if jam.beats[0].data == []:
-                    continue    
+                    continue   
+            print "\t\tProcessing ", f 
             scores.append(score_model(O.components_, *z))
         #scores = Parallel(n_jobs=n_jobs)( delayed(score_model)(O.components_, *z) for z in zip(X, B, T))
 
@@ -127,6 +131,6 @@ if __name__ == '__main__':
 
     print "Fitting model..."
     model = fit_model(X, Y, B, T, parameters['num_jobs'], 
-                parameters['annot_beats'])
+                parameters['annot_beats'], parameters["ds_path"])
 
     np.save(parameters['output_file'], model)
