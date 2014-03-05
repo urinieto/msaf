@@ -237,7 +237,7 @@ def features(audio_path, annot_beats=False):
     
     # Time-stamp features
     N = np.arange(float(len(beat_frames)))
-    
+
     # Beat-synchronous repetition features
     print '\t[5/5] generating structure features'
 
