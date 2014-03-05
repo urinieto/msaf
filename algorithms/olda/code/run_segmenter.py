@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
 '''Runs the OLDA segmenter across the Segmentation dataset
 
 If run as a program, usage is:
@@ -8,6 +7,11 @@ If run as a program, usage is:
 
 '''
 
+__author__ = "Oriol Nieto"
+__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
+__license__ = "GPL"
+__version__ = "1.0"
+__email__ = "oriol@nyu.edu"
 
 import sys
 import glob

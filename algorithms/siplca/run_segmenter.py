@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
 '''Runs the SIPLCA segmenter across the Segmentation dataset
-
-If run as a program, usage is:
-
-    ./run_segmenter.py dataset_dir/ transform.npy
 
 '''
 
+__author__ = "Oriol Nieto"
+__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
+__license__ = "GPL"
+__version__ = "1.0"
+__email__ = "oriol@nyu.edu"
 
 import sys
 import glob
@@ -24,67 +24,17 @@ import pylab as plt
 
 import segmenter as S
 
-def create_estimation(times, t_path, annot_beats):
-    """Creates a new estimation (dictionary)."""
-    est = {}
-    est["transform"] = t_path
-    est["annot_beats"] = annot_beats
-    est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-    est["data"] = list(times)
-    return est
+import sys
+sys.path.append( "../../" )
+import msaf_io as MSAF
 
 
-def save_segments(out_file, times, t_path, annot_beats):
-    """Saves the segment times in the out_file using a JSON format. If file
-        exists, update with new annotation."""
-    if os.path.isfile(out_file):
-        # Add estimation
-        f = open(out_file, "r")
-        res = json.load(f)
-
-        # Check if estimation already exists
-        if "boundaries" in res.keys():
-            if "olda" in res["boundaries"]:
-                found = False
-                for i, est in enumerate(res["boundaries"]["olda"]):
-                    if est["transform"] == t_path and \
-                            est["annot_beats"] == annot_beats:
-                        found = True
-                        res["boundaries"]["olda"][i] = \
-                            create_estimation(times, t_path, annot_beats)
-                        break
-                if not found:
-                    res["boundaries"]["olda"].append(create_estimation(times, 
-                                                        t_path, annot_beats))
-
-        else:
-            res["boundaries"] = {}
-            res["boundaries"]["olda"] = []
-            res["boundaries"]["olda"].append(create_estimation(times, t_path,
-                                                annot_beats))
-        f.close()
-    else:
-        # Create new estimation
-        res = {}
-        res["boundaries"] = {}
-        res["boundaries"]["olda"] = []
-        res["boundaries"]["olda"].append(create_estimation(times, t_path,
-                                            annot_beats))
-
-    # Save dictionary to disk
-    f = open(out_file, "w")
-    json.dump(res, f, indent=2)
-    f.close()
-
-
-def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
+def process(in_path, annot_beats=False):
     """Main process."""
-    W = S.load_transform(t_path)
 
-    jam_files = glob.glob(os.path.join(in_path, "annotations", 
-                            "%s_*.jams" % ds_prefix))
-    audio_files = glob.glob(os.path.join(in_path, "audio", 
-                            "%s_*.[wm][ap][v3]" % ds_prefix))
+    # Get relevant files
+    jam_files = glob.glob(os.path.join(in_path, "annotations", "*.jams"))
+    audio_files = glob.glob(os.path.join(in_path, "audio", "*.[wm][ap][v3]"))
 
     for jam_file, audio_file in zip(jam_files, audio_files):
         assert os.path.basename(audio_file)[:-4] == \
@@ -100,24 +50,33 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
 
         logging.info("Segmenting %s" % audio_file)
 
-        # Get audio features
-        # try:
-        X, beats = S.features(audio_file, annot_beats)
+        # SI-PLCA Params (From MIREX)
+        params = {
+            "niter"             :   200, 
+            "rank"              :   15, 
+            "win"               :   60,  
+            "alphaZ"            :   -0.01, 
+            "normalize_frames"  :   True, 
+            "viterbi_segmenter" :   True
+        }
+        segments, beattimes, labels = S.segment_wavfile(audio_file, 
+                                                b=annot_beats, **params)
 
-        # Get segments
-        kmin, kmax  = S.get_num_segs(beats[-1])
-        segments    = S.get_segments(X, kmin=kmin, kmax=kmax)
-        times       = beats[segments]
-        # except:
-        #     # The audio file is too short, only beginning and end
-        #     logging.warning("Audio file too short! Only start and end boundaries.")
-        #     jam = jams.load(jam_file)
-        #     times = [0, jam.metadata.duration]
+        # Convert segments to times
+        lines = segments.split("\n")[:-1]
+        times = []
+        for line in lines:
+            time = float(line.strip("\n").split("\t")[0])
+            times.append(time)
+        # Add last one
+        times.append(float(lines[-1].strip("\n").split("\t")[1]))
+        times = np.unique(times)
 
         # Save segments
         out_file = os.path.join(in_path, "estimations", 
             os.path.basename(jam_file).replace(".jams", ".json"))
-        save_segments(out_file, times, t_path, annot_beats)
+        MSAF.save_boundaries(out_file, times, annot_beats, "siplca",
+            version="1.0", **params)
 
 
 def main():
@@ -142,7 +101,7 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.t_path, annot_beats=args.annot_beats)
+    process(args.in_path, annot_beats=args.annot_beats)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
