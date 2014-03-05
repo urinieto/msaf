@@ -21,7 +21,6 @@ def align_segmentation(filename, beat_times):
     Arguments:
         filename -- str
         beat_times -- array
-        ds_name -- str
 
     Returns:
         segment_beats -- array
@@ -96,8 +95,7 @@ def import_data(song, rootpath, output_path, annot_beats):
         if X is None:
             return X
 
-        Y, T, L  = align_segmentation(get_annotation(song, rootpath), B,
-                        os.path.basename(song).split("_")[0])
+        Y, T, L  = align_segmentation(get_annotation(song, rootpath), B)
         
         Data = {'features': X, 
                 'beats': B, 
@@ -131,20 +129,17 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
             for song in audio_files[:n])
     
     X, Y, B, T, F, L = [], [], [], [], [], []
-    k = 0
     for d in data:
         if d is None:
             continue
         if d['features'].shape[0] != 93:
             continue
-        if k >= 500: break
         X.append(d['features'])
         Y.append(d['segments'])
         B.append(d['beats'])
         T.append(d['segment_times'])
         F.append(d['filename'])
         L.append(d['segment_labels'])
-        k += 1
     
     return X, Y, B, T, F, L
 
