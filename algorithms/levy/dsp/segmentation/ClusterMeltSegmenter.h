@@ -37,7 +37,7 @@ public:
         windowSize(0.6),
         fmin(62),
         fmax(16000), 
-        nbins(8),
+        nbins(12),
         ncomponents(20),
  	nHMMStates(40),
         nclusters(10),
