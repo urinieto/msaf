@@ -123,9 +123,12 @@ def compute_all_features(jam_file, audio_file, audio_beats):
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
     audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
+    #audio = ES.MonoLoader(filename=audio_file, sampleRate=44100)()
+    #print len(audio)/44100.
 
     # Estimate Beats
     ticks, conf = compute_beats(audio)
+    print ticks[0], ticks[-1], len(audio)/float(SAMPLE_RATE)
 
     # Compute Beat-sync features
     mfcc, hpcp = compute_beatsync_features(ticks, audio)
@@ -140,6 +143,8 @@ def compute_all_features(jam_file, audio_file, audio_beats):
 
     # Load Annotations
     jam = jams.load(jam_file)
+
+    print jam.metadata.duration, ticks[0], ticks[-1], len(audio)/float(SAMPLE_RATE)
 
     # If beat annotations, compute also annotated beatsynchronous features
     if jam.beats != []:

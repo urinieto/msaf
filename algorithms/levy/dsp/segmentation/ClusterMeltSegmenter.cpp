@@ -51,7 +51,7 @@ void ClusterMeltSegmenter::initialise(int fs)
 
     if (featureType == FEATURE_TYPE_CONSTQ ||
         featureType == FEATURE_TYPE_CHROMA) {
-        
+
         // run internal processing at 11025 or thereabouts
         int internalRate = 11025;
         int decimationFactor = samplerate / internalRate;
@@ -317,7 +317,7 @@ void ClusterMeltSegmenter::segment(int m)
 void ClusterMeltSegmenter::setFeatures(const vector<vector<double> >& f)
 {
     features = f;
-    featureType = FEATURE_TYPE_UNKNOWN;
+    // featureType = FEATURE_TYPE_UNKNOWN;
 }
 
 void ClusterMeltSegmenter::segment()
@@ -352,12 +352,14 @@ void ClusterMeltSegmenter::segment()
     q = new int[features.size()];
 	
     if (featureType == FEATURE_TYPE_UNKNOWN ||
-        featureType == FEATURE_TYPE_MFCC)
+        featureType == FEATURE_TYPE_MFCC) {
         cluster_segment(q, arrFeatures, features.size(), features[0].size(), nHMMStates, histogramLength, 
                         nclusters, neighbourhoodLimit);
-    else
+    }
+    else {
         constq_segment(q, arrFeatures, features.size(), nbins, ncoeff, featureType, 
                        nHMMStates, histogramLength, nclusters, neighbourhoodLimit);
+    }
 	
     // convert the cluster assignment sequence to a segmentation
     makeSegmentation(q, features.size());		
@@ -386,13 +388,15 @@ void ClusterMeltSegmenter::makeSegmentation(int* q, int len)
     {
         if (q[i] != q[i-1])
         {
-            segment.end = i * getHopsize();
+            // segment.end = i * getHopsize();
+            segment.end = i;
             segmentation.segments.push_back(segment);
             segment.type = q[i];
             segment.start = segment.end;
         }
     }
-    segment.end = len * getHopsize();
+    // segment.end = len * getHopsize();
+    segment.end = len-1;
     segmentation.segments.push_back(segment);
 }
 
