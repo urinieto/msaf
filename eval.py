@@ -10,32 +10,94 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
-import essentia
-import essentia.standard as ES
-from essentia.standard import YamlOutput
 import glob
-import jams
+import json
 import logging
 import os
 import pylab as plt
 import numpy as np
 import time
+import sys
+
 import utils
+import mir_eval
+import jams
 
 
-def process(in_path, annot_beats=False):
+def read_boundaries(est_file, alg_id, annot_beats):
+    """Reads the boundaries from an estimated file."""
+    f = open(est_file, "r")
+    est_data = json.load(f)
+
+    if alg_id not in est_data["boundaries"]:
+        logging.error("Estimation not found for algorithm %s in %s" % \
+                                                        (est_file, alg_id))
+        return []
+
+    bounds = []
+    for alg in est_data["boundaries"][alg_id]:
+        if alg["annot_beats"] == annot_beats:
+            bounds = np.array(alg["data"])
+            break
+
+    f.close()
+
+    return bounds
+
+def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
     """Main process."""
 
     # Get files
-    jam_files = glob.glob(os.path.join(in_path, "annotations", "*.jams"))
-    audio_files = glob.glob(os.path.join(in_path, "audio", 
-                                                "*.[wm][ap][v3]"))
+    jam_files = glob.glob(os.path.join(in_path, "annotations", 
+                                            "%s_*.jams" % ds_name))
+    est_files = glob.glob(os.path.join(in_path, "estimations", 
+                                            "%s_*.json" % ds_name))
+
+    prefix_dict = {
+        "Cerulean"      : "large_scale",
+        "Epiphyte"      : "function",
+        "Isophonics"    : "function",
+        "SALAMI"        : "small_scale"
+    }
+
+    logging.info("Evaluating %d tracks..." % len(jam_files))
 
     # Compute features for each file
-    for jam_file, audio_file in zip(jam_files, audio_files):
-        assert os.path.basename(audio_file)[:-4] == \
+    PRF = []  # Results: Precision, Recall, F-measure
+    for jam_file, est_file in zip(jam_files, est_files):
+        assert os.path.basename(est_file)[:-5] == \
             os.path.basename(jam_file)[:-5]
-        #TODO
+
+        ds_prefix = os.path.basename(est_file).split("_")[0]
+        try:
+            ann_times, ann_labels = mir_eval.input_output.load_jams_range(jam_file, 
+                                        "sections", context=prefix_dict[ds_prefix])
+        except:
+            logging.warning("No annotations for file: %s" % jam_file)
+            continue
+
+        # jam = jams.load(jam_file)
+        # if jam.metadata.artist != "The Beatles":
+        #     continue
+
+        # if ann_times[0][0] != 0:
+        #     ann_times.insert(0, 0)
+
+        est_times = read_boundaries(est_file, ald_id, annot_beats)
+        if est_times == []: continue
+
+        if est_times[0] != 0:
+            est_times = np.concatenate(([0], est_times))
+
+        #print ann_times, est_times, jam_file
+
+        P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
+                                                            window=win)
+        PRF.append([P,R,F])
+
+    PRF = np.asarray(PRF)
+    res = 100*PRF.mean(axis=0)
+    logging.info("F: %.2f, P: %.2f, R: %.2f" % (res[2], res[0], res[1]))
 
 
 def main():
@@ -45,12 +107,27 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
-                        help="Input dataset dir or audio file")
+                        help="Input dataset")
+    parser.add_argument("alg_id",
+                        action="store",
+                        help="Algorithm identifier (e.g. olda, siplca)")
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "\
+                            "(e.g. Isophonics, SALAMI")
     parser.add_argument("-b", 
                         action="store_true", 
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-s",
+                        action="store",
+                        dest="win",
+                        default=3,
+                        type=float,
+                        help="Time window in seconds")
     args = parser.parse_args()
     start_time = time.time()
    
@@ -59,7 +136,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.annot_beats)
+    process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
+                    args.win)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
