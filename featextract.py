@@ -87,8 +87,9 @@ def double_beats(ticks):
 def compute_beats(audio):
     """Computes the beats using Essentia."""
     logging.info("Computing Beats...")
+    conf = 1.0
     ticks, conf = ES.BeatTrackerMultiFeature()(audio)
-    #ticks, conf = ES.BeatTrackerMultiFeature()(audio)
+    # ticks = ES.BeatTrackerDegara()(audio)
     ticks *= 44100 / SAMPLE_RATE # Essentia requires 44100 input (-.-')
 
     # Double the beats if found beats are too little
@@ -102,7 +103,7 @@ def compute_beats(audio):
 def compute_beatsync_features(ticks, audio):
     """Computes the HPCP and MFCC beat-synchronous features given a set
         of beats (ticks)."""
-    MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.MFCC(), 
+    MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.MFCC(numberCoefficients=14), 
         ticks, SAMPLE_RATE)
     HPCP = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.HPCP(), 
         ticks, SAMPLE_RATE)
@@ -123,12 +124,11 @@ def compute_all_features(jam_file, audio_file, audio_beats):
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
     audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
-    #audio = ES.MonoLoader(filename=audio_file, sampleRate=44100)()
-    #print len(audio)/44100.
 
     # Estimate Beats
     ticks, conf = compute_beats(audio)
-    print ticks[0], ticks[-1], len(audio)/float(SAMPLE_RATE)
+    ticks = np.concatenate(([0], ticks)) # Add first time
+    ticks = essentia.array(np.unique(ticks))
 
     # Compute Beat-sync features
     mfcc, hpcp = compute_beatsync_features(ticks, audio)
@@ -141,10 +141,24 @@ def compute_all_features(jam_file, audio_file, audio_beats):
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
 
+    #plt.imshow(mfcc.T, interpolation="nearest", aspect="auto"); plt.show()
+
     # Load Annotations
     jam = jams.load(jam_file)
 
-    print jam.metadata.duration, ticks[0], ticks[-1], len(audio)/float(SAMPLE_RATE)
+    if audio_beats:
+        logging.info("Saving Boundaries as an audio file")
+        bounds = []
+        for data in jam.sections[0].data:
+            bounds.append(data.start.value)
+            bounds.append(data.end.value)
+        bounds = essentia.array(np.unique(bounds))
+        marker = ES.AudioOnsetsMarker(onsets=bounds, type='beep', 
+                                      sampleRate=SAMPLE_RATE)
+        marked_audio = marker(audio)
+        ES.MonoWriter(filename='bounds.wav', sampleRate=SAMPLE_RATE)(marked_audio)
+
+    #print jam.metadata.duration, ticks[0], ticks[-1], len(audio)/float(SAMPLE_RATE), ticks.shape, mfcc.shape
 
     # If beat annotations, compute also annotated beatsynchronous features
     if jam.beats != []:
@@ -152,10 +166,17 @@ def compute_all_features(jam_file, audio_file, audio_beats):
         annot = jam.beats[0]
         annot_ticks = []
         for data in annot.data:
-            if data.label.value != -1:
-                annot_ticks.append(data.time.value)
+            annot_ticks.append(data.time.value)
         annot_ticks = essentia.array(annot_ticks)
         annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks, audio)
+
+        if audio_beats:
+            logging.info("Saving Beats as an audio file")
+            marker = ES.AudioOnsetsMarker(onsets=annot_ticks, type='beep', 
+                                          sampleRate=SAMPLE_RATE)
+            marked_audio = marker(audio)
+            ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
+            
 
     # Save output as json file
     out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
