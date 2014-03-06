@@ -1,0 +1,6 @@
+
+CFLAGS := -DNDEBUG -O3 -fno-exceptions -fPIC -ffast-math -msse -mfpmath=sse -ftree-vectorize -fomit-frame-pointer -DUSE_PTHREADS -Ibuild/linux/amd64
+CXXFLAGS := $(CFLAGS)
+
+include build/general/Makefile.inc
+
