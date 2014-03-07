@@ -177,7 +177,6 @@ def compute_all_features(jam_file, audio_file, audio_beats):
             marked_audio = marker(audio)
             ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
             
-
     # Save output as json file
     out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
                         "features", 

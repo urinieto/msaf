@@ -69,8 +69,7 @@ def get_features(audio_path, annot_beats=False):
         beat_data = jam.beats[0].data
         if beat_data == []: raise ValueError
         for data in beat_data:
-            if data.label.value != -1:
-                beats.append(data.time.value)
+            beats.append(data.time.value)
         beats = np.asarray(beats)
     else:
         C = np.asarray(feats["est_beatsync"]["hpcp"])
@@ -82,7 +81,7 @@ def get_features(audio_path, annot_beats=False):
 
     f.close()
 
-    return C, M, beats, dur
+    return C, M, beats[0], dur
 
 
 def create_estimation(times, annot_beats, **params):
