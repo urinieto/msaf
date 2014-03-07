@@ -70,18 +70,18 @@ def get_features(audio_path, annot_beats=False):
         if beat_data == []: raise ValueError
         for data in beat_data:
             beats.append(data.time.value)
-        beats = np.asarray(beats)
+        beats = np.unique(beats)
     else:
         C = np.asarray(feats["est_beatsync"]["hpcp"])
         M = np.asarray(feats["est_beatsync"]["mfcc"])
-        beats = np.asarray(feats["beats"]["ticks"])
+        beats = np.asarray(feats["beats"]["ticks"])[0]
 
     # Duration
     dur = jam.metadata.duration
 
     f.close()
 
-    return C, M, beats[0], dur
+    return C, M, beats, dur
 
 
 def create_estimation(times, annot_beats, **params):
