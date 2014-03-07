@@ -45,20 +45,26 @@ def align_segmentation(filename, beat_times):
                     "sections", annotator=0, converter=None, 
                     label_prefix='__', context="function")
 
-    # Map to intervals, clip the last label marker
-    segment_intervals = np.asarray(zip(segment_times[:-1], segment_times[1:]))
-    segment_labels    = segment_labels[:-1]
+    # Map to intervals
+    segment_intervals = np.asarray(zip(segment_times, segment_times[1:]))
 
     # Map beats to intervals
     beat_intervals    = np.asarray(zip(beat_times[:-1], beat_times[1:]))
 
     # Map beats to segments
+    segment_times = np.concatenate((np.asarray(segment_times).flatten()[::2], [segment_times[-1,1]]))
+    res = []
+    for segment_interval in segment_intervals:
+        res.append(segment_interval[0])
+    res.append(segment_intervals[-1,-1])
+    segment_intervals = np.asarray(res)
     beat_segment_ids  = librosa.util.match_intervals(beat_intervals, segment_intervals)
 
     segment_beats = []
     segment_times_out = []
     segment_labels_out = []
 
+    #print segment_times, beat_segment_ids, len(beat_times), len(beat_segment_ids)
     for i in range(segment_times.shape[0]):
         hits = np.argwhere(beat_segment_ids == i)
         if len(hits) > 0 and i < len(segment_intervals) and \
@@ -69,10 +75,11 @@ def align_segmentation(filename, beat_times):
 
     # Pull out the segment start times
     segment_beats = list(segment_beats)
-    segment_times_out = np.asarray(segment_times_out)[:, 0].squeeze().reshape((-1, 1))
+    #segment_times_out = np.asarray(segment_times_out)[:, 0].squeeze().reshape((-1, 1))
 
-    if segment_times_out.ndim == 0:
-        segment_times_out = segment_times_out[np.newaxis]
+    #if segment_times_out.ndim == 0:
+    #    segment_times_out = segment_times_out[np.newaxis]
+    segment_times_out = segment_times
 
     return segment_beats, segment_times_out, segment_labels_out
 
@@ -126,7 +133,7 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
     audio_files = glob.glob('%s/audio/Epiphyte_*.[wm][ap][v3]' % (rootpath))
 
     if n is None:
-        n = np.max([len(audio_files), 400])
+        n = np.min([len(audio_files), 400])
 
     data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song, 
             rootpath, output_path, annot_beats) \
@@ -136,7 +143,7 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
     for d in data:
         if d is None:
             continue
-        if d['features'].shape[0] != 93:
+        if d['features'].shape[0] != 94:
             continue
         X.append(d['features'])
         Y.append(d['segments'])
@@ -144,7 +151,7 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
         T.append(d['segment_times'])
         F.append(d['filename'])
         L.append(d['segment_labels'])
-    
+
     return X, Y, B, T, F, L
 
 
@@ -185,6 +192,7 @@ if __name__ == '__main__':
                             rootpath=args.ds_path, 
                             output_path=args.output_path,
                             annot_beats=args.annot_beats)
+
     if args.annot_beats:
         out_path = '%s/AnnotBeats_data.pickle' % (output_path)
     else:

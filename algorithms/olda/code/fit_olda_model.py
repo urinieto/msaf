@@ -74,9 +74,7 @@ def score_model(model, x, b, t):
     if len(boundary_beats) < 2 or len(t) < 2:
         return 0.0
 
-    # Uri fix
-    tt = [x[0] for x in t]
-    t = np.unique(tt)
+    t = np.unique(t)
     boundary_times = mir_eval.util.adjust_events(b[boundary_beats], t_min=0.0, t_max=t[-1])[0]
 
     truth_intervals = mir_eval.util.boundaries_to_intervals(t)[0]
@@ -98,7 +96,7 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("%s/annotations/Isophonics_*.jams" % ds_path)
+        files = glob.glob("%s/annotations/Epiphyte_*.jams" % ds_path)[:400]
         for f, z in zip(files, zip(X, B, T)):
             if annot_beats:
                 jam = jams.load(f)
