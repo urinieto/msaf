@@ -2,6 +2,7 @@
 
 import argparse
 import numpy as np
+import pylab as plt
 import glob
 import os
 import sys
@@ -92,6 +93,9 @@ def import_data(song, rootpath, output_path, annot_beats):
     else:
         #try:
         X, B     = features(song, annot_beats)
+
+        plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
+
         if X is None:
             return X
 
@@ -119,10 +123,10 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
                  annot_beats=False):
     
     # We don't care about prefix, only those which have annot beats
-    audio_files = glob.glob('%s/audio/Isophonics_*.[wm][ap][v3]' % (rootpath))
+    audio_files = glob.glob('%s/audio/Epiphyte_*.[wm][ap][v3]' % (rootpath))
 
     if n is None:
-        n = len(audio_files)
+        n = np.max([len(audio_files), 400])
 
     data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song, 
             rootpath, output_path, annot_beats) \

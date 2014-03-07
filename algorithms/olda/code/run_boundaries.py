@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-'''Runs the OLDA segmenter across the Segmentation dataset
-
-If run as a program, usage is:
-
-    ./run_segmenter.py dataset_dir/ transform.npy
+'''Runs the OLDA segmenter for boundaries across the Segmentation dataset
 
 '''
 
@@ -28,60 +24,11 @@ import pylab as plt
 
 import segmenter as S
 
+import sys
+sys.path.append( "../../../" )
+import msaf_io as MSAF
+
 VERSION = "1.0"
-
-def create_estimation(times, t_path, annot_beats):
-    """Creates a new estimation (dictionary)."""
-    est = {}
-    est["transform"] = t_path
-    est["annot_beats"] = annot_beats
-    est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-    est["data"] = list(times)
-    est["version"] = VERSION
-    return est
-
-
-def save_segments(out_file, times, t_path, annot_beats):
-    """Saves the segment times in the out_file using a JSON format. If file
-        exists, update with new annotation."""
-    if os.path.isfile(out_file):
-        # Add estimation
-        f = open(out_file, "r")
-        res = json.load(f)
-
-        # Check if estimation already exists
-        if "boundaries" in res.keys():
-            if "olda" in res["boundaries"]:
-                found = False
-                for i, est in enumerate(res["boundaries"]["olda"]):
-                    if est["transform"] == t_path and \
-                            est["annot_beats"] == annot_beats:
-                        found = True
-                        res["boundaries"]["olda"][i] = \
-                            create_estimation(times, t_path, annot_beats)
-                        break
-                if not found:
-                    res["boundaries"]["olda"].append(create_estimation(times, 
-                                                        t_path, annot_beats))
-
-        else:
-            res["boundaries"] = {}
-            res["boundaries"]["olda"] = []
-            res["boundaries"]["olda"].append(create_estimation(times, t_path,
-                                                annot_beats))
-        f.close()
-    else:
-        # Create new estimation
-        res = {}
-        res["boundaries"] = {}
-        res["boundaries"]["olda"] = []
-        res["boundaries"]["olda"].append(create_estimation(times, t_path,
-                                            annot_beats))
-
-    # Save dictionary to disk
-    f = open(out_file, "w")
-    json.dump(res, f, indent=2)
-    f.close()
 
 
 def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
@@ -121,10 +68,15 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
             jam = jams.load(jam_file)
             times = [0, jam.metadata.duration]
 
+        params = {
+            "transform" : t_path
+        }
+
         # Save segments
         out_file = os.path.join(in_path, "estimations", 
             os.path.basename(jam_file).replace(".jams", ".json"))
-        save_segments(out_file, times, t_path, annot_beats)
+        MSAF.save_boundaries(out_file, times, annot_beats, "olda", 
+            version="1.0", **params)
 
 
 
