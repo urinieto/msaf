@@ -25,6 +25,10 @@ import librosa
 
 import jams
 
+import sys
+sys.path.append( "../../../" )
+import msaf_io as MSAF
+
 N_FFT       = 2048
 HOP_LENGTH  = 512
 HOP_BEATS   = 64
@@ -94,56 +98,6 @@ def features(audio_path, annot_beats=False):
         
         return e_vecs.T.dot(X)
 
-    # Harmonic waveform
-    def harmonify(y):
-        D = librosa.stft(y)
-        return librosa.istft(librosa.decompose.hpss(D)[0])
-
-    # HPSS waveforms
-    def hpss_wav(y):
-        H, P = librosa.decompose.hpss(librosa.stft(y))
-
-        return librosa.istft(H), librosa.istft(P)
-
-    # Beats and tempo
-    def get_beats(y):
-        odf = librosa.onset.onset_strength(y=y, 
-                                            sr=sr, 
-                                            n_fft=N_FFT, 
-                                            hop_length=HOP_BEATS, 
-                                            n_mels=N_MELS, 
-                                            fmax=FMAX, 
-                                            aggregate=np.median)
-
-        bpm, beats = librosa.beat.beat_track(onsets=odf, sr=sr, hop_length=HOP_BEATS)
-        
-        return bpm, beats
-
-    # MFCC features
-    def get_mfcc(y):
-        # Generate a mel-spectrogram
-        S = librosa.feature.melspectrogram(y, sr,   n_fft=N_FFT, 
-                                                    hop_length=HOP_LENGTH, 
-                                                    n_mels=N_MELS, 
-                                                    fmax=FMAX).astype(np.float32)
-    
-        # Put on a log scale
-        S = librosa.logamplitude(S, ref_power=S.max())
-
-        return librosa.feature.mfcc(S=S, n_mfcc=N_MFCC)
-
-    # Chroma features
-    def chroma(y):
-        # Build the wrapper
-        CQT      = np.abs(librosa.cqt(y,    sr=SR, 
-                                            resolution=NOTE_RES,
-                                            hop_length=HOP_LENGTH,
-                                            fmin=NOTE_MIN,
-                                            n_bins=NOTE_NUM))
-
-        C_to_Chr = librosa.filters.cq_to_chroma(CQT.shape[0], n_chroma=N_CHROMA) 
-
-        return librosa.logamplitude(librosa.util.normalize(C_to_Chr.dot(CQT)))
 
     # Latent factor repetition features
     def repetition(X, metric='seuclidean'):
@@ -168,49 +122,15 @@ def features(audio_path, annot_beats=False):
             X = XX
         return X
 
-
+    #########
     print '\t[1/5] loading annotations and features of ', audio_path
-    ds_path = os.path.dirname(os.path.dirname(audio_path))
-    annotation_path = os.path.join(ds_path, "annotations", 
-        os.path.basename(audio_path)[:-4]+".jams")
-    features_path = os.path.join(ds_path, "features", 
-        os.path.basename(audio_path)[:-4]+".json")
-
-    # Read annotations
-    jam = jams.load(annotation_path)
-
-    # Read features
-    f = open(features_path, "r")
-    est = json.load(f)
+    chroma, mfcc, beats, duration = MSAF.get_features(audio_path, annot_beats)
     
     # Sampling Rate
     sr = 11025
 
-    # Duration
-    duration = jam.metadata.duration
-
+    ##########
     print '\t[2/5] reading beats'
-    # Get the beats
-    if annot_beats:
-        try:
-            beats = []
-            beat_data = jam.beats[0].data
-            if beat_data == []: raise ValueError
-            for data in beat_data:
-                if data.label.value != -1:
-                    beats.append(data.time.value)
-            beats = np.asarray(beats)
-            beatsync_key = "ann_beatsync"
-        except:
-            # This track doesn't have annotated beats!
-            print "Warning: Beat annotations not found in ", annotation_path
-            return None, []
-    else:
-        beats = np.asarray(est["beats"]["ticks"]).flatten()
-        beatsync_key = "est_beatsync"
-
-    # augment the beat boundaries with the starting point
-    #B = np.unique(np.concatenate([ [0], beats]))
     B = beats
 
     #B = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_BEATS)
@@ -222,14 +142,16 @@ def features(audio_path, annot_beats=False):
     # Stash beat times aligned to the longer hop lengths
     #B = librosa.frames_to_time(beat_frames, sr=sr, hop_length=HOP_LENGTH)
 
+    #########
     print '\t[3/5] generating MFCC'
     # Get the beat-sync MFCCs
-    M = np.asarray(est[beatsync_key]["mfcc"]).T
+    M = mfcc.T
     #plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
     
+    #########
     print '\t[4/5] generating chroma'
     # Get the beat-sync chroma
-    C = np.asarray(est[beatsync_key]["hpcp"]).T
+    C = chroma.T
     C += C.min() + 0.1
     C = C/C.max(axis=0)
     C = 80*np.log10(C) # Normalize from -80 to 0
@@ -238,6 +160,7 @@ def features(audio_path, annot_beats=False):
     # Time-stamp features
     N = np.arange(float(len(beat_frames)))
 
+    #########
     # Beat-synchronous repetition features
     print '\t[5/5] generating structure features'
 
@@ -248,23 +171,16 @@ def features(audio_path, annot_beats=False):
     R_timbre /= R_timbre.max()
     R_chroma += R_chroma.min()
     R_chroma /= R_chroma.max()
-    #print R_timbre.min(), R_chroma.min()
     #plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Make sure that size is actually N_REP (could be less if song is too short)
-    #R_timbre = ensure_size(R_timbre, N_REP)
-    #R_chroma = ensure_size(R_chroma, N_REP)
-
     # Stack it all up
+    #print M.shape, C.shape, len(B), len(N)
     X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beat_frames)])
 
     #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
 
     # Add on the end-of-track timestamp
     B = np.concatenate([B, [duration]])
-
-    # Close features file
-    f.close()
 
     return X, B
 
