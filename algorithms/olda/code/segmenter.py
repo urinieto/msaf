@@ -174,7 +174,7 @@ def features(audio_path, annot_beats=False):
     #plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
 
     # Stack it all up
-    print M.shape, C.shape, len(B), len(N)
+    #print M.shape, C.shape, len(B), len(N)
     X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beat_frames)])
 
     #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
