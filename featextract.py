@@ -167,7 +167,7 @@ def compute_all_features(jam_file, audio_file, audio_beats):
         annot_ticks = []
         for data in annot.data:
             annot_ticks.append(data.time.value)
-        annot_ticks = essentia.array(annot_ticks)
+        annot_ticks = essentia.array(np.unique(annot_ticks).tolist())
         annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks, audio)
 
         if audio_beats:
@@ -222,7 +222,8 @@ def process(in_path, audio_beats=False):
         for jam_file, audio_file in zip(jam_files, audio_files):
             assert os.path.basename(audio_file)[:-4] == \
                 os.path.basename(jam_file)[:-5]
-            compute_all_features(jam_file, audio_file, audio_beats)
+            if os.path.basename(jam_file) >= "Isophonics_11_-_When_I_Get_Home.jams":
+                compute_all_features(jam_file, audio_file, audio_beats)
 
 
 def main():
