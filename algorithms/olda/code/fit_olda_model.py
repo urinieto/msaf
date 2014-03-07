@@ -85,7 +85,7 @@ def score_model(model, x, b, t):
 
 def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
 
-    SIGMA = 10**np.arange(0, 10)
+    SIGMA = 10**np.arange(-2, 20)
 
     best_score  = -np.inf
     best_sigma  = None
