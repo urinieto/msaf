@@ -94,7 +94,7 @@ def import_data(song, rootpath, output_path, annot_beats):
         #try:
         X, B     = features(song, annot_beats)
 
-        plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
+        #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
 
         if X is None:
             return X

@@ -81,7 +81,7 @@ def get_features(audio_path, annot_beats=False):
 
     f.close()
 
-    return C, M, beats, dur
+    return C, M, beats[0], dur
 
 
 def create_estimation(times, annot_beats, **params):

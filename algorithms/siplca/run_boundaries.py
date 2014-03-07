@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''Runs the SIPLCA segmenter across the Segmentation dataset
+'''Runs the SIPLCA segmenter for boundaries across the Segmentation dataset
 
 '''
 
