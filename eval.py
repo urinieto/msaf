@@ -64,7 +64,12 @@ def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
 
     # Compute features for each file
     PRF = []  # Results: Precision, Recall, F-measure
-    for jam_file, est_file in zip(jam_files, est_files):
+    #for jam_file, est_file in zip(jam_files, est_files):
+    for est_file in est_files:
+
+        idx = [i for i, s in enumerate(jam_files) if os.path.basename(est_file)[:-5] in s][0]
+        jam_file = jam_files[idx]
+
         assert os.path.basename(est_file)[:-5] == \
             os.path.basename(jam_file)[:-5]
 
@@ -83,11 +88,15 @@ def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
         # if ann_times[0][0] != 0:
         #     ann_times.insert(0, 0)
 
+        # num = int(os.path.basename(jam_file).split("_")[1].split(".")[0])
+        # if num < 956 or num > 1498:
+        #     continue
+
         est_times = read_boundaries(est_file, ald_id, annot_beats)
         if est_times == []: continue
 
-        if est_times[0] != 0:
-            est_times = np.concatenate(([0], est_times))
+        # if est_times[0] != 0:
+        #     est_times = np.concatenate(([0], est_times))
 
         #print ann_times, est_times, jam_file
 

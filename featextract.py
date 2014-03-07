@@ -221,7 +221,7 @@ def process(in_path, audio_beats=False):
         for jam_file, audio_file in zip(jam_files, audio_files):
             assert os.path.basename(audio_file)[:-4] == \
                 os.path.basename(jam_file)[:-5]
-            if os.path.basename(jam_file) >= "Isophonics_11_-_When_I_Get_Home.jams":
+            if os.path.basename(jam_file) >= "SALAMI_374.jams":
                 compute_all_features(jam_file, audio_file, audio_beats)
 
 
