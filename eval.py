@@ -23,29 +23,23 @@ import utils
 import mir_eval
 import jams
 
+import msaf_io as MSAF
 
-def read_boundaries(est_file, alg_id, annot_beats):
-    """Reads the boundaries from an estimated file."""
-    f = open(est_file, "r")
-    est_data = json.load(f)
 
-    if alg_id not in est_data["boundaries"]:
-        logging.error("Estimation not found for algorithm %s in %s" % \
-                                                        (est_file, alg_id))
-        return []
-
-    bounds = []
-    for alg in est_data["boundaries"][alg_id]:
-        if alg["annot_beats"] == annot_beats:
-            bounds = np.array(alg["data"])
-            break
-
-    f.close()
-
-    return bounds
-
-def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
+def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3):
     """Main process."""
+
+    # The Beatles hack
+    beatles = False
+    if ds_name == "Beatles":
+        beatles = True
+        ds_name = "Isophonics"
+
+    # The SALAMI internet hack
+    salamii = False
+    if ds_name == "SALAMI-i":
+        salamii = True
+        ds_name = "SALAMI"
 
     # Get files
     jam_files = glob.glob(os.path.join(in_path, "annotations", 
@@ -57,7 +51,7 @@ def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
         "Cerulean"      : "large_scale",
         "Epiphyte"      : "function",
         "Isophonics"    : "function",
-        "SALAMI"        : "small_scale"
+        "SALAMI"        : "large_scale"
     }
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
@@ -81,18 +75,20 @@ def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
             logging.warning("No annotations for file: %s" % jam_file)
             continue
 
-        # jam = jams.load(jam_file)
-        # if jam.metadata.artist != "The Beatles":
-        #     continue
+        if beatles:
+            jam = jams.load(jam_file)
+            if jam.metadata.artist != "The Beatles":
+                continue
 
         # if ann_times[0][0] != 0:
         #     ann_times.insert(0, 0)
 
-        # num = int(os.path.basename(jam_file).split("_")[1].split(".")[0])
-        # if num < 956 or num > 1498:
-        #     continue
+        if salamii:
+            num = int(os.path.basename(jam_file).split("_")[1].split(".")[0])
+            if num < 956 or num > 1498:
+                continue
 
-        est_times = read_boundaries(est_file, ald_id, annot_beats)
+        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats)
         if est_times == []: continue
 
         # if est_times[0] != 0:
@@ -103,6 +99,7 @@ def process(in_path, ald_id, ds_name="*", annot_beats=False, win=3):
         P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
                                                             window=win)
         PRF.append([P,R,F])
+        # print F, jam_file
 
     PRF = np.asarray(PRF)
     res = 100*PRF.mean(axis=0)
