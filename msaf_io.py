@@ -19,6 +19,27 @@ import numpy as np
 import jams
 
 
+def read_boundaries(est_file, alg_id, annot_beats):
+    """Reads the boundaries from an estimated file."""
+    f = open(est_file, "r")
+    est_data = json.load(f)
+
+    if alg_id not in est_data["boundaries"]:
+        logging.error("Estimation not found for algorithm %s in %s" % \
+                                                        (est_file, alg_id))
+        return []
+
+    bounds = []
+    for alg in est_data["boundaries"][alg_id]:
+        if alg["annot_beats"] == annot_beats:
+            bounds = np.array(alg["data"])
+            break
+
+    f.close()
+
+    return bounds
+
+
 def get_features(audio_path, annot_beats=False):
     """
     Gets the features of an audio file given the audio_path.
