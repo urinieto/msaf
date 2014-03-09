@@ -51,10 +51,10 @@ def process(in_path, annot_beats=False, feature="mfcc"):
         logging.info("Segmenting %s" % feat_file)
 
         # Levy segmenter call
-        cmd = ["./segmenter", feat_file.replace(" ", "\ "), annot_beats_str,
-                feature]
-        print cmd
-        subprocess.call(cmd)
+        cmd = ["./segmenter", feat_file.replace(" ", "\ ").replace("&","\&").\
+                    replace("'","\\'"), annot_beats_str, feature]
+        print " ".join(cmd)
+        subprocess.call(" ".join(cmd), shell=True ) # Shell is needed for files with spaces
 
 
 def main():
