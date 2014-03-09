@@ -26,7 +26,7 @@ sys.path.append( "../../" )
 import msaf_io as MSAF
 
 
-def process(in_path, annot_beats=False):
+def process(in_path, annot_beats=False, feature="mfcc"):
     """Main process."""
 
     # Get relevant files
@@ -51,7 +51,8 @@ def process(in_path, annot_beats=False):
         logging.info("Segmenting %s" % feat_file)
 
         # Levy segmenter call
-        cmd = ["./segmenter", feat_file.replace(" ", "\ "), annot_beats_str]
+        cmd = ["./segmenter", feat_file.replace(" ", "\ "), annot_beats_str,
+                feature]
         print cmd
         subprocess.call(cmd)
 
@@ -65,6 +66,9 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
+    parser.add_argument("feature",
+                        action="store",
+                        help="Feature to be used (mfcc or hpcp)")
     parser.add_argument("-b", 
                         action="store_true", 
                         dest="annot_beats",
@@ -78,7 +82,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats)
+    process(args.in_path, annot_beats=args.annot_beats, 
+            feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
