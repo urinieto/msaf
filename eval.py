@@ -26,7 +26,7 @@ import jams
 import msaf_io as MSAF
 
 
-def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3):
+def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
     """Main process."""
 
     # The Beatles hack
@@ -61,7 +61,9 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3):
     #for jam_file, est_file in zip(jam_files, est_files):
     for est_file in est_files:
 
-        idx = [i for i, s in enumerate(jam_files) if os.path.basename(est_file)[:-5] in s][0]
+        # Get corresponding estimation files
+        idx = [i for i, s in enumerate(jam_files) if \
+                os.path.basename(est_file)[:-5] in s][0]
         jam_file = jam_files[idx]
 
         assert os.path.basename(est_file)[:-5] == \
@@ -69,8 +71,9 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3):
 
         ds_prefix = os.path.basename(est_file).split("_")[0]
         try:
-            ann_times, ann_labels = mir_eval.input_output.load_jams_range(jam_file, 
-                                        "sections", context=prefix_dict[ds_prefix])
+            ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+                                    jam_file, 
+                                    "sections", context=prefix_dict[ds_prefix])
         except:
             logging.warning("No annotations for file: %s" % jam_file)
             continue
@@ -88,22 +91,21 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3):
             if num < 956 or num > 1498:
                 continue
 
-        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats)
+        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
         if est_times == []: continue
 
         # if est_times[0] != 0:
         #     est_times = np.concatenate(([0], est_times))
 
-        #print ann_times, est_times, jam_file
-
         P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
-                                                            window=win)
+                                                        window=win, trim=False)
+        
         PRF.append([P,R,F])
-        # print F, jam_file
 
     PRF = np.asarray(PRF)
     res = 100*PRF.mean(axis=0)
     logging.info("F: %.2f, P: %.2f, R: %.2f" % (res[2], res[0], res[1]))
+    logging.info("%d tracks analized" % PRF.shape[0])
 
 
 def main():
@@ -134,6 +136,12 @@ def main():
                         default=3,
                         type=float,
                         help="Time window in seconds")
+    parser.add_argument("-f",
+                        action="store",
+                        dest="feature",
+                        default="",
+                        type=str,
+                        help="Type of features (e.g. mfcc, hpcp")
     args = parser.parse_args()
     start_time = time.time()
    
@@ -143,7 +151,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-                    args.win)
+                    args.win, feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

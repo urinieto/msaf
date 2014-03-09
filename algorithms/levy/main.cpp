@@ -304,6 +304,11 @@ int main(int argc, char const *argv[])
     else if (strcmp(feature, "hpcp")) {
         params.featureType = FEATURE_TYPE_CHROMA;
     }
+    // Set original paper parameters
+    params.nHMMStates = 80;
+    params.nclusters = 6;
+    params.neighbourhoodLimit = 16;
+
     ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
 
     // Read features from JAMS
@@ -311,7 +316,6 @@ int main(int argc, char const *argv[])
 
     // Segment until we have a potentially good result
     Segmentation segmentation;
-    cout << f.size() << endl;
     do {
         // Initialize segmenter
         segmenter->initialise(11025);

@@ -19,11 +19,12 @@ import numpy as np
 import jams
 
 
-def read_boundaries(est_file, alg_id, annot_beats):
+def read_boundaries(est_file, alg_id, annot_beats, **params):
     """Reads the boundaries from an estimated file."""
     f = open(est_file, "r")
     est_data = json.load(f)
 
+    #print est_file, est_data
     if alg_id not in est_data["boundaries"]:
         logging.error("Estimation not found for algorithm %s in %s" % \
                                                         (est_file, alg_id))
@@ -31,10 +32,16 @@ def read_boundaries(est_file, alg_id, annot_beats):
 
     bounds = []
     for alg in est_data["boundaries"][alg_id]:
-        # TODO
-        if alg["annot_beats"] == annot_beats and alg["feature"] == "hpcp":
-            bounds = np.array(alg["data"])
-            break
+        if alg["annot_beats"] == annot_beats:
+            # Match non-empty parameters
+            found = True
+            for key in params:
+                if params[key] != "" and alg[key] != params[key]:
+                    found = False
+
+            if found:
+                bounds = np.array(alg["data"])
+                break
 
     f.close()
 
