@@ -294,7 +294,7 @@ void writeResults(Segmentation segmentation, bool annot_beats,
 int main(int argc, char const *argv[])
 {
 
-    const char *feature = "mfcc"; // mffc or hpcp
+    const char *feature = argv[3]; // mffc or hpcp
 
     ClusterMeltSegmenterParams params;
 
