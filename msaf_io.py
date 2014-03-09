@@ -31,7 +31,8 @@ def read_boundaries(est_file, alg_id, annot_beats):
 
     bounds = []
     for alg in est_data["boundaries"][alg_id]:
-        if alg["annot_beats"] == annot_beats:
+        # TODO
+        if alg["annot_beats"] == annot_beats and alg["feature"] == "hpcp":
             bounds = np.array(alg["data"])
             break
 
