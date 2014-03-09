@@ -311,6 +311,7 @@ int main(int argc, char const *argv[])
 
     // Segment until we have a potentially good result
     Segmentation segmentation;
+    cout << f.size() << endl;
     do {
         // Initialize segmenter
         segmenter->initialise(11025);
@@ -321,7 +322,7 @@ int main(int argc, char const *argv[])
         // Segment
         segmenter->segment();
         segmentation = segmenter->getSegmentation();
-    } while(segmentation.segments.size() <= 2 && f.size() >= 64);
+    } while(segmentation.segments.size() <= 2 && f.size() >= 90);
 
     // Write the results
     writeResults(segmentation, atoi(argv[2]), argv[1], feature);
