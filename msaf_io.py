@@ -12,6 +12,7 @@ __email__ = "oriol@nyu.edu"
 import datetime
 import json
 import os
+import logging
 
 import numpy as np
 

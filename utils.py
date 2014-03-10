@@ -12,6 +12,19 @@ import copy
 import numpy as np
 import os
 
+def lognormalize_chroma(C):
+    """Log-normalizes chroma such that each vector is between -80 to 0."""
+    C += C.min() + 0.1
+    C = C/C.max(axis=0)
+    C = 80*np.log10(C) # Normalize from -80 to 0
+    return C
+
+def normalize_chroma(C):
+    """Mormalizes chroma such that each vector is between 0 to 1."""
+    C += C.min()
+    C = C/C.max(axis=0)
+    return C
+
 def ensure_dir(directory):
     """Makes sure that the given directory exists."""
     if not os.path.exists(directory):
