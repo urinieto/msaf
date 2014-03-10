@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''Runs the Levy segmenter for boundaries across the Segmentation dataset
+'''Runs the Foote segmenter for boundaries across the Segmentation dataset
 
 '''
 
@@ -30,7 +30,7 @@ def process(in_path, annot_beats=False, feature="mfcc"):
     """Main process."""
 
     # Get relevant files
-    ds_name = ""
+    ds_name = "Isophonics"
     feat_files = glob.glob(os.path.join(in_path, "features", "%s_*.json" % ds_name))
     jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
 
@@ -62,7 +62,7 @@ def process(in_path, annot_beats=False, feature="mfcc"):
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
-        "Runs the Levy segmenter across a the Segmentation dataset and "\
+        "Runs the Foote segmenter across a the Segmentation dataset and "\
             "stores the results in the estimations folder",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",

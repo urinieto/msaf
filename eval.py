@@ -18,12 +18,14 @@ import pylab as plt
 import numpy as np
 import time
 import sys
+import sqlite3
 
 import utils
 import mir_eval
 import jams
 
 import msaf_io as MSAF
+
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
@@ -53,6 +55,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
         "Isophonics"    : "function",
         "SALAMI"        : "large_scale"
     }
+
+    conn = sqlite3.connect("results/results.sqlite3")
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
