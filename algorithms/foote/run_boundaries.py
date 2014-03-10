@@ -52,7 +52,8 @@ def process(in_path, annot_beats=False, feature="mfcc"):
 
         #print est_times
         # Save
-        out_file = os.path.join(in_path, "estimations", audio_file[:-4]+".json")
+        out_file = os.path.join(in_path, "estimations", 
+                                    os.path.basename(audio_file)[:-4]+".json")
         MSAF.save_boundaries(out_file, est_times, annot_beats, "foote",
                                     feature=feature)
 
