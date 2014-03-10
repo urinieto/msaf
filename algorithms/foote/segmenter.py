@@ -24,14 +24,46 @@ import pylab as plt
 import numpy as np
 import time
 import librosa
+import mir_eval
 from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
+from skimage.filter import threshold_adaptive
 
 import sys
 sys.path.append( "../../" )
 import msaf_io as MSAF
 import utils as U
+
+def read_annot_bound_frames(audio_path, beats):
+    """Reads the corresponding annotations file to retrieve the boundaries
+        in frames."""
+
+    prefix_dict = {
+        "Cerulean"      : "large_scale",
+        "Epiphyte"      : "function",
+        "Isophonics"    : "function",
+        "SALAMI"        : "large_scale"
+    }
+
+    # Dataset path
+    ds_path = os.path.dirname(os.path.dirname(audio_path))
+
+    # Read annotations
+    jam_path = os.path.join(ds_path, "annotations",
+        os.path.basename(audio_path)[:-4]+".jams")
+    ds_prefix = os.path.basename(audio_path).split("_")[0]
+    ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+                                    jam_path, 
+                                    "sections", context=prefix_dict[ds_prefix])
+
+    # align with beats
+    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1,-1]]))
+    dist = np.minimum.outer(ann_times, beats)
+    bound_frames = np.argmax(np.maximum(0, dist), axis=1)
+
+    return bound_frames
+
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
@@ -65,14 +97,36 @@ def compute_nc(X, G):
     for i in xrange(M/2, N-M/2+1):
         nc[i] = np.sum(X[i-M/2:i+M/2, i-M/2:i+M/2] * G)
 
+    # Normalize
+    nc += nc.min()
+    nc /= nc.max()
     return nc
+
+def pick_peaks(nc, L=16):
+    """Obtain peaks from a novelty curve using an adaptive threshold."""
+    offset = nc.mean()/2.
+    th = filters.median_filter(nc, size=L) + offset
+    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    # plt.plot(nc)
+    # plt.plot(th)
+    # plt.show()
+    peaks = []
+    for i in xrange(1,nc.shape[0]-1):
+        # is it a peak?
+        if nc[i-1] < nc[i] and nc[i] > nc[i+1]:
+            # is it above the threshold?
+            if nc[i] > th[i]:
+                peaks.append(i)
+    return peaks
+
+
 
 def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # Foote's params
     M = 16  # Size of gaussian kernel
-    m = 4   # Size of median filter
+    m = 1   # Size of median filter
 
     # Read features
     chroma, mfcc, beats, dur = MSAF.get_features(in_path, annot_beats=annot_beats)
@@ -87,7 +141,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
 
     # Median filter
     F = median_filter(F, M=m)
-    plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+    #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
     # Self similarity matrix
     S = compute_ssm(F)
@@ -98,10 +152,31 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # Compute the novelty curve
     nc = compute_nc(S, G)
 
-    plt.figure(1)
-    plt.plot(nc); 
-    plt.figure(2)
-    plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
+    # Read annotated bounds for comparison purposes
+    ann_bounds = read_annot_bound_frames(in_path, beats)
+    logging.info("Annotated bounds: %s" % ann_bounds)
+
+    # Find peaks in the novelty curve
+    est_bounds = pick_peaks(nc, L=16)
+
+    # Concatenate first and last boundaries
+    est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1]))
+    logging.info("Estimated bounds: %s" % est_bounds)
+
+    # Get times
+    est_times = beats[est_bounds]
+
+    return est_times
+
+
+    # plt.figure(1)
+    # plt.plot(nc); 
+    # [plt.axvline(p, color="m") for p in est_bounds]
+    # [plt.axvline(b, color="g") for b in ann_bounds]
+    # plt.figure(2)
+    # plt.imshow(S, interpolation="nearest", aspect="auto")
+    # [plt.axvline(b, color="g") for b in ann_bounds]
+    # plt.show()
 
 
 def main():

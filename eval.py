@@ -87,9 +87,6 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
             if jam.metadata.artist != "The Beatles":
                 continue
 
-        # if ann_times[0][0] != 0:
-        #     ann_times.insert(0, 0)
-
         if salamii:
             num = int(os.path.basename(jam_file).split("_")[1].split(".")[0])
             if num < 956 or num > 1498:
@@ -97,9 +94,6 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
 
         est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
         if est_times == []: continue
-
-        # if est_times[0] != 0:
-        #     est_times = np.concatenate(([0], est_times))
 
         P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
                                                         window=win, trim=False)

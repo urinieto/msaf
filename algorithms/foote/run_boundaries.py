@@ -17,9 +17,8 @@ import json
 import numpy as np
 import time
 import logging
-import datetime
 import jams
-import subprocess
+import segmenter as S
 
 import sys
 sys.path.append( "../../" )
@@ -33,8 +32,9 @@ def process(in_path, annot_beats=False, feature="mfcc"):
     ds_name = "Isophonics"
     feat_files = glob.glob(os.path.join(in_path, "features", "%s_*.json" % ds_name))
     jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
+    audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
 
-    for feat_file, jam_file in zip(feat_files, jam_files):
+    for audio_file, jam_file in zip(audio_files, jam_files):
 
         # Only analize files with annotated beats
         if annot_beats:
@@ -44,19 +44,17 @@ def process(in_path, annot_beats=False, feature="mfcc"):
             if jam.beats[0].data == []:
                 continue 
 
-        if annot_beats:
-            annot_beats_str = "1"
-        else:
-            annot_beats_str = "0"
+        logging.info("Segmenting %s" % audio_file)
 
-        logging.info("Segmenting %s" % feat_file)
+        # Foote segmenter call
+        est_times = S.process(audio_file, feature=feature, 
+                                                    annot_beats=annot_beats)
 
-        # Levy segmenter call
-        cmd = ["./segmenter", feat_file.replace(" ", "\ ").replace("&","\&").\
-                replace("'","\\'").replace("(","\(").replace(")","\)"), 
-                annot_beats_str, feature]
-        print " ".join(cmd)
-        subprocess.call(" ".join(cmd), shell=True ) # Shell is needed for files with spaces
+        #print est_times
+        # Save
+        out_file = os.path.join(in_path, "estimations", audio_file[:-4]+".json")
+        MSAF.save_boundaries(out_file, est_times, annot_beats, "foote",
+                                    feature=feature)
 
 
 def main():
