@@ -29,6 +29,8 @@ import numpy as np
 import time
 import utils
 
+from joblib import Parallel, delayed
+
 # Setup main params
 SAMPLE_RATE = 11025
 FRAME_SIZE = 2048
@@ -121,6 +123,9 @@ def compute_all_features(jam_file, audio_file, audio_beats):
         human annotations. It creates an audio file with the estimated
         beats if needed."""
 
+    # Sanity check
+    assert os.path.basename(audio_file)[:-4] == os.path.basename(jam_file)[:-5]
+
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
     audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
@@ -198,7 +203,7 @@ def compute_all_features(jam_file, audio_file, audio_beats):
     yaml(pool)
 
 
-def process(in_path, audio_beats=False):
+def process(in_path, audio_beats=False, n_jobs=1):
     """Main process."""
 
     # If in_path it's a file, we only compute one file
@@ -213,15 +218,21 @@ def process(in_path, audio_beats=False):
         utils.ensure_dir(in_path)
 
         # Get files
-        jam_files = glob.glob(os.path.join(in_path, "annotations", "*.jams"))
+        ds_name = "Isophonics"
+        jam_files = glob.glob(os.path.join(in_path, "annotations", 
+                                    "%s_*.jams" % ds_name))
         audio_files = glob.glob(os.path.join(in_path, "audio", 
-                                                    "*.[wm][ap][v3]"))
+                                    "%s_*.[wm][ap][v3]" % ds_name))
+
+        Parallel(n_jobs=n_jobs)(delayed(compute_all_features)( \
+                jam_file, audio_file, audio_beats) \
+                for jam_file, audio_file in zip(jam_files, audio_files))
 
         # Compute features for each file
-        for jam_file, audio_file in zip(jam_files, audio_files):
-            assert os.path.basename(audio_file)[:-4] == \
-                os.path.basename(jam_file)[:-5]
-            compute_all_features(jam_file, audio_file, audio_beats)
+        # for jam_file, audio_file in zip(jam_files, audio_files):
+        #     assert os.path.basename(audio_file)[:-4] == \
+        #         os.path.basename(jam_file)[:-5]
+        #     compute_all_features(jam_file, audio_file, audio_beats)
 
 
 def main():
@@ -238,6 +249,12 @@ def main():
                         dest="audio_beats", 
                         help="Output audio file with estimated beats",
                         default=False)
+    parser.add_argument("-j", 
+                        action="store", 
+                        dest="n_jobs",
+                        type=int,
+                        help="Number of jobs (threads)",
+                        default=1)
     args = parser.parse_args()
     start_time = time.time()
    
@@ -246,7 +263,7 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.audio_beats)
+    process(args.in_path, args.audio_beats, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
