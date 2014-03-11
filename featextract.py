@@ -118,13 +118,10 @@ def compute_beatsync_features(ticks, audio):
     return mfcc, hpcp
 
 
-def compute_all_features(jam_file, audio_file, audio_beats):
+def compute_all_features(audio_file, audio_beats):
     """Computes all the features for a specific audio file and its respective
         human annotations. It creates an audio file with the estimated
         beats if needed."""
-
-    # Sanity check
-    assert os.path.basename(audio_file)[:-4] == os.path.basename(jam_file)[:-5]
 
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
@@ -146,42 +143,45 @@ def compute_all_features(jam_file, audio_file, audio_beats):
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
 
-    #plt.imshow(mfcc.T, interpolation="nearest", aspect="auto"); plt.show()
+    # Save boundaries as an audio file if needed
+    # if audio_beats:
+    #     logging.info("Saving Boundaries as an audio file")
+    #     bounds = []
+    #     for data in jam.sections[0].data:
+    #         bounds.append(data.start.value)
+    #         bounds.append(data.end.value)
+    #     bounds = essentia.array(np.unique(bounds))
+    #     marker = ES.AudioOnsetsMarker(onsets=bounds, type='beep', 
+    #                                   sampleRate=SAMPLE_RATE)
+    #     marked_audio = marker(audio)
+    #     ES.MonoWriter(filename='bounds.wav', sampleRate=SAMPLE_RATE)(marked_audio)
 
-    # Load Annotations
-    jam = jams.load(jam_file)
-
+    # Save beats as an audio file if needed
     if audio_beats:
-        logging.info("Saving Boundaries as an audio file")
-        bounds = []
-        for data in jam.sections[0].data:
-            bounds.append(data.start.value)
-            bounds.append(data.end.value)
-        bounds = essentia.array(np.unique(bounds))
-        marker = ES.AudioOnsetsMarker(onsets=bounds, type='beep', 
+        logging.info("Saving Beats as an audio file")
+        marker = ES.AudioOnsetsMarker(onsets=annot_ticks, type='beep', 
                                       sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
-        ES.MonoWriter(filename='bounds.wav', sampleRate=SAMPLE_RATE)(marked_audio)
+        ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)\
+                                                            (marked_audio)
 
-    #print jam.metadata.duration, ticks[0], ticks[-1], len(audio)/float(SAMPLE_RATE), ticks.shape, mfcc.shape
+    # Read annotations if they exist in path/annotations/file.jams
+    jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)), 
+                 "annotations", os.path.basename(audio_file)[:-4] + ".jams")
+    if os.path.isfile(jam_file):
+        jam = jams.load(jam_file)
 
-    # If beat annotations, compute also annotated beatsynchronous features
-    if jam.beats != []:
-        logging.info("Reading beat annotations from JAMS")
-        annot = jam.beats[0]
-        annot_ticks = []
-        for data in annot.data:
-            annot_ticks.append(data.time.value)
-        annot_ticks = essentia.array(np.unique(annot_ticks).tolist())
-        annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks, audio)
+        # If beat annotations exist, compute also annotated beatsyn features
+        if jam.beats != []:
+            logging.info("Reading beat annotations from JAMS")
+            annot = jam.beats[0]
+            annot_ticks = []
+            for data in annot.data:
+                annot_ticks.append(data.time.value)
+            annot_ticks = essentia.array(np.unique(annot_ticks).tolist())
+            annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks, 
+                                                                    audio)
 
-        if audio_beats:
-            logging.info("Saving Beats as an audio file")
-            marker = ES.AudioOnsetsMarker(onsets=annot_ticks, type='beep', 
-                                          sampleRate=SAMPLE_RATE)
-            marked_audio = marker(audio)
-            ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
-            
     # Save output as json file
     out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
                         "features", 
@@ -195,7 +195,7 @@ def compute_all_features(jam_file, audio_file, audio_beats):
         for mfcc_coeff in mfcc]
     [pool.add("est_beatsync.hpcp", essentia.array(hpcp_coeff)) \
         for hpcp_coeff in hpcp]
-    if jam.beats != []:
+    if os.path.isfile(jam_file) and jam.beats != []:
         [pool.add("ann_beatsync.mfcc", essentia.array(mfcc_coeff)) \
             for mfcc_coeff in annot_mfcc]
         [pool.add("ann_beatsync.hpcp", essentia.array(hpcp_coeff)) \
@@ -208,10 +208,7 @@ def process(in_path, audio_beats=False, n_jobs=1):
 
     # If in_path it's a file, we only compute one file
     if os.path.isfile(in_path):
-        jam_file = os.path.join(os.path.dirname(os.path.dirname(in_path)), 
-                                "annotations", 
-                                os.path.basename(in_path)[:-4] + ".jams")
-        compute_all_features(jam_file, in_path, audio_beats)
+        compute_all_features(in_path, audio_beats)
 
     elif os.path.isdir(in_path):
         # Check that in_path exists
@@ -219,20 +216,12 @@ def process(in_path, audio_beats=False, n_jobs=1):
 
         # Get files
         ds_name = "Isophonics"
-        jam_files = glob.glob(os.path.join(in_path, "annotations", 
-                                    "%s_*.jams" % ds_name))
         audio_files = glob.glob(os.path.join(in_path, "audio", 
                                     "%s_*.[wm][ap][v3]" % ds_name))
 
+        # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)( \
-                jam_file, audio_file, audio_beats) \
-                for jam_file, audio_file in zip(jam_files, audio_files))
-
-        # Compute features for each file
-        # for jam_file, audio_file in zip(jam_files, audio_files):
-        #     assert os.path.basename(audio_file)[:-4] == \
-        #         os.path.basename(jam_file)[:-5]
-        #     compute_all_features(jam_file, audio_file, audio_beats)
+                audio_file, audio_beats) for audio_file in audio_files)
 
 
 def main():
