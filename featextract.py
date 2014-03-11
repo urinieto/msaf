@@ -219,7 +219,7 @@ def process(in_path, audio_beats=False, n_jobs=1):
         utils.ensure_dir(in_path)
 
         # Get files
-        ds_name = "Isophonics"
+        ds_name = "*"
         audio_files = glob.glob(os.path.join(in_path, "audio", 
                                     "%s_*.[wm][ap][v3]" % ds_name))
 
