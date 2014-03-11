@@ -13,6 +13,7 @@ import datetime
 import json
 import os
 import logging
+import mir_eval
 
 import numpy as np
 
@@ -47,6 +48,36 @@ def read_boundaries(est_file, alg_id, annot_beats, **params):
     f.close()
 
     return bounds
+
+
+def read_annot_bound_frames(audio_path, beats):
+    """Reads the corresponding annotations file to retrieve the boundaries
+        in frames."""
+
+    prefix_dict = {
+        "Cerulean"      : "large_scale",
+        "Epiphyte"      : "function",
+        "Isophonics"    : "function",
+        "SALAMI"        : "large_scale"
+    }
+
+    # Dataset path
+    ds_path = os.path.dirname(os.path.dirname(audio_path))
+
+    # Read annotations
+    jam_path = os.path.join(ds_path, "annotations",
+        os.path.basename(audio_path)[:-4]+".jams")
+    ds_prefix = os.path.basename(audio_path).split("_")[0]
+    ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+                                    jam_path, 
+                                    "sections", context=prefix_dict[ds_prefix])
+
+    # align with beats
+    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1,-1]]))
+    dist = np.minimum.outer(ann_times, beats)
+    bound_frames = np.argmax(np.maximum(0, dist), axis=1)
+
+    return bound_frames
 
 
 def get_features(audio_path, annot_beats=False):
@@ -139,7 +170,14 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                 found = False
                 for i, est in enumerate(res["boundaries"][alg_name]):
                     if est["annot_beats"] == annot_beats:
-                        found = True
+                        found = True 
+                        for key in params:
+                            print key, params[key], est[key]
+                            if params[key] != est[key]:
+                                found = False
+                                break
+                        if not found:
+                            break
                         res["boundaries"][alg_name][i] = \
                             create_estimation(times, annot_beats, **params)
                         break
