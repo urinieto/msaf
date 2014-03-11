@@ -68,9 +68,13 @@ def read_annot_bound_frames(audio_path, beats):
     jam_path = os.path.join(ds_path, "annotations",
         os.path.basename(audio_path)[:-4]+".jams")
     ds_prefix = os.path.basename(audio_path).split("_")[0]
-    ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                    jam_path, 
-                                    "sections", context=prefix_dict[ds_prefix])
+    try:
+        ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+                                        jam_path, 
+                                        "sections", context=prefix_dict[ds_prefix])
+    except:
+        logging.warning("Annotation not found in %s" % jam_path)
+        return []
 
     # align with beats
     ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1,-1]]))

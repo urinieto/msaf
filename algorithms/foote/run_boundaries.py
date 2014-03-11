@@ -29,7 +29,7 @@ def process(in_path, annot_beats=False, feature="mfcc"):
     """Main process."""
 
     # Get relevant files
-    ds_name = "Isophonics"
+    ds_name = "*"
     feat_files = glob.glob(os.path.join(in_path, "features", "%s_*.json" % ds_name))
     jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
     audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
