@@ -172,12 +172,11 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                     if est["annot_beats"] == annot_beats:
                         found = True 
                         for key in params:
-                            print key, params[key], est[key]
                             if params[key] != est[key]:
                                 found = False
                                 break
                         if not found:
-                            break
+                            continue
                         res["boundaries"][alg_name][i] = \
                             create_estimation(times, annot_beats, **params)
                         break
