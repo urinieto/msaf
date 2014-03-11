@@ -195,6 +195,10 @@ def compute_all_features(audio_file, audio_beats):
         for mfcc_coeff in mfcc]
     [pool.add("est_beatsync.hpcp", essentia.array(hpcp_coeff)) \
         for hpcp_coeff in hpcp]
+    pool.set("analysis.sample_rate", SAMPLE_RATE)
+    pool.set("analysis.frame_rate", FRAME_SIZE)
+    pool.set("analysis.hop_size", HOP_SIZE)
+    pool.set("analysis.window_type", WINDOW_TYPE)
     if os.path.isfile(jam_file) and jam.beats != []:
         [pool.add("ann_beatsync.mfcc", essentia.array(mfcc_coeff)) \
             for mfcc_coeff in annot_mfcc]
