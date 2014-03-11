@@ -35,35 +35,6 @@ sys.path.append( "../../" )
 import msaf_io as MSAF
 import utils as U
 
-def read_annot_bound_frames(audio_path, beats):
-    """Reads the corresponding annotations file to retrieve the boundaries
-        in frames."""
-
-    prefix_dict = {
-        "Cerulean"      : "large_scale",
-        "Epiphyte"      : "function",
-        "Isophonics"    : "function",
-        "SALAMI"        : "large_scale"
-    }
-
-    # Dataset path
-    ds_path = os.path.dirname(os.path.dirname(audio_path))
-
-    # Read annotations
-    jam_path = os.path.join(ds_path, "annotations",
-        os.path.basename(audio_path)[:-4]+".jams")
-    ds_prefix = os.path.basename(audio_path).split("_")[0]
-    ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                    jam_path, 
-                                    "sections", context=prefix_dict[ds_prefix])
-
-    # align with beats
-    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1,-1]]))
-    dist = np.minimum.outer(ann_times, beats)
-    bound_frames = np.argmax(np.maximum(0, dist), axis=1)
-
-    return bound_frames
-
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
@@ -125,7 +96,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # Foote's params
-    M = 16  # Size of gaussian kernel
+    M = 32   # Size of gaussian kernel
     m = 1   # Size of median filter
 
     # Read features
@@ -148,19 +119,20 @@ def process(in_path, feature="hpcp", annot_beats=False):
 
     # Compute gaussian kernel
     G = compute_gaussian_krnl(M)
+    #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
 
     # Compute the novelty curve
     nc = compute_nc(S, G)
 
     # Read annotated bounds for comparison purposes
-    ann_bounds = read_annot_bound_frames(in_path, beats)
+    ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
     logging.info("Annotated bounds: %s" % ann_bounds)
 
     # Find peaks in the novelty curve
     est_bounds = pick_peaks(nc, L=16)
 
     # Concatenate first and last boundaries
-    est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1]))
+    est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1])).astype(int)
     logging.info("Estimated bounds: %s" % est_bounds)
 
     # Get times
