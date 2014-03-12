@@ -134,7 +134,7 @@ def embedded_space(X, m, tau=1):
     return Y
 
 
-def process(in_path, feature="hpcp", annot_beats=False):
+def process(in_path, feature="hpcp", annot_beats=False, **params):
     """Main process."""
 
     # Serra's params
@@ -144,6 +144,10 @@ def process(in_path, feature="hpcp", annot_beats=False):
     k = 0.05     # Amount of nearest neighbors for the reccurrence plot
     Mp = 1     # Size of the adaptive threshold for peak picking
     od = -0.01  # Offset coefficient for adaptive thresholding
+
+    M = params["M"]
+    m = params["m"]
+    k = params["k"]
 
     # Read features
     chroma, mfcc, beats, dur = MSAF.get_features(in_path, 
