@@ -24,38 +24,45 @@ import sys
 sys.path.append( "../../" )
 import msaf_io as MSAF
 
+from joblib import Parallel, delayed
 
-def process(in_path, annot_beats=False, feature="mfcc"):
+
+def segment_track(audio_file, jam_file, in_path, annot_beats, feature):
+    """Segments the audio file with the corresponding given jam file."""
+    # Only analize files with annotated beats
+    if annot_beats:
+        jam = jams.load(jam_file)
+        if jam.beats == []:
+            return
+        if jam.beats[0].data == []:
+            return 
+
+    logging.info("Segmenting %s" % audio_file)
+
+    # Serra segmenter call
+    est_times = S.process(audio_file, feature=feature, 
+                                                annot_beats=annot_beats)
+
+    #print est_times
+    # Save
+    out_file = os.path.join(in_path, "estimations", 
+                                os.path.basename(audio_file)[:-4]+".json")
+    MSAF.save_boundaries(out_file, est_times, annot_beats, "serra",
+                                feature=feature)
+
+def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1):
     """Main process."""
 
     # Get relevant files
     ds_name = "Isophonics"
-    feat_files = glob.glob(os.path.join(in_path, "features", "%s_*.json" % ds_name))
     jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
     audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
 
-    for audio_file, jam_file in zip(audio_files, jam_files):
-
-        # Only analize files with annotated beats
-        if annot_beats:
-            jam = jams.load(jam_file)
-            if jam.beats == []:
-                continue
-            if jam.beats[0].data == []:
-                continue 
-
-        logging.info("Segmenting %s" % audio_file)
-
-        # Serra segmenter call
-        est_times = S.process(audio_file, feature=feature, 
-                                                    annot_beats=annot_beats)
-
-        #print est_times
-        # Save
-        out_file = os.path.join(in_path, "estimations", 
-                                    os.path.basename(audio_file)[:-4]+".json")
-        MSAF.save_boundaries(out_file, est_times, annot_beats, "serra",
-                                    feature=feature)
+    # Segment using joblib
+    Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
+        audio_file, jam_file, in_path, annot_beats, feature) \
+        for audio_file, jam_file in zip(audio_files, jam_files))
+        
 
 
 def main():
@@ -75,6 +82,12 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-j", 
+                        action="store", 
+                        dest="n_jobs",
+                        type=int,
+                        help="Number of jobs (threads)",
+                        default=1)
     args = parser.parse_args()
     start_time = time.time()
     
@@ -84,7 +97,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats, 
-            feature=args.feature)
+            feature=args.feature, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

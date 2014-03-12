@@ -108,16 +108,28 @@ def circular_shift(X):
         L[i,:] = np.asarray([X[(i + j) % N,j] for j in xrange(N)])
     return L
 
+def embedded_space(X, m, tau=1):
+    """Time-delay embedding with m dimensions and tau delays."""
+    N = X.shape[0] - int(np.ceil(m))
+    Y = np.zeros((N, int(np.ceil(X.shape[1]*m))))
+    for i in xrange(N):
+        # print X[i:i+m,:].flatten().shape, w, X.shape
+        # print Y[i,:].shape
+        rem = int((m % 1) * X.shape[1]) # Reminder for float m
+        Y[i,:] = np.concatenate((X[i:i+int(m),:].flatten(), X[i+int(m),:rem]))
+    return Y
+
 
 def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # Serra's params
-    M = 16      # Size of gaussian kernel
-    m = 1       # Size of median filter
-    k = 0.7       # Amount of nearest neighbors for the reccurrence plot
-    Mp = 8     # Size of the adaptive threshold for peak picking
-    od = 0.01    # Offset coefficient for adaptive thresholding
+    M = 20      # Size of gaussian kernel
+    med = 1     # Size of median filter
+    m = 2.5       # Number of embedded dimensions
+    k = 1.2     # Amount of nearest neighbors for the reccurrence plot
+    Mp = 16     # Size of the adaptive threshold for peak picking
+    od = -0.01  # Offset coefficient for adaptive thresholding
 
     # Read features
     chroma, mfcc, beats, dur = MSAF.get_features(in_path, 
@@ -132,28 +144,29 @@ def process(in_path, feature="hpcp", annot_beats=False):
         logging.error("Feature type not recognized: %s" % feature)
 
     # Median filter
-    F = median_filter(F, M=m)
-    # F = gaussian_filter(F, M=2, axis=1)
-    # plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+    F = median_filter(F, M=med)
+    E = embedded_space(F, m)
+    # F = gaussian_filter(E, M=2, axis=1)
+    # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
     # Self similarity matrix
-    #S = compute_ssm(F)
+    #S = compute_ssm(E)
 
     # Recurrence matrix
-    R = librosa.segment.recurrence_matrix(F.T, 
+    R = librosa.segment.recurrence_matrix(E.T, 
                                           k=k * \
                                             int(np.floor(np.sqrt(F.shape[0]))), 
-                                          width=5, # zeros from the diagonal
+                                          width=0, # zeros from the diagonal
                                           metric="seuclidean",
-                                          sym=False).astype(np.float32)
+                                          sym=True).astype(np.float32)
 
     # Circular shift
     L = circular_shift(R)
-    # plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+    # plt.imshow(R, interpolation="nearest", cmap=plt.get_cmap("binary")); plt.show()
 
     # Obtain structural features by filtering the lag matrix
     SF = gaussian_filter(L.T, M=M, axis=1)
-    # SF = gaussian_filter(L.T, M=2, axis=0)
+    SF = gaussian_filter(L.T, M=1, axis=0)
     # plt.imshow(SF.T, interpolation="nearest", aspect="auto"); plt.show()
 
     # Compute the novelty curve
@@ -166,6 +179,9 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # Find peaks in the novelty curve
     est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
 
+    # Re-align embedded space
+    est_bounds = np.asarray(est_bounds) + int(m) - 1
+
     # Concatenate first and last boundaries
     est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1])).astype(int)
     logging.info("Estimated bounds: %s" % est_bounds)
@@ -173,17 +189,13 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # Get times
     est_times = beats[est_bounds]
 
-    return est_times
-
-
     # plt.figure(1)
     # plt.plot(nc); 
     # [plt.axvline(p, color="m") for p in est_bounds]
     # [plt.axvline(b, color="g") for b in ann_bounds]
-    # plt.figure(2)
-    # plt.imshow(S, interpolation="nearest", aspect="auto")
-    # [plt.axvline(b, color="g") for b in ann_bounds]
     # plt.show()
+
+    return est_times
 
 
 def main():

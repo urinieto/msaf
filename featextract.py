@@ -215,7 +215,7 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
 
     # If in_path it's a file, we only compute one file
     if os.path.isfile(in_path):
-        compute_all_features(in_path, audio_beats)
+        compute_all_features(in_path, audio_beats, overwrite)
 
     elif os.path.isdir(in_path):
         # Check that in_path exists
