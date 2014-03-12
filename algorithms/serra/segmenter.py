@@ -68,7 +68,11 @@ def compute_ssm(X, metric="seuclidean"):
 def compute_nc(X):
     """Computes the novelty curve from the structural features."""
     N = X.shape[0]
-    nc = np.sum(np.diff(X, axis=0), axis=1) # Difference between SF's
+    # nc = np.sum(np.diff(X, axis=0), axis=1) # Difference between SF's
+
+    nc = np.zeros(N)
+    for i in xrange(N-1):
+        nc[i] = distance.euclidean(X[i,:], X[i+1,:])
 
     # Normalize
     nc += np.abs(nc.min())
@@ -80,9 +84,9 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     offset = nc.mean() * float(offset_denom)
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    # plt.plot(nc)
-    # plt.plot(th)
-    # plt.show()
+    plt.plot(nc)
+    plt.plot(th)
+    plt.show()
     peaks = []
     for i in xrange(1,nc.shape[0]-1):
         # is it a peak?
@@ -105,7 +109,7 @@ def circular_shift(X):
 def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
-    # Foote's params
+    # Serra's params
     M = 16      # Size of gaussian kernel
     m = 1       # Size of median filter
     k = 1       # Amount of nearest neighbors for the reccurrence plot
