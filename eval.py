@@ -28,7 +28,8 @@ import msaf_io as MSAF
 
 
 
-def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
+def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, 
+                trim=False, **params):
     """Main process."""
 
     # The Beatles hack
@@ -96,7 +97,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, **params):
         if est_times == []: continue
 
         P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
-                                                        window=win, trim=False)
+                                                window=win, trim=trim)
         
         PRF.append([P,R,F])
 
@@ -140,6 +141,11 @@ def main():
                         default="",
                         type=str,
                         help="Type of features (e.g. mfcc, hpcp")
+    parser.add_argument("-t", 
+                        action="store_true", 
+                        dest="trim",
+                        help="Trim the first and last boundaries",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
    
@@ -149,7 +155,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-                    args.win, feature=args.feature)
+                    args.win, trim=args.trim, feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
