@@ -36,6 +36,20 @@ sys.path.append( "../../" )
 import msaf_io as MSAF
 import utils as U
 
+def read_brian_bounds(in_path, beats):
+    """Obtains the boundaries from brian's results."""
+    brian_path = os.path.join(".", "smga1", os.path.basename(in_path)\
+                    .replace("Isophonics_", "").replace(".mp3", ".lab"))
+    est_times, est_labels = mir_eval.input_output.load_annotation(brian_path)
+    # Unfold
+    est_times = np.concatenate((est_times.flatten()[::2], [est_times[-1,-1]]))
+
+    # Convert to beat frames
+    dist = np.minimum.outer(est_times, beats)
+    bound_frames = np.argmax(np.maximum(0, dist), axis=1)
+
+    return bound_frames, est_times
+
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
@@ -126,7 +140,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # Serra's params
     M = 20      # Size of gaussian kernel
     med = 1     # Size of median filter
-    m = 2.5       # Number of embedded dimensions
+    m = 3       # Number of embedded dimensions
     k = 1.2     # Amount of nearest neighbors for the reccurrence plot
     Mp = 16     # Size of the adaptive threshold for peak picking
     od = -0.01  # Offset coefficient for adaptive thresholding
@@ -189,11 +203,33 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # Get times
     est_times = beats[est_bounds]
 
-    # plt.figure(1)
-    # plt.plot(nc); 
-    # [plt.axvline(p, color="m") for p in est_bounds]
-    # [plt.axvline(b, color="g") for b in ann_bounds]
-    # plt.show()
+    try:
+        # Brian estimated bound frames
+        brian_bounds, brian_times = read_brian_bounds(in_path, beats)
+        logging.info("Brian bounds: %s" % brian_bounds)
+
+        # Eval
+        ds_path = os.path.dirname(os.path.dirname(in_path))
+        jam_file = os.path.join(ds_path, "annotations",
+            os.path.basename(in_path)[:-4]+".jams")
+        ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+                                jam_file, 
+                                "sections", context="function")
+        P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
+                                                window=3, trim=False)
+        logging.info("My Evaluation: F: %.2f, P: %.2f, R: %.2f" % (F,P,R))
+        P, R, F = mir_eval.segment.boundary_detection(ann_times, brian_times, 
+                                                window=3, trim=False)
+        logging.info("Brian Evaluation: F: %.2f, P: %.2f, R: %.2f" % (F,P,R))
+    except:
+        logging.warning("Evaluation only available for The Beatles ds")
+
+    plt.figure(1)
+    plt.plot(nc); 
+    [plt.axvline(p, color="m", ymin=.6) for p in est_bounds]
+    [plt.axvline(b, color="b", ymax=.6, ymin=.3) for b in brian_bounds]
+    [plt.axvline(b, color="g", ymax=.3) for b in ann_bounds]
+    plt.show()
 
     return est_times
 
