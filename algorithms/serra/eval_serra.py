@@ -47,7 +47,6 @@ def process(in_path, win=3, trim=False):
         assert "Isophonics_" + os.path.basename(est_file)[:-4] == \
             os.path.basename(jam_file)[:-5]
 
-        ds_prefix = os.path.basename(est_file).split("_")[0]
         try:
             ann_times, ann_labels = mir_eval.input_output.load_jams_range(
                                     jam_file, 

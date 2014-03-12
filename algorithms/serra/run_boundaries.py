@@ -19,6 +19,7 @@ import time
 import logging
 import jams
 import segmenter as S
+import mir_eval
 
 import sys
 sys.path.append( "../../" )
@@ -27,7 +28,8 @@ import msaf_io as MSAF
 from joblib import Parallel, delayed
 
 
-def segment_track(audio_file, jam_file, in_path, annot_beats, feature):
+def segment_track(audio_file, jam_file, in_path, annot_beats, feature,
+        **params):
     """Segments the audio file with the corresponding given jam file."""
     # Only analize files with annotated beats
     if annot_beats:
@@ -37,18 +39,40 @@ def segment_track(audio_file, jam_file, in_path, annot_beats, feature):
         if jam.beats[0].data == []:
             return 
 
+    # Segment the Beatles only
+    jam_file = os.path.join(in_path, "annotations", 
+                os.path.basename(audio_file)[:-4] + ".jams")
+    ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+                            jam_file, 
+                            "sections", context="function")
+    jam = jams.load(jam_file)
+    if jam.metadata.artist != "The Beatles":
+        return None
+
     logging.info("Segmenting %s" % audio_file)
 
     # Serra segmenter call
     est_times = S.process(audio_file, feature=feature, 
-                                                annot_beats=annot_beats)
+                                    annot_beats=annot_beats, **params)
 
-    #print est_times
     # Save
     out_file = os.path.join(in_path, "estimations", 
                                 os.path.basename(audio_file)[:-4]+".json")
     MSAF.save_boundaries(out_file, est_times, annot_beats, "serra",
                                 feature=feature)
+
+    # Evaluate
+    P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
+                                                    window=3, trim=False)
+
+    data = {
+        "F" : F,
+        "P" : P,
+        "R" : R
+    }
+    return data
+
+
 
 def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1):
     """Main process."""
@@ -58,11 +82,35 @@ def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1):
     jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
     audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
 
+    # Sweep parameters
+    for M in np.arange(8, 40):
+        for m in np.arange(1,5,0.5):
+            for k in np.arange(0.01, 0.1, 0.01):
+                # Segment using joblib
+                data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
+                    audio_file, jam_file, in_path, annot_beats, feature,
+                    M=M, m=m, k=k) \
+                    for audio_file, jam_file in zip(audio_files, jam_files))
+
+                F, P, R = [], [], []
+                for d in data:
+                    if d is None:
+                        continue
+                    F.append(d["F"])
+                    P.append(d["P"])
+                    R.append(d["R"])
+                F = np.asarray(F)
+                P = np.asarray(P)
+                R = np.asarray(R)
+
+                with open("results.txt", "a") as f:
+                    f.write("%.2f\t%.2f\t%.2f\t%d\t%.2f\t%.2f\n" % (100*F.mean(), 
+                                    100*P.mean(), 100*R.mean(), M, m, k))
+
     # Segment using joblib
-    Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
-        audio_file, jam_file, in_path, annot_beats, feature) \
-        for audio_file, jam_file in zip(audio_files, jam_files))
-        
+    # data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
+    #     audio_file, jam_file, in_path, annot_beats, feature) \
+    #     for audio_file, jam_file in zip(audio_files, jam_files))
 
 
 def main():
