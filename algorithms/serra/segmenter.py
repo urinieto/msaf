@@ -84,9 +84,9 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     offset = nc.mean() * float(offset_denom)
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    plt.plot(nc)
-    plt.plot(th)
-    plt.show()
+    # plt.plot(nc)
+    # plt.plot(th)
+    # plt.show()
     peaks = []
     for i in xrange(1,nc.shape[0]-1):
         # is it a peak?
@@ -110,9 +110,9 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # Serra's params
-    M = 16      # Size of gaussian kernel
+    M = 15      # Size of gaussian kernel
     m = 1       # Size of median filter
-    k = 1       # Amount of nearest neighbors for the reccurrence plot
+    k = 0.7       # Amount of nearest neighbors for the reccurrence plot
     Mp = 8     # Size of the adaptive threshold for peak picking
     od = 0.01    # Offset coefficient for adaptive thresholding
 
