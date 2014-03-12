@@ -138,11 +138,11 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # Serra's params
-    M = 20      # Size of gaussian kernel
-    med = 1     # Size of median filter
-    m = 3       # Number of embedded dimensions
-    k = 1.2     # Amount of nearest neighbors for the reccurrence plot
-    Mp = 16     # Size of the adaptive threshold for peak picking
+    M = 18      # Size of gaussian kernel
+    # med = 1     # Size of median filter
+    m = 2.5       # Number of embedded dimensions
+    k = 0.05     # Amount of nearest neighbors for the reccurrence plot
+    Mp = 1     # Size of the adaptive threshold for peak picking
     od = -0.01  # Offset coefficient for adaptive thresholding
 
     # Read features
@@ -157,8 +157,11 @@ def process(in_path, feature="hpcp", annot_beats=False):
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
+
+    # M = int(F.shape[0] * 0.07)
+
     # Median filter
-    F = median_filter(F, M=med)
+    # F = median_filter(F, M=med)
     E = embedded_space(F, m)
     # F = gaussian_filter(E, M=2, axis=1)
     # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
@@ -168,8 +171,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
 
     # Recurrence matrix
     R = librosa.segment.recurrence_matrix(E.T, 
-                                          k=k * \
-                                            int(np.floor(np.sqrt(F.shape[0]))), 
+                                          k=k * int(F.shape[0]), 
                                           width=0, # zeros from the diagonal
                                           metric="seuclidean",
                                           sym=True).astype(np.float32)
@@ -217,19 +219,21 @@ def process(in_path, feature="hpcp", annot_beats=False):
                                 "sections", context="function")
         P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
                                                 window=3, trim=False)
-        logging.info("My Evaluation: F: %.2f, P: %.2f, R: %.2f" % (F,P,R))
+        logging.info("My Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" % \
+                            (F,P,R,in_path))
         P, R, F = mir_eval.segment.boundary_detection(ann_times, brian_times, 
                                                 window=3, trim=False)
-        logging.info("Brian Evaluation: F: %.2f, P: %.2f, R: %.2f" % (F,P,R))
+        logging.info("Brian Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" % \
+                            (F,P,R,in_path))
     except:
         logging.warning("Evaluation only available for The Beatles ds")
 
-    plt.figure(1)
-    plt.plot(nc); 
-    [plt.axvline(p, color="m", ymin=.6) for p in est_bounds]
-    [plt.axvline(b, color="b", ymax=.6, ymin=.3) for b in brian_bounds]
-    [plt.axvline(b, color="g", ymax=.3) for b in ann_bounds]
-    plt.show()
+    # plt.figure(1)
+    # plt.plot(nc); 
+    # [plt.axvline(p, color="m", ymin=.6) for p in est_bounds]
+    # [plt.axvline(b, color="b", ymax=.6, ymin=.3) for b in brian_bounds]
+    # [plt.axvline(b, color="g", ymax=.3) for b in ann_bounds]
+    # plt.show()
 
     return est_times
 
