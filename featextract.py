@@ -66,7 +66,7 @@ class STFTFeature:
                 coeffs = self.feature(freqs, mags)
             features.append(coeffs)
 
-        # Convert to Numpy array
+        # Convert to Essentia Numpy array
         features = essentia.array(features)
 
         if self.beats != []:
@@ -118,10 +118,16 @@ def compute_beatsync_features(ticks, audio):
     return mfcc, hpcp
 
 
-def compute_all_features(audio_file, audio_beats):
+def compute_all_features(audio_file, audio_beats, overwrite):
     """Computes all the features for a specific audio file and its respective
         human annotations. It creates an audio file with the estimated
         beats if needed."""
+
+    # Output file
+    out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
+                    "features", os.path.basename(audio_file)[:-4] + ".json")
+    if os.path.isfile(out_file) and not overwrite:
+        return # Do nothing, file already exist and we are not overwriting it
 
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
@@ -183,9 +189,6 @@ def compute_all_features(audio_file, audio_beats):
                                                                     audio)
 
     # Save output as json file
-    out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
-                        "features", 
-                        os.path.basename(audio_file)[:-4] + ".json")
     logging.info("Saving the JSON file in %s" % out_file)
     yaml = YamlOutput(filename=out_file, format='json')
     pool = essentia.Pool()
@@ -207,7 +210,7 @@ def compute_all_features(audio_file, audio_beats):
     yaml(pool)
 
 
-def process(in_path, audio_beats=False, n_jobs=1):
+def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
     """Main process."""
 
     # If in_path it's a file, we only compute one file
@@ -224,7 +227,8 @@ def process(in_path, audio_beats=False, n_jobs=1):
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)( \
-                audio_file, audio_beats) for audio_file in audio_files)
+                audio_file, audio_beats, overwrite) \
+                for audio_file in audio_files)
 
 
 def main():
@@ -247,6 +251,11 @@ def main():
                         type=int,
                         help="Number of jobs (threads)",
                         default=1)
+    parser.add_argument("-ow", 
+                        action="store_true", 
+                        dest="overwrite",
+                        help="Overwrite the previously computed features",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
    
@@ -255,7 +264,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.audio_beats, n_jobs=args.n_jobs)
+    process(args.in_path, args.audio_beats, n_jobs=args.n_jobs, 
+                                                    overwrite=args.overwrite)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
