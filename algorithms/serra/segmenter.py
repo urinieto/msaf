@@ -43,10 +43,13 @@ def median_filter(X, M=8):
         X[:,i] = filters.median_filter(X[:,i], size=M)
     return X
 
-def gaussian_filter(X, M=8):
+def gaussian_filter(X, M=8, axis=0):
     """Gaussian filter along the first axis of the feature matrix X."""
-    for i in xrange(X.shape[1]):
-        X[:,i] = filters.gaussian_filter(X[:,i], sigma=M/2.)
+    for i in xrange(X.shape[axis]):
+        if axis == 1:
+            X[:,i] = filters.gaussian_filter(X[:,i], sigma=M/2.)
+        elif axis == 0:
+            X[i,:] = filters.gaussian_filter(X[i,:], sigma=M/2.)
     return X    
 
 def compute_gaussian_krnl(M):
@@ -110,7 +113,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # Serra's params
-    M = 15      # Size of gaussian kernel
+    M = 16      # Size of gaussian kernel
     m = 1       # Size of median filter
     k = 0.7       # Amount of nearest neighbors for the reccurrence plot
     Mp = 8     # Size of the adaptive threshold for peak picking
@@ -130,7 +133,8 @@ def process(in_path, feature="hpcp", annot_beats=False):
 
     # Median filter
     F = median_filter(F, M=m)
-    #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+    # F = gaussian_filter(F, M=2, axis=1)
+    # plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
     # Self similarity matrix
     #S = compute_ssm(F)
@@ -145,10 +149,12 @@ def process(in_path, feature="hpcp", annot_beats=False):
 
     # Circular shift
     L = circular_shift(R)
+    # plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
     # Obtain structural features by filtering the lag matrix
-    SF = gaussian_filter(L.T, M=M)
-    #plt.imshow(SF.T, interpolation="nearest", aspect="auto"); plt.show()
+    SF = gaussian_filter(L.T, M=M, axis=1)
+    # SF = gaussian_filter(L.T, M=2, axis=0)
+    # plt.imshow(SF.T, interpolation="nearest", aspect="auto"); plt.show()
 
     # Compute the novelty curve
     nc = compute_nc(SF)
