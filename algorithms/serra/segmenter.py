@@ -156,15 +156,17 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     elif feature == "mfcc":
         F = mfcc
     elif feature == "mix":
-        F = U.lognormalize_chroma(chroma)       # Normalize chromas
-        F = np.concatenate((F, mfcc[:,1:]), axis=1)   # Using MFCC as well
+        chroma = U.lognormalize_chroma(chroma)       # Normalize chromas
+        chroma = U.normalize_matrix(chroma)
+        mfcc = U.normalize_matrix(mfcc[:,2:])
+        F = np.concatenate((chroma, mfcc), axis=1)   # Using MFCC as well
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
 
     # Emedding the feature space (i.e. shingle)
     E = embedded_space(F, m)
-    #plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
+    # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
 
     # Recurrence matrix
