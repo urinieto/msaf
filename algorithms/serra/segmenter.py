@@ -139,8 +139,8 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     """Main process."""
 
     # Serra's params
-    Mp = 1     # Size of the adaptive threshold for peak picking
-    od = -0.01  # Offset coefficient for adaptive thresholding
+    Mp = 1          # Size of the adaptive threshold for peak picking
+    od = -0.01      # Offset coefficient for adaptive thresholding
 
     M = params["M"] # Size of gaussian kernel in beats
     m = params["m"] # Number of embedded dimensions
@@ -153,24 +153,19 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     # Use specific feature
     if feature == "hpcp":
         F = U.lognormalize_chroma(chroma) #Normalize chromas
-        F = np.concatenate((F, mfcc), axis=1)   # Using MFCC as well
-        # F = chroma
-    elif "mfcc":
+    elif feature == "mfcc":
         F = mfcc
+    elif feature == "mix":
+        F = U.lognormalize_chroma(chroma)       # Normalize chromas
+        F = np.concatenate((F, mfcc[:,1:]), axis=1)   # Using MFCC as well
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
 
-    # M = int(F.shape[0] * 0.07)
-
-    # Median filter
-    # F = median_filter(F, M=med)
+    # Emedding the feature space (i.e. shingle)
     E = embedded_space(F, m)
-    # F = gaussian_filter(E, M=2, axis=1)
-    # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
+    #plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Self similarity matrix
-    #S = compute_ssm(E)
 
     # Recurrence matrix
     R = librosa.segment.recurrence_matrix(E.T, 
@@ -264,19 +259,19 @@ def main():
                         dest="M",
                         help="Size of gaussian kernel in beats",
                         type=int,
-                        default=17)
+                        default=16)
     parser.add_argument("-m", 
                         action="store", 
                         dest="m",
                         help="Number of embedded dimensions",
                         type=float,
-                        default=4)
+                        default=3)
     parser.add_argument("-k", 
                         action="store", 
                         dest="k",
                         help="k*N-nearest neighbors for recurrence plot",
                         type=float,
-                        default=0.08)
+                        default=0.06)
 
     args = parser.parse_args()
     start_time = time.time()

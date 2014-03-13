@@ -73,17 +73,9 @@ def segment_track(audio_file, jam_file, in_path, annot_beats, feature,
     }
     return data
 
-
-
-def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1, **params):
-    """Main process."""
-
-    # Get relevant files
-    ds_name = "Isophonics"
-    jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
-    audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
-
-    # Sweep parameters
+def sweep_parameters(audio_files, jam_files, in_path, annot_beats, feature,
+            n_jobs, out_file="results.txt"):
+    """Sweeps across parameters and saves results in out_file."""
     for M in np.arange(8, 40):
         for m in np.arange(1,5,0.5):
             for k in np.arange(0.01, 0.1, 0.01):
@@ -104,16 +96,32 @@ def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1, **params):
                 P = np.asarray(P)
                 R = np.asarray(R)
 
-                with open("results.txt", "a") as f:
-                    f.write("%.2f\t%.2f\t%.2f\t%d\t%.2f\t%.2f\n" % (100*F.mean(), 
-                                    100*P.mean(), 100*R.mean(), M, m, k))
+                with open(out_file, "a") as f:
+                    f.write("%.2f\t%.2f\t%.2f\t%d\t%.2f\t%.2f\n" % \
+                        (100*F.mean(), 100*P.mean(), 100*R.mean(), M, m, k))
 
-    # Segment using joblib
-    # data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
-    #     audio_file, jam_file, in_path, annot_beats, feature,
-    #     M=params["M"], m=params["m"], k=params["k"]) \
-    #     for audio_file, jam_file in zip(audio_files, jam_files))
 
+def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1, sweep=False,
+                    **params):
+    """Main process."""
+
+    # Get relevant files
+    ds_name = "Isophonics"
+    jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % \
+                                                                    ds_name))
+    audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" \
+                                                                    % ds_name))
+
+    # Sweep parameters
+    if sweep:
+        sweep_parameters(audio_files, jam_files, in_path, annot_beats, feature,
+                         n_jobs)
+    else:
+        # Segment using joblib
+        data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
+            audio_file, jam_file, in_path, annot_beats, feature,
+            M=params["M"], m=params["m"], k=params["k"]) \
+            for audio_file, jam_file in zip(audio_files, jam_files))
 
     # out_str = ""
     # for d in data:
@@ -137,11 +145,16 @@ def main():
                         help="Input dataset")
     parser.add_argument("feature",
                         action="store",
-                        help="Feature to be used (mfcc or hpcp)")
+                        help="Feature to be used (mfcc, hpcp, or mix)")
     parser.add_argument("-b", 
                         action="store_true", 
                         dest="annot_beats",
                         help="Use annotated beats",
+                        default=False)
+    parser.add_argument("-s", 
+                        action="store_true", 
+                        dest="sweep",
+                        help="Sweep across parameters",
                         default=False)
     parser.add_argument("-j", 
                         action="store", 
@@ -154,19 +167,19 @@ def main():
                         dest="M",
                         help="Size of gaussian kernel in beats",
                         type=int,
-                        default=17)
+                        default=16)
     parser.add_argument("-m", 
                         action="store", 
                         dest="m",
                         help="Number of embedded dimensions",
                         type=float,
-                        default=4)
+                        default=3)
     parser.add_argument("-k", 
                         action="store", 
                         dest="k",
                         help="k*N-nearest neighbors for recurrence plot",
                         type=float,
-                        default=0.08)
+                        default=0.06)
     args = parser.parse_args()
     start_time = time.time()
     
@@ -176,8 +189,8 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats, 
-            feature=args.feature, n_jobs=args.n_jobs, M=args.M, m=args.m,
-            k=args.k)
+            feature=args.feature, n_jobs=args.n_jobs, sweep=args.sweep, 
+            M=args.M, m=args.m, k=args.k)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
