@@ -104,6 +104,7 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     # plt.plot(nc)
     # plt.plot(th)
     # plt.show()
+    # th = np.ones(nc.shape[0]) * nc.mean() - 0.08
     peaks = []
     for i in xrange(1,nc.shape[0]-1):
         # is it a peak?
@@ -138,16 +139,12 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     """Main process."""
 
     # Serra's params
-    M = 18      # Size of gaussian kernel
-    # med = 1     # Size of median filter
-    m = 2.5       # Number of embedded dimensions
-    k = 0.05     # Amount of nearest neighbors for the reccurrence plot
     Mp = 1     # Size of the adaptive threshold for peak picking
     od = -0.01  # Offset coefficient for adaptive thresholding
 
-    M = params["M"]
-    m = params["m"]
-    k = params["k"]
+    M = params["M"] # Size of gaussian kernel in beats
+    m = params["m"] # Number of embedded dimensions
+    k = params["k"] # k*N-nearest neighbors for the recurrence plot
 
     # Read features
     chroma, mfcc, beats, dur = MSAF.get_features(in_path, 
@@ -156,6 +153,7 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     # Use specific feature
     if feature == "hpcp":
         F = U.lognormalize_chroma(chroma) #Normalize chromas
+        # F = chroma
     elif "mfcc":
         F = mfcc
     else:
@@ -200,7 +198,7 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
 
     # Re-align embedded space
-    est_bounds = np.asarray(est_bounds) + int(m) - 1
+    est_bounds = np.asarray(est_bounds) + int(np.ceil(m/2.))
 
     # Concatenate first and last boundaries
     est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1])).astype(int)
@@ -260,6 +258,25 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-M", 
+                        action="store", 
+                        dest="M",
+                        help="Size of gaussian kernel in beats",
+                        type=int,
+                        default=17)
+    parser.add_argument("-m", 
+                        action="store", 
+                        dest="m",
+                        help="Number of embedded dimensions",
+                        type=float,
+                        default=4)
+    parser.add_argument("-k", 
+                        action="store", 
+                        dest="k",
+                        help="k*N-nearest neighbors for recurrence plot",
+                        type=float,
+                        default=0.08)
+
     args = parser.parse_args()
     start_time = time.time()
    
@@ -268,7 +285,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats)
+    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats,
+        M=args.M, m=args.m, k=args.k)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
