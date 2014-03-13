@@ -153,6 +153,7 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     # Use specific feature
     if feature == "hpcp":
         F = U.lognormalize_chroma(chroma) #Normalize chromas
+        F = np.concatenate((F, mfcc), axis=1)   # Using MFCC as well
         # F = chroma
     elif "mfcc":
         F = mfcc
