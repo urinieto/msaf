@@ -84,46 +84,46 @@ def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1, **params):
     audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
 
     # Sweep parameters
-    # for M in np.arange(8, 40):
-    #     for m in np.arange(1,5,0.5):
-    #         for k in np.arange(0.01, 0.1, 0.01):
-    #             # Segment using joblib
-    #             data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
-    #                 audio_file, jam_file, in_path, annot_beats, feature,
-    #                 M=M, m=m, k=k) \
-    #                 for audio_file, jam_file in zip(audio_files, jam_files))
+    for M in np.arange(8, 40):
+        for m in np.arange(1,5,0.5):
+            for k in np.arange(0.01, 0.1, 0.01):
+                # Segment using joblib
+                data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
+                    audio_file, jam_file, in_path, annot_beats, feature,
+                    M=M, m=m, k=k) \
+                    for audio_file, jam_file in zip(audio_files, jam_files))
 
-    #             F, P, R = [], [], []
-    #             for d in data:
-    #                 if d is None:
-    #                     continue
-    #                 F.append(d["F"])
-    #                 P.append(d["P"])
-    #                 R.append(d["R"])
-    #             F = np.asarray(F)
-    #             P = np.asarray(P)
-    #             R = np.asarray(R)
+                F, P, R = [], [], []
+                for d in data:
+                    if d is None:
+                        continue
+                    F.append(d["F"])
+                    P.append(d["P"])
+                    R.append(d["R"])
+                F = np.asarray(F)
+                P = np.asarray(P)
+                R = np.asarray(R)
 
-    #             with open("results.txt", "a") as f:
-    #                 f.write("%.2f\t%.2f\t%.2f\t%d\t%.2f\t%.2f\n" % (100*F.mean(), 
-    #                                 100*P.mean(), 100*R.mean(), M, m, k))
+                with open("results.txt", "a") as f:
+                    f.write("%.2f\t%.2f\t%.2f\t%d\t%.2f\t%.2f\n" % (100*F.mean(), 
+                                    100*P.mean(), 100*R.mean(), M, m, k))
 
     # Segment using joblib
-    data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
-        audio_file, jam_file, in_path, annot_beats, feature,
-        M=params["M"], m=params["m"], k=params["k"]) \
-        for audio_file, jam_file in zip(audio_files, jam_files))
+    # data = Parallel(n_jobs=n_jobs)(delayed(segment_track)( \
+    #     audio_file, jam_file, in_path, annot_beats, feature,
+    #     M=params["M"], m=params["m"], k=params["k"]) \
+    #     for audio_file, jam_file in zip(audio_files, jam_files))
 
 
-    out_str = ""
-    for d in data:
-        if d is None:
-            continue
-        out_str += "%s\t%.2f\t%.2f\t%.2f\n" % (d["audio_file"], 
-                    100*d["F"], 100*d["P"], 100*d["R"])
+    # out_str = ""
+    # for d in data:
+    #     if d is None:
+    #         continue
+    #     out_str += "%s\t%.2f\t%.2f\t%.2f\n" % (d["audio_file"], 
+    #                 100*d["F"], 100*d["P"], 100*d["R"])
 
-    with open("beatles_results.txt", "w") as f:
-        f.write(out_str)
+    # with open("beatles_results.txt", "w") as f:
+    #     f.write(out_str)
 
 
 def main():
