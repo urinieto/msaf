@@ -178,27 +178,32 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
                                           metric="seuclidean",
                                           sym=True).astype(np.float32)
 
-    # Circular shift
-    L = circular_shift(R)
-    # plt.imshow(R, interpolation="nearest", cmap=plt.get_cmap("binary")); plt.show()
+    # Check size in case the track is too short
+    if R.shape[0] > 0:
+        # Circular shift
+        L = circular_shift(R)
+        # plt.imshow(R, interpolation="nearest", cmap=plt.get_cmap("binary")); plt.show()
 
-    # Obtain structural features by filtering the lag matrix
-    SF = gaussian_filter(L.T, M=M, axis=1)
-    SF = gaussian_filter(L.T, M=1, axis=0)
-    # plt.imshow(SF.T, interpolation="nearest", aspect="auto"); plt.show()
+        # Obtain structural features by filtering the lag matrix
+        SF = gaussian_filter(L.T, M=M, axis=1)
+        SF = gaussian_filter(L.T, M=1, axis=0)
+        # plt.imshow(SF.T, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Compute the novelty curve
-    nc = compute_nc(SF)
+        # Compute the novelty curve
+        nc = compute_nc(SF)
 
-    # Read annotated bounds for comparison purposes
-    ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
-    logging.info("Annotated bounds: %s" % ann_bounds)
+        # Read annotated bounds for comparison purposes
+        ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
+        logging.info("Annotated bounds: %s" % ann_bounds)
 
-    # Find peaks in the novelty curve
-    est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
+        # Find peaks in the novelty curve
+        est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
 
-    # Re-align embedded space
-    est_bounds = np.asarray(est_bounds) + int(np.ceil(m/2.))
+        # Re-align embedded space
+        est_bounds = np.asarray(est_bounds) + int(np.ceil(m/2.))
+
+    else:
+        est_bounds = []
 
     # Concatenate first and last boundaries
     est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1])).astype(int)
