@@ -6,7 +6,9 @@ method:
 
 Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2012). Unsupervised 
 Detection of Music Boundaries by Time Series Structure Features. 
-In Proc. of the 26th AAAI Conference on Artificial Intelligence (pp. 1613–1619). 
+In Proc. of the 26th AAAI Conference on Artificial Intelligence 
+(pp. 1613–1619). 
+
 Toronto, Canada.
 """
 
