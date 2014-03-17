@@ -39,15 +39,23 @@ def segment_track(audio_file, jam_file, in_path, annot_beats, feature,
         if jam.beats[0].data == []:
             return 
 
+    prefix_dict = {
+        "Cerulean"      : "large_scale",
+        "Epiphyte"      : "function",
+        "Isophonics"    : "function",
+        "SALAMI"        : "large_scale"
+    }
+
     # Segment the Beatles only
     jam_file = os.path.join(in_path, "annotations", 
                 os.path.basename(audio_file)[:-4] + ".jams")
-    ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+    ds_prefix = os.path.basename(audio_file).split("_")[0]
+    try:
+        ann_times, ann_labels = mir_eval.input_output.load_jams_range(
                             jam_file, 
-                            "sections", context="function")
-    jam = jams.load(jam_file)
-    if jam.metadata.artist != "The Beatles":
-        return None
+                            "sections", context=prefix_dict[ds_prefix])
+    except:
+        ann_times = []
 
     logging.info("Segmenting %s" % audio_file)
 
