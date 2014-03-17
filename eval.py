@@ -3,11 +3,11 @@
 Evaluates the estimated results of the Segmentation dataset
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
+__author__      = "Oriol Nieto"
+__copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
+__license__     = "GPL"
+__version__     = "1.0"
+__email__       = "oriol@nyu.edu"
 
 import argparse
 import glob
@@ -26,6 +26,13 @@ import jams
 
 import msaf_io as MSAF
 
+
+def print_results(PRF, window):
+    """Print the results."""
+    PRF = np.asarray(PRF)
+    res = 100*PRF.mean(axis=0)
+    logging.info("Window: %.1f\tF: %.2f, P: %.2f, R: %.2f" % (window, 
+                                                    res[2], res[0], res[1]))
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, 
@@ -57,12 +64,14 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
         "SALAMI"        : "large_scale"
     }
 
-    conn = sqlite3.connect("results/results.sqlite3")
+    conn = sqlite3.connect("results/results.sqlite")
+    c = conn.cursor()
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
     # Compute features for each file
-    PRF = []  # Results: Precision, Recall, F-measure
+    PRF3 = []  # Results: Precision, Recall, F-measure 3 seconds
+    PRF05 = []  # Results: Precision, Recall, F-measure 0.5 seconds
     #for jam_file, est_file in zip(jam_files, est_files):
     for est_file in est_files:
 
@@ -93,18 +102,42 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
             if num < 956 or num > 1498:
                 continue
 
-        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
+        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, 
+                                         **params)
         if est_times == []: continue
 
-        P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
-                                                window=win, trim=trim)
+        P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times, 
+                                                window=3, trim=trim)
+        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times, est_times, 
+                                                window=0.5, trim=trim)
         
-        PRF.append([P,R,F])
+        PRF3.append([P3,R3,F3])
+        PRF05.append([P05,R05,F05])
 
-    PRF = np.asarray(PRF)
-    res = 100*PRF.mean(axis=0)
-    logging.info("F: %.2f, P: %.2f, R: %.2f" % (res[2], res[0], res[1]))
-    logging.info("%d tracks analized" % PRF.shape[0])
+        # Save Track Result to database
+        try:
+            feature = params["feature"]
+        except:
+            feature = ""
+        sql_cmd = 'INSERT INTO %s_bounds VALUES ("%s", %f, %f, %f, %f, %f, ' \
+                    '%f, %d, "%s", "%s", %d)' % (
+                    alg_id, os.path.basename(est_file), F05, P05, R05, 
+                    F3, P3, R3, annot_beats, feature, "none", trim)
+        #sql_cmd = sql_cmd.replace("}", "").replace("{", "").replace(":","")
+        #sql_cmd = sql_cmd.replace("'","\\'")
+        print sql_cmd
+        c.execute(sql_cmd)
+
+    # Print results
+    print_results(PRF3, 3)
+    print_results(PRF05, 0.5)
+
+    # Commit changes to database and close
+    conn.commit()
+    conn.close()
+    
+    logging.info("%d tracks analized" % len(PRF3))
+        
 
 
 def main():
