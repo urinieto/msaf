@@ -112,6 +112,8 @@ def process(in_path, annot_beats=False, feature="mfcc", n_jobs=1, sweep=False,
     audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" \
                                                                     % ds_name))
 
+    print len(audio_files), len(jam_files)
+
     # Sweep parameters
     if sweep:
         sweep_parameters(audio_files, jam_files, in_path, annot_beats, feature,
