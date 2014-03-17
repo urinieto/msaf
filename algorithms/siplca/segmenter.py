@@ -528,9 +528,9 @@ def _die_with_usage():
 def _main(args):
     inputfilename, outputfilename, kwargs = _parse_args(args)
     output, beattimes, labels = segment_wavfile(inputfilename, **kwargs)
-    f = open(outputfilename, 'w')
-    f.write(output)
-    f.close()
+    with open(outputfilename, 'w') as f:
+	f.write(output)
+	f.close()
 
 if __name__ == '__main__':
     _main(sys.argv[1:])
