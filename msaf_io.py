@@ -20,6 +20,12 @@ import numpy as np
 # Local stuff
 import jams
 
+prefix_dict = {
+        "Cerulean"      : "large_scale",
+        "Epiphyte"      : "function",
+        "Isophonics"    : "function",
+        "SALAMI"        : "large_scale"
+}
 
 def read_boundaries(est_file, alg_id, annot_beats, **params):
     """Reads the boundaries from an estimated file."""
