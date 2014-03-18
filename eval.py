@@ -34,6 +34,57 @@ def print_results(PRF, window):
     logging.info("Window: %.1f\tF: %.2f, P: %.2f, R: %.2f" % (window, 
                                                     res[2], res[0], res[1]))
 
+def save_one_result_ds(cursor, alg_id, file_name, PRF3, PRF05, annot_beats, trim, 
+                    feature):
+    """Saves one result for one track into the SQLite dataset. If result exist, 
+    ignore it."""
+
+    all_values = (file_name, PRF05[2], PRF05[0], PRF05[1], 
+                PRF3[2], PRF3[0], PRF3[1], annot_beats, feature, "none", trim)
+    select_values = (file_name, annot_beats, feature, trim)
+
+    # Check if exists
+    cursor.execute("SELECT * FROM %s_bounds WHERE track_id=? AND " \
+            "annot_beat=? AND feature==? AND trim=?" % alg_id, select_values)
+
+    # Save if it doesn't exist
+    if cursor.fetchone() is None:
+        sql_cmd = 'INSERT INTO %s_bounds VALUES (?, ?, ?, ?, ?, ?, ' \
+                    '?, ?, ?, ?, ?)' % (alg_id)
+        cursor.execute(sql_cmd, all_values)
+
+
+def save_avg_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim, 
+                    feature, est_files):
+    """Saves the results into the SQLite dataset. If result exist, 
+    ignore it."""
+
+    datasets = ["Cerulean", "Epiphyte", "Isophonics", "SALAMI"]
+    PRF3 = np.asarray(PRF3)
+    PRF05 = np.asarray(PRF05)
+    for dataset in datasets:
+        idxs = np.asarray([i for i,f in enumerate(est_files) if \
+                os.path.basename(f).split("_")[0] == dataset])
+        print idxs
+        PRF05_ds = np.mean(PRF05[idxs], axis=0)
+        PRF3_ds = np.mean(PRF3[idxs], axis=0)
+        all_values = (alg_id, dataset, PRF05_ds[2], PRF05_ds[0], PRF05_ds[1], 
+                PRF3_ds[2], PRF3_ds[0], PRF3_ds[1], annot_beats, feature, 
+                "none", trim)
+        select_values = (alg_id, dataset, annot_beats, feature, trim)
+
+        # Check if exists
+        cursor.execute("SELECT * FROM boundaries WHERE algo_id=? AND " \
+                "ds_name=? AND annot_beat=? AND feature==? AND trim=?",
+                select_values)
+
+        # Save if it doesn't exist
+        if cursor.fetchone() is None:
+            sql_cmd = 'INSERT INTO boundaries VALUES (?, ?, ?, ?, ?, ?, ' \
+                        '?, ?, ?, ?, ?, ?)'
+            cursor.execute(sql_cmd, all_values)
+
+    
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, 
                 trim=False, **params):
@@ -57,14 +108,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
     est_files = glob.glob(os.path.join(in_path, "estimations", 
                                             "%s_*.json" % ds_name))
 
-    prefix_dict = {
-        "Cerulean"      : "large_scale",
-        "Epiphyte"      : "function",
-        "Isophonics"    : "function",
-        "SALAMI"        : "large_scale"
-    }
-
     conn = sqlite3.connect("results/results.sqlite")
+    conn.text_factory = str # Fixes the 8-bit encoding string problem
     c = conn.cursor()
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
@@ -72,7 +117,12 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
     # Compute features for each file
     PRF3 = []  # Results: Precision, Recall, F-measure 3 seconds
     PRF05 = []  # Results: Precision, Recall, F-measure 0.5 seconds
-    #for jam_file, est_file in zip(jam_files, est_files):
+
+    try:
+        feature = params["feature"]
+    except:
+        feature = ""
+
     for est_file in est_files:
 
         # Get corresponding estimation files
@@ -86,8 +136,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
         ds_prefix = os.path.basename(est_file).split("_")[0]
         try:
             ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                    jam_file, 
-                                    "sections", context=prefix_dict[ds_prefix])
+                                    jam_file, "sections", 
+                                    context=MSAF.prefix_dict[ds_prefix])
         except:
             logging.warning("No annotations for file: %s" % jam_file)
             continue
@@ -108,25 +158,19 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
 
         P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times, 
                                                 window=3, trim=trim)
-        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times, est_times, 
-                                                window=0.5, trim=trim)
+        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times, 
+                                    est_times, window=0.5, trim=trim)
         
         PRF3.append([P3,R3,F3])
         PRF05.append([P05,R05,F05])
 
         # Save Track Result to database
-        try:
-            feature = params["feature"]
-        except:
-            feature = ""
-        sql_cmd = 'INSERT INTO %s_bounds VALUES ("%s", %f, %f, %f, %f, %f, ' \
-                    '%f, %d, "%s", "%s", %d)' % (
-                    alg_id, os.path.basename(est_file), F05, P05, R05, 
-                    F3, P3, R3, annot_beats, feature, "none", trim)
-        #sql_cmd = sql_cmd.replace("}", "").replace("{", "").replace(":","")
-        #sql_cmd = sql_cmd.replace("'","\\'")
-        print sql_cmd
-        c.execute(sql_cmd)
+        save_one_result_ds(c, alg_id, os.path.basename(est_file), PRF05[-1], 
+                        PRF3[-1], annot_beats, trim, feature)
+
+    # Save average results
+    save_avg_results_ds(c, alg_id, PRF3, PRF05, annot_beats, trim, 
+                    feature, est_files)
 
     # Print results
     print_results(PRF3, 3)
