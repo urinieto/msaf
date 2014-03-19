@@ -8,6 +8,7 @@ Features to be computed:
 - MFCC: Mel Frequency Cepstral Coefficients
 - HPCP: Harmonic Pithc Class Profile
 - Beats
+Hey Caverna
 """
 
 __author__ = "Oriol Nieto"
@@ -38,9 +39,9 @@ HOP_SIZE = 512
 WINDOW_TYPE = "blackmanharris74"
 
 class STFTFeature:
-    """Class to easily compute the features that require a frame based 
+    """Class to easily compute the features that require a frame based
         spectrum process (or STFT)."""
-    def __init__(self, frame_size, hop_size, window_type, feature, 
+    def __init__(self, frame_size, hop_size, window_type, feature,
             beats, sample_rate):
         """STFTFeature constructor."""
         self.frame_size = frame_size
@@ -56,7 +57,7 @@ class STFTFeature:
         """Computes the specified Essentia features from the audio array."""
         features = []
 
-        for frame in ES.FrameGenerator(audio, 
+        for frame in ES.FrameGenerator(audio,
                 frameSize=self.frame_size, hopSize=self.hop_size):
             if self.feature.name() == "MFCC":
                 bands, coeffs = self.feature(self.spectrum(self.w(frame)))
@@ -105,9 +106,9 @@ def compute_beats(audio):
 def compute_beatsync_features(ticks, audio):
     """Computes the HPCP and MFCC beat-synchronous features given a set
         of beats (ticks)."""
-    MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.MFCC(numberCoefficients=14), 
+    MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.MFCC(numberCoefficients=14),
         ticks, SAMPLE_RATE)
-    HPCP = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.HPCP(), 
+    HPCP = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.HPCP(),
         ticks, SAMPLE_RATE)
     logging.info("Computing Beat-synchronous MFCCs...")
     mfcc = MFCC.compute_features(audio)
@@ -144,7 +145,7 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     # Save output as audio file
     if audio_beats:
         logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=ticks, type='beep', 
+        marker = ES.AudioOnsetsMarker(onsets=ticks, type='beep',
                                       sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)(marked_audio)
@@ -157,7 +158,7 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     #         bounds.append(data.start.value)
     #         bounds.append(data.end.value)
     #     bounds = essentia.array(np.unique(bounds))
-    #     marker = ES.AudioOnsetsMarker(onsets=bounds, type='beep', 
+    #     marker = ES.AudioOnsetsMarker(onsets=bounds, type='beep',
     #                                   sampleRate=SAMPLE_RATE)
     #     marked_audio = marker(audio)
     #     ES.MonoWriter(filename='bounds.wav', sampleRate=SAMPLE_RATE)(marked_audio)
@@ -165,14 +166,14 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     # Save beats as an audio file if needed
     if audio_beats:
         logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=annot_ticks, type='beep', 
+        marker = ES.AudioOnsetsMarker(onsets=annot_ticks, type='beep',
                                       sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav', sampleRate=SAMPLE_RATE)\
                                                             (marked_audio)
 
     # Read annotations if they exist in path/annotations/file.jams
-    jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)), 
+    jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
                  "annotations", os.path.basename(audio_file)[:-4] + ".jams")
     if os.path.isfile(jam_file):
         jam = jams.load(jam_file)
@@ -185,7 +186,7 @@ def compute_all_features(audio_file, audio_beats, overwrite):
             for data in annot.data:
                 annot_ticks.append(data.time.value)
             annot_ticks = essentia.array(np.unique(annot_ticks).tolist())
-            annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks, 
+            annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks,
                                                                     audio)
 
     # Save output as json file
@@ -222,7 +223,7 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
         utils.ensure_dir(in_path)
 
         # Get files
-        audio_files = glob.glob(os.path.join(in_path, "audio", 
+        audio_files = glob.glob(os.path.join(in_path, "audio",
                                     "*.[wm][ap][v3]"))
 
         # Compute features using joblib
@@ -240,31 +241,31 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset dir or audio file")
-    parser.add_argument("-a", 
-                        action="store_true", 
-                        dest="audio_beats", 
+    parser.add_argument("-a",
+                        action="store_true",
+                        dest="audio_beats",
                         help="Output audio file with estimated beats",
                         default=False)
-    parser.add_argument("-j", 
-                        action="store", 
+    parser.add_argument("-j",
+                        action="store",
                         dest="n_jobs",
                         type=int,
                         help="Number of jobs (threads)",
                         default=1)
-    parser.add_argument("-ow", 
-                        action="store_true", 
+    parser.add_argument("-ow",
+                        action="store_true",
                         dest="overwrite",
                         help="Overwrite the previously computed features",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.audio_beats, n_jobs=args.n_jobs, 
+    process(args.in_path, args.audio_beats, n_jobs=args.n_jobs,
                                                     overwrite=args.overwrite)
 
     # Done!
