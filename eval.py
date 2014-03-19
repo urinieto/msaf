@@ -31,62 +31,12 @@ def print_results(PRF, window):
     """Print the results."""
     PRF = np.asarray(PRF)
     res = 100*PRF.mean(axis=0)
-    logging.info("Window: %.1f\tF: %.2f, P: %.2f, R: %.2f" % (window, 
+    logging.info("Window: %.1f\tF: %.2f, P: %.2f, R: %.2f" % (window,
                                                     res[2], res[0], res[1]))
 
-def save_one_result_ds(cursor, alg_id, file_name, PRF3, PRF05, annot_beats, trim, 
-                    feature):
-    """Saves one result for one track into the SQLite dataset. If result exist, 
-    ignore it."""
 
-    all_values = (file_name, PRF05[2], PRF05[0], PRF05[1], 
-                PRF3[2], PRF3[0], PRF3[1], annot_beats, feature, "none", trim)
-    select_values = (file_name, annot_beats, feature, trim)
-
-    # Check if exists
-    cursor.execute("SELECT * FROM %s_bounds WHERE track_id=? AND " \
-            "annot_beat=? AND feature==? AND trim=?" % alg_id, select_values)
-
-    # Save if it doesn't exist
-    if cursor.fetchone() is None:
-        sql_cmd = 'INSERT INTO %s_bounds VALUES (?, ?, ?, ?, ?, ?, ' \
-                    '?, ?, ?, ?, ?)' % (alg_id)
-        cursor.execute(sql_cmd, all_values)
-
-
-def save_avg_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim, 
-                    feature, est_files):
-    """Saves the results into the SQLite dataset. If result exist, 
-    ignore it."""
-
-    datasets = ["Cerulean", "Epiphyte", "Isophonics", "SALAMI"]
-    PRF3 = np.asarray(PRF3)
-    PRF05 = np.asarray(PRF05)
-    for dataset in datasets:
-        idxs = np.asarray([i for i,f in enumerate(est_files) if \
-                os.path.basename(f).split("_")[0] == dataset])
-        print idxs
-        PRF05_ds = np.mean(PRF05[idxs], axis=0)
-        PRF3_ds = np.mean(PRF3[idxs], axis=0)
-        all_values = (alg_id, dataset, PRF05_ds[2], PRF05_ds[0], PRF05_ds[1], 
-                PRF3_ds[2], PRF3_ds[0], PRF3_ds[1], annot_beats, feature, 
-                "none", trim)
-        select_values = (alg_id, dataset, annot_beats, feature, trim)
-
-        # Check if exists
-        cursor.execute("SELECT * FROM boundaries WHERE algo_id=? AND " \
-                "ds_name=? AND annot_beat=? AND feature==? AND trim=?",
-                select_values)
-
-        # Save if it doesn't exist
-        if cursor.fetchone() is None:
-            sql_cmd = 'INSERT INTO boundaries VALUES (?, ?, ?, ?, ?, ?, ' \
-                        '?, ?, ?, ?, ?, ?)'
-            cursor.execute(sql_cmd, all_values)
-
-    
-def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim, 
-                    feature, track_id=None, files=None):
+def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
+                    feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
 
     Parameters
@@ -94,8 +44,53 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
 
     TODO
     """
+    # Sanity Check
+    if track_id is None and ds_name is None:
+        logging.error("You should pass at least a track id or a dataset name")
+        return
 
-def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, 
+    # Make sure that the results are stored in numpy arrays
+    PRF3 = np.asarray(PRF3)
+    PRF05 = np.asarray(PRF05)
+
+    if track_id is not None:
+        all_values = (track_id, PRF05[2], PRF05[0], PRF05[1],
+                PRF3[2], PRF3[0], PRF3[1], annot_beats, feature, "none", trim)
+        table = "%s_bounds" % alg_id
+        select_where = "track_id=?"
+        select_values = (track_id, annot_beats, feature, trim)
+    elif ds_name is not None:
+        # Aggregate results
+        PRF05 = np.mean(PRF05, axis=0)
+        PRF3 = np.mean(PRF3, axis=0)
+        all_values = (alg_id, ds_name, PRF05[2], PRF05[0], PRF05[1],
+                PRF3[2], PRF3[0], PRF3[1], annot_beats, feature, "none", trim)
+        table = "boundaries"
+        select_where = "algo_id=? AND ds_name=?"
+        select_values = (alg_id, ds_name,
+                annot_beats, feature, trim)
+
+    # Check if exists
+    cursor.execute("SELECT * FROM %s WHERE %s AND annot_beat=? AND " \
+            "feature=? AND trim=?"% (table, select_where), select_values)
+
+    # Insert new if it doesn't exist
+    if cursor.fetchone() is None:
+        questions = "?," * len(all_values)
+        sql_cmd = "INSERT INTO %s VALUES (%s)" % (table, questions[:-1])
+        cursor.execute(sql_cmd, all_values)
+    else:
+        # Update row
+        evaluations = (PRF05[2], PRF05[0], PRF05[1], PRF3[2], PRF3[0], PRF3[1])
+        evaluations += select_values
+        sql_cmd = "UPDATE %s SET F05=? AND P05=? AND R05=? AND F3=? AND " \
+                    "P3=? AND R3=?  WHERE %s AND annot_beat=? AND " \
+                    "feature=? AND trim=?" % (table, select_where)
+        cursor.execute(sql_cmd, evaluations)
+
+
+
+def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
                 trim=False, **params):
     """Main process."""
 
@@ -112,9 +107,9 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
         ds_name = "SALAMI"
 
     # Get files
-    jam_files = glob.glob(os.path.join(in_path, "annotations", 
+    jam_files = glob.glob(os.path.join(in_path, "annotations",
                                             "%s_*.jams" % ds_name))
-    est_files = glob.glob(os.path.join(in_path, "estimations", 
+    est_files = glob.glob(os.path.join(in_path, "estimations",
                                             "%s_*.json" % ds_name))
 
     conn = sqlite3.connect("results/results.sqlite")
@@ -124,13 +119,21 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
     # Compute features for each file
-    PRF3 = []  # Results: Precision, Recall, F-measure 3 seconds
-    PRF05 = []  # Results: Precision, Recall, F-measure 0.5 seconds
+    PRF3 = np.empty((0,3))  # Results: Precision, Recall, F-measure 3 seconds
+    PRF05 = np.empty((0,3)) # Results: Precision, Recall, F-measure 0.5 seconds
+
+
+    # Dataset results
+    PRF3_ds = []
+    PRF05_ds = []
+
 
     try:
         feature = params["feature"]
     except:
         feature = ""
+
+    curr_ds = os.path.basename(est_files[0]).split("_")[0]
 
     for est_file in est_files:
 
@@ -145,7 +148,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
         ds_prefix = os.path.basename(est_file).split("_")[0]
         try:
             ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                    jam_file, "sections", 
+                                    jam_file, "sections",
                                     context=MSAF.prefix_dict[ds_prefix])
         except:
             logging.warning("No annotations for file: %s" % jam_file)
@@ -161,25 +164,43 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
             if num < 956 or num > 1498:
                 continue
 
-        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, 
+        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats,
                                          **params)
         if est_times == []: continue
 
-        P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times, 
+        P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
                                                 window=3, trim=trim)
-        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times, 
+        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
                                     est_times, window=0.5, trim=trim)
-        
-        PRF3.append([P3,R3,F3])
-        PRF05.append([P05,R05,F05])
+
+        PRF3_ds.append([P3,R3,F3])
+        PRF05_ds.append([P05,R05,F05])
 
         # Save Track Result to database
-        save_one_result_ds(c, alg_id, os.path.basename(est_file), PRF05[-1], 
-                        PRF3[-1], annot_beats, trim, feature)
+        save_results_ds(c, alg_id, PRF3_ds[-1], PRF05_ds[-1], annot_beats, trim,
+                    feature, track_id=os.path.basename(est_file))
 
-    # Save average results
-    save_avg_results_ds(c, alg_id, PRF3, PRF05, annot_beats, trim, 
-                    feature, est_files)
+        # Store dataset results if needed
+        actual_ds_name = os.path.basename(est_file).split("_")[0]
+        if curr_ds != actual_ds_name:
+            save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, annot_beats, trim,
+                    feature, ds_name=curr_ds)
+            curr_ds = actual_ds_name
+            # Add to global results
+            PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
+            PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
+            PRF3_ds = []
+            PRF05_ds = []
+
+    # Save and add last results
+    save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, annot_beats, trim,
+                    feature, ds_name=curr_ds)
+    PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
+    PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
+
+    # Save all results
+    save_results_ds(c, alg_id, PRF3, PRF05, annot_beats, trim,
+                    feature, ds_name="all")
 
     # Print results
     print_results(PRF3, 3)
@@ -188,9 +209,9 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
     # Commit changes to database and close
     conn.commit()
     conn.close()
-    
+
     logging.info("%d tracks analized" % len(PRF3))
-        
+
 
 
 def main():
@@ -210,8 +231,8 @@ def main():
                         default="*",
                         help="The prefix of the dataset to use "\
                             "(e.g. Isophonics, SALAMI")
-    parser.add_argument("-b", 
-                        action="store_true", 
+    parser.add_argument("-b",
+                        action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
@@ -227,16 +248,16 @@ def main():
                         default="",
                         type=str,
                         help="Type of features (e.g. mfcc, hpcp")
-    parser.add_argument("-t", 
-                        action="store_true", 
+    parser.add_argument("-t",
+                        action="store_true",
                         dest="trim",
                         help="Trim the first and last boundaries",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm
