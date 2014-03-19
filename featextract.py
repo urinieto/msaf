@@ -8,7 +8,6 @@ Features to be computed:
 - MFCC: Mel Frequency Cepstral Coefficients
 - HPCP: Harmonic Pithc Class Profile
 - Beats
-Hey Caverna
 """
 
 __author__ = "Oriol Nieto"
