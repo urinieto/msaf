@@ -59,7 +59,8 @@ CREATE TABLE boundaries (
     R3         REAL,
     annot_beat INTEGER,
     feature    TEXT,
-    add_params TEXT 
+    add_params TEXT,
+    trim       INT 
 );
 
 
