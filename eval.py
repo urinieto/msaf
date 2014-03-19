@@ -85,6 +85,15 @@ def save_avg_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
             cursor.execute(sql_cmd, all_values)
 
     
+def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim, 
+                    feature, track_id=None, files=None):
+    """Saves the results into the dataset.
+
+    Parameters
+    ==========
+
+    TODO
+    """
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3, 
                 trim=False, **params):
