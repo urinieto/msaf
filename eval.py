@@ -83,8 +83,8 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
         # Update row
         evaluations = (PRF05[2], PRF05[0], PRF05[1], PRF3[2], PRF3[0], PRF3[1])
         evaluations += select_values
-        sql_cmd = "UPDATE %s SET F05=? AND P05=? AND R05=? AND F3=? AND " \
-                    "P3=? AND R3=?  WHERE %s AND annot_beat=? AND " \
+        sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
+                    "P3=?, R3=?  WHERE %s AND annot_beat=? AND " \
                     "feature=? AND trim=?" % (table, select_where)
         cursor.execute(sql_cmd, evaluations)
 
