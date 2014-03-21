@@ -8,6 +8,7 @@ CREATE TABLE siplca_bounds (
     F3         REAL,
     P3         REAL,
     R3         REAL,
+    D          REAL,
     annot_beat INTEGER,
     feature    TEXT,
     add_params TEXT,
@@ -24,6 +25,7 @@ CREATE TABLE levy_bounds (
     F3         REAL,
     P3         REAL,
     R3         REAL,
+    D          REAL,
     annot_beat INTEGER,
     feature    TEXT,
     add_params TEXT,
@@ -40,6 +42,7 @@ CREATE TABLE olda_bounds (
     F3         REAL,
     P3         REAL,
     R3         REAL,
+    D          REAL,
     annot_beat INTEGER,
     feature    TEXT,
     add_params TEXT,
@@ -57,6 +60,7 @@ CREATE TABLE boundaries (
     F3         REAL,
     P3         REAL,
     R3         REAL,
+    D          REAL,
     annot_beat INTEGER,
     feature    TEXT,
     add_params TEXT,
@@ -73,6 +77,7 @@ CREATE TABLE serra_bounds (
     F3         REAL,
     P3         REAL,
     R3         REAL,
+    D          REAL,
     annot_beat INTEGER,
     feature    TEXT,
     add_params TEXT,
@@ -89,9 +94,26 @@ CREATE TABLE foote_bounds (
     F3         REAL,
     P3         REAL,
     R3         REAL,
+    D          REAL,
     annot_beat INTEGER,
     feature    TEXT,
     add_params TEXT,
     trim       INT 
 );
 
+ALTER TABLE boundaries RENAME TO TempOldTable;
+CREATE TABLE boundaries ( 
+    algo_id    TEXT,
+    ds_name    TEXT,
+    F05        REAL,
+    P05        REAL,
+    R05        REAL,
+    F3         REAL,
+    P3         REAL,
+    R3         REAL,
+    D          REAL,
+    annot_beat INTEGER,
+    feature    TEXT,
+    add_params TEXT,
+    trim       INT 
+);

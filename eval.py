@@ -35,7 +35,7 @@ def print_results(PRF, window):
                                                     res[2], res[0], res[1]))
 
 
-def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
+def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
                     feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
 
@@ -63,8 +63,9 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
         # Aggregate results
         PRF05 = np.mean(PRF05, axis=0)
         PRF3 = np.mean(PRF3, axis=0)
+        D = np.mean(np.asarray(D))
         all_values = (alg_id, ds_name, PRF05[2], PRF05[0], PRF05[1],
-                PRF3[2], PRF3[0], PRF3[1], annot_beats, feature, "none", trim)
+                PRF3[2], PRF3[0], PRF3[1], D, annot_beats, feature, "none", trim)
         table = "boundaries"
         select_where = "algo_id=? AND ds_name=?"
         select_values = (alg_id, ds_name,
@@ -81,10 +82,11 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, annot_beats, trim,
         cursor.execute(sql_cmd, all_values)
     else:
         # Update row
-        evaluations = (PRF05[2], PRF05[0], PRF05[1], PRF3[2], PRF3[0], PRF3[1])
+        evaluations = (PRF05[2], PRF05[0], PRF05[1], PRF3[2], PRF3[0], 
+                        PRF3[1], D)
         evaluations += select_values
         sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
-                    "P3=?, R3=?  WHERE %s AND annot_beat=? AND " \
+                    "P3=?, R3=?, D=?  WHERE %s AND annot_beat=? AND " \
                     "feature=? AND trim=?" % (table, select_where)
         cursor.execute(sql_cmd, evaluations)
 
@@ -121,12 +123,13 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
     # Compute features for each file
     PRF3 = np.empty((0,3))  # Results: Precision, Recall, F-measure 3 seconds
     PRF05 = np.empty((0,3)) # Results: Precision, Recall, F-measure 0.5 seconds
+    D = np.empty((0))       # Information Gain
 
 
     # Dataset results
     PRF3_ds = []
     PRF05_ds = []
-
+    D_ds = []
 
     try:
         feature = params["feature"]
@@ -173,38 +176,55 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
         P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
                                     est_times, window=0.5, trim=trim)
 
+        # Information gain
+        ann_times = np.concatenate((ann_times.flatten()[::2], 
+                                    [ann_times[-1,-1]]))
+        try:
+            D_ds.append(mir_eval.beat.information_gain(ann_times, est_times,
+                                                    bins=10))
+        except:
+            logging.warning("Couldn't compute the Information Gain for file " \
+                            "%s" % est_file)
+            D_ds.append(0)
+
         PRF3_ds.append([P3,R3,F3])
         PRF05_ds.append([P05,R05,F05])
 
         # Save Track Result to database
-        save_results_ds(c, alg_id, PRF3_ds[-1], PRF05_ds[-1], annot_beats, trim,
-                    feature, track_id=os.path.basename(est_file))
+        save_results_ds(c, alg_id, PRF3_ds[-1], PRF05_ds[-1], D_ds[-1], 
+            annot_beats, trim, feature, track_id=os.path.basename(est_file))
 
         # Store dataset results if needed
         actual_ds_name = os.path.basename(est_file).split("_")[0]
         if curr_ds != actual_ds_name:
-            save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, annot_beats, trim,
-                    feature, ds_name=curr_ds)
+            save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats, 
+                    trim, feature, ds_name=curr_ds)
             curr_ds = actual_ds_name
             # Add to global results
             PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
             PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
+            D = np.concatenate((D, np.asarray(D_ds)))
             PRF3_ds = []
             PRF05_ds = []
+            D_ds = []
 
     # Save and add last results
-    save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, annot_beats, trim,
+    save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats, trim,
                     feature, ds_name=curr_ds)
     PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
     PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
+    D = np.concatenate((D, np.asarray(D_ds)))
 
     # Save all results
-    save_results_ds(c, alg_id, PRF3, PRF05, annot_beats, trim,
+    save_results_ds(c, alg_id, PRF3, PRF05, D, annot_beats, trim,
                     feature, ds_name="all")
 
     # Print results
     print_results(PRF3, 3)
     print_results(PRF05, 0.5)
+    
+    D = np.asarray(D)
+    logging.info("Information gain: %.5f (of %d files)" % (D.mean(), D.shape[0]))
 
     # Commit changes to database and close
     conn.commit()
