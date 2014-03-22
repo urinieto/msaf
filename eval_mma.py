@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-Evaluates the estimated results of the Segmentation dataset against the 
-ground truth (human annotated data).
+Evaluates the estimated results of the Segmentation dataset using the
+mean mutual agreement (MMA) method.
 """
 
 __author__      = "Oriol Nieto"
@@ -20,6 +20,7 @@ import numpy as np
 import time
 import sys
 import sqlite3
+import itertools
 
 import utils
 import mir_eval
@@ -27,16 +28,24 @@ import jams
 
 import msaf_io as MSAF
 
+feat_dict = {
+    'serra' :   'mix',
+    'levy'  :   'hpcp',
+    'foote' :   'hpcp',
+    'siplca':   '',
+    'olda'  :   ''
+}
 
-def print_results(PRF, window):
+def print_results(results):
     """Print the results."""
-    PRF = np.asarray(PRF)
-    res = 100*PRF.mean(axis=0)
-    logging.info("Window: %.1f\tF: %.2f, P: %.2f, R: %.2f" % (window,
-                                                    res[2], res[0], res[1]))
+    results = np.asarray(results)
+    res = results.mean(axis=0)
+    logging.info("F3: %.2f, P3: %2.f, R3: %2.f, F05: %.2f, P05: %.2f, " \
+        "R05: %.2f, D: %.4f" % (100*res[2], 100*res[0], 100*res[1], 100*res[5], 
+            100*res[3], 100*res[4], res[6])) 
+        
 
-
-def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
+def save_results_ds(cursor, alg_id, results, annot_beats, trim,
                     feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
 
@@ -51,26 +60,22 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
         return
 
     # Make sure that the results are stored in numpy arrays
-    PRF3 = np.asarray(PRF3)
-    PRF05 = np.asarray(PRF05)
+    res = np.asarray(results)
 
     if track_id is not None:
-        all_values = (track_id, PRF05[2], PRF05[0], PRF05[1],
-                PRF3[2], PRF3[0], PRF3[1], D, annot_beats, feature, "none", trim)
+        all_values = (track_id, res[5], res[3], res[4], res[2], res[0], res[1],
+                                res[6], annot_beats, feature, "none", trim)
         table = "%s_bounds" % alg_id
         select_where = "track_id=?"
         select_values = (track_id, annot_beats, feature, trim)
     elif ds_name is not None:
         # Aggregate results
-        PRF05 = np.mean(PRF05, axis=0)
-        PRF3 = np.mean(PRF3, axis=0)
-        D = np.mean(np.asarray(D))
-        all_values = (alg_id, ds_name, PRF05[2], PRF05[0], PRF05[1],
-                PRF3[2], PRF3[0], PRF3[1], D, annot_beats, feature, "none", trim)
+        res = np.mean(res, axis=0)
+        all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0], 
+                        res[1], res[6], annot_beats, feature, "none", trim)
         table = "boundaries"
         select_where = "algo_id=? AND ds_name=?"
-        select_values = (alg_id, ds_name,
-                annot_beats, feature, trim)
+        select_values = (alg_id, ds_name, annot_beats, feature, trim)
 
     # Check if exists
     cursor.execute("SELECT * FROM %s WHERE %s AND annot_beat=? AND " \
@@ -83,8 +88,8 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
         cursor.execute(sql_cmd, all_values)
     else:
         # Update row
-        evaluations = (PRF05[2], PRF05[0], PRF05[1], PRF3[2], PRF3[0], 
-                        PRF3[1], D)
+        evaluations = (res[5], res[3], res[4], res[2], res[0], 
+                        res[1], res[6])
         evaluations += select_values
         sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
                     "P3=?, R3=?, D=?  WHERE %s AND annot_beat=? AND " \
@@ -93,15 +98,8 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
 
 
 
-def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
-                trim=False, **params):
+def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
     """Main process."""
-
-    # The Beatles hack
-    beatles = False
-    if ds_name == "Beatles":
-        beatles = True
-        ds_name = "Isophonics"
 
     # The SALAMI internet hack
     salamii = False
@@ -109,9 +107,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
         salamii = True
         ds_name = "SALAMI"
 
-    # Get files
-    jam_files = glob.glob(os.path.join(in_path, "annotations",
-                                            "%s_*.jams" % ds_name))
+    # Get estimation files (each one contains the results of all the 
+    # algorithms)
     est_files = glob.glob(os.path.join(in_path, "estimations",
                                             "%s_*.json" % ds_name))
 
@@ -119,18 +116,14 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
     conn.text_factory = str # Fixes the 8-bit encoding string problem
     c = conn.cursor()
 
-    logging.info("Evaluating %d tracks..." % len(jam_files))
+    logging.info("Evaluating %d tracks..." % len(est_files))
 
     # Compute features for each file
-    PRF3 = np.empty((0,3))  # Results: Precision, Recall, F-measure 3 seconds
-    PRF05 = np.empty((0,3)) # Results: Precision, Recall, F-measure 0.5 seconds
-    D = np.empty((0))       # Information Gain
-
+    results = np.empty((0,7))   # Results: P3, R3, F3, P05, R05, F05, D
 
     # Dataset results
-    PRF3_ds = []
-    PRF05_ds = []
-    D_ds = []
+    results_ds = []
+    alg_id = "mma"
 
     try:
         feature = params["feature"]
@@ -141,98 +134,76 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
 
     for est_file in est_files:
 
-        # Get corresponding estimation files
-        idx = [i for i, s in enumerate(jam_files) if \
-                os.path.basename(est_file)[:-5] in s][0]
-        jam_file = jam_files[idx]
-
-        assert os.path.basename(est_file)[:-5] == \
-            os.path.basename(jam_file)[:-5]
-
         ds_prefix = os.path.basename(est_file).split("_")[0]
-        try:
-            ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                    jam_file, "sections",
-                                    context=MSAF.prefix_dict[ds_prefix])
-        except:
-            logging.warning("No annotations for file: %s" % jam_file)
-            continue
-
-        if beatles:
-            jam = jams.load(jam_file)
-            if jam.metadata.artist != "The Beatles":
-                continue
 
         if salamii:
-            num = int(os.path.basename(jam_file).split("_")[1].split(".")[0])
+            num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
             if num < 956 or num > 1498:
                 continue
 
-        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats,
-                                         **params)
-        if est_times == []: continue
+        # Get all the permutations in order to compute the MMA
+        results_mma = []
+        for algorithms in itertools.permutations(MSAF.get_algo_ids(est_file)):
+            print algorithms
 
-        P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
-                                                window=3, trim=trim)
-        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
-                                    est_times, window=0.5, trim=trim)
+            # Read estimated times from both algorithms
+            est_times1 = MSAF.read_boundaries(est_file, algorithms[0], 
+                                annot_beats, feature=feat_dict[algorithms[0]])
+            est_times2 = MSAF.read_boundaries(est_file, algorithms[1], 
+                                annot_beats, feature=feat_dict[algorithms[1]])
+            if est_times1 == [] or est_times2 == []: continue
 
-        # Information gain
-        ann_times = np.concatenate((ann_times.flatten()[::2], 
-                                    [ann_times[-1,-1]]))
-        try:
-            D_ds.append(mir_eval.beat.information_gain(ann_times, est_times,
-                                                    bins=10))
-        except:
-            logging.warning("Couldn't compute the Information Gain for file " \
-                            "%s" % est_file)
-            D_ds.append(0)
+            # F-measures
+            P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1, 
+                                est_times2, window=3, trim=trim)
+            P05, R05, F05 = mir_eval.segment.boundary_detection(est_times1,
+                                est_times2, window=0.5, trim=trim)
 
-        PRF3_ds.append([P3,R3,F3])
-        PRF05_ds.append([P05,R05,F05])
+            # Information gain
+            try:
+                D = mir_eval.beat.information_gain(est_times1, 
+                                                est_times2, bins=10)
+            except:
+                logging.warning("Couldn't compute the Information Gain for " \
+                                                        "file %s" % est_file)
+                D = 0
+            # Store partial results
+            results_mma.append([P3, R3, F3, P05, R05, F05, D])
+
+        # Compute the averages
+        results_ds.append(np.mean(np.asarray(results_mma), axis=0))
 
         # Save Track Result to database
-        save_results_ds(c, alg_id, PRF3_ds[-1], PRF05_ds[-1], D_ds[-1], 
+        save_results_ds(c, alg_id, results_ds[-1],
             annot_beats, trim, feature, track_id=os.path.basename(est_file))
 
         # Store dataset results if needed
         actual_ds_name = os.path.basename(est_file).split("_")[0]
         if curr_ds != actual_ds_name:
-            save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats, 
+            save_results_ds(c, alg_id, results_ds, annot_beats, 
                     trim, feature, ds_name=curr_ds)
             curr_ds = actual_ds_name
             # Add to global results
-            PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
-            PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
-            D = np.concatenate((D, np.asarray(D_ds)))
-            PRF3_ds = []
-            PRF05_ds = []
-            D_ds = []
+            results = np.concatenate((results, np.asarray(results_ds)))
+            results_ds = []
 
     # Save and add last results
-    save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats, trim,
+    save_results_ds(c, alg_id, results_ds, annot_beats, trim,
                     feature, ds_name=curr_ds)
-    PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
-    PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
-    D = np.concatenate((D, np.asarray(D_ds)))
+    results = np.concatenate((results, np.asarray(results_ds)))
 
     # Save all results
-    save_results_ds(c, alg_id, PRF3, PRF05, D, annot_beats, trim,
+    save_results_ds(c, alg_id, results, annot_beats, trim,
                     feature, ds_name="all")
 
     # Print results
-    print_results(PRF3, 3)
-    print_results(PRF05, 0.5)
+    print_results(results)
     
-    D = np.asarray(D)
-    logging.info("Information gain: %.5f (of %d files)" % (D.mean(), D.shape[0]))
-
     # Commit changes to database and close
     conn.commit()
     conn.close()
 
     logging.info("%d tracks analized" % len(PRF3))
-
 
 
 def main():
@@ -243,9 +214,6 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("alg_id",
-                        action="store",
-                        help="Algorithm identifier (e.g. olda, siplca)")
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",
@@ -257,12 +225,6 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
-    parser.add_argument("-s",
-                        action="store",
-                        dest="win",
-                        default=3,
-                        type=float,
-                        help="Time window in seconds")
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
@@ -282,8 +244,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-                    args.win, trim=args.trim, feature=args.feature)
+    process(args.in_path, args.ds_name, args.annot_beats,
+                    trim=args.trim, feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

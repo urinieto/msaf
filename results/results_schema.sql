@@ -101,10 +101,9 @@ CREATE TABLE foote_bounds (
     trim       INT 
 );
 
-ALTER TABLE boundaries RENAME TO TempOldTable;
-CREATE TABLE boundaries ( 
-    algo_id    TEXT,
-    ds_name    TEXT,
+-- Table: mma_bounds
+CREATE TABLE mma_bounds ( 
+    track_id   TEXT,
     F05        REAL,
     P05        REAL,
     R05        REAL,
