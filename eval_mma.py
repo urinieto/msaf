@@ -41,9 +41,9 @@ def print_results(results):
     results = np.asarray(results)
     res = results.mean(axis=0)
     logging.info("F3: %.2f, P3: %2.f, R3: %2.f, F05: %.2f, P05: %.2f, " \
-        "R05: %.2f, D: %.4f" % (100*res[2], 100*res[0], 100*res[1], 100*res[5], 
-            100*res[3], 100*res[4], res[6])) 
-        
+        "R05: %.2f, D: %.4f" % (100*res[2], 100*res[0], 100*res[1], 100*res[5],
+            100*res[3], 100*res[4], res[6]))
+
 
 def save_results_ds(cursor, alg_id, results, annot_beats, trim,
                     feature, track_id=None, ds_name=None):
@@ -71,7 +71,7 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
     elif ds_name is not None:
         # Aggregate results
         res = np.mean(res, axis=0)
-        all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0], 
+        all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0],
                         res[1], res[6], annot_beats, feature, "none", trim)
         table = "boundaries"
         select_where = "algo_id=? AND ds_name=?"
@@ -88,7 +88,7 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
         cursor.execute(sql_cmd, all_values)
     else:
         # Update row
-        evaluations = (res[5], res[3], res[4], res[2], res[0], 
+        evaluations = (res[5], res[3], res[4], res[2], res[0],
                         res[1], res[6])
         evaluations += select_values
         sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
@@ -107,7 +107,7 @@ def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
         salamii = True
         ds_name = "SALAMI"
 
-    # Get estimation files (each one contains the results of all the 
+    # Get estimation files (each one contains the results of all the
     # algorithms)
     est_files = glob.glob(os.path.join(in_path, "estimations",
                                             "%s_*.json" % ds_name))
@@ -143,25 +143,23 @@ def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
 
         # Get all the permutations in order to compute the MMA
         results_mma = []
-        for algorithms in itertools.permutations(MSAF.get_algo_ids(est_file)):
-            print algorithms
-
+        for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file),2):
             # Read estimated times from both algorithms
-            est_times1 = MSAF.read_boundaries(est_file, algorithms[0], 
+            est_times1 = MSAF.read_boundaries(est_file, algorithms[0],
                                 annot_beats, feature=feat_dict[algorithms[0]])
-            est_times2 = MSAF.read_boundaries(est_file, algorithms[1], 
+            est_times2 = MSAF.read_boundaries(est_file, algorithms[1],
                                 annot_beats, feature=feat_dict[algorithms[1]])
             if est_times1 == [] or est_times2 == []: continue
 
             # F-measures
-            P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1, 
+            P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1,
                                 est_times2, window=3, trim=trim)
             P05, R05, F05 = mir_eval.segment.boundary_detection(est_times1,
                                 est_times2, window=0.5, trim=trim)
 
             # Information gain
             try:
-                D = mir_eval.beat.information_gain(est_times1, 
+                D = mir_eval.beat.information_gain(est_times1,
                                                 est_times2, bins=10)
             except:
                 logging.warning("Couldn't compute the Information Gain for " \
@@ -180,7 +178,7 @@ def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
         # Store dataset results if needed
         actual_ds_name = os.path.basename(est_file).split("_")[0]
         if curr_ds != actual_ds_name:
-            save_results_ds(c, alg_id, results_ds, annot_beats, 
+            save_results_ds(c, alg_id, results_ds, annot_beats,
                     trim, feature, ds_name=curr_ds)
             curr_ds = actual_ds_name
             # Add to global results
@@ -198,12 +196,12 @@ def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
 
     # Print results
     print_results(results)
-    
+
     # Commit changes to database and close
     conn.commit()
     conn.close()
 
-    logging.info("%d tracks analized" % len(PRF3))
+    logging.info("%d tracks analized" % len(results))
 
 
 def main():
