@@ -89,7 +89,7 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
         cursor.execute(sql_cmd, evaluations)
 
 
-def process(in_path, alg_id, ds_name="*", annot_beats=False, win=3,
+def process(in_path, alg_id, ds_name="*", annot_beats=False,
             trim=False, **params):
     """Main process."""
 
@@ -253,12 +253,6 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
-    parser.add_argument("-s",
-                        action="store",
-                        dest="win",
-                        default=3,
-                        type=float,
-                        help="Time window in seconds")
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
@@ -273,13 +267,15 @@ def main():
     args = parser.parse_args()
     start_time = time.time()
 
+    #import vimpdb; vimpdb.set_trace()
+
     # Setup the logger
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=logging.INFO)
 
     # Run the algorithm
     process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-            args.win, trim=args.trim, feature=args.feature)
+            trim=args.trim, feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

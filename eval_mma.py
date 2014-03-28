@@ -32,7 +32,6 @@ feat_dict = {
 }
 
 
-
 def print_results(results):
     """Print the results."""
     results = np.asarray(results)
@@ -121,11 +120,7 @@ def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
     # Dataset results
     results_ds = []
     alg_id = "mma"
-
-    try:
-        feature = params["feature"]
-    except:
-        feature = ""
+    feature = ""
 
     curr_ds = os.path.basename(est_files[0]).split("_")[0]
 
