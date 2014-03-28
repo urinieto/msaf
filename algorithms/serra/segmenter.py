@@ -4,10 +4,10 @@
 This script identifies the boundaries of a given track using the Serrà
 method:
 
-Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2012). Unsupervised 
-Detection of Music Boundaries by Time Series Structure Features. 
-In Proc. of the 26th AAAI Conference on Artificial Intelligence 
-(pp. 1613–1619). 
+Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2012). Unsupervised
+Detection of Music Boundaries by Time Series Structure Features.
+In Proc. of the 26th AAAI Conference on Artificial Intelligence
+(pp. 1613–1619).
 
 Toronto, Canada.
 """
@@ -66,7 +66,7 @@ def gaussian_filter(X, M=8, axis=0):
             X[:,i] = filters.gaussian_filter(X[:,i], sigma=M/2.)
         elif axis == 0:
             X[i,:] = filters.gaussian_filter(X[i,:], sigma=M/2.)
-    return X    
+    return X
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Serra's paper."""
@@ -116,24 +116,27 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
                 peaks.append(i)
     return peaks
 
+
 def circular_shift(X):
-    """Shifts circularly the X squre matrix in order to get a 
+    """Shifts circularly the X squre matrix in order to get a
         time-lag matrix."""
     N = X.shape[0]
     L = np.zeros(X.shape)
     for i in xrange(N):
-        L[i,:] = np.asarray([X[(i + j) % N,j] for j in xrange(N)])
+        L[i, :] = np.asarray([X[(i + j) % N, j] for j in xrange(N)])
     return L
+
 
 def embedded_space(X, m, tau=1):
     """Time-delay embedding with m dimensions and tau delays."""
     N = X.shape[0] - int(np.ceil(m))
-    Y = np.zeros((N, int(np.ceil(X.shape[1]*m))))
+    Y = np.zeros((N, int(np.ceil(X.shape[1] * m))))
     for i in xrange(N):
         # print X[i:i+m,:].flatten().shape, w, X.shape
         # print Y[i,:].shape
-        rem = int((m % 1) * X.shape[1]) # Reminder for float m
-        Y[i,:] = np.concatenate((X[i:i+int(m),:].flatten(), X[i+int(m),:rem]))
+        rem = int((m % 1) * X.shape[1])  # Reminder for float m
+        Y[i, :] = np.concatenate((X[i:i + int(m), :].flatten(),
+                                 X[i + int(m), :rem]))
     return Y
 
 
@@ -144,13 +147,13 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     Mp = 1          # Size of the adaptive threshold for peak picking
     od = -0.01      # Offset coefficient for adaptive thresholding
 
-    M = params["M"] # Size of gaussian kernel in beats
-    m = params["m"] # Number of embedded dimensions
-    k = params["k"] # k*N-nearest neighbors for the recurrence plot
+    M = params["M"]  # Size of gaussian kernel in beats
+    m = params["m"]  # Number of embedded dimensions
+    k = params["k"]  # k*N-nearest neighbors for the recurrence plot
 
     # Read features
-    chroma, mfcc, beats, dur = MSAF.get_features(in_path, 
-                                                    annot_beats=annot_beats)
+    chroma, mfcc, beats, dur = MSAF.get_features(in_path,
+                                                 annot_beats=annot_beats)
 
     # Use specific feature
     if feature == "hpcp":
@@ -172,8 +175,8 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
 
 
     # Recurrence matrix
-    R = librosa.segment.recurrence_matrix(E.T, 
-                                          k=k * int(F.shape[0]), 
+    R = librosa.segment.recurrence_matrix(E.T,
+                                          k=k * int(F.shape[0]),
                                           width=0, # zeros from the diagonal
                                           metric="seuclidean",
                                           sym=True).astype(np.float32)
@@ -182,7 +185,7 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     if R.shape[0] > 0:
         # Circular shift
         L = circular_shift(R)
-        # plt.imshow(R, interpolation="nearest", cmap=plt.get_cmap("binary")); plt.show()
+        plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary")); plt.show()
 
         # Obtain structural features by filtering the lag matrix
         SF = gaussian_filter(L.T, M=M, axis=1)
@@ -222,13 +225,13 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
         jam_file = os.path.join(ds_path, "annotations",
             os.path.basename(in_path)[:-4]+".jams")
         ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                jam_file, 
+                                jam_file,
                                 "sections", context="function")
-        P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times, 
+        P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times,
                                                 window=3, trim=False)
         logging.info("My Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" % \
                             (F,P,R,in_path))
-        P, R, F = mir_eval.segment.boundary_detection(ann_times, brian_times, 
+        P, R, F = mir_eval.segment.boundary_detection(ann_times, brian_times,
                                                 window=3, trim=False)
         logging.info("Brian Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" % \
                             (F,P,R,in_path))
@@ -236,7 +239,7 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
         logging.warning("Evaluation only available for The Beatles ds")
 
     # plt.figure(1)
-    # plt.plot(nc); 
+    # plt.plot(nc);
     # [plt.axvline(p, color="m", ymin=.6) for p in est_bounds]
     # [plt.axvline(b, color="b", ymax=.6, ymin=.3) for b in brian_bounds]
     # [plt.axvline(b, color="g", ymax=.3) for b in ann_bounds]
@@ -253,30 +256,30 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input path to the audio file")
-    parser.add_argument("-f", 
-                        action="store", 
+    parser.add_argument("-f",
+                        action="store",
                         dest="feature",
                         help="Feature to use (mfcc or hpcp)",
                         default="hpcp")
-    parser.add_argument("-b", 
-                        action="store_true", 
+    parser.add_argument("-b",
+                        action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
-    parser.add_argument("-M", 
-                        action="store", 
+    parser.add_argument("-M",
+                        action="store",
                         dest="M",
                         help="Size of gaussian kernel in beats",
                         type=int,
                         default=16)
-    parser.add_argument("-m", 
-                        action="store", 
+    parser.add_argument("-m",
+                        action="store",
                         dest="m",
                         help="Number of embedded dimensions",
                         type=float,
                         default=3)
-    parser.add_argument("-k", 
-                        action="store", 
+    parser.add_argument("-k",
+                        action="store",
                         dest="k",
                         help="k*N-nearest neighbors for recurrence plot",
                         type=float,
@@ -284,9 +287,9 @@ def main():
 
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm
