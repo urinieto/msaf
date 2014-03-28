@@ -144,8 +144,8 @@ vector<double> readBeatsJAMS(const char *jams_path) {
     if ( !parsingSuccessful )
     {
         // report to the user the failure and their locations in the document.
-        std::cout  << "Failed to parse configuration\n"
-                   << reader.getFormattedErrorMessages();
+        std::cout << "Failed to parse configuration\n"
+                  << reader.getFormattedErrorMessages();
         return beats;
     }
 
@@ -178,6 +178,28 @@ void createEstimation(Json::Value &est, vector<double> &times,
     est["feature"] = feature;
     est["version"] = "1.0";
 
+}
+
+int getFileDur(const char* json_path) {
+    
+    std::filebuf fb;
+    fb.open(json_path, ios::in);
+    istream inputs(&fb);
+
+    Json::Value root;   // will contains the root value after parsing.
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse( inputs, root );
+
+    vector<vector<double> > f;
+    if ( !parsingSuccessful )
+    {
+        // report to the user the failure and their locations in the document.
+        std::cout  << "Failed to parse configuration\n"
+                   << reader.getFormattedErrorMessages();
+        return 0;
+    }
+
+    return root["est_beatsync"]["hpcp"].size() - 1;
 }
 
 void writeJSON(const char* est_file, vector<double> times, bool annot_beats, 
@@ -296,43 +318,55 @@ int main(int argc, char const *argv[])
 
     const char *feature = argv[3]; // mffc or hpcp
 
-    ClusterMeltSegmenterParams params;
-
-    if (strcmp(feature, "mfcc")) {
-        params.featureType = FEATURE_TYPE_MFCC;
-    }
-    else if (strcmp(feature, "hpcp")) {
-        params.featureType = FEATURE_TYPE_CHROMA;
-    }
-    // Set original paper parameters
-    params.nHMMStates = 80;
-    params.nclusters = 6;
-    params.neighbourhoodLimit = 16;
-
-    ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
-
-    // Read features from JAMS
-    vector<vector<double> > f = readJSON(argv[1], atoi(argv[2]), feature);
-
-    // Segment until we have a potentially good result
     Segmentation segmentation;
-    do {
-        // Initialize segmenter
-        segmenter->initialise(11025);
+    int nframes = getFileDur(argv[1]);
 
-        // Set features
-        segmenter->setFeatures(f);
+    /* Only segment if duration is greater than 15 seconds */
+    if (nframes * 2048 > 15 * 11025) {
+        ClusterMeltSegmenterParams params;
 
-        // Segment
-        segmenter->segment();
-        segmentation = segmenter->getSegmentation();
-    } while(segmentation.segments.size() <= 2 && f.size() >= 90);
+        if (strcmp(feature, "mfcc")) {
+            params.featureType = FEATURE_TYPE_MFCC;
+        }
+        else if (strcmp(feature, "hpcp")) {
+            params.featureType = FEATURE_TYPE_CHROMA;
+        }
+        // Set original paper parameters
+        params.nHMMStates = 80;
+        params.nclusters = 6;
+        params.neighbourhoodLimit = 16;
+
+        ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
+
+        // Read features from JAMS
+        vector<vector<double> > f = readJSON(argv[1], atoi(argv[2]), feature);
+
+        // Segment until we have a potentially good result
+        do {
+            // Initialize segmenter
+            segmenter->initialise(11025);
+
+            // Set features
+            segmenter->setFeatures(f);
+
+            // Segment
+            segmenter->segment();
+            segmentation = segmenter->getSegmentation();
+        } while(segmentation.segments.size() <= 2 && f.size() >= 90);
+
+        // Clean up
+        delete segmenter;
+    }
+    else {
+        Segment s;
+        s.start = 0;
+        s.end = nframes;
+        s.type = 0;
+        segmentation.segments.push_back(s);
+    }
 
     // Write the results
     writeResults(segmentation, atoi(argv[2]), argv[1], feature);
-
-    // Clean up
-    delete segmenter;
 
     // Done
     return 0;
