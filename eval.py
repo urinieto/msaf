@@ -17,6 +17,7 @@ import os
 import numpy as np
 import time
 import sqlite3
+import itertools
 
 import mir_eval
 import jams
@@ -24,19 +25,97 @@ import jams
 import msaf_io as MSAF
 
 
-def print_results(PRF, window):
+feat_dict = {
+    'serra' :   'mix',
+    'levy'  :   'hpcp',
+    'foote' :   'hpcp',
+    'siplca':   '',
+    'olda'  :   ''
+}
+
+
+def print_results(results):
     """Print the results."""
-    PRF = np.asarray(PRF)
-    res = 100 * PRF.mean(axis=0)
-    logging.info("Window: %.1f\tF: %.2f, P: %.2f, R: %.2f" % (window, res[2],
-                                                              res[0], res[1]))
+    results = np.asarray(results)
+    res = results.mean(axis=0)
+    logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
+                 "R05: %.2f, D: %.4f" % (100 * res[2], 100 * res[0],
+                                         100 * res[1], 100 * res[5],
+                                         100 * res[3], 100 * res[4], res[6]))
 
 
-def compute_information_gain(ann_times, est_times, est_file, bins=10):
+def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
+                       beatles=False, bins=10, **params):
+    """Computes the results by using the grount truth dataset."""
+
+    # Get the ds_prefix
+    ds_prefix = os.path.basename(est_file).split("_")[0]
+
+    # Get corresponding annotation file
+    jam_file = get_annotation(est_file, jam_files)
+
+    if beatles:
+        jam = jams.load(jam_file)
+        if jam.metadata.artist != "The Beatles":
+            return []
+
+    try:
+        ann_times, ann_labels = mir_eval.input_output.load_jams_range(
+            jam_file, "sections", context=MSAF.prefix_dict[ds_prefix])
+    except:
+        logging.warning("No annotations for file: %s" % jam_file)
+        return []
+
+    est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats,
+                                     **params)
+    if est_times == []:
+        return []
+
+    P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
+                                                     window=3, trim=trim)
+    P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
+                                                        est_times, window=0.5,
+                                                        trim=trim)
+
+    # Information gain
+    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1, -1]]))
+    D = compute_information_gain(ann_times, est_times, est_file, bins=bins)
+
+    # Stack results and return
+    return [P3, R3, F3, P05, R05, F05, D]
+
+
+def compute_mma_results(est_file, trim, annot_beats, bins=10):
+    """Compute the Mean Measure Agreement for all the algorithms of the given
+    file est_file."""
+    results_mma = []
+    for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
+        # Read estimated times from both algorithms
+        est_times1 = MSAF.read_boundaries(est_file, algorithms[0],
+                            annot_beats, feature=feat_dict[algorithms[0]])
+        est_times2 = MSAF.read_boundaries(est_file, algorithms[1],
+                            annot_beats, feature=feat_dict[algorithms[1]])
+        if est_times1 == [] or est_times2 == []:
+            continue
+
+        # F-measures
+        P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1,
+                            est_times2, window=3, trim=trim)
+        P05, R05, F05 = mir_eval.segment.boundary_detection(est_times1,
+                            est_times2, window=0.5, trim=trim)
+
+        # Information gain
+        D = compute_information_gain(est_times1, est_times2, est_file,
+                                     bins=bins)
+        # Store partial results
+        results_mma.append([P3, R3, F3, P05, R05, F05, D])
+
+    return results_mma
+
+
+def compute_information_gain(ann_times, est_times, est_file, bins):
     """Computes the information gain of the est_file from the annotated times
     and the estimated times."""
-    ann_times = np.concatenate((ann_times.flatten()[::2],
-                                [ann_times[-1, -1]]))
     try:
         D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     except:
@@ -46,7 +125,7 @@ def compute_information_gain(ann_times, est_times, est_file, bins=10):
     return D
 
 
-def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
+def save_results_ds(cursor, alg_id, results, annot_beats, trim,
                     feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
 
@@ -61,26 +140,22 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
         return
 
     # Make sure that the results are stored in numpy arrays
-    PRF3 = np.asarray(PRF3)
-    PRF05 = np.asarray(PRF05)
+    res = np.asarray(results)
 
     if track_id is not None:
-        all_values = (track_id, PRF05[2], PRF05[0], PRF05[1], PRF3[2],
-                      PRF3[0], PRF3[1], D, annot_beats, feature, "none", trim)
+        all_values = (track_id, res[5], res[3], res[4], res[2], res[0], res[1],
+                      res[6], annot_beats, feature, "none", trim)
         table = "%s_bounds" % alg_id
         select_where = "track_id=?"
         select_values = (track_id, annot_beats, feature, trim)
     elif ds_name is not None:
         # Aggregate results
-        PRF05 = np.mean(PRF05, axis=0)
-        PRF3 = np.mean(PRF3, axis=0)
-        D = np.mean(np.asarray(D))
-        all_values = (alg_id, ds_name, PRF05[2], PRF05[0], PRF05[1], PRF3[2],
-                      PRF3[0], PRF3[1], D, annot_beats, feature, "none", trim)
+        res = np.mean(res, axis=0)
+        all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0],
+                      res[1], res[6], annot_beats, feature, "none", trim)
         table = "boundaries"
         select_where = "algo_id=? AND ds_name=?"
-        select_values = (alg_id, ds_name,
-                annot_beats, feature, trim)
+        select_values = (alg_id, ds_name, annot_beats, feature, trim)
 
     # Check if exists
     cursor.execute("SELECT * FROM %s WHERE %s AND annot_beat=? AND "
@@ -94,13 +169,25 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
         cursor.execute(sql_cmd, all_values)
     else:
         # Update row
-        evaluations = (PRF05[2], PRF05[0], PRF05[1], PRF3[2], PRF3[0],
-                       PRF3[1], D)
+        evaluations = (res[5], res[3], res[4], res[2], res[0],
+                       res[1], res[6])
         evaluations += select_values
         sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
             "P3=?, R3=?, D=?  WHERE %s AND annot_beat=? AND " \
             "feature=? AND trim=?" % (table, select_where)
         cursor.execute(sql_cmd, evaluations)
+
+
+def get_annotation(est_file, jam_files):
+    """Gets the JAMS annotation given an estimation file."""
+    idx = [i for i, s in enumerate(jam_files) if
+           os.path.basename(est_file)[:-5] in s][0]
+    jam_file = jam_files[idx]
+
+    assert os.path.basename(est_file)[:-5] == \
+        os.path.basename(jam_file)[:-5]
+
+    return jam_file
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False,
@@ -132,15 +219,10 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
     # Compute features for each file
-    PRF3 = np.empty((0, 3))   # Results: Precision, Recall, F-measure 3 seconds
-    PRF05 = np.empty((0, 3))  # Results: Precision, Recall,
-                              # F-measure 0.5 seconds
-    D = np.empty((0))         # Information Gain
+    results = np.empty((0, 7))   # Results: P3, R3, F3, P05, R05, F05, D
 
     # Dataset results
-    PRF3_ds = []
-    PRF05_ds = []
-    D_ds = []
+    results_ds = []
 
     try:
         feature = params["feature"]
@@ -148,93 +230,63 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         feature = ""
 
     curr_ds = os.path.basename(est_files[0]).split("_")[0]
+    bins = 10
 
     for est_file in est_files:
-        # Get corresponding annotation files
-        idx = [i for i, s in enumerate(jam_files) if
-               os.path.basename(est_file)[:-5] in s][0]
-        jam_file = jam_files[idx]
-
-        assert os.path.basename(est_file)[:-5] == \
-            os.path.basename(jam_file)[:-5]
-
-        ds_prefix = os.path.basename(est_file).split("_")[0]
-        try:
-            ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                jam_file, "sections", context=MSAF.prefix_dict[ds_prefix])
-        except:
-            logging.warning("No annotations for file: %s" % jam_file)
-            continue
-
-        if beatles:
-            jam = jams.load(jam_file)
-            if jam.metadata.artist != "The Beatles":
-                continue
-
         if salamii:
-            num = int(os.path.basename(jam_file).split("_")[1].split(".")[0])
+            num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
             if num < 956 or num > 1498:
                 continue
 
-        est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats,
-                                         **params)
-        if est_times == []:
-            continue
+        if mma:
+            alg_id = "mma"
+            feature = ""
 
-        P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
-                                                         window=3, trim=trim)
-        P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
-                                    est_times, window=0.5, trim=trim)
+            # Compute the MMA for the current file
+            results_mma = compute_mma_results(est_file, trim, annot_beats)
 
-        # Information gain
-        D_ds.append(compute_information_gain(ann_times, est_times, est_file,
-                                             bins=10))
+            # Compute the averages
+            results_ds.append(np.mean(np.asarray(results_mma), axis=0))
 
-        PRF3_ds.append([P3, R3, F3])
-        PRF05_ds.append([P05, R05, F05])
+        else:
+            results_gt = compute_gt_results(est_file, trim, annot_beats,
+                                            jam_files, alg_id, beatles,
+                                            bins=bins, **params)
+            if results_gt == []:
+                continue
+            results_ds.append(results_gt)
 
         # Save Track Result to database
-        save_results_ds(c, alg_id, PRF3_ds[-1], PRF05_ds[-1], D_ds[-1],
-            annot_beats, trim, feature, track_id=os.path.basename(est_file))
+        save_results_ds(c, alg_id, results_ds[-1], annot_beats, trim, feature,
+                        track_id=os.path.basename(est_file))
 
         # Store dataset results if needed
         actual_ds_name = os.path.basename(est_file).split("_")[0]
         if curr_ds != actual_ds_name:
-            save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats,
-                            trim, feature, ds_name=curr_ds)
+            save_results_ds(c, alg_id, results_ds, annot_beats, trim, feature,
+                            ds_name=curr_ds)
             curr_ds = actual_ds_name
             # Add to global results
-            PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
-            PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
-            D = np.concatenate((D, np.asarray(D_ds)))
-            PRF3_ds = []
-            PRF05_ds = []
-            D_ds = []
+            results = np.concatenate((results, np.asarray(results_ds)))
+            results_ds = []
 
     # Save and add last results
-    save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats, trim,
+    save_results_ds(c, alg_id, results_ds, annot_beats, trim,
                     feature, ds_name=curr_ds)
-    PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
-    PRF05 = np.concatenate((PRF05, np.asarray(PRF05_ds)))
-    D = np.concatenate((D, np.asarray(D_ds)))
+    results = np.concatenate((results, np.asarray(results_ds)))
 
     # Save all results
-    save_results_ds(c, alg_id, PRF3, PRF05, D, annot_beats, trim,
+    save_results_ds(c, alg_id, results, annot_beats, trim,
                     feature, ds_name="all")
 
     # Print results
-    print_results(PRF3, 3)
-    print_results(PRF05, 0.5)
-
-    D = np.asarray(D)
-    logging.info("Information gain: %.5f (of %d files)" % (D.mean(),
-                                                           D.shape[0]))
+    print_results(results)
 
     # Commit changes to database and close
     conn.commit()
     conn.close()
 
-    logging.info("%d tracks analized" % len(PRF3))
+    logging.info("%d tracks analized" % len(results))
 
 
 def main():
@@ -278,8 +330,6 @@ def main():
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-
-    #import vimpdb; vimpdb.set_trace()
 
     # Setup the logger
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
