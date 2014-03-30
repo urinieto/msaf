@@ -32,6 +32,20 @@ def print_results(PRF, window):
                                                               res[0], res[1]))
 
 
+def compute_information_gain(ann_times, est_times, est_file, bins=10):
+    """Computes the information gain of the est_file from the annotated times
+    and the estimated times."""
+    ann_times = np.concatenate((ann_times.flatten()[::2],
+                                [ann_times[-1, -1]]))
+    try:
+        D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
+    except:
+        logging.warning("Couldn't compute the Information Gain for file "
+                        "%s" % est_file)
+        D = 0
+    return D
+
+
 def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
                     feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
@@ -90,7 +104,7 @@ def save_results_ds(cursor, alg_id, PRF3, PRF05, D, annot_beats, trim,
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False,
-            trim=False, **params):
+            trim=False, mma=False, **params):
     """Main process."""
 
     # The Beatles hack
@@ -136,8 +150,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
     curr_ds = os.path.basename(est_files[0]).split("_")[0]
 
     for est_file in est_files:
-
-        # Get corresponding estimation files
+        # Get corresponding annotation files
         idx = [i for i, s in enumerate(jam_files) if
                os.path.basename(est_file)[:-5] in s][0]
         jam_file = jam_files[idx]
@@ -174,15 +187,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
                                     est_times, window=0.5, trim=trim)
 
         # Information gain
-        ann_times = np.concatenate((ann_times.flatten()[::2],
-                                    [ann_times[-1, -1]]))
-        try:
-            D_ds.append(mir_eval.beat.information_gain(ann_times, est_times,
-                                                       bins=10))
-        except:
-            logging.warning("Couldn't compute the Information Gain for file "
-                            "%s" % est_file)
-            D_ds.append(0)
+        D_ds.append(compute_information_gain(ann_times, est_times, est_file,
+                                             bins=10))
 
         PRF3_ds.append([P3, R3, F3])
         PRF05_ds.append([P05, R05, F05])
@@ -195,7 +201,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         actual_ds_name = os.path.basename(est_file).split("_")[0]
         if curr_ds != actual_ds_name:
             save_results_ds(c, alg_id, PRF3_ds, PRF05_ds, D_ds, annot_beats,
-                    trim, feature, ds_name=curr_ds)
+                            trim, feature, ds_name=curr_ds)
             curr_ds = actual_ds_name
             # Add to global results
             PRF3 = np.concatenate((PRF3, np.asarray(PRF3_ds)))
@@ -264,6 +270,12 @@ def main():
                         dest="trim",
                         help="Trim the first and last boundaries",
                         default=False)
+    parser.add_argument("-m",
+                        action="store_true",
+                        dest="mma",
+                        help="Compute the mean mutual agreement between,"
+                        "results",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -275,7 +287,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-            trim=args.trim, feature=args.feature)
+            trim=args.trim, mma=args.mma, feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
