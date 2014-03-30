@@ -80,6 +80,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
     # Information gain
     ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1, -1]]))
     D = compute_information_gain(ann_times, est_times, est_file, bins=bins)
+    D = compute_conditional_entropy(ann_times, est_times, window=3, trim=trim)
 
     # Stack results and return
     return [P3, R3, F3, P05, R05, F05, D]
@@ -107,6 +108,8 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10):
         # Information gain
         D = compute_information_gain(est_times1, est_times2, est_file,
                                      bins=bins)
+        D = compute_conditional_entropy(est_times1, est_times2, window=3,
+                                        trim=trim)
         # Store partial results
         results_mma.append([P3, R3, F3, P05, R05, F05, D])
 
@@ -123,6 +126,30 @@ def compute_information_gain(ann_times, est_times, est_file, bins):
                         "%s" % est_file)
         D = 0
     return D
+
+
+def binary_entropy(score):
+    """Binary entropy for the given score. Since it's binary,
+    the entropy will be maximum (1.0) when score=0.5"""
+    scores = np.asarray([score, 1-score])
+    entropy = 0
+    for s in scores:
+        if s == 0:
+            s += 1e-17
+        entropy += s*np.log2(s)
+    entropy = -entropy
+    if entropy < 1e-10:
+        entropy = 0
+    return entropy
+
+
+def compute_conditional_entropy(ann_times, est_times, window=3, trim=False):
+    """Computes the conditional recall entropies."""
+    P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times,
+                                                  window=window, trim=trim)
+    # Recall can be seen as the conditional probability of how likely it is
+    # for the algorithm to find all the annotated boundaries.
+    return binary_entropy( R )
 
 
 def save_results_ds(cursor, alg_id, results, annot_beats, trim,
@@ -328,6 +355,11 @@ def main():
                         help="Compute the mean mutual agreement between,"
                         "results",
                         default=False)
+    parser.add_argument("-a",
+                        action="store_true",
+                        dest="all",
+                        help="Compute all the results.",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -335,9 +367,27 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=logging.INFO)
 
-    # Run the algorithm
-    process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-            trim=args.trim, mma=args.mma, feature=args.feature)
+    if args.all:
+        # 5 boundary algorithms
+        process(args.in_path, "siplca", "*", args.annot_beats, trim=args.trim,
+                mma=False, feature="")
+        process(args.in_path, "olda", "*", args.annot_beats, trim=args.trim,
+                mma=False, feature="")
+        process(args.in_path, "serra", "*", args.annot_beats, trim=args.trim,
+                mma=False, feature="mix")
+        process(args.in_path, "levy", "*", args.annot_beats, trim=args.trim,
+                mma=False, feature="hpcp")
+        process(args.in_path, "levy", "*", args.annot_beats, trim=args.trim,
+                mma=False, feature="mfcc")
+        process(args.in_path, "foote", "*", args.annot_beats, trim=args.trim,
+                mma=False, feature="hpcp")
+        # MMA
+        process(args.in_path, "", "*", args.annot_beats,
+                trim=args.trim, mma=True, feature=args.feature)
+    else:
+        # Run the algorithm
+        process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
+                trim=args.trim, mma=args.mma, feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
