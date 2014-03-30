@@ -42,6 +42,38 @@ def print_results(results):
                                          100 * res[3], 100 * res[4], res[6]))
 
 
+def compute_mma_results(est_file, trim, annot_beats):
+    """Compute the Mean Measure Agreement for all the algorithms of the given
+    file est_file."""
+    results_mma = []
+    for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
+        # Read estimated times from both algorithms
+        est_times1 = MSAF.read_boundaries(est_file, algorithms[0],
+                            annot_beats, feature=feat_dict[algorithms[0]])
+        est_times2 = MSAF.read_boundaries(est_file, algorithms[1],
+                            annot_beats, feature=feat_dict[algorithms[1]])
+        if est_times1 == [] or est_times2 == []:
+            continue
+
+        # F-measures
+        P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1,
+                            est_times2, window=3, trim=trim)
+        P05, R05, F05 = mir_eval.segment.boundary_detection(est_times1,
+                            est_times2, window=0.5, trim=trim)
+
+        # Information gain
+        try:
+            D = mir_eval.beat.information_gain(est_times1, est_times2, bins=10)
+        except:
+            logging.warning("Couldn't compute the Information Gain for "
+                            "file %s" % est_file)
+            D = 0
+        # Store partial results
+        results_mma.append([P3, R3, F3, P05, R05, F05, D])
+
+    return results_mma
+
+
 def save_results_ds(cursor, alg_id, results, annot_beats, trim,
                     feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
@@ -132,33 +164,7 @@ def process(in_path, ds_name="*", annot_beats=False, trim=False, **params):
                 continue
 
         # Get all the permutations in order to compute the MMA
-        results_mma = []
-        for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file),
-                                                 2):
-            # Read estimated times from both algorithms
-            est_times1 = MSAF.read_boundaries(est_file, algorithms[0],
-                                annot_beats, feature=feat_dict[algorithms[0]])
-            est_times2 = MSAF.read_boundaries(est_file, algorithms[1],
-                                annot_beats, feature=feat_dict[algorithms[1]])
-            if est_times1 == [] or est_times2 == []:
-                continue
-
-            # F-measures
-            P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1,
-                                est_times2, window=3, trim=trim)
-            P05, R05, F05 = mir_eval.segment.boundary_detection(est_times1,
-                                est_times2, window=0.5, trim=trim)
-
-            # Information gain
-            try:
-                D = mir_eval.beat.information_gain(est_times1,
-                                                   est_times2, bins=10)
-            except:
-                logging.warning("Couldn't compute the Information Gain for "
-                                "file %s" % est_file)
-                D = 0
-            # Store partial results
-            results_mma.append([P3, R3, F3, P05, R05, F05, D])
+        results_mma = compute_mma_results(est_file, trim, annot_beats)
 
         # Compute the averages
         results_ds.append(np.mean(np.asarray(results_mma), axis=0))
