@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="12" name="" sampleRate="44100" start="2048" end="24651776" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="11" />
+    <dataset id="11" dimensions="1">
+      <point frame="2048" label="silence" />
+      <point frame="41984" label="a" />
+      <point frame="629760" label="a&apos;" />
+      <point frame="1209344" label="a&apos;&apos;" />
+      <point frame="1957888" label="b" />
+      <point frame="2586624" label="b&apos;" />
+      <point frame="2932736" label="b&apos;&apos;" />
+      <point frame="3931136" label="c" />
+      <point frame="4733952" label="c&apos;" />
+      <point frame="5189632" label="c&apos;&apos;" />
+      <point frame="6344704" label="d" />
+      <point frame="7457792" label="e" />
+      <point frame="8402944" label="e&apos;" />
+      <point frame="9306112" label="f" />
+      <point frame="11800576" label="f&apos;" />
+      <point frame="12284928" label="f&apos;&apos;" />
+      <point frame="12856320" label="f&apos;&apos;&apos;" />
+      <point frame="13099008" label="g" />
+      <point frame="14496768" label="g&apos;" />
+      <point frame="14741504" label="h" />
+      <point frame="15542272" label="g&apos;" />
+      <point frame="16321536" label="g&apos;&apos;" />
+      <point frame="16789504" label="f&apos;&apos;" />
+      <point frame="18865152" label="g" />
+      <point frame="21318656" label="g&apos;" />
+      <point frame="22389760" label="g&apos;&apos;" />
+      <point frame="22630400" label="g&apos;&apos;&apos;" />
+      <point frame="23591936" label="g&apos;&apos;&apos;&apos;" />
+      <point frame="24418304" label="g&apos;&apos;&apos;&apos;&apos;" />
+      <point frame="24651776" label="end" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="9" type="timeinstants" name="Time Instants" model="12"  plotStyle="0" colourName="Blue" colour="#000080" darkBackground="false"  presentationName="small scale"/>
+  </display>
+</sv>

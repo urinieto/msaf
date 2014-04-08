@@ -43,6 +43,22 @@ def print_results(results):
                                          100 * res[1], 100 * res[5],
                                          100 * res[3], 100 * res[4], res[6]))
 
+def compute_results(ann_times, est_times, trim, bins, est_file):
+    """Compute the results using all the available evaluations."""
+    # F-measures
+    P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
+                                                     window=3, trim=trim)
+    P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
+                                                        est_times, window=0.5,
+                                                        trim=trim)
+
+    # Information gain
+    D = compute_information_gain(ann_times, est_times, est_file, bins=bins)
+    #D = compute_conditional_entropy(ann_times, est_times, window=3, trim=trim)
+    #D = R05
+
+    return [P3, R3, F3, P05, R05, F05, D]
+
 
 def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
                        beatles=False, bins=10, **params):
@@ -71,19 +87,11 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
     if est_times == []:
         return []
 
-    P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
-                                                     window=3, trim=trim)
-    P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
-                                                        est_times, window=0.5,
-                                                        trim=trim)
-
-    # Information gain
+    # Put annotated times in right format (from intervals to times)
     ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1, -1]]))
-    D = compute_information_gain(ann_times, est_times, est_file, bins=bins)
-    D = compute_conditional_entropy(ann_times, est_times, window=3, trim=trim)
 
-    # Stack results and return
-    return [P3, R3, F3, P05, R05, F05, D]
+    # Compute the results and return
+    return compute_results(ann_times, est_times, trim, bins, est_file)
 
 
 def compute_mma_results(est_file, trim, annot_beats, bins=10):
@@ -99,19 +107,9 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10):
         if est_times1 == [] or est_times2 == []:
             continue
 
-        # F-measures
-        P3, R3, F3 = mir_eval.segment.boundary_detection(est_times1,
-                            est_times2, window=3, trim=trim)
-        P05, R05, F05 = mir_eval.segment.boundary_detection(est_times1,
-                            est_times2, window=0.5, trim=trim)
-
-        # Information gain
-        D = compute_information_gain(est_times1, est_times2, est_file,
-                                     bins=bins)
-        D = compute_conditional_entropy(est_times1, est_times2, window=3,
-                                        trim=trim)
-        # Store partial results
-        results_mma.append([P3, R3, F3, P05, R05, F05, D])
+        # Compute results
+        results = compute_results(est_times1, est_times2, trim, bins, est_file)
+        results_mma.append(results)
 
     return results_mma
 
@@ -257,7 +255,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         feature = ""
 
     curr_ds = os.path.basename(est_files[0]).split("_")[0]
-    bins = 10
+    bins = 250
 
     for est_file in est_files:
         if salamii:
