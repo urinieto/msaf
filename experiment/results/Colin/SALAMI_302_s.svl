@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="21" name="" sampleRate="44100" start="2048" end="19918848" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="20" />
+    <dataset id="20" dimensions="1">
+      <point frame="2048" label="silence" />
+      <point frame="47104" label="a" />
+      <point frame="398336" label="a&apos;" />
+      <point frame="738304" label="a&apos;&apos;" />
+      <point frame="985088" label="a&apos;&apos;&apos;" />
+      <point frame="1805312" label="a&apos;&apos;&apos;&apos;" />
+      <point frame="3121152" label="b" />
+      <point frame="3617792" label="b&apos;" />
+      <point frame="4384768" label="b&apos;&apos;" />
+      <point frame="5216256" label="b&apos;&apos;&apos;" />
+      <point frame="5482496" label="c" />
+      <point frame="6722560" label="c&apos;" />
+      <point frame="7221248" label="c&apos;&apos;" />
+      <point frame="8443904" label="d" />
+      <point frame="9145344" label="e" />
+      <point frame="10291200" label="e&apos;" />
+      <point frame="10808320" label="e&apos;&apos;" />
+      <point frame="11187200" label="e&apos;&apos;&apos;" />
+      <point frame="12279808" label="e&apos;&apos;&apos;&apos;" />
+      <point frame="12652544" label="f" />
+      <point frame="14535680" label="g" />
+      <point frame="15383552" label="g&apos;" />
+      <point frame="16262144" label="g&apos;&apos;" />
+      <point frame="17078272" label="g&apos;&apos;&apos;" />
+      <point frame="18449408" label="g&apos;&apos;&apos;&apos;" />
+      <point frame="19918848" label="end" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="18" type="timeinstants" name="Time Instants" model="21"  plotStyle="0" colourName="Orange" colour="#ff9632" darkBackground="false"  presentationName="small scale"/>
+  </display>
+</sv>
