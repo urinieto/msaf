@@ -15,14 +15,19 @@ import logging
 import os
 import numpy as np
 import time
-import sqlite3
 import itertools
+import xml.etree.ElementTree as ET
 
-import mir_eval
 import jams
 
 import msaf_io as MSAF
 
+def process(in_file, out_file="output.jams"):
+    """Main process to convert an svl file to JAMS."""
+    tree = ET.parse(in_file)
+    root = tree.getroot()
+    for point in root.iter("point"):
+        print point.attrib  # Dictionary with keys frame and label
 
 def main():
     """Main function to convert the annotation."""
