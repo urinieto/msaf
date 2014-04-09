@@ -10,24 +10,67 @@ __version__     = "1.0"
 __email__       = "oriol@nyu.edu"
 
 import argparse
-import glob
 import logging
 import os
-import numpy as np
 import time
-import itertools
+import json
 import xml.etree.ElementTree as ET
 
 import jams
 
-import msaf_io as MSAF
 
-def process(in_file, out_file="output.jams"):
+def create_annotation(root, annotator_id, jam_file):
+    """Creates an annotation from the given root of an XML svl file."""
+
+    # Load jam file
+    jam = jams.load(jam_file)
+
+    # Make sure annotation doesn't already exists
+    for section in jam.sections:
+        if section.annotation_metadata.annotator == annotator_id:
+            return
+
+    # Create Annotation
+    annot = jam.sections.create_annotation()
+
+    # Create Metadata
+    annot.annotation_metadata.annotator = annotator_id
+    # TODO: More metadata
+
+    # Get sampling rate from XML root
+    sr = float(root.iter("model").next().attrib["sampleRate"])
+
+    # Create datapoints from the XML root
+    points = root.iter("point")
+    point = points.next()
+    start = float(point.attrib["frame"]) / sr
+    label = point.attrib["label"]
+    for point in points:
+        section = annot.create_datapoint()
+        section.start.value = start
+        section.end.value = point.attrib["frame"]
+        section.label.value = label
+        section.label.context = ""  # TODO: Add context!
+        start = point.attrib["frame"]
+        label = point.attrib["label"]
+
+    # Save file
+    with open(jam_file, "w") as f:
+        json.dump(jam, f, indent=2)
+
+
+def process(in_file, annotator_id, out_file="output.jams"):
     """Main process to convert an svl file to JAMS."""
+    # Make sure that the jams exist (we simply have metadata there)
+    assert(os.path.isfile(out_file))
+
+    # Parse svl file (XML)
     tree = ET.parse(in_file)
     root = tree.getroot()
-    for point in root.iter("point"):
-        print point.attrib  # Dictionary with keys frame and label
+
+    # Create Annotation
+    create_annotation(root, annotator_id, out_file)
+
 
 def main():
     """Main function to convert the annotation."""
@@ -37,42 +80,15 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("alg_id",
+    parser.add_argument("annotator_id",
                         action="store",
-                        help="Algorithm identifier (e.g. olda, siplca)")
-    parser.add_argument("-d",
+                        help="Identifier of the annotator (e.g. Collin, "
+                        "Ferran")
+    parser.add_argument("-o",
                         action="store",
-                        dest="ds_name",
-                        default="*",
-                        help="The prefix of the dataset to use "
-                        "(e.g. Isophonics, SALAMI")
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
-    parser.add_argument("-f",
-                        action="store",
-                        dest="feature",
-                        default="",
-                        type=str,
-                        help="Type of features (e.g. mfcc, hpcp")
-    parser.add_argument("-t",
-                        action="store_true",
-                        dest="trim",
-                        help="Trim the first and last boundaries",
-                        default=False)
-    parser.add_argument("-m",
-                        action="store_true",
-                        dest="mma",
-                        help="Compute the mean mutual agreement between,"
-                        "results",
-                        default=False)
-    parser.add_argument("-a",
-                        action="store_true",
-                        dest="all",
-                        help="Compute all the results.",
-                        default=False)
+                        dest="out_file",
+                        help="Output file",
+                        default="output.jams")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -80,27 +96,8 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=logging.INFO)
 
-    if args.all:
-        # 5 boundary algorithms
-        process(args.in_path, "siplca", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="")
-        process(args.in_path, "olda", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="")
-        process(args.in_path, "serra", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="mix")
-        process(args.in_path, "levy", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="hpcp")
-        process(args.in_path, "levy", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="mfcc")
-        process(args.in_path, "foote", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="hpcp")
-        # MMA
-        process(args.in_path, "", "*", args.annot_beats,
-                trim=args.trim, mma=True, feature=args.feature)
-    else:
-        # Run the algorithm
-        process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-                trim=args.trim, mma=args.mma, feature=args.feature)
+    # Run the algorithm
+    process(args.in_path, args.annotator_id, args.out_file)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
