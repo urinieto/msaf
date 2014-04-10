@@ -18,23 +18,37 @@ import xml.etree.ElementTree as ET
 
 import jams
 
+annotators = {
+    "Colin" : {
+        "name"  : "Colin",
+        "email" : "colin.z.hua@gmail.com"
+    }
+}
 
-def create_annotation(root, annotator_id, jam_file):
+
+def create_annotation(root, annotator_id, jam_file, context):
     """Creates an annotation from the given root of an XML svl file."""
 
     # Load jam file
     jam = jams.load(jam_file)
 
-    # Make sure annotation doesn't already exists
+    # If annotation exists, replace it
+    annot = None
     for section in jam.sections:
-        if section.annotation_metadata.annotator == annotator_id:
-            return
+        if section.annotation_metadata.annotator.name == annotator_id:
+            annot = section
+            # If this context already exists, do nothing
+            for data in annot.data:
+                if data.label.context == context:
+                    return
+            break
 
-    # Create Annotation
-    annot = jam.sections.create_annotation()
+    # Create Annotation if needed
+    if annot is None:
+        annot = jam.sections.create_annotation()
 
     # Create Metadata
-    annot.annotation_metadata.annotator = annotator_id
+    annot.annotation_metadata.annotator = annotators[annotator_id]
     # TODO: More metadata
 
     # Get sampling rate from XML root
@@ -48,10 +62,14 @@ def create_annotation(root, annotator_id, jam_file):
     for point in points:
         section = annot.create_datapoint()
         section.start.value = start
-        section.end.value = point.attrib["frame"]
-        section.label.value = label
-        section.label.context = ""  # TODO: Add context!
-        start = point.attrib["frame"]
+        section.end.value = float(point.attrib["frame"]) / sr
+        # Make sure upper and lower case are consistent
+        if context == "small_scale":
+            section.label.value = label.lower()
+        elif context == "large_scale":
+            section.label.value = label.upper()
+        section.label.context = context
+        start = float(point.attrib["frame"]) / sr
         label = point.attrib["label"]
 
     # Save file
@@ -59,7 +77,7 @@ def create_annotation(root, annotator_id, jam_file):
         json.dump(jam, f, indent=2)
 
 
-def process(in_file, annotator_id, out_file="output.jams"):
+def process(in_file, out_file="output.jams"):
     """Main process to convert an svl file to JAMS."""
     # Make sure that the jams exist (we simply have metadata there)
     assert(os.path.isfile(out_file))
@@ -68,8 +86,18 @@ def process(in_file, annotator_id, out_file="output.jams"):
     tree = ET.parse(in_file)
     root = tree.getroot()
 
+    # Retrieve context from in_file name
+    contexts = {
+        "s" : "small_scale",
+        "l" : "large_scale"
+    }
+    context_id = in_file[:-4].split("_")[-1].lower()
+
+    # Retrieve annotator id from in_file name
+    annotator_id = os.path.basename(os.path.dirname(in_file))
+
     # Create Annotation
-    create_annotation(root, annotator_id, out_file)
+    create_annotation(root, annotator_id, out_file, contexts[context_id])
 
 
 def main():
@@ -80,10 +108,6 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("annotator_id",
-                        action="store",
-                        help="Identifier of the annotator (e.g. Collin, "
-                        "Ferran")
     parser.add_argument("-o",
                         action="store",
                         dest="out_file",
@@ -97,7 +121,7 @@ def main():
                         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.annotator_id, args.out_file)
+    process(args.in_path, out_file=args.out_file)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
