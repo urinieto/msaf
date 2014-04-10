@@ -103,11 +103,11 @@ def process(in_file, out_file="output.jams"):
 def main():
     """Main function to convert the annotation."""
     parser = argparse.ArgumentParser(description=
-        "Converst a Sonic Visualizer annotation into a JAMS.",
+        "Converts a Sonic Visualizer annotation into a JAMS.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
-                        help="Input dataset")
+                        help="Input svl file.")
     parser.add_argument("-o",
                         action="store",
                         dest="out_file",
