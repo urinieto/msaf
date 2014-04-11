@@ -27,7 +27,7 @@ def process(results_dir, out_dir):
         for svl_file in svl_files:
             out_file = os.path.join(out_dir, os.path.basename(svl_file)[:-6] +
                                     ".jams")
-            print svl_file, out_file
+            logging.info("Parsing %s into %s" % (svl_file, out_file))
             svl2jams.process(svl_file, out_file)
 
 
