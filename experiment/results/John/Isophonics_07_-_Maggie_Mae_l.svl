@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="62" name="" sampleRate="11025" start="0" end="420672" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="61" />
+    <dataset id="61" dimensions="1">
+      <point frame="0" label="silence" />
+      <point frame="5760" label="A" />
+      <point frame="284352" label="B" />
+      <point frame="420672" label="end" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="60" type="timeinstants" name="Time Instants &lt;2&gt;" model="62"  plotStyle="0" colourName="Blue" colour="#000080" darkBackground="false"  presentationName="Large Scale"/>
+  </display>
+</sv>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="98" name="" sampleRate="44100" start="0" end="10583040" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="97" />
+    <dataset id="97" dimensions="1">
+      <point frame="0" label="A" />
+      <point frame="1816576" label="B" />
+      <point frame="3356672" label="A" />
+      <point frame="5113856" label="B" />
+      <point frame="6631424" label="A" />
+      <point frame="8388608" label="B&apos;" />
+      <point frame="10435584" label="End" />
+      <point frame="10583040" label="Silence" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="96" type="timeinstants" name="Time Instants &lt;2&gt;" model="98"  plotStyle="0" colourName="Red" colour="#800000" darkBackground="false" />
+  </display>
+</sv>
