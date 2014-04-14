@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="65" name="" sampleRate="11025" start="0" end="2970624" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="64" />
+    <dataset id="64" dimensions="1">
+      <point frame="0" label="a" />
+      <point frame="261120" label="a&apos;" />
+      <point frame="525312" label="a&apos;" />
+      <point frame="752640" label="b" />
+      <point frame="887808" label="b" />
+      <point frame="1013760" label="c" />
+      <point frame="1198080" label="d" />
+      <point frame="1376256" label="d&apos;" />
+      <point frame="1462272" label="e" />
+      <point frame="1640448" label="f" />
+      <point frame="1754112" label="g" />
+      <point frame="2024448" label="h" />
+      <point frame="2267136" label="h" />
+      <point frame="2537472" label="z" />
+      <point frame="2678784" label="silence" />
+      <point frame="2970624" label="end" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="63" type="timeinstants" name="Time Instants" model="65"  plotStyle="0" colourName="Green" colour="#008000" darkBackground="false"  presentationName="Small Scale"/>
+  </display>
+</sv>
