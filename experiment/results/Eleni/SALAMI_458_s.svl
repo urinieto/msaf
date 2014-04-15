@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="3" name="" sampleRate="44100" start="0" end="11022336" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="2" />
+    <dataset id="2" dimensions="1">
+      <point frame="0" label="a" />
+      <point frame="280576" label="a&apos;" />
+      <point frame="452608" label="b" />
+      <point frame="976896" label="b&apos;" />
+      <point frame="1441792" label="b" />
+      <point frame="1984512" label="c" />
+      <point frame="2562048" label="d" />
+      <point frame="3055616" label="d&apos;" />
+      <point frame="3530752" label="b" />
+      <point frame="4149248" label="b&apos;" />
+      <point frame="4632576" label="e" />
+      <point frame="5117952" label="e&apos;" />
+      <point frame="5660672" label="e&apos;&apos;" />
+      <point frame="6688768" label="f" />
+      <point frame="7170048" label="f&apos;" />
+      <point frame="7708672" label="b" />
+      <point frame="8744960" label="b&apos;" />
+      <point frame="9320448" label="b&apos;" />
+      <point frame="9773056" label="b&apos;" />
+      <point frame="10295296" label="b" />
+      <point frame="10491904" label="g" />
+      <point frame="10891264" label="h" />
+      <point frame="11022336" label="silence" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="0" type="timeinstants" name="Time Instants" model="3"  plotStyle="0" colourName="Purple" colour="#c832ff" darkBackground="false"  presentationName="Small Scale"/>
+  </display>
+</sv>
