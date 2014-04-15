@@ -23,7 +23,7 @@ def process(results_dir, out_dir):
         to out_dir."""
     annotators = glob.glob(os.path.join(results_dir, "*"))
     for annotator in annotators:
-        svl_files = glob.glob(os.path.join(annotator, "*"))
+        svl_files = glob.glob(os.path.join(annotator, "*.svl"))
         for svl_file in svl_files:
             out_file = os.path.join(out_dir, os.path.basename(svl_file)[:-6] +
                                     ".jams")

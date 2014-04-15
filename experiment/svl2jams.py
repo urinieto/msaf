@@ -22,6 +22,18 @@ annotators = {
     "Colin" : {
         "name"  : "Colin",
         "email" : "colin.z.hua@gmail.com"
+    },
+    "Eleni" : {
+        "name"  : "Eleni",
+        "email" : "evm241@nyu.edu"
+    },
+    "Evan" : {
+        "name"  : "Evan",
+        "email" : "esj254@nyu.edu"
+    },
+    "John" : {
+        "name"  : "John",
+        "email" : "johnturner@me.com"
     }
 }
 
