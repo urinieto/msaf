@@ -43,6 +43,7 @@ def print_results(results):
                                          100 * res[1], 100 * res[5],
                                          100 * res[3], 100 * res[4], res[6]))
 
+
 def compute_results(ann_times, est_times, trim, bins, est_file):
     """Compute the results using all the available evaluations."""
     # F-measures
@@ -129,12 +130,12 @@ def compute_information_gain(ann_times, est_times, est_file, bins):
 def binary_entropy(score):
     """Binary entropy for the given score. Since it's binary,
     the entropy will be maximum (1.0) when score=0.5"""
-    scores = np.asarray([score, 1-score])
+    scores = np.asarray([score, 1 - score])
     entropy = 0
     for s in scores:
         if s == 0:
             s += 1e-17
-        entropy += s*np.log2(s)
+        entropy += s * np.log2(s)
     entropy = -entropy
     if entropy < 1e-10:
         entropy = 0
@@ -147,7 +148,7 @@ def compute_conditional_entropy(ann_times, est_times, window=3, trim=False):
                                                   window=window, trim=trim)
     # Recall can be seen as the conditional probability of how likely it is
     # for the algorithm to find all the annotated boundaries.
-    return binary_entropy( R )
+    return binary_entropy(R)
 
 
 def save_results_ds(cursor, alg_id, results, annot_beats, trim,
