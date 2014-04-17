@@ -19,7 +19,9 @@ import os
 import sys
 import time
 import numpy as np
+import pylab as plt
 from collections import OrderedDict
+import pickle
 
 sys.path.append("../../")
 import mir_eval
@@ -53,8 +55,13 @@ def process(annot_dir, trim=False):
     }
     jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
     context = "large_scale"
+    dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
+             ('P05', float), ('R05', float), ('track_id', '<U400')]
+    mgp_results = np.empty((0, 6))
     for i in xrange(1, len(annotators.keys())):
         FPR = np.empty((0, 6))
+        if i == 1:
+            track_ids = []
         for jam_file in jams_files:
             ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
                             "sections", annotator=0, context=context)
@@ -81,14 +88,39 @@ def process(annot_dir, trim=False):
             P05, R05, F05 = mir_eval.segment.boundary_detection(
                 ann_times, est_times, window=0.5, trim=trim)
 
-            FPR = np.vstack((FPR, [F3, P3, R3, F05, P05, R05]))
+            FPR = np.vstack((FPR, (F3, P3, R3, F05, P05, R05)))
+            if i == 1:
+                track_ids.append(jam_file)
+
+        if i == 1:
+            mgp_results = np.vstack((mgp_results, FPR))
+        else:
+            if np.asarray([mgp_results, FPR]).ndim != 3:
+                continue
+            mgp_results = np.mean([mgp_results, FPR], axis=0)
+            #mgp_results = np.mean(
 
         FPR = np.mean(FPR, axis=0)
-        print i, annotators.keys()
         logging.info("Results for %s:\n\tF3: %.4f, P3: %.4f, R3: %.4f\n"
                      "\tF05: %.4f, P05: %.4f, R05: %.4f" % (
                          annotators.keys()[i], FPR[0], FPR[1], FPR[2], FPR[3],
                          FPR[4], FPR[5]))
+
+    mgp_results = mgp_results.tolist()
+    for i in xrange(len(track_ids)):
+        mgp_results[i].append(track_ids[i])
+        mgp_results[i] = tuple(mgp_results[i])
+    mgp_results = np.asarray(mgp_results, dtype=dtype)
+    mgp_results = np.sort(mgp_results, order='F3')
+
+    mgp_results_machine = pickle.load(open(
+        "../notes/mgp_experiment_machine.pk", "r"))
+
+    mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
+    mgp_results = np.sort(mgp_results, order="track_id")
+    print "Humans", mgp_results
+    print "Machines", mgp_results_machine
+    plt.scatter(mgp_results_machine["F3"], mgp_results["F3"]); plt.show()
 
 
 def main():

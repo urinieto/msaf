@@ -34,6 +34,10 @@ annotators = {
     "John" : {
         "name"  : "John",
         "email" : "johnturner@me.com"
+    },
+    "Shuli" : {
+        "name"  : "Shuli",
+        "email" : "luiseslt@gmail.com"
     }
 }
 
