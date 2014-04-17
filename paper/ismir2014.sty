@@ -1,0 +1,285 @@
+% Latex Paper Template for ISMIR 2014
+% Version 20130205
+% changed 2009 -> 2010 -> 2012 -> 2013
+% \bibliographystyle{unsrt} -> \bibliographystyle{plain}
+%
+% Version 20090507
+% The specification of reference order was corrected.
+% \bibliographystyle{plain} -> \bibliographystyle{unsrt}
+%
+% Version 20090430
+% A problem regarding references to sections was fixed.
+% This caused doubled periods at the end of sentences.
+% Example: Section \ref{sec:introduction}
+% Old version: Section 1.
+% New version: Section 1 (period was removed)
+
+\def\Hline{\noalign{\hrule height 0.4mm}}
+\newcommand{\bm}[1]{\mbox{\boldmath{$#1$}}}
+\newcommand{\range}[2]{{#1,\cdots,#2\;}}
+\newcommand{\secref}[1]{\mbox{Section~\ref{#1}}}
+\newcommand{\tabref}[1]{\mbox{Table~\ref{#1}}}
+\newcommand{\figref}[1]{\mbox{Figure~\ref{#1}}}
+\newcommand{\eqnref}[1]{\mbox{Eqn. (\ref{#1})}}
+
+\renewcommand{\sfdefault}{phv}
+\renewcommand{\rmdefault}{ptm}
+\renewcommand{\ttdefault}{pcr}
+
+\setlength{\paperheight}{297mm}
+\setlength{\paperwidth}{210mm}
+\setlength{\textheight}{252mm}
+\setlength{\textwidth}{172mm}
+\setlength{\columnsep}{8mm}
+\setlength{\headheight}{0mm}
+\setlength{\voffset}{-12mm}
+\setlength{\hoffset}{0mm}
+\setlength{\marginparwidth}{0mm}
+\setlength{\parindent}{1pc}
+\setlength{\topmargin}{-5mm}
+\setlength{\oddsidemargin}{-6mm}
+\setlength{\evensidemargin}{-6mm}
+
+\setlength\normallineskip{1\p@}
+\setlength\parskip{0\p@ \@plus \p@}
+%\def\baselinestretch{0.98}
+
+\def\normalsize{\@setsize\normalsize{12.2pt}\xpt\@xpt}
+\def\small{\@setsize\small{10pt}\ixpt\@ixpt}
+\def\footnotesize{\@setsize\footnotesize{9pt}\viiipt\@viiipt}
+\def\scriptsize{\@setsize\scriptsize{8pt}\viipt\@viipt}
+\def\tiny{\@setsize\tiny{7pt}\vipt\@vipt}
+\def\large{\@setsize\large{14pt}\xiipt\@xiipt}
+\def\Large{\@setsize\Large{16pt}\xivpt\@xivpt}
+\def\LARGE{\@setsize\LARGE{20pt}\xviipt\@xviipt}
+\def\huge{\@setsize\huge{23pt}\xxpt\@xxpt}
+\def\Huge{\@setsize\Huge{28pt}\xxvpt\@xxvpt}
+
+\twocolumn
+\pagestyle{empty}
+
+\def\maketitle{\par
+  \begingroup
+  \def\thefootnote{}
+  \def\@makefnmark{
+    \hbox
+    {$^{\@thefnmark}$\hss}
+  }
+  \twocolumn[\@maketitle]
+  \permission
+  \@thanks
+  \endgroup
+  \setcounter{footnote}{0}
+  \let\maketitle\relax
+  \let\@maketitle\relax
+  \gdef\thefootnote{
+  \arabic{footnote}
+  }
+  \gdef\@@savethanks{}
+  \gdef\@thanks{}
+  \gdef\@author{}
+  \gdef\@title{}
+  \let\thanks\relax
+}
+
+\def\@maketitle{
+  \newpage
+  \null
+  \begin{center} {
+    \Large \bf \@title \par
+  }
+  \vskip 2.0em {
+    \large \lineskip .5em
+    \begin{tabular}[t]{c}
+    \@author \\
+    \end{tabular}
+    \par
+  }
+  \end{center}
+  \par
+  \vskip 2.0em
+}
+
+\newcommand{\permission}{
+\begin{figure}[b]{
+\footnotesize
+Permission to make digital or hard copies of all or part
+of this work for personal or classroom use is granted
+without fee provided that copies are not made
+or distributed for profit or commercial advantage
+and that copies bear this notice
+and the full citation on the first page.
+\newline
+\copyright~2014~International Society for Music Information Retrieval. }
+\end{figure}
+}
+
+\def\oneauthor#1#2{
+  \gdef\@author{
+  \begin{tabular}{@{}c@{}}
+    {\bf #1} \\
+    #2\relax
+   \end{tabular}\hskip .3in
+  }
+}
+
+\def\twoauthors#1#2#3#4{
+  \gdef\@author{
+  \begin{tabular}{@{}c@{}}
+    {\bf #1} \\
+    #2
+  \end{tabular}\hskip .3in
+  \begin{tabular}{@{}c@{}}
+    {\bf #3} \\
+    #4\relax
+  \end{tabular}
+  }
+}
+
+\def\threeauthors#1#2#3#4#5#6{
+  \gdef\@author{
+  \begin{tabular}{@{}c@{}}
+    {\bf #1} \\
+    #2
+  \end{tabular}\hskip .3in
+  \begin{tabular}{@{}c@{}}
+    {\bf #3} \\
+    #4
+  \end{tabular}\hskip .3in
+  \begin{tabular}{@{}c@{}}
+    {\bf #5} \\
+    #6\relax
+  \end{tabular}
+  }
+}
+
+
+\def\fourauthors#1#2#3#4#5#6#7#8{
+  \gdef\@author{
+  \begin{tabular}{@{}c@{}}
+    {\bf #1} \\
+    #2
+  \end{tabular}\hskip .2cm
+  \begin{tabular}{@{}c@{}}
+    {\bf #3} \\
+    #4
+  \end{tabular}\hskip .2cm
+  \begin{tabular}{@{}c@{}}
+    {\bf #5} \\
+    #6\relax
+  \end{tabular}\hskip .2cm
+  \begin{tabular}{@{}c@{}}
+    {\bf #7} \\
+    #8\relax
+  \end{tabular}
+  }
+}
+
+\def\abstract{
+  \begin{center}{
+  \bf ABSTRACT
+  }
+  \end{center}
+}
+\def\endabstract{\par}
+
+\def\title#1{\gdef\@title{\uppercase{#1}}}
+
+\newif\if@ismirsection
+
+\renewcommand\section{
+  \@ismirsectiontrue
+  \@startsection
+  {section}
+  {1}
+  {\z@}
+  {-3.5ex \@plus -1ex \@minus -.2ex}
+  {6pt \@plus.2ex}
+  {\large\bf\centering}
+}
+
+\renewcommand\subsection{
+  \@ismirsectionfalse
+  \@startsection
+  {subsection}
+  {2}
+  {\z@}
+  {-2.5ex \@plus -1ex \@minus -.2ex}
+  {6pt \@plus.2ex}
+  {\normalsize\bf\raggedright}
+}
+
+\renewcommand\subsubsection{
+  \@ismirsectionfalse
+  \@startsection
+  {subsubsection}
+  {3}
+  {\z@}
+  {-1.5ex \@plus -1ex \@minus -.2ex}
+  {6pt \@plus.2ex}
+  {\normalsize\it\raggedright}
+}
+
+\def\@sect#1#2#3#4#5#6[#7]#8{
+  \refstepcounter{#1}
+  \if@ismirsection
+    \edef\@svsec{\csname the#1\endcsname.\hskip 0.6em}
+  \else
+    \edef\@svsec{\csname the#1\endcsname\hskip 0.6em}
+  \fi
+  \begingroup
+    \ifnum #2=1
+      \bf\centering{\interlinepenalty \@M \@svsec\uppercase{#8}\par}
+    \else
+      \ifnum #2=2
+        \bf\raggedright
+        \noindent{\interlinepenalty \@M \@svsec #8\par}
+      \else
+        \it\raggedright
+        \noindent{\interlinepenalty \@M \@svsec #8\par}
+      \fi
+    \fi
+  \endgroup
+  \csname #1mark\endcsname{#7}\addcontentsline
+  {toc}{#1}{\protect\numberline
+  \if@ismirsection
+    {\csname the#1\endcsname.}
+  \else
+    {\csname the#1\endcsname}
+  \fi
+  #7}
+  \@tempskipa #5\relax
+  \@xsect{\@tempskipa}
+}
+
+\bibliographystyle{plain}
+
+\def\thebibliography#1{
+  \section{References}\list
+  {[\arabic{enumi}]}{
+  \settowidth\labelwidth{[#1]}\leftmargin 1em
+  \advance\leftmargin\labelsep
+  \usecounter{enumi}
+  }
+  \def\newblock{\hskip .01em plus .01em minus .01em}
+  \sloppy\clubpenalty4000\widowpenalty4000
+  \sfcode`\.=1000\relax
+}
+
+\let\endthebibliography=\endlist
+
+\long\def\@makecaption#1#2{
+  \vskip 10pt
+  \setbox\@tempboxa\hbox{#1. #2}
+  \ifdim
+    \wd\@tempboxa >\hsize #1. #2\par
+  \else
+    \hbox
+    to\hsize{\hfil\box\@tempboxa\hfil}
+  \fi
+}
+
+\def\fnum@figure{{\bf Figure\ \thefigure}}
+\def\fnum@table{{\bf Table \thetable}}
+
+\flushbottom

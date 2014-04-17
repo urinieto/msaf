@@ -53,6 +53,10 @@ def process(annot_dir, trim=False):
         "name"  : "John",
         "email" : "johnturner@me.com"
     }
+    annotators["Shuli"] = {
+        "name"  : "Shuli",
+        "email" : "luiseslt@gmail.com"
+    }
     jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
     context = "large_scale"
     dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
@@ -96,9 +100,12 @@ def process(annot_dir, trim=False):
             mgp_results = np.vstack((mgp_results, FPR))
         else:
             if np.asarray([mgp_results, FPR]).ndim != 3:
+                logging.warning("Ndim is not valid %d" %
+                                np.asarray([mgp_results, FPR]).ndim)
+                print len(mgp_results)
+                print len(FPR)
                 continue
             mgp_results = np.mean([mgp_results, FPR], axis=0)
-            #mgp_results = np.mean(
 
         FPR = np.mean(FPR, axis=0)
         logging.info("Results for %s:\n\tF3: %.4f, P3: %.4f, R3: %.4f\n"
@@ -118,8 +125,8 @@ def process(annot_dir, trim=False):
 
     mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
     mgp_results = np.sort(mgp_results, order="track_id")
-    print "Humans", mgp_results
-    print "Machines", mgp_results_machine
+    #print "Humans", mgp_results
+    #print "Machines", mgp_results_machine
     plt.scatter(mgp_results_machine["F3"], mgp_results["F3"]); plt.show()
 
 
