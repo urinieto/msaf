@@ -45,7 +45,14 @@
 \maketitle
 %
 \begin{abstract}
-  The identification of segment boundaries in music is a relevant task in Music Information Retrieval
+  The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
+  This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
+  In this work we present an analysis of this task from two different points of view: machines and humans.
+  Five algorithms were selected to segment a dataset of more than 2000 tracks.
+  Then we collected multiple human annotations for the 45 hardest tracks and the 5 easiest tracks from a machine point of view.
+  The results show that humans' mutual agreement is much higher than machines'.
+  We explore the hardest tracks from a machine point of view and the easiest tracks from a human point of view in order to identify the set of audio properties that could potentially improve the current boundary identification algorithms.
+  %We present a comparison that aims to shed light into the shortcomings of the current evaluation metrics and discuss a list of properties in the audio that make this task particularly difficult from a machine point of view while humans can 
   
 \end{abstract}
 %
@@ -61,7 +68,26 @@ Organization of the paper.
 
 \section{Boundaries Evaluation Metrics}
 
+The boundaries of a given track are usually evaluated using the F-measure. In this section we review the F-measure, discuss its shortcomings, and propose other metrics that might help addressing our project.
+
+\subsection{F-measure}
+
+The F-measure for boundaries evaluation is the most common and established metric for this task (implemented in MIREX) and it is traditionally used with a specific time window of 3 or 0.5 seconds\cite{Ong2005}. 
+
+This metric considers an estimated boundary as \emph{correct} (a hit) if it falls under the specified time window centered at its corresponding annotated boundary.
+These hits are then used to compute the Precision (number of hits over the number of estimated boundaries), and the Recall (number of hits over the number of annotated boundaries).
+The F-measure is then computed as:
+
+\begin{equation}
+  F = 2 \frac{P R}{P + R}
+\end{equation}
+
+Trim\cite{Nieto2013}.
 F-measure at 3 seconds and 0.5. Trim/No trim. Information Gain. Entropy scores.
+
+\subsection{To Trim or Not To Trim}
+
+Trimming the first and last boundaries may be the logical thing to do.
 
 \section{Machines Identifying Boundaries}\label{sec:eval_desc}
 
