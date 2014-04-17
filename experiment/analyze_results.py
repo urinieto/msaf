@@ -21,6 +21,8 @@ import time
 import numpy as np
 import pylab as plt
 from collections import OrderedDict
+from collections import Counter
+from operator import itemgetter
 import pickle
 import csv
 
@@ -59,8 +61,16 @@ def analyze_answers(results_dir="results/"):
             if fields[0] == "File Name":
                 continue
             if fields[0] != "" and fields[1] != "":
-                answers.append(fields[1])
-    print answers
+                for word in fields[1].split(";"):
+                    answers.append(word.strip(" "))
+
+    # Get histogram from the answers
+    histo = Counter(answers)
+
+    # Sort and print
+    sorted_histo = sorted(histo.items(), key=itemgetter(1), reverse=True)
+    for element in sorted_histo:
+        logging.info(element)
 
 
 def analyze_boundaries(annot_dir, trim, annotators):
