@@ -58,6 +58,7 @@ def analyze_answers(results_dir="results/"):
             continue
         file_reader = csv.reader(open(csv_file, "rU"))
         for fields in file_reader:
+            # Ignore the first line
             if fields[0] == "File Name":
                 continue
             if fields[0] != "" and fields[1] != "":
