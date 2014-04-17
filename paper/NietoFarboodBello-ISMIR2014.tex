@@ -10,7 +10,7 @@
 
 % Title.
 % ------
-\title{Music Segmentation Boundaries Analysis: Machines vs Humans}
+\title{Analysis of Music Segmentation Boundaries:\\ Machines vs Humans}
 
 % Single address
 % To use with only one author or several with the same address
@@ -45,161 +45,60 @@
 \maketitle
 %
 \begin{abstract}
-  TODO
+  The identification of segment boundaries in music is a relevant task in Music Information Retrieval
+  
 \end{abstract}
 %
 \section{Introduction}\label{sec:introduction}
 
+Music segmentation intro: focusing on boundaries.
+
+Subjectivity of the task.
+
+Analysis of how machines do vs humans. Aim to improve automatic algorithms.
+
 Organization of the paper.
 
-\section{Machines}\label{sec:eval_desc}
+\section{Boundaries Evaluation Metrics}
 
-\section{Humans}\label{sec:using_method}
+F-measure at 3 seconds and 0.5. Trim/No trim. Information Gain. Entropy scores.
+
+\section{Machines Identifying Boundaries}\label{sec:eval_desc}
+
+Different approaches: novelty, homogeneity, repetition.
+
+Choosing the five algorithms: OLDA\cite{McFee2014}, Serr\`a\cite{Serra2013},
+Foote\cite{Foote1999}, Levy\cite{Levy2008}, SI-PLCA\cite{Weiss2011}.
+
+Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holzapfel2012}.
+
+\subsection{Music Segmentation Framework}
+
+Open source project\footnote{Not displayed for revision process.}
+
+Machines.
+
+\subsection{Dataset}
+
+Isophonics, SALAMI\cite{Smith2011}, Cerulean, Ephiphyte.
+
+\subsection{Selection of Hardest and Easiest Tracks}
+
+Plots of MGP and MMA.
+
+\section{Humans Identifying Boundaries}\label{sec:using_method}
+
+Experiment. 5 subjects. 50 tracks: 45 hard, 5 easy.
+
+\subsection{Experiment Setup}
+
+Talk about the SALAMI guidelines.
 
 \section{Machines vs Humans}
 
+Plot comparing MGP-machines vs MGP-humans.
 
-
-%\begin{table}
- %\begin{center}
- %\begin{tabular}{|l|l|}
-  %\hline
-  %String value & Numeric value \\
-  %\hline
-  %Hello ISMIR  & 2014 \\
-  %\hline
- %\end{tabular}
-%\end{center}
- %\caption{Table captions should be placed below the table.}
- %\label{tab:example}
-%\end{table}
-
-%\begin{figure}
- %\centerline{\framebox{
- %\includegraphics[width=\columnwidth]{figure.png}}}
- %\caption{Figure captions should be placed below the figure.}
- %\label{fig:example}
-%\end{figure}
-
-\section{Conclusions}
-
-Our method will save us all.
-
-\begin{thebibliography}{citations}
-
-\bibitem {Author:00}
-E. Author:
-``The Title of the Conference Paper,''
-{\it Proceedings of the International Symposium
-on Music Information Retrieval}, pp.~000--111, 2000.
-
-\bibitem{Someone:10}
-A. Someone, B. Someone, and C. Someone:
-``The Title of the Journal Paper,''
-{\it Journal of New Music Research},
-Vol.~A, No.~B, pp.~111--222, 2010.
-
-\bibitem{Someone:04} X. Someone and Y. Someone: {\it Title of the Book},
-    Editorial Acme, Porto, 2012.
-
-\end{thebibliography}
-
-%\bibliography{ismir2014template}
-
-\end{document}
-Instead, we will suppose that $X$ can be hierarchically decomposed into a tree structure.
-In this view, we have segmentations at multiple resolutions or levels of granularity.
-The question now is how to evaluate with or against tree-structured segmentation.
-
-\subsection{Notation}
-
-Let $S \in \mathcal{P}(X)$ denote a partitioning of the columns of $X$, which can be seen as a flat sequence.
-We will use the subscripts $S_R$ and $S_E$ to denote \emph{reference} and \emph{estimation}, respectively.
-$S(i)$ will denote the identifier of the partition containing item $i$
-
-Hierarchical segmentations will be denoted by $H$ following the subscript conventions above, and the restriction that $H(i)$ denotes the most specific segment containing $i$.
-
-$H(i, j)$ will denote the least common ancestor of $H(i)$ and $H(j)$.
-We will denote precedence (containment) of segments by $\prec$ and $\preceq$ e.g., $H(i) \preceq H(i, j)$.In general, we can interpret $H(\cdot, \cdot)$ as a partial order over pairs: not all pairs are comparable, e.g., if $H(a) = H(b)$.
-Restricting to a query frame $q$, $H(q, \cdot)$ induces a partial ranking over the remaining data, in that for all $i, j$.
-This will be the key to our evaluation.
-
-
-\subsection{Reduction to ranking}
-
-Observe that flat segmentations are a special case of hierarchical segmentations, where there is one node at the root of the hierarchy containing all frames, and then $m$ segments at the next level down which partition $X$.
-
-We can reduce segmentation evaluation to a ranking evaluation problem as follows.
-Let $q$ denote any frame/column of $X$, and let $i$ and $j$ denote any two frames such that $S_R(q) = S_R(i)$ and $S_R(q) \neq S_R(j)$.
-In this case, $i$ may be considered \emph{relevant} for $q$, and $j$ is considered \emph{irrelevant} for $q$.
-This leads to a straightforward reduction to bipartite ranking, and induces an evaluation similar to the Area Under the Curve (AUC) statistic. 
-Assuming that both $S_E$ and $S_R$ have $n$ frames, we can formally describe the flat segmentation evaluation metric framed under a ranking problem as:
-
-\begin{multline}
-f(q ; S_E) := \frac{1}{|S_R(q)|\cdot (n - |S_R(q)|)} \sum_{i \in S_R(q)} \sum_{j \notin S_R(q)} \\ \mathbb{I}\left[ S_E(q) = S_E(i) \neq S_E(j) \right]
-\end{multline}
-
-That is, the score for frame $q$ is the fraction of pairs $(i, j)$ for which $S_E$ agrees with $S_R$ with respect to $q$ (i.e. membership in the segment).
-
-Averaging over all $q$ gives the AUC score:
-
-\begin{equation}
-AUC(S_E) := \frac{1}{n} \sum_q f(q ; S_E)
-\end{equation}
-
-\subsection{Partial Ranking}
-
-Note that $f$ is defined in terms of membership (in)equalities.
-In the flat case, we can equivalently reason about strict precedences.
-Rather than compare $i$ and $j$ where $S(q) = S(i) \neq S(j)$, we can express this as $H(q, i) \prec H(q, j)$.
-That is, $q$ and $i$ merge before $q$ and $j$:
-
-\begin{equation}
-g(q ; H_E) := \frac{1}{Z_q} \sum_{i,j : H_R(q, i) \prec H_R(q, j)}  \mathbb{I}\left[ H_E(q, i) \prec H_E(q, j) \right]
-\end{equation}
-
-where $Z_q$ is a normalization term that counts the number of terms in the summation.
-
-$g$ can be viewed as a Generalized AUC (GAUC) over the partial ranking induced by the hierarchical segmentation.
-Note that the precedence comparisons here are strict, so we never compare two $i$ and $j$ that merge simultaneously with $q$.
-
-Aggregating over all frames $q$, we get the following:
-
-\begin{equation}
-GAUC(H_E) := \frac{1}{n} \sum_q g(q ; S_E)
-\end{equation}
-
-Note, this loss is equivalent to that evaluated by (McFee \& Lanckriet, 2011) for subjective artist similarity.
-The difference here is that the reference rankings are induced from ordinal data, and not subject to consistency errors.
-
-\subsection{Windowing in Time}
-
-The computation of GAUC can be expensive ($O(n^3)$ using a straightforward implementation).
-The score will also vary depending on $n$, so it would be hard to make intra tracks comparisons.
-Therefore, we propose to use a time window of $t$ seconds in order to both simplify the computation of the metric and normalize its dynamic range.
-
-\section{Using GAUC}\label{sec:using_method}
-
-In this section we discuss the behavior of GAUC by showing various synthetic examples, and compare them against other existing methods when possible.
-We subdivide this section based on the type of annotations to be evaluated.
-
-\subsection{Choosing a Time Window}
-
-There's a time frame 
-
-
-\subsection{Flat vs Flat}
-
-
-
-\subsection{Flat vs Hierarchical}
-
-\subsection{Hierarchical vs Hierarchical}
-
-\section{Evaluating Automatic Algorithm}
-
-Olda with SALAMI.
-
+Analyze the answers, display most common problems in a table.
 
 %\begin{table}
  %\begin{center}
@@ -224,27 +123,28 @@ Olda with SALAMI.
 
 \section{Conclusions}
 
-Our method will save us all.
+Identified some audio properties that could improve the automatic segmentation algorithms.
 
-\begin{thebibliography}{citations}
 
-\bibitem {Author:00}
-E. Author:
-``The Title of the Conference Paper,''
-{\it Proceedings of the International Symposium
-on Music Information Retrieval}, pp.~000--111, 2000.
+%\begin{thebibliography}{citations}
 
-\bibitem{Someone:10}
-A. Someone, B. Someone, and C. Someone:
-``The Title of the Journal Paper,''
-{\it Journal of New Music Research},
-Vol.~A, No.~B, pp.~111--222, 2010.
+%\bibitem {Author:00}
+%E. Author:
+%``The Title of the Conference Paper,''
+%{\it Proceedings of the International Symposium
+%on Music Information Retrieval}, pp.~000--111, 2000.
 
-\bibitem{Someone:04} X. Someone and Y. Someone: {\it Title of the Book},
-    Editorial Acme, Porto, 2012.
+%\bibitem{Someone:10}
+%A. Someone, B. Someone, and C. Someone:
+%``The Title of the Journal Paper,''
+%{\it Journal of New Music Research},
+%Vol.~A, No.~B, pp.~111--222, 2010.
 
-\end{thebibliography}
+%\bibitem{Someone:04} X. Someone and Y. Someone: {\it Title of the Book},
+    %Editorial Acme, Porto, 2012.
 
-%\bibliography{ismir2014template}
+%\end{thebibliography}
+
+\bibliography{references}
 
 \end{document}

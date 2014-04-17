@@ -22,9 +22,129 @@ import numpy as np
 import pylab as plt
 from collections import OrderedDict
 import pickle
+import csv
 
 sys.path.append("../../")
 import mir_eval
+
+
+def get_track_ids(annot_dir):
+    """Obtains the track ids of all the files contained in the experiment.
+
+    Parameters
+    ----------
+    annot_dir: str
+        Path to the annotations directory where all the jams file reside.
+
+    Retutns
+    -------
+    track_ids: list
+        List containing all the files in the experiment.
+    """
+    return glob.glob(os.path.join(annot_dir, "*.jams"))
+
+
+def analyze_answers(results_dir="results/"):
+    """Analyzes the answers of the experiment, contained in csv files."""
+    # Get all the folders with the annotators results
+    annotator_dirs = glob.glob(os.path.join(results_dir, "*"))
+    answers = []
+    for annot_dir in annotator_dirs:
+        csv_file = os.path.join(annot_dir, "answers.csv")
+        print csv_file
+        if not os.path.isfile(csv_file):
+            continue
+        file_reader = csv.reader(open(csv_file, "rU"))
+        for fields in file_reader:
+            if fields[0] == "File Name":
+                continue
+            if fields[0] != "" and fields[1] != "":
+                answers.append(fields[1])
+    print answers
+
+
+def analyze_boundaries(annot_dir, trim, annotators):
+    """Analyzes the annotated boundaries.
+
+    Parameters
+    ----------
+    annot_dir: str
+        Path to the annotations directory where all the jams file reside.
+    trim: boolean
+        Whether to trim the first and last boundaries.
+    annotators: dict
+        Dictionary containing the names and e-mail addresses of the 5
+        different annotators.
+    """
+    jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
+
+    context = "large_scale"
+    dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
+             ('P05', float), ('R05', float), ('track_id', '<U400')]
+    mgp_results = np.empty((0, 6))
+    for i in xrange(1, len(annotators.keys())):
+        FPR = np.empty((0, 6))
+        for jam_file in jams_files:
+            ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
+                            "sections", annotator=0, context=context)
+            try:
+                est_times, est_labels = mir_eval.io.load_jams_range(jam_file,
+                            "sections", annotator=i, context=context)
+            except:
+                logging.warning("Couldn't read annotator %d in JAMS %s" %
+                                (i, jam_file))
+                continue
+            if len(ann_times) == 0:
+                ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
+                            "sections", annotator=0, context="function")
+            if len(est_times) == 0:
+                logging.warning("No annotation in file %s for annotator %s." %
+                                (jam_file, annotators.keys()[i]))
+                continue
+
+            ann_times = np.asarray(ann_times)
+            est_times = np.asarray(est_times)
+            #print ann_times.shape, jam_file
+            P3, R3, F3 = mir_eval.segment.boundary_detection(
+                ann_times, est_times, window=3, trim=trim)
+            P05, R05, F05 = mir_eval.segment.boundary_detection(
+                ann_times, est_times, window=0.5, trim=trim)
+
+            FPR = np.vstack((FPR, (F3, P3, R3, F05, P05, R05)))
+
+        if i == 1:
+            mgp_results = np.vstack((mgp_results, FPR))
+        else:
+            if np.asarray([mgp_results, FPR]).ndim != 3:
+                logging.warning("Ndim is not valid %d" %
+                                np.asarray([mgp_results, FPR]).ndim)
+                print len(mgp_results)
+                print len(FPR)
+                continue
+            mgp_results = np.mean([mgp_results, FPR], axis=0)
+
+        FPR = np.mean(FPR, axis=0)
+        logging.info("Results for %s:\n\tF3: %.4f, P3: %.4f, R3: %.4f\n"
+                     "\tF05: %.4f, P05: %.4f, R05: %.4f" % (
+                         annotators.keys()[i], FPR[0], FPR[1], FPR[2], FPR[3],
+                         FPR[4], FPR[5]))
+
+    mgp_results = mgp_results.tolist()
+    track_ids = get_track_ids(annot_dir)
+    for i in xrange(len(track_ids)):
+        mgp_results[i].append(track_ids[i])
+        mgp_results[i] = tuple(mgp_results[i])
+    mgp_results = np.asarray(mgp_results, dtype=dtype)
+    mgp_results = np.sort(mgp_results, order='F3')
+
+    mgp_results_machine = pickle.load(open(
+        "../notes/mgp_experiment_machine.pk", "r"))
+
+    mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
+    mgp_results = np.sort(mgp_results, order="track_id")
+    #print "Humans", mgp_results
+    #print "Machines", mgp_results_machine
+    plt.scatter(mgp_results_machine["F3"], mgp_results["F3"]); plt.show()
 
 
 def process(annot_dir, trim=False):
@@ -57,77 +177,12 @@ def process(annot_dir, trim=False):
         "name"  : "Shuli",
         "email" : "luiseslt@gmail.com"
     }
-    jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
-    context = "large_scale"
-    dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
-             ('P05', float), ('R05', float), ('track_id', '<U400')]
-    mgp_results = np.empty((0, 6))
-    for i in xrange(1, len(annotators.keys())):
-        FPR = np.empty((0, 6))
-        if i == 1:
-            track_ids = []
-        for jam_file in jams_files:
-            ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
-                            "sections", annotator=0, context=context)
-            try:
-                est_times, est_labels = mir_eval.io.load_jams_range(jam_file,
-                            "sections", annotator=i, context=context)
-            except:
-                logging.warning("Couldn't read annotator %d in JAMS %s" %
-                                (i, jam_file))
-                continue
-            if len(ann_times) == 0:
-                ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
-                            "sections", annotator=0, context="function")
-            if len(est_times) == 0:
-                logging.warning("No annotation in file %s for annotator %s." %
-                                (jam_file, annotators.keys()[i]))
-                continue
 
-            ann_times = np.asarray(ann_times)
-            est_times = np.asarray(est_times)
-            #print ann_times.shape, jam_file
-            P3, R3, F3 = mir_eval.segment.boundary_detection(
-                ann_times, est_times, window=3, trim=trim)
-            P05, R05, F05 = mir_eval.segment.boundary_detection(
-                ann_times, est_times, window=0.5, trim=trim)
+    # Analyze the answers
+    analyze_answers()
 
-            FPR = np.vstack((FPR, (F3, P3, R3, F05, P05, R05)))
-            if i == 1:
-                track_ids.append(jam_file)
-
-        if i == 1:
-            mgp_results = np.vstack((mgp_results, FPR))
-        else:
-            if np.asarray([mgp_results, FPR]).ndim != 3:
-                logging.warning("Ndim is not valid %d" %
-                                np.asarray([mgp_results, FPR]).ndim)
-                print len(mgp_results)
-                print len(FPR)
-                continue
-            mgp_results = np.mean([mgp_results, FPR], axis=0)
-
-        FPR = np.mean(FPR, axis=0)
-        logging.info("Results for %s:\n\tF3: %.4f, P3: %.4f, R3: %.4f\n"
-                     "\tF05: %.4f, P05: %.4f, R05: %.4f" % (
-                         annotators.keys()[i], FPR[0], FPR[1], FPR[2], FPR[3],
-                         FPR[4], FPR[5]))
-
-    mgp_results = mgp_results.tolist()
-    for i in xrange(len(track_ids)):
-        mgp_results[i].append(track_ids[i])
-        mgp_results[i] = tuple(mgp_results[i])
-    mgp_results = np.asarray(mgp_results, dtype=dtype)
-    mgp_results = np.sort(mgp_results, order='F3')
-
-    mgp_results_machine = pickle.load(open(
-        "../notes/mgp_experiment_machine.pk", "r"))
-
-    mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
-    mgp_results = np.sort(mgp_results, order="track_id")
-    #print "Humans", mgp_results
-    #print "Machines", mgp_results_machine
-    plt.scatter(mgp_results_machine["F3"], mgp_results["F3"]); plt.show()
+    # Analyze the boundaries
+    analyze_boundaries(annot_dir, trim, annotators)
 
 
 def main():
