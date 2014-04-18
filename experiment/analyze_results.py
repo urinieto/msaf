@@ -28,6 +28,7 @@ import csv
 
 sys.path.append("../../")
 import mir_eval
+import jams2
 
 
 def get_track_ids(annot_dir):
@@ -47,7 +48,16 @@ def get_track_ids(annot_dir):
 
 
 def analyze_answers(results_dir="results/"):
-    """Analyzes the answers of the experiment, contained in csv files."""
+    """Analyzes the answers of the experiment, contained in csv files.
+    More specifically, it counts the number of words in the answers in order
+    to know how often they appear. Then it sorts them based on their frequency
+    and prints them.
+
+    Parameters
+    ----------
+    results_dir: srt
+        Path to the directory where the results are.
+    """
     # Get all the folders with the annotators results
     annotator_dirs = glob.glob(os.path.join(results_dir, "*"))
     answers = []
@@ -76,23 +86,51 @@ def analyze_answers(results_dir="results/"):
 
 def compute_mgp(jams_files, annotators, context, trim):
     """Computes the Mean Ground-truth Performance of the experiment
-        results."""
+        results.
+
+    For all the jams files of the experiment, it compares the results with
+    the ground truth (also contained in the jam file), and computes the
+    Mean Ground-truth Performance across them.
+
+    It also reads the MGP of the machines, and plots them along with the
+    humans results.
+
+    Parameters
+    ----------
+    jams_files: list
+        List containing all the file paths to the experiment files.
+    annotators: dict
+        Dictionary containing the names and e-mail addresses of the 5
+        different annotators.
+    context: str
+        Type of context to analyze. e.g "large_scale", "small_scale".
+    trim: boolean
+        Whether to trim the first and last boundaries.
+
+    Returns
+    -------
+    mgp_results: np.array
+        Array containing the results for the F3, P3, R3, F05, P05, R05 of the
+        humans performance.
+    """
     mgp_results = np.empty((0, 6))
     for i in xrange(1, len(annotators.keys())):
         FPR = np.empty((0, 6))
         for jam_file in jams_files:
-            ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
+            print annotators.keys()[0], 0, jam_file
+            ann_times, ann_labels = jams2.converters.load_jams_range(jam_file,
                             "sections", annotator=0, context=context)
             try:
-                est_times, est_labels = mir_eval.io.load_jams_range(jam_file,
-                            "sections", annotator=i, context=context)
+                print annotators.keys()[i], i
+                est_times, est_labels = jams2.converters.load_jams_range(
+                    jam_file, "sections", annotator=i, context=context)
             except:
                 logging.warning("Couldn't read annotator %d in JAMS %s" %
                                 (i, jam_file))
                 continue
             if len(ann_times) == 0:
-                ann_times, ann_labels = mir_eval.io.load_jams_range(jam_file,
-                            "sections", annotator=0, context="function")
+                ann_times, ann_labels = jams2.converters.load_jams_range(
+                    jam_file, "sections", annotator=0, context="function")
             if len(est_times) == 0:
                 logging.warning("No annotation in file %s for annotator %s." %
                                 (jam_file, annotators.keys()[i]))
@@ -101,9 +139,9 @@ def compute_mgp(jams_files, annotators, context, trim):
             ann_times = np.asarray(ann_times)
             est_times = np.asarray(est_times)
             #print ann_times.shape, jam_file
-            P3, R3, F3 = mir_eval.segment.boundary_detection(
+            P3, R3, F3 = mir_eval.boundary.detection(
                 ann_times, est_times, window=3, trim=trim)
-            P05, R05, F05 = mir_eval.segment.boundary_detection(
+            P05, R05, F05 = mir_eval.boundary.detection(
                 ann_times, est_times, window=0.5, trim=trim)
 
             FPR = np.vstack((FPR, (F3, P3, R3, F05, P05, R05)))
@@ -173,6 +211,13 @@ def analyze_boundaries(annot_dir, trim, annotators):
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     plt.show()
+
+
+def plot_track():
+    """Plots the different boundaries for a given track, contained in the
+    jams file."""
+
+    pass
 
 
 def process(annot_dir, trim=False):
