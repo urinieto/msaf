@@ -74,24 +74,9 @@ def analyze_answers(results_dir="results/"):
         logging.info(element)
 
 
-def analyze_boundaries(annot_dir, trim, annotators):
-    """Analyzes the annotated boundaries.
-
-    Parameters
-    ----------
-    annot_dir: str
-        Path to the annotations directory where all the jams file reside.
-    trim: boolean
-        Whether to trim the first and last boundaries.
-    annotators: dict
-        Dictionary containing the names and e-mail addresses of the 5
-        different annotators.
-    """
-    jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
-
-    context = "large_scale"
-    dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
-             ('P05', float), ('R05', float), ('track_id', '<U400')]
+def compute_mgp(jams_files, annotators, context, trim):
+    """Computes the Mean Ground-truth Performance of the experiment
+        results."""
     mgp_results = np.empty((0, 6))
     for i in xrange(1, len(annotators.keys())):
         FPR = np.empty((0, 6))
@@ -139,7 +124,28 @@ def analyze_boundaries(annot_dir, trim, annotators):
                      "\tF05: %.4f, P05: %.4f, R05: %.4f" % (
                          annotators.keys()[i], FPR[0], FPR[1], FPR[2], FPR[3],
                          FPR[4], FPR[5]))
+    return mgp_results
 
+
+def analyze_boundaries(annot_dir, trim, annotators):
+    """Analyzes the annotated boundaries.
+
+    Parameters
+    ----------
+    annot_dir: str
+        Path to the annotations directory where all the jams file reside.
+    trim: boolean
+        Whether to trim the first and last boundaries.
+    annotators: dict
+        Dictionary containing the names and e-mail addresses of the 5
+        different annotators.
+    """
+    # Compute the MGP human results
+    jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
+    context = "large_scale"
+    dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
+             ('P05', float), ('R05', float), ('track_id', '<U400')]
+    mgp_results = compute_mgp(jams_files, annotators, context, trim)
     mgp_results = mgp_results.tolist()
     track_ids = get_track_ids(annot_dir)
     for i in xrange(len(track_ids)):
@@ -148,14 +154,25 @@ def analyze_boundaries(annot_dir, trim, annotators):
     mgp_results = np.asarray(mgp_results, dtype=dtype)
     mgp_results = np.sort(mgp_results, order='F3')
 
+    # Get MGP machine results
     mgp_results_machine = pickle.load(open(
         "../notes/mgp_experiment_machine.pk", "r"))
 
+    # Plot results
     mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
     mgp_results = np.sort(mgp_results, order="track_id")
-    #print "Humans", mgp_results
+    print "Humans", mgp_results
     #print "Machines", mgp_results_machine
-    plt.scatter(mgp_results_machine["F3"], mgp_results["F3"]); plt.show()
+    fig, ax = plt.subplots()
+    ax.scatter(mgp_results_machine["F3"], mgp_results["F3"])
+    ax.plot([0, 1], [0, 1])
+    ax.set_ylabel("Human results")
+    ax.set_xlabel("Machine results")
+    ax.set_xticks(np.arange(0, 1.1, .1))
+    ax.set_yticks(np.arange(0, 1.1, .1))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    plt.show()
 
 
 def process(annot_dir, trim=False):
