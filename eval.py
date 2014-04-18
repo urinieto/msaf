@@ -20,7 +20,7 @@ import sqlite3
 import itertools
 
 import mir_eval
-import jams
+import jams2
 
 import msaf_io as MSAF
 
@@ -72,7 +72,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
     jam_file = get_annotation(est_file, jam_files)
 
     if beatles:
-        jam = jams.load(jam_file)
+        jam = jams2.load(jam_file)
         if jam.metadata.artist != "The Beatles":
             return []
 
