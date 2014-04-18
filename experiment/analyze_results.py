@@ -63,7 +63,7 @@ def analyze_answers(results_dir="results/"):
                 continue
             if fields[0] != "" and fields[1] != "":
                 for word in fields[1].split(";"):
-                    answers.append(word.strip(" "))
+                    answers.append(word.strip(" ").lower())
 
     # Get histogram from the answers
     histo = Counter(answers)
