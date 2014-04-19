@@ -117,20 +117,20 @@ def compute_mgp(jams_files, annotators, context, trim):
     for i in xrange(1, len(annotators.keys())):
         FPR = np.empty((0, 6))
         for jam_file in jams_files:
-            print annotators.keys()[0], 0, jam_file
             ann_times, ann_labels = jams2.converters.load_jams_range(jam_file,
-                            "sections", annotator=0, context=context)
+              "sections", annotator_name=annotators.keys()[0], context=context)
             try:
-                print annotators.keys()[i], i
                 est_times, est_labels = jams2.converters.load_jams_range(
-                    jam_file, "sections", annotator=i, context=context)
+                    jam_file, "sections", annotator_name=annotators.keys()[i],
+                    context=context)
             except:
                 logging.warning("Couldn't read annotator %d in JAMS %s" %
                                 (i, jam_file))
                 continue
             if len(ann_times) == 0:
                 ann_times, ann_labels = jams2.converters.load_jams_range(
-                    jam_file, "sections", annotator=0, context="function")
+                    jam_file, "sections", annotator_name=annotators.keys()[0],
+                    context="function")
             if len(est_times) == 0:
                 logging.warning("No annotation in file %s for annotator %s." %
                                 (jam_file, annotators.keys()[i]))
