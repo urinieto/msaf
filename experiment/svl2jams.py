@@ -16,7 +16,7 @@ import time
 import json
 import xml.etree.ElementTree as ET
 
-import jams
+import jams2
 
 annotators = {
     "Colin" : {
@@ -46,7 +46,7 @@ def create_annotation(root, annotator_id, jam_file, context):
     """Creates an annotation from the given root of an XML svl file."""
 
     # Load jam file
-    jam = jams.load(jam_file)
+    jam = jams2.load(jam_file)
 
     # If annotation exists, replace it
     annot = None
