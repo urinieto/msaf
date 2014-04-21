@@ -47,11 +47,15 @@ def print_results(results):
 def compute_results(ann_times, est_times, trim, bins, est_file):
     """Compute the results using all the available evaluations."""
     # F-measures
-    P3, R3, F3 = mir_eval.segment.boundary_detection(ann_times, est_times,
-                                                     window=3, trim=trim)
-    P05, R05, F05 = mir_eval.segment.boundary_detection(ann_times,
-                                                        est_times, window=0.5,
-                                                        trim=trim)
+    import pdb; pdb.set_trace()  # XXX BREAKPOINT
+    P3, R3, F3 = mir_eval.boundary.detection(ann_times, est_times,
+                                             window=3, trim=trim)
+    P05, R05, F05 = mir_eval.boundary.detection(ann_times, est_times,
+                                                window=0.5, trim=trim)
+
+    # Median deviation
+    est_to_ref, ref_to_est = mir_eval.boundary.deviation(ann_times, est_times,
+                                                         trim=trim)
 
     # Information gain
     D = compute_information_gain(ann_times, est_times, est_file, bins=bins)
@@ -77,14 +81,13 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
             return []
 
     try:
-        ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-            jam_file, "sections", context=MSAF.prefix_dict[ds_prefix])
+        ann_times, ann_labels = jams2.converters.load_jams_range(jam_file,
+                            "sections", context=MSAF.prefix_dict[ds_prefix])
     except:
         logging.warning("No annotations for file: %s" % jam_file)
         return []
 
-    est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats,
-                                     **params)
+    est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
     if est_times == []:
         return []
 
@@ -144,8 +147,8 @@ def binary_entropy(score):
 
 def compute_conditional_entropy(ann_times, est_times, window=3, trim=False):
     """Computes the conditional recall entropies."""
-    P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times,
-                                                  window=window, trim=trim)
+    P, R, F = mir_eval.boundary.detection(ann_times, est_times, window=window,
+                                          trim=trim)
     # Recall can be seen as the conditional probability of how likely it is
     # for the algorithm to find all the annotated boundaries.
     return binary_entropy(R)
