@@ -1,5 +1,5 @@
 """
-These set of functions help the algorithms of MSAF to read and write files 
+These set of functions help the algorithms of MSAF to read and write files
 of the Segmentation Dataset.
 """
 
@@ -18,39 +18,40 @@ import mir_eval
 import numpy as np
 
 # Local stuff
-import jams
+import jams2
+
 
 prefix_dict = {
-        "Cerulean"      : "large_scale",
-        "Epiphyte"      : "function",
-        "Isophonics"    : "function",
-        "SALAMI"        : "large_scale"
+    "Cerulean"      : "large_scale",
+    "Epiphyte"      : "function",
+    "Isophonics"    : "function",
+    "SALAMI"        : "large_scale"
 }
+
 
 def read_boundaries(est_file, alg_id, annot_beats, **params):
     """Reads the boundaries from an estimated file."""
-    with open(est_file, "r") as f:
-        est_data = json.load(f)
+    est_data = json.load(open(est_file, "r"))
 
-        #print est_file, est_data
-        if alg_id not in est_data["boundaries"]:
-            logging.error("Estimation not found for algorithm %s in %s" % \
-                                                            (est_file, alg_id))
-            return []
+    if alg_id not in est_data["boundaries"]:
+        logging.error("Estimation not found for algorithm %s in %s" %
+                        (est_file, alg_id))
+        return []
 
-        bounds = []
-        for alg in est_data["boundaries"][alg_id]:
-            if alg["annot_beats"] == annot_beats:
-                # Match non-empty parameters
-                found = True
-                for key in params:
-                    if params[key] != "" and alg[key] != params[key]:
-                        found = False
+    bounds = []
+    for alg in est_data["boundaries"][alg_id]:
+        if alg["annot_beats"] == annot_beats:
+            # Match non-empty parameters
+            found = True
+            for key in params:
+                if params[key] != "" and alg[key] != params[key]:
+                    found = False
 
-                if found:
-                    bounds = np.array(alg["data"])
-                    break
+            if found:
+                bounds = np.array(alg["data"])
+                break
 
+    bounds = np.asarray(zip(bounds[:-1], bounds[1:]))
     return bounds
 
 
@@ -78,18 +79,17 @@ def read_annot_bound_frames(audio_path, beats):
 
     # Read annotations
     jam_path = os.path.join(ds_path, "annotations",
-        os.path.basename(audio_path)[:-4]+".jams")
+                            os.path.basename(audio_path)[:-4] + ".jams")
     ds_prefix = os.path.basename(audio_path).split("_")[0]
     try:
         ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                        jam_path, "sections", 
-                                        context=prefix_dict[ds_prefix])
+            jam_path, "sections", context=prefix_dict[ds_prefix])
     except:
         logging.warning("Annotation not found in %s" % jam_path)
         return []
 
     # align with beats
-    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1,-1]]))
+    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1, -1]]))
     dist = np.minimum.outer(ann_times, beats)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
 
@@ -113,10 +113,10 @@ def get_features(audio_path, annot_beats=False):
     ------
     C: np.array((T, 12))
         Beat-sync Chromagram
-    
+
     M: np.array((T, 13))
         Beat-sync MFCC
-    
+
     beats: np.array(T)
         Beats in seconds
 
@@ -129,12 +129,12 @@ def get_features(audio_path, annot_beats=False):
 
     # Read annotations
     annotation_path = os.path.join(ds_path, "annotations",
-        os.path.basename(audio_path)[:-4]+".jams")
-    jam = jams.load(annotation_path)
+        os.path.basename(audio_path)[:-4] + ".jams")
+    jam = jams2.load(annotation_path)
 
     # Read Estimations
-    features_path = os.path.join(ds_path, "features", 
-        os.path.basename(audio_path)[:-4]+".json")
+    features_path = os.path.join(ds_path, "features",
+        os.path.basename(audio_path)[:-4] + ".json")
     f = open(features_path, "r")
     feats = json.load(f)
 
@@ -144,7 +144,8 @@ def get_features(audio_path, annot_beats=False):
         M = np.asarray(feats["ann_beatsync"]["mfcc"])
         beats = []
         beat_data = jam.beats[0].data
-        if beat_data == []: raise ValueError
+        if beat_data == []:
+            raise ValueError
         for data in beat_data:
             beats.append(data.time.value)
         beats = np.unique(beats)
@@ -173,7 +174,7 @@ def create_estimation(times, annot_beats, **params):
 
 
 def save_boundaries(out_file, times, annot_beats, alg_name, **params):
-    """Saves the segment boundary times in the out_file using a JSON format. 
+    """Saves the segment boundary times in the out_file using a JSON format.
         if file exists, update with new annotation."""
     if os.path.isfile(out_file):
         # Add estimation
@@ -186,7 +187,7 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                 found = False
                 for i, est in enumerate(res["boundaries"][alg_name]):
                     if est["annot_beats"] == annot_beats:
-                        found = True 
+                        found = True
                         for key in params:
                             if params[key] != est[key]:
                                 found = False
@@ -197,7 +198,7 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                             create_estimation(times, annot_beats, **params)
                         break
                 if not found:
-                    res["boundaries"][alg_name].append(create_estimation(times, 
+                    res["boundaries"][alg_name].append(create_estimation(times,
                                                 annot_beats, **params))
             else:
                 res["boundaries"][alg_name] = []
@@ -218,6 +219,5 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                                             annot_beats, **params))
 
     # Save dictionary to disk
-    f = open(out_file, "w")
-    json.dump(res, f, indent=2)
-    f.close()
+    with open(out_file, "w") as f:
+        json.dump(res, f, indent=2)
