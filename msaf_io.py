@@ -30,12 +30,29 @@ prefix_dict = {
 
 
 def read_boundaries(est_file, alg_id, annot_beats, **params):
-    """Reads the boundaries from an estimated file."""
+    """Reads the boundaries from an estimated file.
+
+    Parameters
+    ----------
+    est_file: str
+        Path to the estimated file (JSON file).
+    alg_id: str
+        Algorithm ID from which to retrieve the boundaries. E.g. serra
+    annot_beats: bool
+        Whether to retrieve the boundaries using annotated beats or not.
+    params: dict
+        Additional search parameters. E.g. {"features" : "hpcp"}
+
+    Returns
+    -------
+    bounds = np.array(N,2)
+        Set of read boundaries in an interval format (start, end).
+    """
     est_data = json.load(open(est_file, "r"))
 
     if alg_id not in est_data["boundaries"]:
         logging.error("Estimation not found for algorithm %s in %s" %
-                        (est_file, alg_id))
+                      (est_file, alg_id))
         return []
 
     bounds = []
@@ -51,6 +68,7 @@ def read_boundaries(est_file, alg_id, annot_beats, **params):
                 bounds = np.array(alg["data"])
                 break
 
+    # Convert to interval
     bounds = np.asarray(zip(bounds[:-1], bounds[1:]))
     return bounds
 
