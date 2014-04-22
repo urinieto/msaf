@@ -44,22 +44,53 @@ def print_results(results):
                                          100 * res[3], 100 * res[4], res[6]))
 
 
-def compute_results(ann_times, est_times, trim, bins, est_file):
+def times_to_intervals(times):
+    """Given a set of times, convert them into intervals.
+
+    Parameters
+    ----------
+    times: np.array(N)
+        A set of times.
+
+    Returns
+    -------
+    inters: np.array(N-1, 2)
+        A set of intervals.
+    """
+    return np.asarray(zip(times[:-1], times[1:]))
+
+
+def intervals_to_times(inters):
+    """Given a set of intervals, convert them into times.
+
+    Parameters
+    ----------
+    inters: np.array(N-1, 2)
+        A set of intervals.
+
+    Returns
+    -------
+    times: np.array(N)
+        A set of times.
+    """
+    return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)
+
+
+def compute_results(ann_inter, est_inter, trim, bins, est_file):
     """Compute the results using all the available evaluations."""
     # F-measures
-    import pdb; pdb.set_trace()  # XXX BREAKPOINT
-    P3, R3, F3 = mir_eval.boundary.detection(ann_times, est_times,
+    P3, R3, F3 = mir_eval.boundary.detection(ann_inter, est_inter,
                                              window=3, trim=trim)
-    P05, R05, F05 = mir_eval.boundary.detection(ann_times, est_times,
+    P05, R05, F05 = mir_eval.boundary.detection(ann_inter, est_inter,
                                                 window=0.5, trim=trim)
 
     # Median deviation
-    est_to_ref, ref_to_est = mir_eval.boundary.deviation(ann_times, est_times,
+    est_to_ref, ref_to_est = mir_eval.boundary.deviation(ann_inter, est_inter,
                                                          trim=trim)
 
     # Information gain
-    D = compute_information_gain(ann_times, est_times, est_file, bins=bins)
-    #D = compute_conditional_entropy(ann_times, est_times, window=3, trim=trim)
+    D = compute_information_gain(ann_inter, est_inter, est_file, bins=bins)
+    #D = compute_conditional_entropy(ann_inter, est_inter, window=3, trim=trim)
     #D = R05
 
     return [P3, R3, F3, P05, R05, F05, D]
@@ -81,21 +112,18 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
             return []
 
     try:
-        ann_times, ann_labels = jams2.converters.load_jams_range(jam_file,
+        ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
                             "sections", context=MSAF.prefix_dict[ds_prefix])
     except:
         logging.warning("No annotations for file: %s" % jam_file)
         return []
 
-    est_times = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
-    if est_times == []:
+    est_inter = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
+    if est_inter == []:
         return []
 
-    # Put annotated times in right format (from intervals to times)
-    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1, -1]]))
-
     # Compute the results and return
-    return compute_results(ann_times, est_times, trim, bins, est_file)
+    return compute_results(ann_inter, est_inter, trim, bins, est_file)
 
 
 def compute_mma_results(est_file, trim, annot_beats, bins=10):
@@ -118,11 +146,15 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10):
     return results_mma
 
 
-def compute_information_gain(ann_times, est_times, est_file, bins):
-    """Computes the information gain of the est_file from the annotated times
-    and the estimated times."""
+def compute_information_gain(ann_inter, est_inter, est_file, bins):
+    """Computes the information gain of the est_file from the annotated
+    intervals and the estimated intervals."""
+    ann_times = intervals_to_times(ann_inter)
+    est_times = intervals_to_times(est_inter)
+    print ann_times, est_times
+    D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     try:
-        D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
+        D = mir_eval.beat.information_gain(ann_inter, est_inter, bins=bins)
     except:
         logging.warning("Couldn't compute the Information Gain for file "
                         "%s" % est_file)
