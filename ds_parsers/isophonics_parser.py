@@ -98,7 +98,7 @@ def fill_section_annotation(lab_file, annot):
         section.end.confidence = 1.0
         section.label.value = label
         section.label.confidence = 1.0
-        section.level = "function"  # Only function level of annotation
+        section.label.context = "function"  # Only function level of annotation
         if float(end_time) < float(start_time):
             logging.warning("Start time is after end time in file %s" %
                             lab_file)
