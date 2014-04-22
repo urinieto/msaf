@@ -20,11 +20,10 @@ __email__ = "oriol@nyu.edu"
 
 import argparse
 import glob
-import jams
+import jams2
 import json
 import logging
 import os
-import sys
 import time
 
 
@@ -33,7 +32,7 @@ def fill_global_metadata(jam, json_file):
     # Open JSON
     f = open(json_file, "r")
     annot = json.load(f)
-    basename = os.path.basename(json_file).replace(".json","")
+    basename = os.path.basename(json_file).replace(".json", "")
 
     if "-" in basename:
         token = "-"
@@ -42,14 +41,15 @@ def fill_global_metadata(jam, json_file):
 
     # Assign Metadata
     jam.metadata.artist = basename.split(token)[0]
-    jam.metadata.duration = -1 # In seconds
+    jam.metadata.duration = -1  # In seconds
     jam.metadata.title = basename.split(token)[1]
-    jam.metadata.md5 = "" #TODO
+    jam.metadata.md5 = ""  # TODO
     jam.metadata.echonest_id = annot["TRID"]
-    jam.metadata.mbid = "" #TODO
-    jam.metadata.version = -1 #TODO
+    jam.metadata.mbid = ""  # TODO
+    jam.metadata.version = -1  # TODO
 
     f.close()
+
 
 def fill_annoatation_metadata(annot, attribute, name):
     """Fills the annotation metadata."""
@@ -57,20 +57,21 @@ def fill_annoatation_metadata(annot, attribute, name):
     annot.annotation_metadata.corpus = "Cerulean"
     annot.annotation_metadata.version = "1.0"
     annot.annotation_metadata.annotation_tools = "Sonic Visualizer"
-    annot.annotation_metadata.annotation_rules = "TODO" #TODO
-    annot.annotation_metadata.validation_and_reliability = "TODO" #TODO
+    annot.annotation_metadata.annotation_rules = "TODO"  # TODO
+    annot.annotation_metadata.validation_and_reliability = "TODO"  # TODO
     annot.annotation_metadata.origin = "Cerulean Mountain Trust"
     annot.annotation_metadata.annotator.name = name
-    annot.annotation_metadata.annotator.email = "TODO" #TODO
+    annot.annotation_metadata.annotator.email = "TODO"  # TODO
     #TODO:
     #time = "TODO"
+
 
 def fill_section_annotation(json_file, annot):
     """Fills the JAMS annot annotation given a json file."""
 
     # Annotation Metadata
     fill_annoatation_metadata(annot, "sections", json_file.split("/")[-3])
-    
+
     # Open JSON
     f = open(json_file, "r")
     json_annot = json.load(f)
@@ -78,7 +79,7 @@ def fill_section_annotation(json_file, annot):
     # Convert to JAMS
     for i, json_section in enumerate(json_annot["sections"][:-1]):
         start_time = json_section["start"]
-        end_time = json_annot["sections"][i+1]["start"]
+        end_time = json_annot["sections"][i + 1]["start"]
         label = json_section["label"]
         function_label = json_section["opt"]
 
@@ -89,7 +90,7 @@ def fill_section_annotation(json_file, annot):
         section.end.confidence = 1.0
         section.label.value = function_label
         section.label.confidence = 1.0
-        section.level = "function" 
+        section.level = "function"
 
         section = annot.create_datapoint()
         section.start.value = float(start_time)
@@ -107,7 +108,7 @@ def create_JAMS(json_files, out_file):
     """Creates a JAMS file given the Cerulean json files."""
 
     # New JAMS and annotation
-    jam = jams.Jams()
+    jam = jams2.Jams()
 
     # Global file metadata
     fill_global_metadata(jam, json_files[0])
@@ -143,10 +144,10 @@ def process(in_dir, out_dir):
         assert os.path.basename(json_file1) == os.path.basename(json_file2)
 
         #Create a JAMS file for this track
-        create_JAMS([json_file1, json_file2], 
-                    os.path.join(out_dir, 
-                        os.path.basename(json_file1).replace(".json","") + \
-                        ".jams"))
+        create_JAMS([json_file1, json_file2],
+                    os.path.join(out_dir,
+                        os.path.basename(json_file1).replace(".json", "") +
+                                 ".jams"))
 
 
 def main():
@@ -157,14 +158,14 @@ def main():
     parser.add_argument("in_dir",
                         action="store",
                         help="Cerulean main folder")
-    parser.add_argument("-o", 
-                        action="store", 
-                        dest="out_dir", 
-                        default="outJAMS", 
+    parser.add_argument("-o",
+                        action="store",
+                        dest="out_dir",
+                        default="outJAMS",
                         help="Output JAMS folder")
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
 
@@ -173,6 +174,7 @@ def main():
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
+
 
 if __name__ == '__main__':
     main()
