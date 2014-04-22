@@ -151,10 +151,10 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     intervals and the estimated intervals."""
     ann_times = intervals_to_times(ann_inter)
     est_times = intervals_to_times(est_inter)
-    print ann_times, est_times
-    D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
+    #print est_file
+    #D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     try:
-        D = mir_eval.beat.information_gain(ann_inter, est_inter, bins=bins)
+        D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     except:
         logging.warning("Couldn't compute the Information Gain for file "
                         "%s" % est_file)
