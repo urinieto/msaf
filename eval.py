@@ -35,13 +35,28 @@ feat_dict = {
 
 
 def print_results(results):
-    """Print the results."""
+    """Print all the results.
+
+    Parameters
+    ----------
+    results: np.array(9)
+        Results in the following format:
+            0   :   Precision 3 seconds
+            1   :   Recall 3 seconds
+            2   :   F-measure 3 seconds
+            3   :   Precision 0.5 seconds
+            4   :   Recall 0.5 seconds
+            5   :   F-measure 0.5 seconds
+            6   :   Information Gain
+            7   :   Median Deviation from Annotated to Estimated boundary
+            8   :   Median Deviation from Estimated to Annotated boundary
+    """
     results = np.asarray(results)
     res = results.mean(axis=0)
     logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
-                 "R05: %.2f, D: %.4f" % (100 * res[2], 100 * res[0],
-                                         100 * res[1], 100 * res[5],
-                                         100 * res[3], 100 * res[4], res[6]))
+                 "R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f" %
+                 (100 * res[2], 100 * res[0], 100 * res[1], 100 * res[5],
+                  100 * res[3], 100 * res[4], res[6], res[7], res[8]))
 
 
 def times_to_intervals(times):
@@ -84,21 +99,21 @@ def compute_results(ann_inter, est_inter, trim, bins, est_file):
     P05, R05, F05 = mir_eval.boundary.detection(ann_inter, est_inter,
                                                 window=0.5, trim=trim)
 
-    # Median deviation
-    est_to_ref, ref_to_est = mir_eval.boundary.deviation(ann_inter, est_inter,
-                                                         trim=trim)
-
     # Information gain
     D = compute_information_gain(ann_inter, est_inter, est_file, bins=bins)
     #D = compute_conditional_entropy(ann_inter, est_inter, window=3, trim=trim)
     #D = R05
 
-    return [P3, R3, F3, P05, R05, F05, D]
+    # Median Deviations
+    ann_to_est, est_to_ann = mir_eval.boundary.deviation(ann_inter, est_inter,
+                                                         trim=trim)
+
+    return [P3, R3, F3, P05, R05, F05, D, ann_to_est, est_to_ann]
 
 
 def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
                        beatles=False, bins=10, **params):
-    """Computes the results by using the grount truth dataset."""
+    """Computes the results by using the ground truth dataset."""
 
     # Get the ds_prefix
     ds_prefix = os.path.basename(est_file).split("_")[0]
@@ -191,7 +206,7 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
     """Saves the results into the dataset.
 
     Parameters
-    ==========
+    ----------
 
     TODO
     """
@@ -280,7 +295,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
     # Compute features for each file
-    results = np.empty((0, 7))   # Results: P3, R3, F3, P05, R05, F05, D
+    results = np.empty((0, 9))      # Results: P3, R3, F3, P05, R05, F05, D,
+                                    # median deviations
 
     # Dataset results
     results_ds = []
