@@ -65,7 +65,8 @@ def read_boundaries(est_file, alg_id, annot_beats, **params):
                     found = False
 
             if found:
-                bounds = np.array(alg["data"])
+                # Sort the boundaries by time
+                bounds = np.sort(np.array(alg["data"]))
                 break
 
     # Convert to interval

@@ -18,6 +18,7 @@ import numpy as np
 import time
 import sqlite3
 import itertools
+import pylab as plt
 
 import mir_eval
 import jams2
@@ -94,7 +95,6 @@ def intervals_to_times(inters):
 def compute_results(ann_inter, est_inter, trim, bins, est_file):
     """Compute the results using all the available evaluations."""
     # F-measures
-    logging.info("Analyzing: %s" % est_file)
     P3, R3, F3 = mir_eval.boundary.detection(ann_inter, est_inter,
                                              window=3, trim=trim)
     P05, R05, F05 = mir_eval.boundary.detection(ann_inter, est_inter,
@@ -108,6 +108,12 @@ def compute_results(ann_inter, est_inter, trim, bins, est_file):
     # Median Deviations
     ann_to_est, est_to_ann = mir_eval.boundary.deviation(ann_inter, est_inter,
                                                          trim=trim)
+    if np.isnan(ann_to_est) or np.isnan(est_to_ann):
+        logging.warning("Nan in median deviation evaluation: "
+                        "DevA2E: %.2f\tDevE2A: %.2f\t%s" %
+                        (ann_to_est, est_to_ann, est_file))
+        ann_to_est = 3
+        est_to_ann = 3
 
     return [P3, R3, F3, P05, R05, F05, D, ann_to_est, est_to_ann]
 
@@ -142,22 +148,80 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
     return compute_results(ann_inter, est_inter, trim, bins, est_file)
 
 
-def compute_mma_results(est_file, trim, annot_beats, bins=10):
+def plot_boundaries(all_boundaries, est_file):
+    """Plots all the boundaries.
+
+    Parameters
+    ----------
+    all_boundaries: list
+        A list of np.arrays containing the times of the boundaries, one array
+        for each algorithm.
+    est_file: str
+        Path to the estimated file (JSON file)
+    """
+    N = len(all_boundaries)  # Number of lists of boundaries
+    algo_ids = MSAF.get_algo_ids(est_file)
+    for i, boundaries in enumerate(all_boundaries):
+        for b in boundaries:
+            plt.axvline(b, i / float(N), (i + 1) / float(N))
+        plt.axhline(i / float(N), color="k", linewidth=1)
+    plt.title(os.path.basename(est_file))
+    plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
+    plt.show()
+
+
+def get_all_est_boundaries(est_file, annot_beats):
+    """Gets all the estimated boundaries for all the algorithms.
+
+    Parameters
+    ----------
+    est_file: str
+        Path to the estimated file (JSON file)
+    annot_beats: bool
+        Whether to use the annotated beats or not.
+
+    Returns
+    -------
+    all_boundaries: list
+        A list of np.arrays containing the times of the boundaries, one array
+        for each algorithm
+    """
+    all_boundaries = []
+    for algo_id in MSAF.get_algo_ids(est_file):
+        est_inters = MSAF.read_boundaries(est_file, algo_id,
+                        annot_beats, feature=feat_dict[algo_id])
+        boundaries = intervals_to_times(est_inters)
+        all_boundaries.append(boundaries)
+    return all_boundaries
+
+
+def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
     """Compute the Mean Measure Agreement for all the algorithms of the given
     file est_file."""
     results_mma = []
+    est_file = "/Users/uri/datasets/Segments/estimations/Isophonics_16_-_The_End.json"
+    est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
+    est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
     for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
         # Read estimated times from both algorithms
-        est_times1 = MSAF.read_boundaries(est_file, algorithms[0],
+        est_inters1 = MSAF.read_boundaries(est_file, algorithms[0],
                             annot_beats, feature=feat_dict[algorithms[0]])
-        est_times2 = MSAF.read_boundaries(est_file, algorithms[1],
+        est_inters2 = MSAF.read_boundaries(est_file, algorithms[1],
                             annot_beats, feature=feat_dict[algorithms[1]])
-        if est_times1 == [] or est_times2 == []:
+        if est_inters1 == [] or est_inters2 == []:
             continue
 
         # Compute results
-        results = compute_results(est_times1, est_times2, trim, bins, est_file)
+        results = compute_results(est_inters1, est_inters2, trim, bins,
+                                  est_file)
         results_mma.append(results)
+
+    if plot:
+        all_boundaries = get_all_est_boundaries(est_file, annot_beats)
+        plot_boundaries(all_boundaries, est_file)
+        print all_boundaries
+    sys.exit()
 
     return results_mma
 
