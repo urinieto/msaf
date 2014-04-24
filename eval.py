@@ -94,6 +94,7 @@ def intervals_to_times(inters):
 def compute_results(ann_inter, est_inter, trim, bins, est_file):
     """Compute the results using all the available evaluations."""
     # F-measures
+    logging.info("Analyzing: %s" % est_file)
     P3, R3, F3 = mir_eval.boundary.detection(ann_inter, est_inter,
                                              window=3, trim=trim)
     P05, R05, F05 = mir_eval.boundary.detection(ann_inter, est_inter,
@@ -207,8 +208,23 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
 
     Parameters
     ----------
-
-    TODO
+    cursor: obj
+        Cursor connected to the results SQLite dataset.
+    alg_id: str
+        Identifier of the algorithm. E.g. serra, olda.
+    results: np.array
+        Array containing the results of this current algorithm to be saved.
+    annot_beats: bool
+        Whether to use the annotated beats or not.
+    trim: bool
+        Whether to trim the first and last boundaries or not.
+    feature: str
+        What type of feature to use for the specific algo_id. E.g. hpcp
+    track_id: str
+        The identifier of the current track, which is its filename.
+    ds_name: str
+        The name of the dataset (e.g. SALAMI, Cerulean). Use all datasets if
+        None.
     """
     # Sanity Check
     if track_id is None and ds_name is None:
@@ -220,7 +236,8 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
 
     if track_id is not None:
         all_values = (track_id, res[5], res[3], res[4], res[2], res[0], res[1],
-                      res[6], annot_beats, feature, "none", trim)
+                      res[6], res[7], res[8], annot_beats, feature, "none",
+                      trim)
         table = "%s_bounds" % alg_id
         select_where = "track_id=?"
         select_values = (track_id, annot_beats, feature, trim)
@@ -228,7 +245,8 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
         # Aggregate results
         res = np.mean(res, axis=0)
         all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0],
-                      res[1], res[6], annot_beats, feature, "none", trim)
+                      res[1], res[6], res[7], res[8], annot_beats, feature,
+                      "none", trim)
         table = "boundaries"
         select_where = "algo_id=? AND ds_name=?"
         select_values = (alg_id, ds_name, annot_beats, feature, trim)
@@ -246,11 +264,11 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
     else:
         # Update row
         evaluations = (res[5], res[3], res[4], res[2], res[0],
-                       res[1], res[6])
+                       res[1], res[6], res[7], res[8])
         evaluations += select_values
         sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
-            "P3=?, R3=?, D=?  WHERE %s AND annot_beat=? AND " \
-            "feature=? AND trim=?" % (table, select_where)
+            "P3=?, R3=?, D=?, DevA2E=?, DevE2A=?  WHERE %s AND annot_beat=? " \
+            "AND feature=? AND trim=?" % (table, select_where)
         cursor.execute(sql_cmd, evaluations)
 
 
