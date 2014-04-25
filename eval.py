@@ -161,12 +161,16 @@ def plot_boundaries(all_boundaries, est_file):
     """
     N = len(all_boundaries)  # Number of lists of boundaries
     algo_ids = MSAF.get_algo_ids(est_file)
+    algo_ids = ["GT"] + algo_ids
     for i, boundaries in enumerate(all_boundaries):
+        print boundaries
         for b in boundaries:
             plt.axvline(b, i / float(N), (i + 1) / float(N))
         plt.axhline(i / float(N), color="k", linewidth=1)
     plt.title(os.path.basename(est_file))
     plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
+    plt.gca().set_yticklabels(algo_ids)
+    #plt.gca().invert_yaxis()
     plt.show()
 
 
@@ -187,6 +191,17 @@ def get_all_est_boundaries(est_file, annot_beats):
         for each algorithm
     """
     all_boundaries = []
+
+    # Get GT boundaries
+    jam_file = os.path.dirname(est_file) + "/../annotations/" + \
+        os.path.basename(est_file).replace("json", "jams")
+    ds_prefix = os.path.basename(est_file).split("_")[0]
+    ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
+                        "sections", context=MSAF.prefix_dict[ds_prefix])
+    ann_times = intervals_to_times(ann_inter)
+    all_boundaries.append(ann_times)
+
+    # Estimations
     for algo_id in MSAF.get_algo_ids(est_file):
         est_inters = MSAF.read_boundaries(est_file, algo_id,
                         annot_beats, feature=feat_dict[algo_id])
@@ -202,7 +217,9 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
     est_file = "/Users/uri/datasets/Segments/estimations/Isophonics_16_-_The_End.json"
     est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
     est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
+    est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
+    est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Leonard_Bernstein,_New_York_Philharmonic_&_Rudol.json"
+    est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0298_turnmeon.json"
     for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
         # Read estimated times from both algorithms
         est_inters1 = MSAF.read_boundaries(est_file, algorithms[0],

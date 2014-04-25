@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-Copies the audio and annotations of the original datasets into the 
+Copies the audio and annotations of the original datasets into the
 Segmentation Dataset.
 
-Additionally, it makes sure that the datasets that constitute the Segmentation 
-Dataset are consistent with the names of the annotations and the names of their 
+Additionally, it makes sure that the datasets that constitute the Segmentation
+Dataset are consistent with the names of the annotations and the names of their
 audio files.
 
 More specifically, it modifies the audio name when copying it in order to match
@@ -28,7 +28,7 @@ e.g. 2:
 
     /Isophonics/audio/01 I Feel The Earth Move.mp3
 
-It saves the audio files in: 
+It saves the audio files in:
     /output_folder/audio
 And it saves the JAMS files in
     /output_folder/annotations
@@ -50,17 +50,20 @@ import re
 import shutil
 import time
 
+
 def split_name(name):
     """Split the string name based on a specific regular expression."""
     return re.split("_|-| |[0-9]|\(|\)", name)
+
 
 def remove_empty(words):
     """Removes empty words."""
     return filter(lambda w: w != "", words)
 
+
 def find_correct_name(audio_files, jam_file):
     """ Finds the correct audio file for a given jam file."""
-    base_jam = os.path.basename(jam_file).replace(".jams","").lower()
+    base_jam = os.path.basename(jam_file).replace(".jams", "").lower()
     jam_words = split_name(base_jam)
     jam_words = remove_empty(jam_words)
     max_k = 0
@@ -83,15 +86,18 @@ def find_correct_name(audio_files, jam_file):
 
     return correct_audio_file
 
+
 def copy_data(audio_dir, jams_dir, out_dir, ds_name):
-    """Copies audio and JAMS in the correct path and makes sure that the names 
+    """Copies audio and JAMS in the correct path and makes sure that the names
         of the audio file correspond with their JAMS."""
 
     # Check if output subfolders exist and create them if not
     final_audio_dir = os.path.join(out_dir, "audio")
     final_jam_dir = os.path.join(out_dir, "annotations")
-    if not os.path.exists(final_audio_dir): os.makedirs(final_audio_dir)
-    if not os.path.exists(final_jam_dir): os.makedirs(final_jam_dir)
+    if not os.path.exists(final_audio_dir):
+        os.makedirs(final_audio_dir)
+    if not os.path.exists(final_jam_dir):
+        os.makedirs(final_jam_dir)
 
     jam_files = glob.glob(os.path.join(jams_dir, "*.jams"))
     # Allow wav and/or mp3
@@ -107,17 +113,17 @@ def copy_data(audio_dir, jams_dir, out_dir, ds_name):
                 os.path.basename(jam_file).replace(".jams", ""),
                 "audio.mp3")
         else:
-            correct_audio_file = os.path.join(audio_dir, 
-                os.path.basename(jam_file).replace(".jams","") + \
+            correct_audio_file = os.path.join(audio_dir,
+                os.path.basename(jam_file).replace(".jams", "") +
                 audio_files[0][-4:])
             assert os.path.isfile(correct_audio_file)
 
         # Define final file paths
-        final_audio_file = os.path.join(final_audio_dir,
-                ds_name + "_" + \
-                os.path.basename(jam_file).replace(".jams","") + \
-                os.path.basename(correct_audio_file)[-4:])
-        final_jam_file = os.path.join(final_jam_dir, 
+        final_audio_file = os.path.join(
+            final_audio_dir, ds_name + "_" +
+            os.path.basename(jam_file).replace(".jams", "") +
+            os.path.basename(correct_audio_file)[-4:])
+        final_jam_file = os.path.join(final_jam_dir,
                 ds_name + "_" + os.path.basename(jam_file))
 
         print "origin jam:\t", jam_file
@@ -137,11 +143,14 @@ def process(in_dir, out_dir):
 
     datasets = glob.glob(os.path.join(in_dir, "*"))
     for dataset in datasets:
-        if not os.path.isdir(dataset): continue
+        if not os.path.isdir(dataset):
+            continue
 
         # Ignore some temporary data
-        if os.path.basename(dataset) == "Beatles": continue
-        if os.path.basename(dataset) == "Isophonics_audio": continue
+        if os.path.basename(dataset) == "Beatles":
+            continue
+        if os.path.basename(dataset) == "Isophonics_audio":
+            continue
 
         # Define dirs
         audio_dir = os.path.join(dataset, "audio")
@@ -155,18 +164,18 @@ def main():
     """Main function to copy the audio and annotations to the Segmentation
         dataset."""
     parser = argparse.ArgumentParser(description=
-        "Copies the audio and annotations of the original datasets and " \
+        "Copies the audio and annotations of the original datasets and "
         "modifies the audio file names accordingly",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_dir",
                         action="store",
                         help="Folder to the original datasets")
-    parser.add_argument("out_dir", 
-                        action="store", 
+    parser.add_argument("out_dir",
+                        action="store",
                         help="Output Segmentation Dataset folder")
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
 

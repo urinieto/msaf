@@ -13,15 +13,13 @@ import sys
 import glob
 import os
 import argparse
-import json
-import numpy as np
 import time
 import logging
 import jams
 import segmenter as S
 
 import sys
-sys.path.append( "../../" )
+sys.path.append("../../")
 import msaf_io as MSAF
 
 
@@ -30,9 +28,10 @@ def process(in_path, annot_beats=False, feature="mfcc"):
 
     # Get relevant files
     ds_name = "*"
-    feat_files = glob.glob(os.path.join(in_path, "features", "%s_*.json" % ds_name))
-    jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
-    audio_files = glob.glob(os.path.join(in_path, "audio", "%s_*.[wm][ap][v3]" % ds_name))
+    jam_files = glob.glob(os.path.join(in_path, "annotations",
+                                       "%s_*.jams" % ds_name))
+    audio_files = glob.glob(os.path.join(in_path, "audio",
+                                         "%s_*.[wm][ap][v3]" % ds_name))
 
     for audio_file, jam_file in zip(audio_files, jam_files):
 
@@ -42,27 +41,27 @@ def process(in_path, annot_beats=False, feature="mfcc"):
             if jam.beats == []:
                 continue
             if jam.beats[0].data == []:
-                continue 
+                continue
 
         logging.info("Segmenting %s" % audio_file)
 
         # Foote segmenter call
-        est_times = S.process(audio_file, feature=feature, 
-                                                    annot_beats=annot_beats)
+        est_times = S.process(audio_file, feature=feature,
+                              annot_beats=annot_beats)
 
         #print est_times
         # Save
-        out_file = os.path.join(in_path, "estimations", 
-                                    os.path.basename(audio_file)[:-4]+".json")
+        out_file = os.path.join(in_path, "estimations",
+                                os.path.basename(audio_file)[:-4] + ".json")
         MSAF.save_boundaries(out_file, est_times, annot_beats, "foote",
-                                    feature=feature)
+                             feature=feature)
 
 
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
-        "Runs the Foote segmenter across a the Segmentation dataset and "\
-            "stores the results in the estimations folder",
+        "Runs the Foote segmenter across a the Segmentation dataset and "
+        "stores the results in the estimations folder",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
@@ -70,20 +69,20 @@ def main():
     parser.add_argument("feature",
                         action="store",
                         help="Feature to be used (mfcc or hpcp)")
-    parser.add_argument("-b", 
-                        action="store_true", 
+    parser.add_argument("-b",
+                        action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-    
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats, 
+    process(args.in_path, annot_beats=args.annot_beats,
             feature=args.feature)
 
     # Done!

@@ -136,7 +136,7 @@ vector<double> readBeatsJAMS(const char *jams_path) {
     fb.open(jams_path, ios::in);
     istream inputs(&fb);
 
-    Json::Value root;   // will contains the root value after parsing.
+    Json::Value root;   // will contain the root value after parsing.
     Json::Reader reader;
     bool parsingSuccessful = reader.parse( inputs, root );
 
@@ -153,6 +153,14 @@ vector<double> readBeatsJAMS(const char *jams_path) {
     beats = JAMSValueToVector(root["beats"][0]["data"]);
 
     return beats;
+}
+
+string getJAMSPath(string feat_path) {
+    size_t idx = feat_path.find("features");
+    string annot_path = feat_path.replace(idx, 8, "annotations");
+    idx = annot_path.find(".json");
+    string jams_path = annot_path.replace(idx, 5, ".jams");
+    return jams_path;
 }
 
 void createEstimation(Json::Value &est, vector<double> &times, 
@@ -180,8 +188,36 @@ void createEstimation(Json::Value &est, vector<double> &times,
 
 }
 
-int getFileDur(const char* json_path) {
-    
+float getFileDur(const char* json_path) {
+
+    string json_str = json_path;
+    string jams_path = getJAMSPath(json_str);
+    cout << "jams " << jams_path << endl;
+
+    std::filebuf fb;
+    fb.open(jams_path.c_str(), ios::in);
+    istream inputs(&fb);
+
+    Json::Value root;   // will contains the root value after parsing.
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse( inputs, root );
+
+    vector<vector<double> > f;
+    if ( !parsingSuccessful )
+    {
+        // report to the user the failure and their locations in the document.
+        std::cout  << "Failed to parse configuration\n"
+                   << reader.getFormattedErrorMessages();
+        return 0;
+    }
+
+    float dur = root["metadata"]["duration"].asDouble();
+
+    return dur;
+}
+
+int getFileFrames(const char* json_path) {
+
     std::filebuf fb;
     fb.open(json_path, ios::in);
     istream inputs(&fb);
@@ -264,14 +300,12 @@ void writeResults(Segmentation segmentation, bool annot_beats,
 
     vector<double> beats;
     string feat_path = feats_path;
+    float dur = getFileDur(feats_path);
 
     // If annotated beats, read the beats from the JAMS file
     if (annot_beats) {
         // Get jams file
-        size_t idx = feat_path.find("features");
-        string annot_path = feat_path.replace(idx, 8, "annotations");
-        idx = annot_path.find(".json");
-        string jams_path = annot_path.replace(idx, 5, ".jams");
+        string jams_path = getJAMSPath(feat_path);
 
         // Read Beats
         beats = readBeatsJAMS(jams_path.c_str());
@@ -297,6 +331,11 @@ void writeResults(Segmentation segmentation, bool annot_beats,
         times[i+1] = beats[segmentation.segments[i].end];
     }
 
+    // Add last boundary if needed
+    if (times[segmentation.segments.size()-1] < dur - 0.5) {
+       times.push_back(dur); 
+    }
+
     // Get estimation file
     string est_path;
     if (annot_beats) {
@@ -319,7 +358,8 @@ int main(int argc, char const *argv[])
     const char *feature = argv[3]; // mffc or hpcp
 
     Segmentation segmentation;
-    int nframes = getFileDur(argv[1]);
+    int nframes = getFileFrames(argv[1]);
+    cout << "nframes: " << nframes << endl;
 
     /* Only segment if duration is greater than 15 seconds */
     if (nframes * 2048 > 15 * 11025) {
