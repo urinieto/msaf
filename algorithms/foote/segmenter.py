@@ -4,8 +4,8 @@
 This script identifies the boundaries of a given track using the Foote
 method:
 
-Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio Novelty. 
-In Proc. of the IEEE International Conference of Multimedia and Expo
+Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio
+Novelty. In Proc. of the IEEE International Conference of Multimedia and Expo
 (pp. 452–455). New York City, NY, USA.
 """
 
@@ -16,38 +16,33 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
-import glob
-import jams
 import logging
-import os
-import pylab as plt
 import numpy as np
 import time
-import librosa
-import mir_eval
 from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
-from skimage.filter import threshold_adaptive
 
 import sys
-sys.path.append( "../../" )
+sys.path.append("../../")
 import msaf_io as MSAF
+import eval as EV
 import utils as U
 
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
     for i in xrange(X.shape[1]):
-        X[:,i] = filters.median_filter(X[:,i], size=M)
+        X[:, i] = filters.median_filter(X[:, i], size=M)
     return X
+
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Foote's paper."""
-    g = signal.gaussian(M, M/3., sym=True)
-    G = np.dot(g.reshape(-1,1), g.reshape(1,-1))
-    G[M/2:,:M/2] = -G[M/2:,:M/2]
-    G[:M/2,M/2:] = -G[:M/2,M/2:]
+    g = signal.gaussian(M, M / 3., sym=True)
+    G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
+    G[M / 2:, :M / 2] = -G[M / 2:, :M / 2]
+    G[:M / 2, M / 2:] = -G[:M / 2, M / 2:]
     return G
 
 
@@ -56,7 +51,8 @@ def compute_ssm(X, metric="seuclidean"):
     D = distance.pdist(X, metric=metric)
     D = distance.squareform(D)
     D /= D.max()
-    return 1-D
+    return 1 - D
+
 
 def compute_nc(X, G):
     """Computes the novelty curve from the self-similarity matrix X and
@@ -65,31 +61,31 @@ def compute_nc(X, G):
     M = G.shape[0]
     nc = np.zeros(N)
 
-    for i in xrange(M/2, N-M/2+1):
-        nc[i] = np.sum(X[i-M/2:i+M/2, i-M/2:i+M/2] * G)
+    for i in xrange(M / 2, N - M / 2 + 1):
+        nc[i] = np.sum(X[i - M / 2:i + M / 2, i - M / 2:i + M / 2] * G)
 
     # Normalize
     nc += nc.min()
     nc /= nc.max()
     return nc
 
+
 def pick_peaks(nc, L=16):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
-    offset = nc.mean()/2.
+    offset = nc.mean() / 2.
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
     # plt.plot(nc)
     # plt.plot(th)
     # plt.show()
     peaks = []
-    for i in xrange(1,nc.shape[0]-1):
+    for i in xrange(1, nc.shape[0] - 1):
         # is it a peak?
-        if nc[i-1] < nc[i] and nc[i] > nc[i+1]:
+        if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
     return peaks
-
 
 
 def process(in_path, feature="hpcp", annot_beats=False):
@@ -100,11 +96,12 @@ def process(in_path, feature="hpcp", annot_beats=False):
     m = 1   # Size of median filter
 
     # Read features
-    chroma, mfcc, beats, dur = MSAF.get_features(in_path, annot_beats=annot_beats)
+    chroma, mfcc, beats, dur = MSAF.get_features(in_path,
+                                                 annot_beats=annot_beats)
 
     # Use specific feature
     if feature == "hpcp":
-        F = U.lognormalize_chroma(chroma) #Normalize chromas
+        F = U.lognormalize_chroma(chroma)  # Normalize chromas
     elif "mfcc":
         F = mfcc
     else:
@@ -125,24 +122,28 @@ def process(in_path, feature="hpcp", annot_beats=False):
     nc = compute_nc(S, G)
 
     # Read annotated bounds for comparison purposes
-    ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
-    logging.info("Annotated bounds: %s" % ann_bounds)
+    #ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
+    #logging.info("Annotated bounds: %s" % ann_bounds)
 
     # Find peaks in the novelty curve
     est_bounds = pick_peaks(nc, L=16)
 
-    # Concatenate first and last boundaries
-    est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1])).astype(int)
-    logging.info("Estimated bounds: %s" % est_bounds)
+    # Concatenate first boundary
+    est_bounds = np.concatenate(([0], est_bounds)).astype(int)
 
     # Get times
     est_times = beats[est_bounds]
 
+    # Concatenate last boundary
+    est_times = np.concatenate((est_times, [dur]))
+
+    # Concatenate last boundary
+    logging.info("Estimated times: %s" % est_times)
+
     return est_times
 
-
     # plt.figure(1)
-    # plt.plot(nc); 
+    # plt.plot(nc);
     # [plt.axvline(p, color="m") for p in est_bounds]
     # [plt.axvline(b, color="g") for b in ann_bounds]
     # plt.figure(2)
@@ -159,21 +160,21 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input path to the audio file")
-    parser.add_argument("-f", 
-                        action="store_true", 
+    parser.add_argument("-f",
+                        action="store_true",
                         dest="feature",
                         help="Feature to use (mfcc or hpcp)",
                         default="hpcp")
-    parser.add_argument("-b", 
-                        action="store_true", 
+    parser.add_argument("-b",
+                        action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm

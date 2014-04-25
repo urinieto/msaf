@@ -19,8 +19,6 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
-import glob
-import jams
 import logging
 import os
 import pylab as plt
@@ -31,20 +29,24 @@ import mir_eval
 from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
-from skimage.filter import threshold_adaptive
+
+import jams2
 
 import sys
-sys.path.append( "../../" )
+sys.path.append("../../")
 import msaf_io as MSAF
+import eval as EV
 import utils as U
+
 
 def read_brian_bounds(in_path, beats):
     """Obtains the boundaries from brian's results."""
-    brian_path = os.path.join(".", "smga1", os.path.basename(in_path)\
-                    .replace("Isophonics_", "").replace(".mp3", ".lab"))
+    brian_path = os.path.join(".", "smga1", os.path.basename(in_path)
+                              .replace("Isophonics_", "")
+                              .replace(".mp3", ".lab"))
     est_times, est_labels = mir_eval.input_output.load_annotation(brian_path)
     # Unfold
-    est_times = np.concatenate((est_times.flatten()[::2], [est_times[-1,-1]]))
+    est_times = np.concatenate((est_times.flatten()[::2], [est_times[-1, -1]]))
 
     # Convert to beat frames
     dist = np.minimum.outer(est_times, beats)
@@ -56,24 +58,26 @@ def read_brian_bounds(in_path, beats):
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
     for i in xrange(X.shape[1]):
-        X[:,i] = filters.median_filter(X[:,i], size=M)
+        X[:, i] = filters.median_filter(X[:, i], size=M)
     return X
+
 
 def gaussian_filter(X, M=8, axis=0):
     """Gaussian filter along the first axis of the feature matrix X."""
     for i in xrange(X.shape[axis]):
         if axis == 1:
-            X[:,i] = filters.gaussian_filter(X[:,i], sigma=M/2.)
+            X[:, i] = filters.gaussian_filter(X[:, i], sigma=M / 2.)
         elif axis == 0:
-            X[i,:] = filters.gaussian_filter(X[i,:], sigma=M/2.)
+            X[i, :] = filters.gaussian_filter(X[i, :], sigma=M / 2.)
     return X
+
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Serra's paper."""
-    g = signal.gaussian(M, M/3., sym=True)
-    G = np.dot(g.reshape(-1,1), g.reshape(1,-1))
-    G[M/2:,:M/2] = -G[M/2:,:M/2]
-    G[:M/2,M/2:] = -G[:M/2,M/2:]
+    g = signal.gaussian(M, M / 3., sym=True)
+    G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
+    G[M / 2:, :M / 2] = -G[M / 2:, :M / 2]
+    G[:M / 2, M / 1:] = -G[:M / 2, M / 1:]
     return G
 
 
@@ -82,7 +86,8 @@ def compute_ssm(X, metric="seuclidean"):
     D = distance.pdist(X, metric=metric)
     D = distance.squareform(D)
     D /= D.max()
-    return 1-D
+    return 1 - D
+
 
 def compute_nc(X):
     """Computes the novelty curve from the structural features."""
@@ -90,13 +95,14 @@ def compute_nc(X):
     # nc = np.sum(np.diff(X, axis=0), axis=1) # Difference between SF's
 
     nc = np.zeros(N)
-    for i in xrange(N-1):
-        nc[i] = distance.euclidean(X[i,:], X[i+1,:])
+    for i in xrange(N - 1):
+        nc[i] = distance.euclidean(X[i, :], X[i + 1, :])
 
     # Normalize
     nc += np.abs(nc.min())
     nc /= nc.max()
     return nc
+
 
 def pick_peaks(nc, L=16, offset_denom=0.1):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
@@ -108,9 +114,9 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     # plt.show()
     # th = np.ones(nc.shape[0]) * nc.mean() - 0.08
     peaks = []
-    for i in xrange(1,nc.shape[0]-1):
+    for i in xrange(1, nc.shape[0] - 1):
         # is it a peak?
-        if nc[i-1] < nc[i] and nc[i] > nc[i+1]:
+        if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
@@ -157,27 +163,25 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
 
     # Use specific feature
     if feature == "hpcp":
-        F = U.lognormalize_chroma(chroma) #Normalize chromas
+        F = U.lognormalize_chroma(chroma)  # Normalize chromas
     elif feature == "mfcc":
         F = mfcc
     elif feature == "mix":
         chroma = U.lognormalize_chroma(chroma)       # Normalize chromas
         chroma = U.normalize_matrix(chroma)
-        mfcc = U.normalize_matrix(mfcc[:,2:])
+        mfcc = U.normalize_matrix(mfcc[:, 2:])
         F = np.concatenate((chroma, mfcc), axis=1)   # Using MFCC as well
     else:
         logging.error("Feature type not recognized: %s" % feature)
-
 
     # Emedding the feature space (i.e. shingle)
     E = embedded_space(F, m)
     # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
-
     # Recurrence matrix
     R = librosa.segment.recurrence_matrix(E.T,
                                           k=k * int(F.shape[0]),
-                                          width=0, # zeros from the diagonal
+                                          width=0,  # zeros from the diagonal
                                           metric="seuclidean",
                                           sym=True).astype(np.float32)
 
@@ -185,7 +189,8 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
     if R.shape[0] > 0:
         # Circular shift
         L = circular_shift(R)
-        plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary")); plt.show()
+        #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
+        #plt.show()
 
         # Obtain structural features by filtering the lag matrix
         SF = gaussian_filter(L.T, M=M, axis=1)
@@ -196,45 +201,52 @@ def process(in_path, feature="hpcp", annot_beats=False, **params):
         nc = compute_nc(SF)
 
         # Read annotated bounds for comparison purposes
-        ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
-        logging.info("Annotated bounds: %s" % ann_bounds)
+        try:
+            ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
+            logging.info("Annotated bounds: %s" % ann_bounds)
+        except:
+            logging.warning("Can't find annotations in %s" % in_path)
 
         # Find peaks in the novelty curve
         est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
 
         # Re-align embedded space
-        est_bounds = np.asarray(est_bounds) + int(np.ceil(m/2.))
-
+        est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))
     else:
         est_bounds = []
 
-    # Concatenate first and last boundaries
-    est_bounds = np.concatenate(([0], est_bounds, [F.shape[0]-1])).astype(int)
-    logging.info("Estimated bounds: %s" % est_bounds)
+    # Concatenate first boundary
+    est_bounds = np.concatenate(([0], est_bounds)).astype(int)
 
     # Get times
     est_times = beats[est_bounds]
 
+    # Concatenate last boundary
+    est_times = np.concatenate((est_times, [dur]))
+
+    logging.info("Estimated bounds (in seconds): %s" % est_times)
+
+    # Evaluate
     try:
         # Brian estimated bound frames
-        brian_bounds, brian_times = read_brian_bounds(in_path, beats)
-        logging.info("Brian bounds: %s" % brian_bounds)
+        #brian_bounds, brian_times = read_brian_bounds(in_path, beats)
+        #logging.info("Brian bounds: %s" % brian_bounds)
 
         # Eval
         ds_path = os.path.dirname(os.path.dirname(in_path))
         jam_file = os.path.join(ds_path, "annotations",
-            os.path.basename(in_path)[:-4]+".jams")
-        ann_times, ann_labels = mir_eval.input_output.load_jams_range(
-                                jam_file,
-                                "sections", context="function")
-        P, R, F = mir_eval.segment.boundary_detection(ann_times, est_times,
-                                                window=3, trim=False)
-        logging.info("My Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" % \
-                            (F,P,R,in_path))
-        P, R, F = mir_eval.segment.boundary_detection(ann_times, brian_times,
-                                                window=3, trim=False)
-        logging.info("Brian Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" % \
-                            (F,P,R,in_path))
+            os.path.basename(in_path)[:-4] + ".jams")
+        ann_inters, ann_labels = jams2.converters.load_jams_range(
+            jam_file, "sections", context="function")
+        est_inters = EV.times_to_intervals(est_times)
+        P, R, F = mir_eval.boundary.detection(ann_inters, est_inters,
+                                            window=3, trim=False)
+        logging.info("My Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" %
+                    (F, P, R, in_path))
+        #P, R, F = mir_eval.segment.boundary_detection(ann_times, brian_times,
+                                                    #window=3, trim=False)
+        #logging.info("Brian Evaluation: F: %.2f, P: %.2f, R: %.2f\t%s" %
+                        #(F, P, R, in_path))
     except:
         logging.warning("Evaluation only available for The Beatles ds")
 
