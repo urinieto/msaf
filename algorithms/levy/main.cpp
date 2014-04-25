@@ -192,7 +192,6 @@ float getFileDur(const char* json_path) {
 
     string json_str = json_path;
     string jams_path = getJAMSPath(json_str);
-    cout << "jams " << jams_path << endl;
 
     std::filebuf fb;
     fb.open(jams_path.c_str(), ios::in);
@@ -359,7 +358,6 @@ int main(int argc, char const *argv[])
 
     Segmentation segmentation;
     int nframes = getFileFrames(argv[1]);
-    cout << "nframes: " << nframes << endl;
 
     /* Only segment if duration is greater than 15 seconds */
     if (nframes * 2048 > 15 * 11025) {

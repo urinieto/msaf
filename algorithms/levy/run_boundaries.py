@@ -13,17 +13,13 @@ import sys
 import glob
 import os
 import argparse
-import json
-import numpy as np
 import time
 import logging
-import datetime
 import jams
 import subprocess
 
 import sys
-sys.path.append( "../../" )
-import msaf_io as MSAF
+sys.path.append("../../")
 
 
 def process(in_path, annot_beats=False, feature="mfcc"):
@@ -31,8 +27,10 @@ def process(in_path, annot_beats=False, feature="mfcc"):
 
     # Get relevant files
     ds_name = "*"
-    feat_files = glob.glob(os.path.join(in_path, "features", "%s_*.json" % ds_name))
-    jam_files = glob.glob(os.path.join(in_path, "annotations", "%s_*.jams" % ds_name))
+    feat_files = glob.glob(os.path.join(in_path, "features",
+                                        "%s_*.json" % ds_name))
+    jam_files = glob.glob(os.path.join(in_path, "annotations",
+                                       "%s_*.jams" % ds_name))
 
     for feat_file, jam_file in zip(feat_files, jam_files):
 
@@ -42,7 +40,7 @@ def process(in_path, annot_beats=False, feature="mfcc"):
             if jam.beats == []:
                 continue
             if jam.beats[0].data == []:
-                continue 
+                continue
 
         if annot_beats:
             annot_beats_str = "1"
@@ -52,18 +50,19 @@ def process(in_path, annot_beats=False, feature="mfcc"):
         logging.info("Segmenting %s" % feat_file)
 
         # Levy segmenter call
-        cmd = ["./segmenter", feat_file.replace(" ", "\ ").replace("&","\&").\
-                replace("'","\\'").replace("(","\(").replace(")","\)"), 
-                annot_beats_str, feature]
+        cmd = ["./segmenter", feat_file.replace(" ", "\ ").replace("&", "\&").
+               replace("'", "\\'").replace("(", "\(").replace(")", "\)"),
+               annot_beats_str, feature]
         print " ".join(cmd)
-        subprocess.call(" ".join(cmd), shell=True ) # Shell is needed for files with spaces
+        # Shell is needed for files with spaces
+        subprocess.call(" ".join(cmd), shell=True)
 
 
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
-        "Runs the Levy segmenter across a the Segmentation dataset and "\
-            "stores the results in the estimations folder",
+        "Runs the Levy segmenter across a the Segmentation dataset and "
+        "stores the results in the estimations folder",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
@@ -71,20 +70,20 @@ def main():
     parser.add_argument("feature",
                         action="store",
                         help="Feature to be used (mfcc or hpcp)")
-    parser.add_argument("-b", 
-                        action="store_true", 
+    parser.add_argument("-b",
+                        action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-    
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats, 
+    process(args.in_path, annot_beats=args.annot_beats,
             feature=args.feature)
 
     # Done!
