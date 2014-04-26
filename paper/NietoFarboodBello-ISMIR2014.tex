@@ -7,6 +7,7 @@
 \usepackage{ismir2014,amsmath,cite}
 \usepackage{graphicx}
 \usepackage{amsfonts}
+\usepackage{amsmath}
 
 % Title.
 % ------
@@ -68,25 +69,56 @@ Organization of the paper.
 
 \section{Boundaries Evaluation Metrics}
 
-The boundaries of a given track are usually evaluated using the F-measure. In this section we review the F-measure, discuss its shortcomings, and propose other metrics that might help addressing our project.
+The boundaries of a given track are usually evaluated using the hit rate metric.
+In this section we review the hit rate, discuss its shortcomings, and explore other metrics that might help addressing our project.
+We refer the human annotated boundaries as \emph{reference}, and the ones identified by an algorithm as \emph{estimated}.
 
-\subsection{F-measure}
+\subsection{Hit Rate}
 
-The F-measure for boundaries evaluation is the most common and established metric for this task (implemented in MIREX) and it is traditionally used with a specific time window of 3 or 0.5 seconds\cite{Ong2005}. 
+The hit rate for boundaries evaluation is the most common and established metric for this task and it is traditionally used with a specific time window of 3 and/or 0.5 seconds\cite{Ong2005}. 
 
-This metric considers an estimated boundary as \emph{correct} (a hit) if it falls under the specified time window centered at its corresponding annotated boundary.
-These hits are then used to compute the Precision (number of hits over the number of estimated boundaries), and the Recall (number of hits over the number of annotated boundaries).
-The F-measure is then computed as:
+This metric considers an estimated boundary as \emph{correct} (a hit) if it falls under the specified time window centered at its corresponding reference boundary.
+These hits are then used to compute three scores: the Precision (number of hits over the number of estimated boundaries), the Recall (number of hits over the number of reference boundaries), and the F-measure (harmonic mean between Precision and Recall), which is computed as follows:
 
 \begin{equation}
   F = 2 \frac{P R}{P + R}
 \end{equation}
 
-Trim\cite{Nieto2013}.
-F-measure at 3 seconds and 0.5. Trim/No trim. Information Gain. Entropy scores.
+\subsection{Median Deviations}
+
+This metric involves the computation of two median deviations: \emph{median reference to estimation} is the median in seconds from the reference boundaries to their nearest estimated ones, and the \emph{median estimation to reference} is analogous but swapping reference boundaries by estimated ones\cite{Pampalk}.
+Median deviations are not commonly reported in publications of boundary algorithms since the hit rate tends to be more reliable (note that these median deviations are not normalized and not compacted in a single score like the F-measure).
+However, they are, along with the hit rate, the only metrics included in MIREX to evaluate the estimated boundaries.
+
+\subsection{Information Gain}
+
+One of the most reliable metrics for beat tracking is the information gain\cite{Davies2009}. 
+This score has successfully been used to identify hard tracks (in terms of beat tracking) from a machine point of view from a large dataset without reference annotations\cite{Holzapfel2012}.
+This motivates us to explore its behavior when used for the task of boundary identification.
+
+The idea behind this metric is to treat the error between the reference and the estimation as a probability distribution.
+Typically, an error histogram of $K$ bins is used to capture these errors within a certain time range.
+The information gain $D$ can be seen as the inverse of the entropy of the probability distribution defined by the error histogram $p(z)$. Formally:
+
+\begin{equation}
+  D = \log_2(K) - H(p(z))
+\end{equation}
+
+If $p(z_k)$ is the probability mass of the bin $k$ of the error histogram, then $H(\cdot)$, which is the entropy function, can be defined as follows:
+
+\begin{equation}
+  H(p(z)) = \sum_{k=1}^K p(z_k) \log_2 \left( \frac{1}{p(z_k)} \right)
+\end{equation}
+
+Therefore we obtain a high $D$ if the error distribution is a prominent peak in the histogram (i.e. the error does not vary), whereas $D$ is low, close to 0, if the histogram is uniform (i.e. the error has a high degree of variation and the entropy is high).
+$D$ is bounded between 0 and $\log_2(K)$.
+
+Typically, in the task of beat tracking, histograms of $K=41$ bins are used within the range of $\pm0.5$ seconds.
+In our case, we use $K=250$ and a range of $\pm5$ seconds in order to capture the higher errors that manifest in the boundary identification task compared to beat tracking.
 
 \subsection{To Trim or Not To Trim}
 
+Trim\cite{Nieto2013}.
 Trimming the first and last boundaries may be the logical thing to do.
 
 \section{Machines Identifying Boundaries}\label{sec:eval_desc}
