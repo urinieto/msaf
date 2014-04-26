@@ -210,16 +210,16 @@ def get_all_est_boundaries(est_file, annot_beats):
     return all_boundaries
 
 
-def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
+def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=False):
     """Compute the Mean Measure Agreement for all the algorithms of the given
     file est_file."""
     results_mma = []
-    est_file = "/Users/uri/datasets/Segments/estimations/Isophonics_16_-_The_End.json"
-    est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
-    est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
-    est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
-    est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Leonard_Bernstein,_New_York_Philharmonic_&_Rudol.json"
-    est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0298_turnmeon.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/Isophonics_16_-_The_End.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Leonard_Bernstein,_New_York_Philharmonic_&_Rudol.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0298_turnmeon.json"
     for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
         # Read estimated times from both algorithms
         est_inters1 = MSAF.read_boundaries(est_file, algorithms[0],
@@ -238,7 +238,6 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
         all_boundaries = get_all_est_boundaries(est_file, annot_beats)
         plot_boundaries(all_boundaries, est_file)
         print all_boundaries
-    sys.exit()
 
     return results_mma
 
@@ -517,19 +516,11 @@ def main():
                         level=logging.INFO)
 
     if args.all:
-        # 5 boundary algorithms
-        process(args.in_path, "siplca", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="")
-        process(args.in_path, "olda", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="")
-        process(args.in_path, "serra", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="mix")
-        process(args.in_path, "levy", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="hpcp")
-        process(args.in_path, "levy", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="mfcc")
-        process(args.in_path, "foote", "*", args.annot_beats, trim=args.trim,
-                mma=False, feature="hpcp")
+        # boundary algorithms
+        for key in feat_dict.keys():
+            logging.info("Evaluating %s..." % key)
+            process(args.in_path, key, "*", args.annot_beats,
+                    trim=args.trim, mma=False, feature=feat_dict[key])
         # MMA
         process(args.in_path, "", "*", args.annot_beats,
                 trim=args.trim, mma=True, feature=args.feature)
