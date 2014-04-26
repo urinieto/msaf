@@ -114,12 +114,13 @@ Therefore we obtain a high $D$ if the error distribution is a prominent peak in 
 $D$ is bounded between 0 and $\log_2(K)$.
 
 Typically, in the task of beat tracking, histograms of $K=41$ bins are used within the range of $\pm0.5$ seconds.
-In our case, we use $K=250$ and a range of $\pm5$ seconds in order to capture the higher errors that manifest in the boundary identification task compared to beat tracking.
+In our case, we use $K=250$ and an unrestricted time range in order to capture the higher errors that manifest in the boundary identification task compared to beat tracking.
 
-\subsection{To Trim or Not To Trim}
+\subsection{Trimming First and Last Boundaries}
 
-Trim\cite{Nieto2013}.
-Trimming the first and last boundaries may be the logical thing to do.
+The presented metrics treat all the boundaries of a given track equally. 
+However, we can argue that the first and last boundaries are trivial to be retrieved (the first boundary should always be placed in second 0, and the last one in the second defined by the duration of the track). 
+This topic was discussed in the music segmentation breaking sessions of last ISMIR edition\cite{Nieto2013}, and in this work we present two versions of each given evaluation: trimmed and not trimmed.
 
 \section{Machines Identifying Boundaries}\label{sec:eval_desc}
 
