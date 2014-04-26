@@ -418,7 +418,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
             feature = ""
 
             # Compute the MMA for the current file
-            results_mma = compute_mma_results(est_file, trim, annot_beats)
+            results_mma = compute_mma_results(est_file, trim, annot_beats,
+                                              bins=bins)
 
             # Compute the averages
             results_ds.append(np.mean(np.asarray(results_mma), axis=0))
