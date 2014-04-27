@@ -10,6 +10,7 @@
 \usepackage{amsmath}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{tablefootnote}
 
 % Title.
 % ------
@@ -75,7 +76,7 @@ The boundaries of a given track are usually evaluated using the hit rate metric.
 In this section we review the hit rate, discuss its shortcomings, and explore other metrics that might help addressing our project.
 We refer the human annotated boundaries as \emph{reference}, and the ones identified by an algorithm as \emph{estimated}.
 
-\subsection{Hit Rate}
+\subsection{Hit Rate}\label{subsec:hitrate}
 
 The hit rate for boundaries evaluation is the most common and established metric for this task and it is traditionally used with a specific time window of 3 and/or 0.5 seconds\cite{Ong2005}. 
 
@@ -90,7 +91,7 @@ These hits are then used to compute three scores: the Precision (number of hits 
 
 This metric involves the computation of two median deviations: \emph{median reference to estimation} is the median in seconds from the reference boundaries to their nearest estimated ones, and the \emph{median estimation to reference} is analogous but swapping reference boundaries by estimated ones\cite{Pampalk}.
 Median deviations are not commonly reported in publications of boundary algorithms since the hit rate tends to be more reliable (note that these median deviations are not normalized and not compacted in a single score like the F-measure).
-However, they are, along with the hit rate, the only metrics included in MIREX to evaluate the estimated boundaries.
+However, they are, along with the hit rate, the only metrics included in MIREX to evaluate estimated boundaries.
 
 \subsection{Information Gain}
 
@@ -126,24 +127,84 @@ This topic was discussed in the music segmentation breaking sessions of last ISM
 
 \section{Machines Identifying Boundaries}\label{sec:eval_desc}
 
-Different approaches: novelty, homogeneity, repetition.
+Three different approaches have been established when classifying music segmentation algorithms: novelty, homogeneity, and repetition-based methods\cite{Paulus2010}. 
+Novelty-based approaches identify boundaries when there is a sudden change in some of the audio features (e.g. harmony, timbre).
+Homogeneity algorithms analyze blocks of audio and extract segment boundaries based on the consistency of these blocks, again based on one or more audio features.
+Finally, repetition-based methods aim to discover multiple occurrences of music patterns across the piece in order to identify the musical boundaries.
 
-Choosing the five algorithms: OLDA\cite{McFee2014}, Serr\`a\cite{Serra2013},
-Foote\cite{Foote1999}, Levy\cite{Levy2008}, SI-PLCA\cite{Weiss2011}.
+In this work we aim to compare various automatic approaches in order to have a good understanding on the capability of machines when segmenting music.
+We select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their evaluation and analysis of results.
 
-Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holzapfel2012}.
+\subsection{Music Structure Analysis Framework}
 
-\subsection{Music Segmentation Framework}
+A framework to compare various music segmentation algorithms, sharing their features and their evaluations, can be one of the most effective methodologies in order to explore and understand multiple algorithm behaviors.
 
-Open source project\footnote{Not displayed for revision process.}
+\subsubsection{Audio Features}
 
-Machines.
+To start with, we compute beat-synchronous audio features using Essentia\cite{Bogdanov2013}.
+The harmonic features are Harmonic Pitch Class Profiles (HPCP) and the timbral features are Mel-Frequency Cepstral Coefficients (MFCC), both features computed using Essentia's default parameters.
+The beats are detected using the multi-feature Essentia's beat tracker, and synchronized with the audio features using Ellis' method\cite{Ellis2007}.
+
+\subsubsection{Algorithm Selection}
+
+Two principles were applied when selecting the five algorithms to be used in this work: (i) The three different types of algorithms should be represented, and (ii) the reported results of these methods should be competitive when compared with the state of the art.
+Note that this aims to emulate the behavior of having multiple human annotators segmenting the same tracks: not all of them will focus on the same type of boundaries (repetitive, homogeneous, novel), but we hope that all of them manage to retrieve fairly good quality boundaries in the end.
+
+Based on the previous principles, we select five different algorithms:
+
+\begin{itemize}
+  \item
+    \textbf{Foote}: One of the first music segmentation algorithms proposed, yet highly efficient and with good reported results\cite{Foote1999}. Novelty-based method that uses a Gaussian kernel across the diagonal of a self similarity matrix to identify sudden changes in the audio features.
+  \item
+    \textbf{Levy}: This approach uses Hidden Markov Model and constrained clustering to identify boundaries following a Homogeneity-based principle\cite{Levy2008}.
+  \item
+    \textbf{Serr\`a}: This method defines the structural features, a set of features that combine both repeated and homogeneous boundaries. Once used to compute a novelty curve to extract the boundaries, this method combines the three different approaches to music segmentation, and reports some of the best scores for this task\cite{Serra2013}.
+  \item
+    \textbf{SI-PLCA}: Shift-Invariance Probabilistic Latent Component Analysis is an algorithm that uses a probabilistic variant of Non-negative Matrix Factorization in order to identify harmonic patterns with allowed key transpositions and time-shifted segments\cite{Weiss2011}. It can be seen as a repetition plus homogeneity-based approach.
+  \item 
+    \textbf{OLDA}: Ordinal Linear Discriminative Analysis uses the structural features defined in \cite{Serra2013} and applies a trained machine learning method (LDA) to reduce their dimensionality and learn the most important set of features\cite{McFee2014}. This method obtains better results than Serr\`a's when using the hit rate at 0.5 seconds, and can be seen as an algorithm that also uses the three different principles of music segmentation.
+\end{itemize}
+
+\subsubsection{Algorithm Evaluation}
+
+We use the Isophonics Beatles dataset\footnote{http://isophonics.net/content/reference-annotations-beatles} in order to compare the performance of these five algorithms with their original publications. 
+This dataset is composed by the 180 tracks published by The Beatles and it is commonly used to evaluate music segmentation methods using the F-measure of the hit rate described in section \ref{subsec:hitrate} with a 3 seconds window.
+Some of these algorithms only accept harmonic features (e.g. SI-PLCA), and others are designed to accept a mixture of them (e.g. OLDA).
+
+In Table \ref{tab:machine-algo-performance} a comparison between the reported results (R-F$_3$) and the actual performance obtained with our own implementations in MSAF (M-F$_T$) is shown.
+Note that most of these methods reported better results in their publications.
+We hypothesize that the decrease in performance arises from using slightly different parameters when computing the audio features, or by employing beat-synchronous features instead of standard frame-wise features.
+There is variation between the scores, especially when comparing the M-F$_3$ scores, but we believe it is important to maintain a good representation of all boundary types to be found when understanding the behavior of the machines (e.g. Levy's method is, to the best of our knowledge, the best homogeneous-based segmentation algorithm).
+
+Levy, OLDA and SI-PLCA implementations are available on-line as open source projects.
+Foote and Serr\`a methods were implemented from scratch.
+MSAF is an open-source project, where anyone can contribute with their segmentation algorithms\footnote{Not displayed for revision process.}.
+
+\begin{table}
+ \begin{center}
+ \begin{tabular}{|l|c|c|c|c|}
+  \hline
+  Algorithm & R-F$_3$ & M-F$_3$ & M-F$_{0.5}$ & Feature\\
+  \hline
+  Foote\tablefootnote{As reported in \cite{Kaiser2010}}     & 53.6 & 52.9 & 37.9 & MFCC\\
+  Levy      & 54.0 & 48.5 & 26.3 & MFCC\\
+  Serr\`a   & 77.4 & 66.5 & 32.5 & HPCP\\
+  SI-PLCA\tablefootnote{As reported in \cite{Nieto2013}}   & 23.2 & 45.1 & 29.4 & HPCP\\
+  OLDA      &  & 58.3 & 37.9 & Mix\\
+  \hline
+ \end{tabular}
+\end{center}
+ \caption{Table captions should be placed below the table.}
+ \label{tab:machine-algo-performance}
+\end{table}
 
 \subsection{Dataset}
 
 Isophonics, SALAMI\cite{Smith2011}, Cerulean, Ephiphyte.
 
 \subsection{Metrics Comparison}
+
+Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holzapfel2012}.
 
 \begin{figure}
       \centering
