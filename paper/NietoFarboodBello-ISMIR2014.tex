@@ -201,9 +201,9 @@ Levy, OLDA and SI-PLCA implementations are available on-line as open source proj
 Foote and Serr\`a methods were implemented from scratch specifically for this work.
 MSAF is an open-source project, where anyone can contribute with their segmentation algorithms\footnote{Not displayed for revision process.}.
 
-\subsection{Dataset}\label{sub:dataset}
+\subsection{Big Dataset}\label{sub:dataset}
 
-In order to evaluate the algorithms in MSAF, we collected a large human annotated dataset of 2156 tracks composed of four different datasets: Isophonics, SALAMI, Cerulean, and Epiphyte.
+In order to evaluate the algorithms in MSAF, we collected a large human annotated dataset of 2156 tracks that we refer to as \textbf{BIG} and is composed of four different datasets: Isophonics, SALAMI, Cerulean, and Epiphyte.
 
 \begin{itemize}
   \item
@@ -322,91 +322,69 @@ Therefore, we will use this evaluation in order to find the hardest and easiest 
 
       \caption{Trimmed MSA vs MGP histograms}\label{fig:machine-eval-trim}
 \end{figure}
-%\begin{figure}
-      %\centering
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/histo-F05.pdf}
-              %%\caption{Histogram of F-measure 0.5}
-              %\caption{}
-              %\label{fig:histo-F05}
-      %\end{subfigure}%
-      %~ 
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/correl-F05.pdf}
-              %\caption{}
-              %\label{fig:correl-F05}
-      %\end{subfigure}
-
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/histo-F3.pdf}
-              %\caption{}
-              %\label{fig:histo-F3}
-      %\end{subfigure}%
-      %~ 
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/correl-F3.pdf}
-              %\caption{}
-              %\label{fig:correl-F3}
-      %\end{subfigure}
-
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/histo-D.pdf}
-              %\caption{}
-              %\label{fig:histo-D}
-      %\end{subfigure}%
-      %~ 
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/correl-D.pdf}
-              %\caption{}
-              %\label{fig:correl-D}
-      %\end{subfigure}
-
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/histo-DevA2E.pdf}
-              %\caption{}
-              %\label{fig:histo-DevA2E}
-      %\end{subfigure}%
-      %~ 
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/correl-DevA2E.pdf}
-              %\caption{}
-              %\label{fig:correl-DevA2E}
-      %\end{subfigure}
-
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/histo-DevE2A.pdf}
-              %\caption{}
-              %\label{fig:histo-DevE2A}
-      %\end{subfigure}%
-      %~ 
-      %\begin{subfigure}[b]{0.25\textwidth}
-              %\includegraphics[width=\textwidth]{plots/correl-DevE2A.pdf}
-              %\caption{}
-              %\label{fig:correl-DevE2A}
-      %\end{subfigure}
-
-      %\caption{Pictures of animals}\label{fig:animals}
-%\end{figure}
 
 \subsection{Hardest and Easiest Tracks}\label{sub:hard-easy}
 
-We run our algorithms on our large dataset described in Section \ref{sub:dataset} and sort their tracks based on their MGP$_{F3}$ scores.
+We run our algorithms on our \textbf{BIG} dataset described in Section \ref{sub:dataset} and sort their tracks based on their MGP$_{F3}$ scores.
 Thus, we are able to know which are the tracks of our dataset that machines find easiest and hardest to segment using the metric that coordinates the most with its respective MMA of the algorithms in MSAF.
-We can now proceed with a similar technique to identify the hardest and easiest tracks to segment from a human point of view.
+
+In Figures \ref{fig:quartetto} and \ref{fig:promiscuous} we show examples of the boundaries of all the algorithms for a hard and an easy track, respectively, from a machine point of view.
+The difficult track is a classical piece (string quartet) over 9 minutes long, and we can see the little agreement among algorithms when comparing their extracted boundaries.
+The easy one is a popular dance song that is less than 3 minutes long, with a much higher degree of agreement.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/Quartetto.pdf}
+  \caption{One of the most difficult tracks to segment from a machine point of view.}
+  \label{fig:quartetto}
+\end{figure}%
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/Promiscuous.pdf}
+  \caption{One of the tracks that machines find easiest to segment.}
+  \label{fig:promiscuous}
+\end{figure}%
+
+The hardest tracks have a tendency of being longer in duration than the easier ones.
+We can see this behavior in Figure \ref{fig:machinesdur}, where we see the tracks sorted by MGP$_{F3}$, which indicates that duration can have an impact in music segmentation from a machine point of view.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/machines-duration.pdf}
+  \caption{Duration of all the tracks in the \textbf{BIG} dataset.}
+  \label{fig:machinesdur}
+\end{figure}%
+
+%We can now proceed with a similar technique to identify the hardest and easiest tracks to segment from a human point of view.
 
 \section{Humans Identifying Boundaries}\label{sec:using_method}
 
 In this section we describe the process of segmenting music from a human perspective, and aim to identify the tracks that we, as humans, find hard (or easy) to segment. 
-To do so we run an experiment and then analyze the results using similar methods as described in the previous section.
+To do so we create a smaller dataset that is used to run an experiment and then analyze the results using similar methods as described in the previous section.
+
+\subsection{Small Dataset}
+
+Using the technique described in Section \ref{sub:hard-easy}, we create a small dataset that we refer as \textbf{SMA} by selecting the hardest 45 tracks and the easiest 5 from the \textbf{BIG} dataset that meet the following requirements: (i) they are no longer than 10 minutes long, and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
+
+We filtered 6 tracks that agreed with one of these two principles in the hardest 45 (2 tracks were over 10 minutes and 4 tracks were only speech). 
+Moreover, the average length for each song for the entire dataset is 244.1 seconds, whereas the average track length for the 45 hardest tracks selected (once we filtered the ones that met the defined criteria) is 348.5 seconds.
+The 45 hardest tracks are composed by 8 tracks from the Cerulean dataset, 32 from the SALAMI dataset, and 5 from the Isophonics set.
+It is interesting to note that no Epiphyte track was selected as difficult, even when almost half of the tracks in the \textbf{BIG} dataset are from the Epiphyte subset.
+On the other hand, the easiest 5 tracks were composed of 4 Epiphyte tracks and 1 Isophonics.
+This shows how the metric MGP$_{F3}$ is qualitatively working as expected.
+
 
 \subsection{Experiment Setup}
 
-Using the technique described in Section \ref{sub:hard-easy}, we select the hardest 45 tracks and the easiest 5 out of the 2156 tracks of the dataset that meet the following requirements: (i) they are no longer than 10 minutes long, and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
-We found 6 tracks that met one of these two principles in the hardest 45 (2 tracks were over 10 minutes and 4 tracks were only speech).
-Moreover, the 
+We asked 5 music graduate students to identify the boundaries of the \textbf{SMA} dataset.
+These subjects had an average of 11 years of musical training, even though it has been shown that the perception of boundaries in music does not depend on the musical background of the participants\cite{Bruderer2009}.
+We asked the subjects to identify the boundaries, following the same guidelines as the ones used when collecting the data for SALAMI\cite{Smith2011}.
+The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and for all they found difficult to segment, they had to describe why by using at least one musical/acoustic adjective.
 
-Experiment. 5 subjects. 50 tracks: 45 hard, 5 easy.
-Talk about the SALAMI guidelines.
+\subsection{Analysis of the Results}
+
+
 
 \section{Machines vs Humans}\label{section:m-vs-h}
 
@@ -459,6 +437,7 @@ Identified some audio properties that could improve the automatic segmentation a
 
 %\end{thebibliography}
 
+\small
 \bibliography{references}
 
 \end{document}
