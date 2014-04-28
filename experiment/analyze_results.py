@@ -257,13 +257,14 @@ def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
 
     plt.title("Nelly Furtado - Promiscuous")
     #plt.title("Quartetto Italiano - String Quartet in F")
+    #plt.title("Prince & The Revolution - Purple Rain")
+    #plt.title("Yes - Starship Trooper")
     plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
     plt.gcf().subplots_adjust(bottom=0.22)
     plt.gca().set_yticklabels(annot_ids)
     #plt.gca().invert_yaxis()
     plt.xlabel("Time (seconds)")
     plt.show()
-    sys.exit()
 
 
 def process(annot_dir, trim=False):
@@ -300,6 +301,9 @@ def process(annot_dir, trim=False):
     # Plot
     jam_file = "/Users/uri/datasets/SubSegments/annotations/Epiphyte_0220_promiscuous.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/SALAMI_68.jams"
+    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Isophonics_01 The Show Must Go On.jams"
+    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Prince_&_The_Revolution-Purple_Rain.jams"
+    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Yes-Starship_Trooper:_A._Life_Seeker,_B._Disillu.jams"
     plot_ann_boundaries(jam_file, annotators, "large_scale")
 
     # Analyze the answers
