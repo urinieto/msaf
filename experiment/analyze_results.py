@@ -26,7 +26,8 @@ from operator import itemgetter
 import pickle
 import csv
 
-sys.path.append("../../")
+sys.path.append("..")
+import msaf_io as MSAF
 import mir_eval
 import jams2
 
@@ -84,7 +85,7 @@ def analyze_answers(results_dir="results/"):
         logging.info(element)
 
 
-def compute_mgp(jams_files, annotators, context, trim):
+def compute_mgp(jams_files, annotators, trim):
     """Computes the Mean Ground-truth Performance of the experiment
         results.
 
@@ -102,8 +103,6 @@ def compute_mgp(jams_files, annotators, context, trim):
     annotators: dict
         Dictionary containing the names and e-mail addresses of the 5
         different annotators.
-    context: str
-        Type of context to analyze. e.g "large_scale", "small_scale".
     trim: boolean
         Whether to trim the first and last boundaries.
 
@@ -114,23 +113,26 @@ def compute_mgp(jams_files, annotators, context, trim):
         humans performance.
     """
     mgp_results = np.empty((0, 6))
+    est_context = "large_scale"
     for i in xrange(1, len(annotators.keys())):
         FPR = np.empty((0, 6))
         for jam_file in jams_files:
+            ds_name = os.path.basename(jam_file).split("_")[0]
+            ann_context = MSAF.prefix_dict[ds_name]
             ann_times, ann_labels = jams2.converters.load_jams_range(jam_file,
-              "sections", annotator_name=annotators.keys()[0], context=context)
+                "sections", annotator_name=annotators.keys()[0],
+                context=ann_context)
             try:
                 est_times, est_labels = jams2.converters.load_jams_range(
                     jam_file, "sections", annotator_name=annotators.keys()[i],
-                    context=context)
+                    context=est_context)
             except:
                 logging.warning("Couldn't read annotator %d in JAMS %s" %
                                 (i, jam_file))
                 continue
             if len(ann_times) == 0:
-                ann_times, ann_labels = jams2.converters.load_jams_range(
-                    jam_file, "sections", annotator_name=annotators.keys()[0],
-                    context="function")
+                logging.warning("No GT annotations in file %s" % jam_file)
+                continue
             if len(est_times) == 0:
                 logging.warning("No annotation in file %s for annotator %s." %
                                 (jam_file, annotators.keys()[i]))
@@ -139,6 +141,7 @@ def compute_mgp(jams_files, annotators, context, trim):
             ann_times = np.asarray(ann_times)
             est_times = np.asarray(est_times)
             #print ann_times.shape, jam_file
+            print jam_file, ann_times, est_times, annotators.keys()[i]
             P3, R3, F3 = mir_eval.boundary.detection(
                 ann_times, est_times, window=3, trim=trim)
             P05, R05, F05 = mir_eval.boundary.detection(
@@ -180,13 +183,13 @@ def analyze_boundaries(annot_dir, trim, annotators):
     """
     # Compute the MGP human results
     jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
-    context = "large_scale"
     dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
              ('P05', float), ('R05', float), ('track_id', '<U400')]
-    mgp_results = compute_mgp(jams_files, annotators, context, trim)
+    mgp_results = compute_mgp(jams_files, annotators, trim)
     mgp_results = mgp_results.tolist()
     track_ids = get_track_ids(annot_dir)
     for i in xrange(len(track_ids)):
+        print len(mgp_results), i, len(track_ids), i
         mgp_results[i].append(track_ids[i])
         mgp_results[i] = tuple(mgp_results[i])
     mgp_results = np.asarray(mgp_results, dtype=dtype)
