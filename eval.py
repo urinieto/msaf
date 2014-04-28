@@ -162,15 +162,22 @@ def plot_boundaries(all_boundaries, est_file):
     N = len(all_boundaries)  # Number of lists of boundaries
     algo_ids = MSAF.get_algo_ids(est_file)
     algo_ids = ["GT"] + algo_ids
+    figsize = (5, 2.2)
+    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
     for i, boundaries in enumerate(all_boundaries):
         print boundaries
         for b in boundaries:
             plt.axvline(b, i / float(N), (i + 1) / float(N))
         plt.axhline(i / float(N), color="k", linewidth=1)
-    plt.title(os.path.basename(est_file))
+
+    #plt.title(os.path.basename(est_file))
+    plt.title("Nelly Furtado - Promiscuous")
+    #plt.title("Quartetto Italiano - String Quartet in F")
     plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
+    plt.gcf().subplots_adjust(bottom=0.22)
     plt.gca().set_yticklabels(algo_ids)
     #plt.gca().invert_yaxis()
+    plt.xlabel("Time (seconds)")
     plt.show()
 
 
@@ -210,14 +217,15 @@ def get_all_est_boundaries(est_file, annot_beats):
     return all_boundaries
 
 
-def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=False):
+def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
     """Compute the Mean Measure Agreement for all the algorithms of the given
     file est_file."""
     results_mma = []
     #est_file = "/Users/uri/datasets/Segments/estimations/Isophonics_16_-_The_End.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_68.json" # Quartetto
+    est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Leonard_Bernstein,_New_York_Philharmonic_&_Rudol.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0298_turnmeon.json"
     for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
