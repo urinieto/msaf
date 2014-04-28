@@ -203,7 +203,7 @@ MSAF is an open-source project, where anyone can contribute with their segmentat
 
 \subsection{Dataset}\label{sub:dataset}
 
-In order to evaluate the algorithms in MSAF, we collected a large human annotated dataset of 2154 tracks composed of four different datasets: Isophonics, SALAMI, Cerulean, and Epiphyte.
+In order to evaluate the algorithms in MSAF, we collected a large human annotated dataset of 2156 tracks composed of four different datasets: Isophonics, SALAMI, Cerulean, and Epiphyte.
 
 \begin{itemize}
   \item
@@ -388,18 +388,24 @@ Therefore, we will use this evaluation in order to find the hardest and easiest 
       %\caption{Pictures of animals}\label{fig:animals}
 %\end{figure}
 
-\subsection{Hardest and Easiest Tracks}
+\subsection{Hardest and Easiest Tracks}\label{sub:hard-easy}
 
-We run our algorithms on our large dataset described in Section\ref{sub:dataset} and sort their tracks based on their MGP$_F3$ scores.
-Thus, we are able to know which are the tracks of our dataset that machines find easiest and hardest to segment using the metric that coordinates the most with the MMA of the algorithms in MSAF.
+We run our algorithms on our large dataset described in Section \ref{sub:dataset} and sort their tracks based on their MGP$_{F3}$ scores.
+Thus, we are able to know which are the tracks of our dataset that machines find easiest and hardest to segment using the metric that coordinates the most with its respective MMA of the algorithms in MSAF.
 We can now proceed with a similar technique to identify the hardest and easiest tracks to segment from a human point of view.
 
 \section{Humans Identifying Boundaries}\label{sec:using_method}
 
-Experiment. 5 subjects. 50 tracks: 45 hard, 5 easy.
+In this section we describe the process of segmenting music from a human perspective, and aim to identify the tracks that we, as humans, find hard (or easy) to segment. 
+To do so we run an experiment and then analyze the results using similar methods as described in the previous section.
 
 \subsection{Experiment Setup}
 
+Using the technique described in Section \ref{sub:hard-easy}, we select the hardest 45 tracks and the easiest 5 out of the 2156 tracks of the dataset that meet the following requirements: (i) they are no longer than 10 minutes long, and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
+We found 6 tracks that met one of these two principles in the hardest 45 (2 tracks were over 10 minutes and 4 tracks were only speech).
+Moreover, the 
+
+Experiment. 5 subjects. 50 tracks: 45 hard, 5 easy.
 Talk about the SALAMI guidelines.
 
 \section{Machines vs Humans}\label{section:m-vs-h}
