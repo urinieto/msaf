@@ -49,8 +49,7 @@
 \maketitle
 %
 \begin{abstract}
-  The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
-  This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
+  One of the biggest challenges in the automatic identification of segment boundaries in music arises from the subjectivity of the task itself: humans do not always agree on the same set of boundaries.
   In this work we present an analysis of this task from two different points of view: machines and humans.
   Five algorithms were selected to segment a dataset of more than 2000 tracks.
   Then we collected multiple human annotations for the 45 hardest tracks and the 5 easiest tracks from a machine point of view.
@@ -62,6 +61,9 @@
 %
 \section{Introduction}\label{sec:introduction}
 
+TODO.
+The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
+This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
 Music segmentation intro: focusing on boundaries.
 
 Subjectivity of the task.
@@ -70,10 +72,10 @@ Analysis of how machines do vs humans. Aim to improve automatic algorithms.
 
 Organization of the paper.
 
-\section{Boundaries Evaluation Metrics}
+\section{Boundaries Evaluation Metrics}\label{sec:evalmetrics}
 
 The boundaries of a given track are usually evaluated using the hit rate metric.
-In this section we review the hit rate, discuss its shortcomings, and explore other metrics that might help addressing our project.
+In this section we review this evaluation, discuss its shortcomings, and explore other metrics that might help addressing our goals.
 We refer the human annotated boundaries as \emph{reference}, and the ones identified by an algorithm as \emph{estimated}.
 
 \subsection{Hit Rate}\label{subsec:hitrate}
@@ -81,7 +83,7 @@ We refer the human annotated boundaries as \emph{reference}, and the ones identi
 The hit rate for boundaries evaluation is the most common and established metric for this task and it is traditionally used with a specific time window of 3 and/or 0.5 seconds\cite{Ong2005}. 
 
 This metric considers an estimated boundary as \emph{correct} (a hit) if it falls under the specified time window centered at its corresponding reference boundary.
-These hits are then used to compute three scores: the Precision (number of hits over the number of estimated boundaries), the Recall (number of hits over the number of reference boundaries), and the F-measure (harmonic mean between Precision and Recall), which is computed as follows:
+These hits are then used to compute three scores: the Precision ($P$, number of hits over the number of estimated boundaries), the Recall ($R$, number of hits over the number of reference boundaries), and the F-measure (harmonic mean between Precision and Recall), which is computed as follows:
 
 \begin{equation}
   F = 2 \frac{P R}{P + R}
@@ -89,9 +91,9 @@ These hits are then used to compute three scores: the Precision (number of hits 
 
 \subsection{Median Deviations}
 
-This metric involves the computation of two median deviations: \emph{median reference to estimation} is the median in seconds from the reference boundaries to their nearest estimated ones, and the \emph{median estimation to reference} is analogous but swapping reference boundaries by estimated ones\cite{Pampalk}.
-Median deviations are not commonly reported in publications of boundary algorithms since the hit rate tends to be more reliable (note that these median deviations are not normalized and not compacted in a single score like the F-measure).
-However, they are, along with the hit rate, the only metrics included in MIREX to evaluate estimated boundaries.
+This metric involves the computation of two median deviations: \emph{median reference to estimation} ($\sigma_{R2E}$) is the median in seconds from the reference boundaries to their nearest estimated ones, and the \emph{median estimation to reference} ($\sigma_{E2R}$) is analogous but swapping reference boundaries by estimated ones\cite{Pampalk}.
+Median deviations are not commonly reported in publications of boundary algorithms since the hit rate tends to be more reliable (note that, unlike the F-measure of the hit rate, these median deviations are not normalized and not compacted in a single score).
+However, they are, along with the hit rate, the only metrics included in MIREX to evaluate this task.
 
 \subsection{Information Gain}
 
@@ -122,18 +124,19 @@ In our case, we use $K=250$ and an unrestricted time range in order to capture t
 \subsection{Trimming First and Last Boundaries}
 
 The presented metrics treat all the boundaries of a given track equally. 
-However, we can argue that the first and last boundaries are trivial to be retrieved (the first boundary should always be placed in second 0, and the last one in the second defined by the duration of the track). 
-This topic was discussed in the music segmentation breaking sessions of last ISMIR edition\cite{Nieto2013}, and in this work we present two versions of each given evaluation: trimmed and not trimmed.
+However, we can argue that the first and last boundaries are trivial to be retrieved (the first boundary should always be placed in time 0, and the last one in the time defined by the duration of the track). 
+This topic was discussed in the music segmentation breaking session of last ISMIR edition\cite{Nieto2013}, and in a recent work by McFee only the trimmed scores are presented\cite{McFee2014}. 
+Nonetheless, in this work we discuss the two versions of each given evaluation: trimmed and not trimmed.
 
 \section{Machines Identifying Boundaries}\label{sec:eval_desc}
 
-Three different approaches have been established when classifying music segmentation algorithms: novelty, homogeneity, and repetition-based methods\cite{Paulus2010}. 
+Three different approaches have been established when classifying music boundaries: novelty, homogeneity, and repetition\cite{Paulus2010}. 
 Novelty-based approaches identify boundaries when there is a sudden change in some of the audio features (e.g. harmony, timbre).
 Homogeneity algorithms analyze blocks of audio and extract segment boundaries based on the consistency of these blocks, again based on one or more audio features.
 Finally, repetition-based methods aim to discover multiple occurrences of music patterns across the piece in order to identify the musical boundaries.
 
-In this work we aim to compare various automatic approaches in order to have a good understanding on the capability of machines when segmenting music.
-We select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their evaluation and analysis of results.
+In this work we aim to compare various automatic approaches in order to have a good understanding of the capability of machines when segmenting music.
+We select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results.
 
 \subsection{Music Structure Analysis Framework}
 
@@ -154,31 +157,27 @@ Based on the previous principles, we select five different algorithms:
 
 \begin{itemize}
   \item
-    \textbf{Foote}: One of the first music segmentation algorithms proposed, yet highly efficient and with good reported results\cite{Foote1999}. Novelty-based method that uses a Gaussian kernel across the diagonal of a self similarity matrix to identify sudden changes in the audio features.
+    \textbf{Foote}: One of the first music segmentation algorithms proposed, yet highly efficient and with good reported results\cite{Foote1999}. It is a novelty-based method that uses a Gaussian kernel across the diagonal of a self similarity matrix to identify sudden changes in the audio features.
   \item
-    \textbf{Levy}: This approach uses Hidden Markov Model and constrained clustering to identify boundaries following a Homogeneity-based principle\cite{Levy2008}.
+    \textbf{Levy}: This approach uses Hidden Markov Model and constrained clustering to identify boundaries following a homogeneity-based principle\cite{Levy2008}.
   \item
     \textbf{Serr\`a}: This method defines the structural features, a set of features that combine both repeated and homogeneous boundaries. Once used to compute a novelty curve to extract the boundaries, this method combines the three different approaches to music segmentation, and reports some of the best scores for this task\cite{Serra2013}.
   \item
     \textbf{SI-PLCA}: Shift-Invariance Probabilistic Latent Component Analysis is an algorithm that uses a probabilistic variant of Non-negative Matrix Factorization in order to identify harmonic patterns with allowed key transpositions and time-shifted segments\cite{Weiss2011}. It can be seen as a repetition plus homogeneity-based approach.
   \item 
-    \textbf{OLDA}: Ordinal Linear Discriminative Analysis uses the structural features defined in \cite{Serra2013} and applies a trained machine learning method (LDA) to reduce their dimensionality and learn the most important set of features\cite{McFee2014}. This method obtains better results than Serr\`a's when using the hit rate at 0.5 seconds, and can be seen as an algorithm that also uses the three different principles of music segmentation.
+    \textbf{OLDA}: Ordinal Linear Discriminative Analysis uses the structural features defined in \cite{Serra2013} and applies a trained machine learning method (OLDA) to reduce their dimensionality and learn the most important set of features\cite{McFee2014}. This method obtains better results than Serr\`a's when using the hit rate at 0.5 seconds, and can be seen as an algorithm that also uses the three different principles of music segmentation.
 \end{itemize}
 
-\subsubsection{Algorithm Evaluation}
+\subsubsection{MSAF Performance}\label{subsub:performance}
 
-We use the Isophonics Beatles dataset\footnote{http://isophonics.net/content/reference-annotations-beatles} in order to compare the performance of these five algorithms with their original publications. 
+We use the Isophonics Beatles dataset\footnote{http://isophonics.net/content/reference-annotations-beatles} in order to compare the performance of these five algorithms implemented in MSAF with their original publications. 
 This dataset is composed by the 180 tracks published by The Beatles and it is commonly used to evaluate music segmentation methods using the F-measure of the hit rate described in section \ref{subsec:hitrate} with a 3 seconds window.
 Some of these algorithms only accept harmonic features (e.g. SI-PLCA), and others are designed to accept a mixture of them (e.g. OLDA).
 
 In Table \ref{tab:machine-algo-performance} a comparison between the reported results (R-F$_3$) and the actual performance obtained with our own implementations in MSAF (M-F$_T$) is shown.
 Note that most of these methods reported better results in their publications.
-We hypothesize that the decrease in performance arises from using slightly different parameters when computing the audio features, or by employing beat-synchronous features instead of standard frame-wise features.
-There is variation between the scores, especially when comparing the M-F$_3$ scores, but we believe it is important to maintain a good representation of all boundary types to be found when understanding the behavior of the machines (e.g. Levy's method is, to the best of our knowledge, the best homogeneous-based segmentation algorithm).
-
-Levy, OLDA and SI-PLCA implementations are available on-line as open source projects.
-Foote and Serr\`a methods were implemented from scratch.
-MSAF is an open-source project, where anyone can contribute with their segmentation algorithms\footnote{Not displayed for revision process.}.
+We hypothesize that the decrease in performance arises from using slightly different parameters when computing the audio features, and/or by employing beat-synchronous features instead of standard frame-wise features.
+Moreover, there is variation between the scores, especially when comparing the M-F$_3$ scores across algorithms, but we believe it is important to maintain a good representation of all boundary types to better capture the behavior of the machines (e.g. Levy's method is, to the best of our knowledge, the best homogeneous-based segmentation algorithm, but its scores, in the Isophonics Beatles, are not as good as the algorithms that aim to identify boundaries based on novelty only).
 
 \begin{table}
  \begin{center}
@@ -194,17 +193,63 @@ MSAF is an open-source project, where anyone can contribute with their segmentat
   \hline
  \end{tabular}
 \end{center}
- \caption{Table captions should be placed below the table.}
+ \caption{Performance of the MSAF in the Isophonics Beatles Dataset.}
  \label{tab:machine-algo-performance}
 \end{table}
 
-\subsection{Dataset}
+Levy, OLDA and SI-PLCA implementations are available on-line as open source projects written by their first authors.
+Foote and Serr\`a methods were implemented from scratch specifically for this work.
+MSAF is an open-source project, where anyone can contribute with their segmentation algorithms\footnote{Not displayed for revision process.}.
 
-Isophonics, SALAMI\cite{Smith2011}, Cerulean, Ephiphyte.
+\subsection{Dataset}\label{sub:dataset}
+
+In order to evaluate the algorithms in MSAF, we collected a large human annotated dataset of 2154 tracks composed of four different datasets: Isophonics, SALAMI, Cerulean, and Epiphyte.
+
+\begin{itemize}
+  \item
+    \textbf{Isophonics}\footnote{http://isophonics.net/datasets}: This is the most common human-annotated dataset to analyze segmentation algorithms. 
+    It is composed of 300 tracks, including the 180 of The Beatles (discussed in \ref{subsub:performance}), of pop rock music by Queen, Michael Jackson, and others.
+
+  \item
+    \textbf{SALAMI}\cite{Smith2011}: The largest dataset with human-annotations for music segmentation published to date. 
+    It is composed of more than 700 tracks, with music types including classic, folk, world music, jazz, blues, and rock.
+    Some of these music genres can be particularly challenging to segment, both for machines and humans, as we will see in Section \ref{section:m-vs-h}.
+
+  \item
+    \textbf{Cerulean}: This dataset is a private annotation from a company that would like to remain anonymous.
+    It is composed by 102 particularly challenging tracks, including progressive rock, death metal, or classical music.
+
+  \item
+    \textbf{Epiphyte}: This is another private dataset from yet another anonymous company.
+    In this case over 1000 tracks were human-annotated, most of them being short pop rock and electronic songs.
+    The intuition is that these should be fairly easy tracks to segment, due to their simple musical structures.
+
+\end{itemize}
 
 \subsection{Metrics Comparison}
 
-Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holzapfel2012}.
+We want to identify the tracks that machines find most difficult to segment.
+In order to do so, we need to use a specific metric, and sort the tracks based on this score.
+However, as we saw in Section \ref{sec:evalmetrics}, there are multiple metrics for boundary evaluation, so we first need to identify which one to use for sorting the tracks.
+
+We use the Mean Mutual Agreement (MMA) and Mean Performance Ground-truth (MGP) approach as in \cite{Holzapfel2012}.
+The MMA is the average of all the evaluations between algorithms (i.e. without using any human-annotated dataset).
+In our case, there are 10 comparisons ($N(N-1)/2$, where $N=5$ segmentation algorithms) for each one of the metrics.
+The MGP is the average performance of the 5 algorithms when compared with the human annotations.
+By comparing the MMA with the MGP we can tell how well a specific metric behaves in order to choose the best for our purposes.
+A histogram for each metric is computed by sorting the MMA results and placing their corresponding MGP scores in a 10 bin histogram to easily visualize how well the metric responds in all the different ranges of the score.
+
+In Figure \ref{fig:machine-eval} we can see the histograms of the different metrics, sorted by their MMA value.
+Analogously, in Figure \ref{fig:machine-eval-trim} we find the first and last boundary trimmed versions of the histograms.
+As opposed to\cite{Holzapfel2012}, where beat trackers tend to agree most of the time, boundary algorithms usually perform far from perfectly.
+Therefore, it is a hard task to tell whether a given track is hard to annotate solely by analyzing the MMA of a specific score.
+We can see that the median deviations (MMA$_{\sigma_{R2E}}$ and MMA$_{\sigma_{E2R}}$, which are normalized using the maximum deviation) are mostly contained in a short range of the histogram, especially MMA$_{\sigma_{E2R}}$.
+The information gain (MMA$_D$) is contained in a single histogram bin most of the time, making it difficult to predict hard tracks from just the MMA$_D$, since even in the worst MMA$_D$ track range, we find scores in their respective MPG$_D$ that fall in bins where only the easy tracks should be placed.
+Finally, the MMA$_{F05}$ is too much spread across the histogram bins, with almost a flat spread curve.
+However, the MMA$_{F3}$ seems to be the only metric that ranges almost all the histogram bins from hardest to easiest with a relatively narrow curve.
+
+These metrics (or maybe the task itself) are still not able to predict hard and easy tracks from datasets without human-annotations, but the $F3$ metric qualitatively seems to behave the best of the ones tested here.
+Therefore, we will use this evaluation in order to find the hardest and easiest tracks on our human-annotated dataset.
 
 \begin{figure}
       \centering
@@ -239,7 +284,7 @@ Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holz
               \label{fig:histo-DevE2A}
       \end{subfigure}%
 
-      \caption{Non-trimmed Evaluations}\label{fig:machine-eval}
+      \caption{Non-trimmed MSA vs MGP histograms}\label{fig:machine-eval}
 \end{figure}
 
 \begin{figure}
@@ -275,7 +320,7 @@ Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holz
               \label{fig:histo-DevE2A-trim}
       \end{subfigure}%
 
-      \caption{Trimmed Evaluations}\label{fig:machine-eval-trim}
+      \caption{Trimmed MSA vs MGP histograms}\label{fig:machine-eval-trim}
 \end{figure}
 %\begin{figure}
       %\centering
@@ -343,9 +388,11 @@ Talk about the Mean Mutual Agreement and Mean Performance Ground-truth\cite{Holz
       %\caption{Pictures of animals}\label{fig:animals}
 %\end{figure}
 
-\subsection{Selection of Hardest and Easiest Tracks}
+\subsection{Hardest and Easiest Tracks}
 
-Plots of MGP and MMA.
+We run our algorithms on our large dataset described in Section\ref{sub:dataset} and sort their tracks based on their MGP$_F3$ scores.
+Thus, we are able to know which are the tracks of our dataset that machines find easiest and hardest to segment using the metric that coordinates the most with the MMA of the algorithms in MSAF.
+We can now proceed with a similar technique to identify the hardest and easiest tracks to segment from a human point of view.
 
 \section{Humans Identifying Boundaries}\label{sec:using_method}
 
@@ -355,7 +402,7 @@ Experiment. 5 subjects. 50 tracks: 45 hard, 5 easy.
 
 Talk about the SALAMI guidelines.
 
-\section{Machines vs Humans}
+\section{Machines vs Humans}\label{section:m-vs-h}
 
 Plot comparing MGP-machines vs MGP-humans.
 
