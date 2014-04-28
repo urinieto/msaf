@@ -217,7 +217,7 @@ def get_all_est_boundaries(est_file, annot_beats):
     return all_boundaries
 
 
-def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
+def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=False):
     """Compute the Mean Measure Agreement for all the algorithms of the given
     file est_file."""
     results_mma = []
@@ -225,7 +225,7 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
     #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_68.json" # Quartetto
-    est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
+    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Leonard_Bernstein,_New_York_Philharmonic_&_Rudol.json"
     #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0298_turnmeon.json"
     for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):

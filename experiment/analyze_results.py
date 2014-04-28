@@ -113,10 +113,11 @@ def compute_mgp(jams_files, annotators, trim):
         Array containing the results for the F3, P3, R3, F05, P05, R05 of the
         humans performance.
     """
-    mgp_results = np.empty((0, 6))
+    mgp_results = np.empty((0, 9))
     est_context = "large_scale"
+    bins = 250
     for i in xrange(1, len(annotators.keys())):
-        FPR = np.empty((0, 6))
+        FPR = np.empty((0, 9))
         for jam_file in jams_files:
             ds_name = os.path.basename(jam_file).split("_")[0]
             ann_context = MSAF.prefix_dict[ds_name]
@@ -142,12 +143,9 @@ def compute_mgp(jams_files, annotators, trim):
             ann_times = np.asarray(ann_times)
             est_times = np.asarray(est_times)
             #print jam_file, ann_times, est_times, annotators.keys()[i]
-            P3, R3, F3 = mir_eval.boundary.detection(
-                ann_times, est_times, window=3, trim=trim)
-            P05, R05, F05 = mir_eval.boundary.detection(
-                ann_times, est_times, window=0.5, trim=trim)
-
-            FPR = np.vstack((FPR, (F3, P3, R3, F05, P05, R05)))
+            results = EV.compute_results(ann_times, est_times, trim, bins,
+                                         jam_file)
+            FPR = np.vstack((FPR, tuple(results)))
 
         if i == 1:
             mgp_results = np.vstack((mgp_results, FPR))
@@ -163,8 +161,8 @@ def compute_mgp(jams_files, annotators, trim):
         FPR = np.mean(FPR, axis=0)
         logging.info("Results for %s:\n\tF3: %.4f, P3: %.4f, R3: %.4f\n"
                      "\tF05: %.4f, P05: %.4f, R05: %.4f" % (
-                         annotators.keys()[i], FPR[0], FPR[1], FPR[2], FPR[3],
-                         FPR[4], FPR[5]))
+                         annotators.keys()[i], FPR[2], FPR[0], FPR[1], FPR[5],
+                         FPR[3], FPR[4]))
     return mgp_results
 
 
@@ -183,8 +181,9 @@ def analyze_boundaries(annot_dir, trim, annotators):
     """
     # Compute the MGP human results
     jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
-    dtype = [('F3', float), ('P3', float), ('R3', float), ('F05', float),
-             ('P05', float), ('R05', float), ('track_id', '<U400')]
+    dtype = [('P3', float), ('R3', float), ('F3', float), ('P05', float),
+             ('R05', float), ('F05', float), ('D', float), ('DevA2E', float),
+             ('DevE2A', float), ('track_id', '<U400')]
     mgp_results = compute_mgp(jams_files, annotators, trim)
     mgp_results = mgp_results.tolist()
     track_ids = get_track_ids(annot_dir)
@@ -299,12 +298,12 @@ def process(annot_dir, trim=False):
     }
 
     # Plot
-    jam_file = "/Users/uri/datasets/SubSegments/annotations/Epiphyte_0220_promiscuous.jams"
+    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Epiphyte_0220_promiscuous.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/SALAMI_68.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/Isophonics_01 The Show Must Go On.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Prince_&_The_Revolution-Purple_Rain.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Yes-Starship_Trooper:_A._Life_Seeker,_B._Disillu.jams"
-    plot_ann_boundaries(jam_file, annotators, "large_scale")
+    #plot_ann_boundaries(jam_file, annotators, "large_scale")
 
     # Analyze the answers
     analyze_answers()
