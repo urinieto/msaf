@@ -28,6 +28,7 @@ import csv
 
 sys.path.append("..")
 import msaf_io as MSAF
+import eval as EV
 import mir_eval
 import jams2
 
@@ -140,8 +141,7 @@ def compute_mgp(jams_files, annotators, trim):
 
             ann_times = np.asarray(ann_times)
             est_times = np.asarray(est_times)
-            #print ann_times.shape, jam_file
-            print jam_file, ann_times, est_times, annotators.keys()[i]
+            #print jam_file, ann_times, est_times, annotators.keys()[i]
             P3, R3, F3 = mir_eval.boundary.detection(
                 ann_times, est_times, window=3, trim=trim)
             P05, R05, F05 = mir_eval.boundary.detection(
@@ -189,7 +189,6 @@ def analyze_boundaries(annot_dir, trim, annotators):
     mgp_results = mgp_results.tolist()
     track_ids = get_track_ids(annot_dir)
     for i in xrange(len(track_ids)):
-        print len(mgp_results), i, len(track_ids), i
         mgp_results[i].append(track_ids[i])
         mgp_results[i] = tuple(mgp_results[i])
     mgp_results = np.asarray(mgp_results, dtype=dtype)
@@ -216,11 +215,55 @@ def analyze_boundaries(annot_dir, trim, annotators):
     plt.show()
 
 
-def plot_track():
+def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
     """Plots the different boundaries for a given track, contained in the
-    jams file."""
+    jams file.
 
-    pass
+    Parameters
+    ----------
+    jam_file: str
+        Path to the jam file that contains all the annotations.
+    annotators: dict
+        Dictionary containing the names and e-mail addresses of the 5
+        different annotators.
+    context: str
+        The context of the level of annotation to plot.
+    """
+    all_boundaries = []
+    annot_ids = []
+    annot_name_ids_dict = {"GT":"GT", "Colin":"Ann1", "Eleni":"Ann2",
+                           "Evan":"Ann3", "John":"Ann4", "Shuli":"Ann5"}
+    for key in annotators.keys():
+        if key == "GT":
+            ds_name = os.path.basename(jam_file).split("_")[0]
+            ann_context = MSAF.prefix_dict[ds_name]
+            est_inters, est_labels = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator=0, context=ann_context)
+        else:
+            est_inters, est_labels = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator_name=key, context=context)
+        est_times = EV.intervals_to_times(est_inters)
+        all_boundaries.append(est_times)
+        annot_ids.append(annot_name_ids_dict[key])
+
+    N = len(all_boundaries)  # Number of lists of boundaries
+    figsize = (5, 2.2)
+    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+    for i, boundaries in enumerate(all_boundaries):
+        print boundaries
+        for b in boundaries:
+            plt.axvline(b, i / float(N), (i + 1) / float(N))
+        plt.axhline(i / float(N), color="k", linewidth=1)
+
+    plt.title("Nelly Furtado - Promiscuous")
+    #plt.title("Quartetto Italiano - String Quartet in F")
+    plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
+    plt.gcf().subplots_adjust(bottom=0.22)
+    plt.gca().set_yticklabels(annot_ids)
+    #plt.gca().invert_yaxis()
+    plt.xlabel("Time (seconds)")
+    plt.show()
+    sys.exit()
 
 
 def process(annot_dir, trim=False):
@@ -253,6 +296,11 @@ def process(annot_dir, trim=False):
         "name"  : "Shuli",
         "email" : "luiseslt@gmail.com"
     }
+
+    # Plot
+    jam_file = "/Users/uri/datasets/SubSegments/annotations/Epiphyte_0220_promiscuous.jams"
+    #jam_file = "/Users/uri/datasets/SubSegments/annotations/SALAMI_68.jams"
+    plot_ann_boundaries(jam_file, annotators, "large_scale")
 
     # Analyze the answers
     analyze_answers()
