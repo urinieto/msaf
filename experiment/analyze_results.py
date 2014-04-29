@@ -27,7 +27,6 @@ from operator import itemgetter
 import pickle
 import csv
 import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
 
 sys.path.append("..")
 import msaf_io as MSAF
@@ -51,9 +50,9 @@ def get_track_ids(annot_dir):
     return glob.glob(os.path.join(annot_dir, "*.jams"))
 
 
-def analyze_answers(results_dir="results/"):
-    """Analyzes the answers of the experiment, contained in csv files.
-    More specifically, it counts the number of words in the answers in order
+def analyze_tags(results_dir="results/"):
+    """Analyzes the tags (answers) of the experiment, contained in csv files.
+    More specifically, it counts the number of tags in the answers in order
     to know how often they appear. Then it sorts them based on their frequency
     and prints them.
 
@@ -64,9 +63,9 @@ def analyze_answers(results_dir="results/"):
     """
     # Get all the folders with the annotators results
     annotator_dirs = glob.glob(os.path.join(results_dir, "*"))
-    answers = []
+    tags = []
     for annot_dir in annotator_dirs:
-        csv_file = os.path.join(annot_dir, "answers.csv")
+        csv_file = os.path.join(annot_dir, "tags.csv")
         print csv_file
         if not os.path.isfile(csv_file):
             continue
@@ -77,10 +76,10 @@ def analyze_answers(results_dir="results/"):
                 continue
             if fields[0] != "" and fields[1] != "":
                 for word in fields[1].split(";"):
-                    answers.append(word.strip(" ").lower())
+                    tags.append(word.strip(" ").lower())
 
-    # Get histogram from the answers
-    histo = Counter(answers)
+    # Get histogram from the tags
+    histo = Counter(tags)
 
     # Sort and print
     sorted_histo = sorted(histo.items(), key=itemgetter(1), reverse=True)
@@ -112,7 +111,7 @@ def compute_mgp(jams_files, annotators, trim):
     Returns
     -------
     mgp_results: np.array
-        Array containing the results for the F3, P3, R3, F05, P05, R05 of the
+        Array containing the results as in the eval module of MSAF for the
         humans performance.
     """
     mgp_results = np.empty((0, 9))
@@ -170,7 +169,26 @@ def compute_mgp(jams_files, annotators, trim):
 
 def compute_mma_results(jam_file, annotators, trim, bins=250):
     """Compute the Mean Measure Agreement for all the algorithms of the given
-    file est_file."""
+    file jam_file.
+
+    Parameters
+    ----------
+    jam_file: str
+        Jam file containing all the annotations for a given track.
+    annotators: dict
+        Dictionary containing the names and e-mail addresses of the 5
+        different annotators.
+    trim: boolean
+        Whether to trim the first and last boundary or not.
+    bins: int
+        The number of bins to compute for the Information Gain.
+
+    Returns
+    -------
+    results_mma: np.array
+        All the results for all the different comparisons between algorithms.
+        In order to obtain the average, simply take the mean across axis=0.
+    """
     context = "large_scale"
     results_mma = []
     for names in itertools.combinations(annotators.keys()[1:], 2):
@@ -185,6 +203,7 @@ def compute_mma_results(jam_file, annotators, trim, bins=250):
             continue
 
         # Compute results
+        print est_inters1, est_inters2, jam_file, names
         results = EV.compute_results(est_inters1, est_inters2, trim, bins,
                                      jam_file)
         results_mma.append(results)
@@ -225,11 +244,10 @@ def analyze_boundaries(annot_dir, trim, annotators):
         #mma_results[i] = tuple(mma_results[i])
     #mma_results = np.asarray(mma_results, dtype=dtype)
     #pickle.dump(mma_results, open(mma_humans_file, "w"))
-
     mma_results = pickle.load(open(mma_humans_file, "r"))
 
-    # Compute the MGP human results
-    logging.info("Computing the MGP...")
+    # Compute the MGP human results (not really necessary)
+    #logging.info("Computing the MGP...")
     #mgp_results = compute_mgp(jams_files, annotators, trim)
     #mgp_results = mgp_results.tolist()
     #for i in xrange(len(track_ids)):
@@ -237,31 +255,25 @@ def analyze_boundaries(annot_dir, trim, annotators):
         #mgp_results[i] = tuple(mgp_results[i])
     #mgp_results = np.asarray(mgp_results, dtype=dtype)
     #pickle.dump(mgp_results, open(mgp_humans_file, "w"))
-
-    mgp_results = pickle.load(open(mgp_humans_file, "r"))
+    #mgp_results = pickle.load(open(mgp_humans_file, "r"))
 
     # Get MGP machine results
     mgp_results_machine = pickle.load(open(
         "../notes/mgp_experiment_machine.pk", "r"))
 
-    mgp_results_machine2 = np.sort(mgp_results_machine, order="track_id")
-    mgp_results = np.sort(mgp_results, order='track_id')
+    mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
+    mma_results = np.sort(mma_results, order='track_id')
 
-    for mgp_res, mma_res in zip(mgp_results_machine2, mgp_results):
-        print mgp_res["F3"], mma_res["F3"], mgp_res["track_id"], mma_res["track_id"]
-
-    mgp_results = np.sort(mgp_results, order='F3')
+    for mgp_res, mma_res in zip(mgp_results_machine, mma_results):
+        print mgp_res["F3"], mma_res["F3"], mgp_res["track_id"], \
+            mma_res["track_id"]
 
     # Plot results
-    mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
-    mgp_results = np.sort(mgp_results, order="track_id")
-    #print "Humans", mgp_results
-    #print "Machines", mgp_results_machine
     figsize = (4, 4)
     plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
-    plt.scatter(mgp_results_machine["F3"], mgp_results["F3"])
+    plt.scatter(mgp_results_machine["F3"], mma_results["F3"])
     plt.plot([0, 1], [0, 1])
-    plt.gca().set_ylabel("Human MGP$_{F3}$ results")
+    plt.gca().set_ylabel("Human MMA$_{F3}$ results")
     plt.gca().set_xlabel("Machine MGP$_{F3}$ results")
     plt.gca().set_xticks(np.arange(0, 1.1, .1))
     plt.gca().set_yticks(np.arange(0, 1.1, .1))
@@ -328,7 +340,7 @@ def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
             plt.axvline(b, i / float(N), (i + 1) / float(N))
         plt.axhline(i / float(N), color="k", linewidth=1)
 
-    plt.title("Nelly Furtado - Promiscuous")
+    #plt.title("Nelly Furtado - Promiscuous")
     #plt.title("Quartetto Italiano - String Quartet in F")
     #plt.title("Prince & The Revolution - Purple Rain")
     #plt.title("Yes - Starship Trooper")
@@ -372,16 +384,21 @@ def process(annot_dir, trim=False):
     }
 
     # Plot
-    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Epiphyte_0220_promiscuous.jams"
-    #jam_file = "/Users/uri/datasets/SubSegments/annotations/SALAMI_68.jams"
-    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Isophonics_01 The Show Must Go On.jams"
-    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Prince_&_The_Revolution-Purple_Rain.jams"
-    #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Yes-Starship_Trooper:_A._Life_Seeker,_B._Disillu.jams"
-    #jam_file = "/Users/uri/datasets/SubSegments/annotations/SALAMI_546.jams"
-    #plot_ann_boundaries(jam_file, annotators, "large_scale")
+    ann_dir = "/Users/uri/datasets/SubSegments/annotations/"
+    #jam_file = "Epiphyte_0220_promiscuous.jams"
+    #jam_file = "SALAMI_68.jams"
+    #jam_file = "Isophonics_01 The Show Must Go On.jams"
+    #jam_file = "Cerulean_Prince_&_The_Revolution-Purple_Rain.jams"
+    #jam_file = "Cerulean_Yes-Starship_Trooper:"\
+                #"_A._Life_Seeker,_B._Disillu.jams"
+    #jam_file = "SALAMI_546.jams"
+    #jam_file = "Epiphyte_0723_hotelroomservice.jams"
+    #jam_file = "SALAMI_114.jams"
+    jam_file = "Epiphyte_0780_letmebereal.jams"
+    plot_ann_boundaries(ann_dir + jam_file, annotators, "large_scale")
 
-    # Analyze the answers
-    analyze_answers()
+    # Analyze the tags
+    analyze_tags()
 
     # Analyze the boundaries
     analyze_boundaries(annot_dir, trim, annotators)
