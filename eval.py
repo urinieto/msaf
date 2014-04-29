@@ -119,7 +119,7 @@ def compute_results(ann_inter, est_inter, trim, bins, est_file):
 
 
 def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
-                       beatles=False, bins=10, **params):
+                       beatles=False, annotator=0, bins=10, **params):
     """Computes the results by using the ground truth dataset."""
 
     # Get the ds_prefix
@@ -134,8 +134,13 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
             return []
 
     try:
-        ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                            "sections", context=MSAF.prefix_dict[ds_prefix])
+        if annotator == "GT" or annotator == 0:
+            annotator = 0
+            ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
+                "sections", annotator=0, context=MSAF.prefix_dict[ds_prefix])
+        else:
+            ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
+                "sections", annotator_name=annotator, context="large_scale")
     except:
         logging.warning("No annotations for file: %s" % jam_file)
         return []
@@ -375,7 +380,7 @@ def get_annotation(est_file, jam_files):
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False,
-            trim=False, mma=False, **params):
+            trim=False, mma=False, save=False, annotator=0, **params):
     """Main process."""
 
     # The Beatles hack
@@ -396,9 +401,10 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
     est_files = glob.glob(os.path.join(in_path, "estimations",
                                        "%s_*.json" % ds_name))
 
-    conn = sqlite3.connect("results/results.sqlite")
-    conn.text_factory = str     # Fixes the 8-bit encoding string problem
-    c = conn.cursor()
+    if save:
+        conn = sqlite3.connect("results/results.sqlite")
+        conn.text_factory = str     # Fixes the 8-bit encoding string problem
+        c = conn.cursor()
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
@@ -437,42 +443,49 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         else:
             results_gt = compute_gt_results(est_file, trim, annot_beats,
                                             jam_files, alg_id, beatles,
-                                            bins=bins, **params)
+                                            annotator, bins=bins, **params)
             if results_gt == []:
                 continue
             results_ds.append(results_gt)
 
         # Save Track Result to database
-        save_results_ds(c, alg_id, results_ds[-1], annot_beats, trim, feature,
-                        track_id=os.path.basename(est_file))
+        if save:
+            save_results_ds(c, alg_id, results_ds[-1], annot_beats, trim,
+                            feature, track_id=os.path.basename(est_file))
 
         # Store dataset results if needed
         actual_ds_name = os.path.basename(est_file).split("_")[0]
         if curr_ds != actual_ds_name:
-            save_results_ds(c, alg_id, results_ds, annot_beats, trim, feature,
-                            ds_name=curr_ds)
+            if save:
+                save_results_ds(c, alg_id, results_ds, annot_beats, trim,
+                                feature, ds_name=curr_ds)
             curr_ds = actual_ds_name
             # Add to global results
             results = np.concatenate((results, np.asarray(results_ds)))
             results_ds = []
 
     # Save and add last results
-    save_results_ds(c, alg_id, results_ds, annot_beats, trim,
-                    feature, ds_name=curr_ds)
+    if save:
+        save_results_ds(c, alg_id, results_ds, annot_beats, trim, feature,
+                        ds_name=curr_ds)
     results = np.concatenate((results, np.asarray(results_ds)))
 
     # Save all results
-    save_results_ds(c, alg_id, results, annot_beats, trim,
-                    feature, ds_name="all")
+    if save:
+        save_results_ds(c, alg_id, results, annot_beats, trim, feature,
+                        ds_name="all")
 
     # Print results
     print_results(results)
 
     # Commit changes to database and close
-    conn.commit()
-    conn.close()
+    if save:
+        conn.commit()
+        conn.close()
 
     logging.info("%d tracks analized" % len(results))
+
+    return results
 
 
 def main():
@@ -519,6 +532,11 @@ def main():
                         dest="all",
                         help="Compute all the results.",
                         default=False)
+    parser.add_argument("-s",
+                        action="store_true",
+                        dest="save",
+                        help="Whether to sasve the results in the SQL or not",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -538,7 +556,8 @@ def main():
     else:
         # Run the algorithm
         process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-                trim=args.trim, mma=args.mma, feature=args.feature)
+                trim=args.trim, mma=args.mma, save=args.save,
+                feature=args.feature)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
