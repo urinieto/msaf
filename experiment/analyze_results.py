@@ -15,6 +15,7 @@ __email__       = "oriol@nyu.edu"
 import argparse
 import glob
 import logging
+import itertools
 import os
 import sys
 import time
@@ -25,11 +26,12 @@ from collections import Counter
 from operator import itemgetter
 import pickle
 import csv
+import matplotlib.patches as mpatches
+from matplotlib.collections import PatchCollection
 
 sys.path.append("..")
 import msaf_io as MSAF
 import eval as EV
-import mir_eval
 import jams2
 
 
@@ -166,6 +168,30 @@ def compute_mgp(jams_files, annotators, trim):
     return mgp_results
 
 
+def compute_mma_results(jam_file, annotators, trim, bins=250):
+    """Compute the Mean Measure Agreement for all the algorithms of the given
+    file est_file."""
+    context = "large_scale"
+    results_mma = []
+    for names in itertools.combinations(annotators.keys()[1:], 2):
+        # Read estimated times from both algorithms
+        est_inters1, est_labels1 = jams2.converters.load_jams_range(jam_file,
+                            "sections", annotator_name=names[0],
+                            context=context)
+        est_inters2, est_labels2 = jams2.converters.load_jams_range(jam_file,
+                            "sections", annotator_name=names[1],
+                            context=context)
+        if est_inters1 == [] or est_inters2 == []:
+            continue
+
+        # Compute results
+        results = EV.compute_results(est_inters1, est_inters2, trim, bins,
+                                     jam_file)
+        results_mma.append(results)
+
+    return np.asarray(results_mma)
+
+
 def analyze_boundaries(annot_dir, trim, annotators):
     """Analyzes the annotated boundaries.
 
@@ -179,38 +205,86 @@ def analyze_boundaries(annot_dir, trim, annotators):
         Dictionary containing the names and e-mail addresses of the 5
         different annotators.
     """
-    # Compute the MGP human results
     jams_files = glob.glob(os.path.join(annot_dir, "*.jams"))
     dtype = [('P3', float), ('R3', float), ('F3', float), ('P05', float),
              ('R05', float), ('F05', float), ('D', float), ('DevA2E', float),
              ('DevE2A', float), ('track_id', '<U400')]
-    mgp_results = compute_mgp(jams_files, annotators, trim)
-    mgp_results = mgp_results.tolist()
     track_ids = get_track_ids(annot_dir)
-    for i in xrange(len(track_ids)):
-        mgp_results[i].append(track_ids[i])
-        mgp_results[i] = tuple(mgp_results[i])
-    mgp_results = np.asarray(mgp_results, dtype=dtype)
-    mgp_results = np.sort(mgp_results, order='F3')
+    mma_humans_file = "mma_experiment_humans.pk"
+    mgp_humans_file = "mgp_experiment_humans.pk"
+
+    # Compute the MMA human results
+    logging.info("Computing the MMA...")
+    #mma_results = []
+    #for jam_file in jams_files:
+        #mma_file = compute_mma_results(jam_file, annotators, trim, 250)
+        #mma_results.append(np.mean(mma_file, axis=0))
+    #for i in xrange(len(track_ids)):
+        #mma_results[i] = mma_results[i].tolist()
+        #mma_results[i].append(track_ids[i])
+        #mma_results[i] = tuple(mma_results[i])
+    #mma_results = np.asarray(mma_results, dtype=dtype)
+    #pickle.dump(mma_results, open(mma_humans_file, "w"))
+
+    mma_results = pickle.load(open(mma_humans_file, "r"))
+
+    # Compute the MGP human results
+    logging.info("Computing the MGP...")
+    #mgp_results = compute_mgp(jams_files, annotators, trim)
+    #mgp_results = mgp_results.tolist()
+    #for i in xrange(len(track_ids)):
+        #mgp_results[i].append(track_ids[i])
+        #mgp_results[i] = tuple(mgp_results[i])
+    #mgp_results = np.asarray(mgp_results, dtype=dtype)
+    #pickle.dump(mgp_results, open(mgp_humans_file, "w"))
+
+    mgp_results = pickle.load(open(mgp_humans_file, "r"))
 
     # Get MGP machine results
     mgp_results_machine = pickle.load(open(
         "../notes/mgp_experiment_machine.pk", "r"))
 
+    mgp_results_machine2 = np.sort(mgp_results_machine, order="track_id")
+    mgp_results = np.sort(mgp_results, order='track_id')
+
+    for mgp_res, mma_res in zip(mgp_results_machine2, mgp_results):
+        print mgp_res["F3"], mma_res["F3"], mgp_res["track_id"], mma_res["track_id"]
+
+    mgp_results = np.sort(mgp_results, order='F3')
+
     # Plot results
     mgp_results_machine = np.sort(mgp_results_machine, order="track_id")
     mgp_results = np.sort(mgp_results, order="track_id")
-    print "Humans", mgp_results
+    #print "Humans", mgp_results
     #print "Machines", mgp_results_machine
-    fig, ax = plt.subplots()
-    ax.scatter(mgp_results_machine["F3"], mgp_results["F3"])
-    ax.plot([0, 1], [0, 1])
-    ax.set_ylabel("Human results")
-    ax.set_xlabel("Machine results")
-    ax.set_xticks(np.arange(0, 1.1, .1))
-    ax.set_yticks(np.arange(0, 1.1, .1))
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
+    figsize = (4, 4)
+    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+    plt.scatter(mgp_results_machine["F3"], mgp_results["F3"])
+    plt.plot([0, 1], [0, 1])
+    plt.gca().set_ylabel("Human MGP$_{F3}$ results")
+    plt.gca().set_xlabel("Machine MGP$_{F3}$ results")
+    plt.gca().set_xticks(np.arange(0, 1.1, .1))
+    plt.gca().set_yticks(np.arange(0, 1.1, .1))
+    plt.gca().set_xlim(0, 1)
+    plt.gca().set_ylim(0, 1)
+    plt.gcf().subplots_adjust(bottom=0.12, left=0.15)
+
+    alpha = 0.3
+    # Best-humans, worse-machines
+    circle = mpatches.Circle([0.3, 0.79], 0.1, ec="none", color="g",
+                             alpha=alpha)
+    plt.gca().add_artist(circle)
+
+    # Best-humans, worse-machines
+    ellipse = mpatches.Ellipse([0.84, 0.84], 0.1, 0.26, ec="none", color="r",
+                               alpha=alpha)
+    plt.gca().add_artist(ellipse)
+
+    # Worse-humans, worse-machines
+    rectangle = mpatches.Rectangle([0.2, 0.3], 0.2, 0.2, ec="none", color="m",
+                             alpha=alpha)
+    plt.gca().add_artist(rectangle)
+
     plt.show()
 
 
@@ -230,8 +304,8 @@ def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
     """
     all_boundaries = []
     annot_ids = []
-    annot_name_ids_dict = {"GT":"GT", "Colin":"Ann1", "Eleni":"Ann2",
-                           "Evan":"Ann3", "John":"Ann4", "Shuli":"Ann5"}
+    annot_name_ids_dict = {"GT": "GT", "Colin": "Ann1", "Eleni": "Ann2",
+                           "Evan": "Ann3", "John": "Ann4", "Shuli": "Ann5"}
     for key in annotators.keys():
         if key == "GT":
             ds_name = os.path.basename(jam_file).split("_")[0]
@@ -303,6 +377,7 @@ def process(annot_dir, trim=False):
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/Isophonics_01 The Show Must Go On.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Prince_&_The_Revolution-Purple_Rain.jams"
     #jam_file = "/Users/uri/datasets/SubSegments/annotations/Cerulean_Yes-Starship_Trooper:_A._Life_Seeker,_B._Disillu.jams"
+    #jam_file = "/Users/uri/datasets/SubSegments/annotations/SALAMI_546.jams"
     #plot_ann_boundaries(jam_file, annotators, "large_scale")
 
     # Analyze the answers
