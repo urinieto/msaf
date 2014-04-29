@@ -62,20 +62,20 @@
 \section{Introduction}\label{sec:introduction}
 
 TODO.
-The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
-This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
-Music segmentation intro: focusing on boundaries.
+%The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
+%This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
+%Music segmentation intro: focusing on boundaries.
 
-Subjectivity of the task.
+%Subjectivity of the task.
 
-Analysis of how machines do vs humans. Aim to improve automatic algorithms.
+%Analysis of how machines do vs humans. Aim to improve automatic algorithms.
 
-Organization of the paper.
+%Organization of the paper.
 
 \section{Boundaries Evaluation Metrics}\label{sec:evalmetrics}
 
 The boundaries of a given track are usually evaluated using the hit rate metric.
-In this section we review this evaluation, discuss its shortcomings, and explore other metrics that might help addressing our goals.
+In this section we review this evaluation and explore other metrics that might help addressing our goals.
 We refer the human annotated boundaries as \emph{reference}, and the ones identified by an algorithm as \emph{estimated}.
 
 \subsection{Hit Rate}\label{subsec:hitrate}
@@ -117,6 +117,7 @@ If $p(z_k)$ is the probability mass of the bin $k$ of the error histogram, then 
 
 Therefore we obtain a high $D$ if the error distribution is a prominent peak in the histogram (i.e. the error does not vary), whereas $D$ is low, close to 0, if the histogram is uniform (i.e. the error has a high degree of variation and the entropy is high).
 $D$ is bounded between 0 and $\log_2(K)$.
+We normalize this score by dividing it by $\log_2(K)$.
 
 Typically, in the task of beat tracking, histograms of $K=41$ bins are used within the range of $\pm0.5$ seconds.
 In our case, we use $K=250$ and an unrestricted time range in order to capture the higher errors that manifest in the boundary identification task compared to beat tracking.
@@ -126,7 +127,7 @@ In our case, we use $K=250$ and an unrestricted time range in order to capture t
 The presented metrics treat all the boundaries of a given track equally. 
 However, we can argue that the first and last boundaries are trivial to be retrieved (the first boundary should always be placed in time 0, and the last one in the time defined by the duration of the track). 
 This topic was discussed in the music segmentation breaking session of last ISMIR edition\cite{Nieto2013}, and in a recent work by McFee only the trimmed scores are presented\cite{McFee2014}. 
-Nonetheless, in this work we discuss the two versions of each given evaluation: trimmed and not trimmed.
+In this work we only present the trimmed version of the scores.
 
 \section{Machines Identifying Boundaries}\label{sec:eval_desc}
 
@@ -150,10 +151,10 @@ The beats are detected using the multi-feature Essentia's beat tracker, and sync
 
 \subsubsection{Algorithm Selection}
 
-Two principles were applied when selecting the five algorithms to be used in this work: (i) The three different types of algorithms should be represented, and (ii) the reported results of these methods should be competitive when compared with the state of the art.
+Two principles were applied when selecting the five algorithms to be used in this work: (i) The three different types of methodologies to extract boundaries should be represented, and (ii) the reported results of these methods should be competitive when compared with the state of the art.
 Note that this aims to emulate the behavior of having multiple human annotators segmenting the same tracks: not all of them will focus on the same type of boundaries (repetitive, homogeneous, novel), but we hope that all of them manage to retrieve fairly good quality boundaries in the end.
 
-Based on the previous principles, we select five different algorithms:
+Based on the previous principles, we select the following algorithms:
 
 \begin{itemize}
   \item
@@ -170,36 +171,37 @@ Based on the previous principles, we select five different algorithms:
 
 \subsubsection{MSAF Performance}\label{subsub:performance}
 
-We use the Isophonics Beatles dataset\footnote{http://isophonics.net/content/reference-annotations-beatles} in order to compare the performance of these five algorithms implemented in MSAF with their original publications. 
-This dataset is composed by the 180 tracks published by The Beatles and it is commonly used to evaluate music segmentation methods using the F-measure of the hit rate described in section \ref{subsec:hitrate} with a 3 seconds window.
-Some of these algorithms only accept harmonic features (e.g. SI-PLCA), and others are designed to accept a mixture of them (e.g. OLDA).
+We use the Isophonics Beatles dataset\footnote{http://isophonics.net/content/reference-annotations-beatles} in order to show the performance of these five algorithms implemented in MSAF.
+This dataset is composed by the 180 tracks published by The Beatles and it is commonly used to evaluate music segmentation methods using the F-measure of the hit rate described in section \ref{subsec:hitrate} with a 3 seconds window, without trimming the first and last boundary.
+%Some of these algorithms only accept harmonic features (e.g. SI-PLCA), and others are designed to accept a mixture of them (e.g. OLDA).
 
-In Table \ref{tab:machine-algo-performance} a comparison between the reported results (R-F$_3$) and the actual performance obtained with our own implementations in MSAF (M-F$_T$) is shown.
-Note that most of these methods reported better results in their publications.
-We hypothesize that the decrease in performance arises from using slightly different parameters when computing the audio features, and/or by employing beat-synchronous features instead of standard frame-wise features.
-Moreover, there is variation between the scores, especially when comparing the M-F$_3$ scores across algorithms, but we believe it is important to maintain a good representation of all boundary types to better capture the behavior of the machines (e.g. Levy's method is, to the best of our knowledge, the best homogeneous-based segmentation algorithm, but its scores, in the Isophonics Beatles, are not as good as the algorithms that aim to identify boundaries based on novelty only).
+In Table \ref{tab:machine-algo-performance} we show the performance obtained in MSAF for each algorithm, including the type of features used.
+Note that we are reporting the trimmed version of the results (i.e. we do not compare the first and last boundaries), therefore these numbers are much lower than the ones reported in their original publications.
+However, if we were to compare our non-trimmed results (not shown in the table) with the reported results, we would find a small decrease in performance for some algorithms.
+We hypothesize that this arises from using slightly different parameters when computing the audio features, and/or by employing beat-synchronous features instead of standard frame-wise features.
+Moreover, there is variation between the scores, especially when comparing the F$_{0.5}$ scores across algorithms, but we believe it is important to maintain a good representation of all boundary types to better capture the behavior of the machines (e.g. Levy's method is, to the best of our knowledge, the best homogeneous-based segmentation algorithm, but its scores, in the Isophonics Beatles, are not as good as the algorithms that aim to identify boundaries based on novelty only).
 
 \begin{table}
  \begin{center}
- \begin{tabular}{|l|c|c|c|c|}
+   \begin{tabular}{|l|c|c|c|}
   \hline
-  Algorithm & R-F$_3$ & M-F$_3$ & M-F$_{0.5}$ & Feature\\
+  Algorithm & F$_3$ & F$_{0.5}$ & Feature\\
   \hline
-  Foote\tablefootnote{As reported in \cite{Kaiser2010}}     & 53.6 & 52.9 & 37.9 & MFCC\\
-  Levy      & 54.0 & 48.5 & 26.3 & MFCC\\
-  Serr\`a   & 77.4 & 66.5 & 32.5 & HPCP\\
-  SI-PLCA\tablefootnote{As reported in \cite{Nieto2013}}   & 23.2 & 45.1 & 29.4 & HPCP\\
-  OLDA      &  & 58.3 & 37.9 & Mix\\
+  Foote     & 39.35 & 16.80 & MFCC\\
+  Levy      & 31.69 & 5.25 & MFCC\\
+  Serr\`a   & 58.18 & 16.32 & HPCP\\
+  SI-PLCA   & 26.98 & 5.54 & HPCP\\
+  OLDA      & 48.9 & 24.03 & Mix\\
   \hline
  \end{tabular}
 \end{center}
- \caption{Performance of the MSAF in the Isophonics Beatles Dataset.}
+ \caption{Performance of the MSAF in the Isophonics Beatles Dataset with the trimmed boundaries.}
  \label{tab:machine-algo-performance}
 \end{table}
 
 Levy, OLDA and SI-PLCA implementations are available on-line as open source projects written by their first authors.
 Foote and Serr\`a methods were implemented from scratch specifically for this work.
-MSAF is an open-source project, where anyone can contribute with their segmentation algorithms\footnote{Not displayed for revision process.}.
+MSAF is an open-source project, where anyone can contribute with their segmentation algorithms\footnote{URL not displayed for revision process.}.
 
 \subsection{Big Dataset}\label{sub:dataset}
 
@@ -239,53 +241,13 @@ The MGP is the average performance of the 5 algorithms when compared with the hu
 By comparing the MMA with the MGP we can tell how well a specific metric behaves in order to choose the best for our purposes.
 A histogram for each metric is computed by sorting the MMA results and placing their corresponding MGP scores in a 10 bin histogram to easily visualize how well the metric responds in all the different ranges of the score.
 
-In Figure \ref{fig:machine-eval} we can see the histograms of the different metrics, sorted by their MMA value.
-Analogously, in Figure \ref{fig:machine-eval-trim} we find the first and last boundary trimmed versions of the histograms.
+In Figure \ref{fig:machine-eval-trim} we can see the histograms of the different metrics, sorted by their MMA value.
 As opposed to\cite{Holzapfel2012}, where beat trackers tend to agree most of the time, boundary algorithms usually perform far from perfectly.
-Therefore, it is a hard task to tell whether a given track is hard to annotate solely by analyzing the MMA of a specific score.
-We can see that the median deviations (MMA$_{\sigma_{R2E}}$ and MMA$_{\sigma_{E2R}}$, which are normalized using the maximum deviation) are mostly contained in a short range of the histogram, especially MMA$_{\sigma_{E2R}}$.
+Therefore, it is a hard task to tell whether a given track is difficult to annotate solely by analyzing the MMA of a specific score.
+We can see that the median deviations (MMA$_{\sigma_{R2E}}$ and MMA$_{\sigma_{E2R}}$, which are normalized using the maximum deviation time) are mostly contained in a short range of the histogram, especially MMA$_{\sigma_{E2R}}$.
 The information gain (MMA$_D$) is contained in a single histogram bin most of the time, making it difficult to predict hard tracks from just the MMA$_D$, since even in the worst MMA$_D$ track range, we find scores in their respective MPG$_D$ that fall in bins where only the easy tracks should be placed.
 Finally, the MMA$_{F05}$ is too much spread across the histogram bins, with almost a flat spread curve.
 However, the MMA$_{F3}$ seems to be the only metric that ranges almost all the histogram bins from hardest to easiest with a relatively narrow curve.
-
-These metrics (or maybe the task itself) are still not able to predict hard and easy tracks from datasets without human-annotations, but the $F3$ metric qualitatively seems to behave the best of the ones tested here.
-Therefore, we will use this evaluation in order to find the hardest and easiest tracks on our human-annotated dataset.
-
-\begin{figure}
-      \centering
-      \begin{subfigure}[b]{0.25\textwidth}
-              \includegraphics[width=\textwidth]{plots/histo-F05.pdf}
-              %\caption{Histogram of F-measure 0.5}
-              \caption{}
-              \label{fig:histo-F05}
-      \end{subfigure}%
-      ~ 
-      \begin{subfigure}[b]{0.25\textwidth}
-              \includegraphics[width=\textwidth]{plots/histo-F3.pdf}
-              \caption{}
-              \label{fig:histo-F3}
-      \end{subfigure}%
-       
-      \begin{subfigure}[b]{0.25\textwidth}
-              \includegraphics[width=\textwidth]{plots/histo-D.pdf}
-              \caption{}
-              \label{fig:histo-D}
-      \end{subfigure}%
-      ~ 
-      \begin{subfigure}[b]{0.25\textwidth}
-              \includegraphics[width=\textwidth]{plots/histo-DevA2E.pdf}
-              \caption{}
-              \label{fig:histo-DevA2E}
-      \end{subfigure}%
-       
-      \begin{subfigure}[b]{0.25\textwidth}
-              \includegraphics[width=\textwidth]{plots/histo-DevE2A.pdf}
-              \caption{}
-              \label{fig:histo-DevE2A}
-      \end{subfigure}%
-
-      \caption{Non-trimmed MSA vs MGP histograms}\label{fig:machine-eval}
-\end{figure}
 
 \begin{figure}
       \centering
@@ -320,13 +282,16 @@ Therefore, we will use this evaluation in order to find the hardest and easiest 
               \label{fig:histo-DevE2A-trim}
       \end{subfigure}%
 
-      \caption{Trimmed MSA vs MGP histograms}\label{fig:machine-eval-trim}
+      \caption{MMA vs MGP histograms of the Machine-analyzed tracks.}\label{fig:machine-eval-trim}
 \end{figure}
+
+We argue that these metrics (or maybe the task itself) are still not able to predict hard and easy tracks from datasets without human-annotations, but the $F3$ metric qualitatively seems to behave the best of the ones tested here.
+Therefore, we will use this evaluation in order to find the hardest and easiest tracks on our human-annotated dataset.
 
 \subsection{Hardest and Easiest Tracks}\label{sub:hard-easy}
 
 We run our algorithms on our \textbf{BIG} dataset described in Section \ref{sub:dataset} and sort their tracks based on their MGP$_{F3}$ scores.
-Thus, we are able to know which are the tracks of our dataset that machines find easiest and hardest to segment using the metric that coordinates the most with its respective MMA of the algorithms in MSAF.
+Thus, we are able to know which are the tracks of our dataset that machines find easiest and hardest to segment by simply exploring the beginning or the end of the sorted list.
 
 In Figures \ref{fig:quartetto} and \ref{fig:promiscuous} we show examples of the boundaries of all the algorithms for a hard and an easy track, respectively, from a machine point of view.
 The difficult track is a classical piece (string quartet) over 9 minutes long, and we can see the little agreement among algorithms when comparing their extracted boundaries.
@@ -335,14 +300,14 @@ The easy one is a popular dance song that is less than 3 minutes long, with a mu
 \begin{figure}
   \centering
   \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/Quartetto-machine.pdf}
-  \caption{One of the most difficult tracks to segment from a machine point of view.}
+  \caption{Boundaries of one of the most difficult tracks to segment from a machine point of view.}
   \label{fig:quartetto}
 \end{figure}%
 
 \begin{figure}
   \centering
   \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/Promiscuous-machine.pdf}
-  \caption{One of the tracks that machines find easiest to segment.}
+  \caption{Boundaries of one of the tracks that machines find easiest to segment.}
   \label{fig:promiscuous}
 \end{figure}%
 
@@ -379,17 +344,66 @@ This shows how the metric MGP$_{F3}$ is qualitatively working as expected.
 
 We asked 5 music graduate students to identify the boundaries of the \textbf{SMA} dataset.
 Even though it has been shown that the perception of boundaries in music does not depend on the musical background of the participants\cite{Bruderer2009}, these subjects had an average of 11 years of musical training.
-We asked the subjects to identify the boundaries, following the same guidelines as the ones used when collecting the data for SALAMI\cite{Smith2011}.
-The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and for each one they found difficult to segment, they had to describe why by using at least one musical/acoustic adjective.
+We asked the subjects to identify the boundaries, following very similar guidelines as the ones used when collecting the data for SALAMI\cite{Smith2011}\footnote{URL to our guidelines are not displayed for submission}.
+The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and for each one they found difficult to segment, they had to report at least one musical/acoustic tag.
 
 \subsection{Analysis of the Results}
 
+We first compute the MMA of the results of the humans and compare it with their MGP for each one of the metrics (see Figure \ref{fig:human-eval}).
+One would expect to find a strong agreement, since we are simply comparing a human annotation (the original ground-truth) with 5 other human-annotated results from the experiment.
+However, these plots show that the agreement is far from perfect, indicating the inherent complexity of the task, which tends to be highly subjective in multiple occasions.
+We also see that F$_3$ is still the metric that could better predict hard and easy tracks to segment, this time from a human point of view, even though it might be not good enough.
+Therefore, even if machines would obtain results similar to those obtained by humans, we would need other evaluations or datasets in order to automatically predict the difficulty of a given track.
+
+\begin{figure}
+      \centering
+      \begin{subfigure}[b]{0.25\textwidth}
+              \includegraphics[width=\textwidth]{plots/histo-human-F05.pdf}
+              %\caption{Histogram of F-measure 0.5}
+              \caption{}
+              \label{fig:histo-human-F05}
+      \end{subfigure}%
+      ~ 
+      \begin{subfigure}[b]{0.25\textwidth}
+              \includegraphics[width=\textwidth]{plots/histo-human-F3.pdf}
+              \caption{}
+              \label{fig:histo-human-F3}
+      \end{subfigure}%
+       
+      \begin{subfigure}[b]{0.25\textwidth}
+              \includegraphics[width=\textwidth]{plots/histo-human-D.pdf}
+              \caption{}
+              \label{fig:histo-human-D}
+      \end{subfigure}%
+      ~ 
+      \begin{subfigure}[b]{0.25\textwidth}
+              \includegraphics[width=\textwidth]{plots/histo-human-DevA2E.pdf}
+              \caption{}
+              \label{fig:histo-human-DevA2E}
+      \end{subfigure}%
+       
+      \begin{subfigure}[b]{0.25\textwidth}
+              \includegraphics[width=\textwidth]{plots/histo-human-DevE2A.pdf}
+              \caption{}
+              \label{fig:histo-human-DevE2A}
+      \end{subfigure}%
+
+      \caption{MMA vs MGP histograms of the Human-analyzed tracks.}\label{fig:human-eval}
+\end{figure}
+
+After sorting the human results using the MGP$_{F3}$, we can easily examine the worst and best results from a human perspective.
+In Figures \ref{fig:starship-human} and \ref{fig:promiscuous-human} we show examples of the most difficult and easiest tracks, respectively, from a human perspective.
+In this case, one of the most difficult tracks is a 9 minute long progressive rock song by Yes.
+We see that the original annotator (marked as GT) over-segmented the track compared with the subjects of the experiment.
+However, there are some very prominent boundaries that all the annotators identified (e.g. in second 337 a sudden change in timbre and harmony occurs, changing from a complex part with all the instruments of the rock band to a clean guitar solo repeating a simple chord pattern).
+On the other hand, one of the easiest tracks to segment from a human perspective coincides with the one exemplified for machines (see Figure \ref{fig:promiscuous}).
+The mutual agreement of this track is quite high, especially for F$_3$, since there are a few boundaries that some subjects misplaced a few seconds before/after the original GT annotation.
 
 \begin{figure}
   \centering
   \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/StarshipTrooper-human.pdf}
   \caption{One of the most difficult tracks to segment from a human point of view.}
-  \label{fig:quartetto-human}
+  \label{fig:starship-human}
 \end{figure}%
 
 \begin{figure}
@@ -399,11 +413,83 @@ The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment 
   \label{fig:promiscuous-human}
 \end{figure}%
 
+We investigate the influence of the duration of the tracks as we did for the machines.
+In this case, the duration does not seem to correlate much with the performance of the subjects, as shown in Figure \ref{fig:humansdur}.
+However, most of these tracks were over 5 minutes long, so we should have a broader dataset in order to formally conclude that duration is not an important factor for humans when identifying boundaries.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth, height=0.13\textheight]{plots/humans-duration.pdf}
+  \caption{Duration of all the tracks in the \textbf{SMA} dataset.}
+  \label{fig:humansdur}
+\end{figure}%
+
+When analyzing the answers from the subjects, in order to know what are the audio features that make it hard to segment the song we see that the longer tracks were the ones that humans found most difficult to segment from a subjective perspective.
+Another factor was the repetitiveness quality of the song: if the song is either too repetitive or too little repetitive makes it harder to segment for humans.
+The jazz improvisations were also reported as hard to segment, which might also have to do with the fact that some tracks were notoriously hard to segment because they were difficult to memorize.
+(TODO: Add histogram of tags?).
+
 \section{Machines vs Humans}\label{section:m-vs-h}
 
-Plot comparing MGP-machines vs MGP-humans.
+In the histograms comparing the MMA and MGP of the machines and humans (Figures \ref{fig:machine-eval-trim} and \ref{fig:human-eval}) we see that humans tend to agree with the original ground truth much more than machines (note that for metrics F$_3$, F$_{0.5}$ and $D$ the energy in the histograms is located in much higher bins).
+This is interesting by itself, since it implies that there is still room for improvement in the boundary algorithms.
 
-Analyze the answers, display most common problems in a table.
+One of our main goals is to identify those tracks that machines find difficult to segment while humans can do a good job about it.
+In order to do so, we compare the MGP$_{F3}$ between machines and humans for all the tracks in \textbf{SMA}, and plot the comparison in Figure \ref{fig:machines-vs-humans}.
+In this plot we can see two main clusters of tracks: the ones that machines find easy to segment (dots in the upper right corner), and the ones that have been identified as hard (dots on the left).
+Marked in the plot are the easy tracks for both machines and humans (red ellipse), the hard tracks for both as well (magenta square), and the hard and easy tracks for machines and humans respectively (green circle).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.45\textwidth, height=0.28\textheight]{plots/machines-vs-humans.pdf}
+  \caption{Comparison between the MGP$_{F3}$ of Machines and Humans.}
+  \label{fig:machines-vs-humans}
+\end{figure}%
+
+\subsection{Easy tracks for both}
+
+Marked with a red ellipse are the 5 tracks that were identified as easy by machines.
+We can see that humans agree with machines in this case, obtaining high scores as well.
+These tracks are mostly popular dance and rock songs with a simple structure and short duration.
+
+\subsection{Hard tracks for both}
+
+These tracks are marked with a magenta square, and they tend to be the longest ones in \textbf{SMA}.
+Humans apparently have a hard time segmenting these tracks, so we can not expect machines to do a better work in general.
+Therefore, we are not genuinely interested in this subset of tracks, since they can not help us improve the current state-of-the-art boundary algorithms.
+Examples of these tracks are Starship Trooper by Yes, or flamenco improvisations.
+
+\subsection{Machine Hard vs Human Easy}
+
+In this subset of tracks we might find relevant information in order to improve automatic algorithms to identify boundaries.
+We analyze the 12 tracks marked with a green circle, which are the ones that are easy to segment from a human point of view and hard from a machine perspective.
+
+To start with, 10 of these tracks contain either live performances or genres where the tempo slightly varies.
+This might make the beat tracker fail, which results in a worse performance for machines when using beat-synchronous features.
+Interestingly, 6 out 12 of these tracks are slightly out of tune.
+This makes the algorithms that rely solely on harmonic features like HPCP to fail, while humans do a good job about it.
+5 of these tracks are longer than 8 minutes, but in this case this does not seem to affect humans, since in all of these long tracks the parts were very differentiated (e.g. the jazz improvisation in SALAMI 444 has applauses in between solos, which clearly mark a boundary between its different segments).
+An interesting track is SALAMI 584, where a sax plays the popular melody of ``Over the Rainbow''.
+The rhythm of the sax is quite expressive, with high tempo variations, but the fact that it plays a very familiar melody makes it easy to segment from a human point of view.
+
+
+
+%SALAMI 546: Out of tune, expressive timing.
+%Cerulean Bob Dylan Like a Rolling Stone: Out of tune, live version, expressive timing.
+%Cerulean Bob Dylan Hurricane: Out of tune, live version, expressive timing.
+%Cerulean Leonard Bern: Classical, long, expressive timing.
+%SALAMI 584: Interesting jazz version of Over The Rainbow.
+%SALAMI 12: expressive timing, only voice, complex harmony
+%Isophonics Don't pass me by: Out of tune (violin)
+%SALAMI 1198: Long, jazz improvisations
+%SALAMI 1324: Out of tune, live recording, expressive timing
+%SALAMI 20: Blues improvisation, expressive timing
+%SALAMI 278: Classical music, expressive timing
+%SALAMI 444: JAzz improvisation, exprissive timing, long
+
+
+
+
 
 %\begin{table}
  %\begin{center}
@@ -428,7 +514,9 @@ Analyze the answers, display most common problems in a table.
 
 \section{Conclusions}
 
-Identified some audio properties that could improve the automatic segmentation algorithms.
+TODO.
+
+%Identified some audio properties that could improve the automatic segmentation algorithms.
 
 
 %\begin{thebibliography}{citations}
