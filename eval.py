@@ -135,7 +135,6 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
 
     try:
         if annotator == "GT" or annotator == 0:
-            annotator = 0
             ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
                 "sections", annotator=0, context=MSAF.prefix_dict[ds_prefix])
         else:
