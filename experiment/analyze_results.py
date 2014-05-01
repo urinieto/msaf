@@ -33,6 +33,32 @@ import msaf_io as MSAF
 import eval as EV
 import jams2
 
+annotators = OrderedDict()
+annotators["GT"] = {
+    "name"  : "GT",
+    "email" : "TODO"
+}
+annotators["Colin"] = {
+    "name"  : "Colin",
+    "email" : "colin.z.hua@gmail.com"
+}
+annotators["Eleni"] = {
+    "name"  : "Eleni",
+    "email" : "evm241@nyu.edu"
+}
+annotators["Evan"] = {
+    "name"  : "Evan",
+    "email" : "esj254@nyu.edu"
+}
+annotators["John"] = {
+    "name"  : "John",
+    "email" : "johnturner@me.com"
+}
+annotators["Shuli"] = {
+    "name"  : "Shuli",
+    "email" : "luiseslt@gmail.com"
+}
+
 
 def get_track_ids(annot_dir):
     """Obtains the track ids of all the files contained in the experiment.
@@ -167,7 +193,7 @@ def compute_mgp(jams_files, annotators, trim):
     return mgp_results
 
 
-def compute_mma_results(jam_file, annotators, trim, bins=250):
+def compute_mma_results(jam_file, annotators, trim, bins=250, gt=False):
     """Compute the Mean Measure Agreement for all the algorithms of the given
     file jam_file.
 
@@ -191,11 +217,20 @@ def compute_mma_results(jam_file, annotators, trim, bins=250):
     """
     context = "large_scale"
     results_mma = []
-    for names in itertools.combinations(annotators.keys()[1:], 2):
+    if gt:
+        keys = annotators.keys()
+    else:
+        keys = annotators.keys()[1:]
+    for names in itertools.combinations(keys, 2):
         # Read estimated times from both algorithms
-        est_inters1, est_labels1 = jams2.converters.load_jams_range(jam_file,
-                            "sections", annotator_name=names[0],
-                            context=context)
+        if names[0] == "GT":
+            ds_name = os.path.basename(jam_file).split("_")[0]
+            ann_context = MSAF.prefix_dict[ds_name]
+            est_inters1, est_labels1 = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator=0, context=ann_context)
+        else:
+            est_inters1, est_labels1 = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator_name=names[0], context=context)
         est_inters2, est_labels2 = jams2.converters.load_jams_range(jam_file,
                             "sections", annotator_name=names[1],
                             context=context)
@@ -203,7 +238,8 @@ def compute_mma_results(jam_file, annotators, trim, bins=250):
             continue
 
         # Compute results
-        print est_inters1, est_inters2, jam_file, names
+        #print est_inters1, est_inters2, jam_file, names
+        #print names
         results = EV.compute_results(est_inters1, est_inters2, trim, bins,
                                      jam_file)
         results_mma.append(results)
@@ -355,33 +391,6 @@ def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
 def process(annot_dir, trim=False):
     """Main process to parse all the results from the results_dir
         to out_dir."""
-
-    # Now compute all the metrics
-    annotators = OrderedDict()
-    annotators["GT"] = {
-        "name"  : "GT",
-        "email" : "TODO"
-    }
-    annotators["Colin"] = {
-        "name"  : "Colin",
-        "email" : "colin.z.hua@gmail.com"
-    }
-    annotators["Eleni"] = {
-        "name"  : "Eleni",
-        "email" : "evm241@nyu.edu"
-    }
-    annotators["Evan"] = {
-        "name"  : "Evan",
-        "email" : "esj254@nyu.edu"
-    }
-    annotators["John"] = {
-        "name"  : "John",
-        "email" : "johnturner@me.com"
-    }
-    annotators["Shuli"] = {
-        "name"  : "Shuli",
-        "email" : "luiseslt@gmail.com"
-    }
 
     # Plot
     ann_dir = "/Users/uri/datasets/SubSegments/annotations/"
