@@ -183,33 +183,35 @@ Now that we can easily rank the tracks of the \textbf{BIG} dataset based on the 
 One of the first ideas, that has been investigated before for the tasks of beat tracking \cite{Grosche2010} and chord recognition \cite{Ni2013}, is the problem of subjectivity.
 After listening to various hard tracks, we hypothesize that subjectivity might play a strong role in the detection of music boundaries, and we see why this may be actually the case in the next section. 
 
-\section{Testing the Subjectivity Hypothesis}
+\section{Is This Task Really Subjective?}
 
-One of the most fundamental problems of music segmentation is the lack of a formal and standard definition of \textit{section} or \textit{boundary}. 
-The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the audio of the hardest tracks: some boundaries seem rather arbitrary, leaving the final decision to the annotator. 
+One of the most fundamental problems of music segmentation is the lack of a standard definition of \textit{section} or \textit{boundary}. 
+The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the audio of the hardest tracks: some boundaries seem rather arbitrary, leaving the final decision to the annotator, which might not agree with others.
 In this work we set up an experiment in order to test the amount of agreement of the boundaries among subjects as a way of exploring the degree of subjectivity of this task
 
-Using the technique described in Section \ref{sub:hard-easy}, we create a small dataset that we refer as \textbf{SMA} by selecting the hardest 45 tracks and the easiest 5 from the \textbf{BIG} dataset that meet the following requirements: (i) they are no longer than 10 minutes long, and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
+\subsection{Small Dataset}
+
+Using the technique described in Section \ref{sub:hard-easy}, we create a small dataset that we refer to as \textbf{SMA} by selecting the hardest 45 tracks and the easiest 5 from the \textbf{BIG} dataset that meet the following requirements: (i) they are no longer than 10 minutes long (we want to keep the experiment time as low as possible to facilitate the work of the annotators and investigate a larger subset of tracks), and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
 
 We filtered 6 tracks that agreed with one of these two principles in the hardest 45 (2 tracks were over 10 minutes and 4 tracks were only speech). 
-Moreover, the average length for each song for the entire dataset is 244.1 seconds, whereas the average track length for the 45 hardest tracks selected (once we filtered the ones that met the defined criteria) is 348.5 seconds.
+Moreover, the average length for each song for the entire dataset is 244.1 seconds, whereas the average track length for the 45 hardest tracks selected (once we filtered the ones that met the defined criteria) is 348.5 seconds, which suggests a relation between difficulty and track length.
 The 45 hardest tracks are composed by 8 tracks from the Cerulean dataset, 32 from the SALAMI dataset, and 5 from the Isophonics set.
 It is interesting to note that no Epiphyte track was selected as difficult, even when almost half of the tracks in the \textbf{BIG} dataset are from the Epiphyte subset.
 On the other hand, the easiest 5 tracks were composed of 3 Epiphyte tracks, 1 Isophonics, and 1 pop-rock SALAMI.
-This shows how the metric MGP is qualitatively working as expected.
+This suggests how the metric MGP is qualitatively working as expected.
 
 
 \subsection{Collecting Additional Human Annotations}
 
 We asked 5 music graduate students to identify the boundaries of the \textbf{SMA} dataset.
 Even though it has been shown that the perception of boundaries in music does not depend on the musical background of the participants\cite{Bruderer2009}, these subjects had an average of 15 years of musical training.
-We asked the subjects to identify the boundaries, following very similar guidelines as the ones used when collecting the data for SALAMI\cite{Smith2011}\footnote{URL to our guidelines are not displayed for submission}.
-The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and for each one they found difficult to segment, they had to report at least one musical/acoustic tag.
+We asked them to identify the boundaries, following very similar guidelines as the ones used when collecting the data for SALAMI\cite{Smith2011}\footnote{URL to our guidelines are not displayed for submission}.
+The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and they had to report at least one musical/acoustic tag for each one they found difficult to segment.
 We start the analysis by taking a closer look to the reported tags.
 
 \subsection{Tags: What makes a song difficult to segment?}
 
-We analyzed all the reported tracks and qualitatively decided that all of them could fall into five main categories:
+We investigated all the reported tags and qualitatively clustered them into five main categories:
 
 \begin{itemize}
   \item
@@ -224,18 +226,19 @@ We analyzed all the reported tracks and qualitatively decided that all of them c
     \textbf{Form}: This group includes the tags related with the actual structure of the piece. Examples: ``long'', ``repetitive'', ``varied''.
 
   \item
-    \textbf{Instrumentation}: Various tags that had to do with instrument peculiarities were also reported. Examples: ``vocals only'', ``instrumental''.
+    \textbf{Instrumentation}: Various tags that have to do with instrument peculiarities were also reported and included in this group. Examples: ``vocals only'', ``instrumental''.
 
   \item
-    \textbf{Sytle}: The final group is the one related with the music genre of the piece, which includes, among other qualities, the speed and the homogeneity of the track. Examples: ``fast'', ``jazz''.
+    \textbf{Style}: The final group is the one related with the music genre of the piece, which includes, among other qualities, the speed and the homogeneity of the track. Examples: ``fast'', ``jazz''.
 \end{itemize}
 
-In Figure \ref{fig:difficult-tags-type} the frequency of each tag group is shown, and it can be seen that two main groups dominate the histogram: style and form.
-In terms of style, we hypothesize that there will be a strong biased depending on the preferred music genre of the subjects.
-For example, there was considerable agreement of finding the jazz pieces difficult to segment, while all the subjects were classically trained.
+In Figure \ref{fig:difficult-tags-type} the frequency of each tag group is shown, and it can be seen that two main clusters dominate the histogram: style and form.
+In terms of style, we hypothesize that there will be a strong bias depending on the preferred music genre of the subjects.
+For example, there was considerable agreement on finding the jazz pieces difficult to segment, while all the subjects were classically trained.
 On the other hand, the most reported tag of all the collection was the variability of a track, which falls in the form group.
 Other important tags inside this group are the extended duration of some pieces and the amount of repetition.
-Now that we know hat are the main qualities that make some tracks difficult to segment from a human perspective we aim to explore the amount of agreement across subjects in order to better understand the amount of subjectivity for this task.
+
+Now that we have a better idea of the main qualities that make some tracks difficult to segment from a human perspective we aim to explore the amount of agreement across subjects in order to better understand the degree of subjectivity for this task.
 
 
 \begin{figure}
@@ -252,10 +255,10 @@ This would help us understand two main properties of the human data: (i) the deg
 Note that we are not analyzing the new annotated boundaries yet, but only the reported subjective \textit{feeling} of degree of difficulty for all the given tracks.
 
 In Figure \ref{fig:difficulty-human} we see how many annotators reported at least one tag for each track in the \textbf{SMA} dataset.
-At a first glance we already see how the number of annotators reporting tags is almost uniformly distributed across the dataset, showing the lack of subjective agreement 
+At a first glance we already see how the number of annotators reporting tags is almost uniformly distributed across the dataset, illustrating the lack of agreement. 
 The five tracks considered easy from a machine perspective are marked with a green rectangle, and based on where they are located in the plot we can see that tracks that machines found easy, humans generally find easy too.
 The two easy tracks from a machine perspective that contain one tag each are fairly short (a few seconds under a minute), and the reported tag, which is the same for both tracks, is precisely this: ``too short''.
-We will go back to these tracks when performing the analysis of the boundaries.
+We will go back to these tracks when performing the analysis of the boundary annotations.
 
 \begin{figure}
   \centering
@@ -267,10 +270,26 @@ We will go back to these tracks when performing the analysis of the boundaries.
 %This may seem counterintuitive, since the longer the piece the harder it might seem to be segmented, but nevertheless only one subject reported difficulty when the track is too short, so it is not consistent with the rest of the subjects.
 
 
-So far, we have already seen that subjectivity might play an important role when evaluating music boundaries, at least from the qualitative perception of subjects.
-We will now analyze the actual boundaries that subjects annotated to evaluate the degree of disagreement.
+We have seen that subjectivity might play an important role when evaluating music boundaries, at least from the qualitative perception of subjects.
+Now we will analyze the actual boundaries that subjects annotated to evaluate the degree of disagreement from a more objective data.
 
-explore what multiple human perspectives can tell you about a consistently bad datapoint
+\subsection{Analysis of the Multiple Human Boundaries}
+
+In order to quantify the level of agreement between human annotations, we use the Mean Mutual Agreement (MMA) \cite{Holzapfel2012}.
+Instead of comparing all the annotations against one ground truth (as we did in Section \ref{sub:hard-easy} using the MGP), we compare all the annotations with each other, since we might consider that now we have \textit{multiple ground truths}.
+MMA does this exact work for us.
+In our case, the MMA does 15 comparisons ($N(N-1)/2$, where $N=6$ human annotations) using the hit rate measure with a 3 seconds window.
+The amount of agreement is depicted in Figure \ref{fig:annot-agreement} where it becomes apparent that our annotators never agree with each other on this dataset more than at 65\% of the hit rate measure.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.35\textwidth]{plots/annot-agreement.pdf}
+  \caption{One of the most difficult tracks to segment from a human point of view.}
+  \label{fig:annot-agreement}
+\end{figure}%
+
+% TODO?:
+%explore what multiple human perspectives can tell you about a consistently bad datapoint
 
 \subsection{What happens if different annotations are ground truth?}
 
