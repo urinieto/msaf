@@ -93,7 +93,7 @@ TODO.
 
 \section{Methodology and Setup}\label{sec:prelExp}
 
-How to figure out that segmentation is failing.
+How to figure out that segmentation is a difficult task.
 
 \subsection{Big Dataset}
 
@@ -191,6 +191,9 @@ Now that we can easily rank the tracks of the \textbf{BIG} dataset based on the 
 One of the first ideas, that has been investigated before for the tasks of beat tracking \cite{Grosche2010} and chord recognition \cite{Ni2013}, is the problem of subjectivity.
 After listening to various hard tracks, we hypothesize that subjectivity might play a strong role in the detection of music boundaries, and we see why this may be actually the case in the next section. 
 
+
+\subsection{Rank Stability Introduction and Stability of the Datasets}
+
 \subsection{Small Dataset}
 
 Using the technique described in Section \ref{sub:hard-easy}, we create a small dataset that we refer to as \textbf{SMA} by selecting the hardest 45 tracks and the easiest 5 from the \textbf{BIG} dataset that meet the following requirements: (i) they are no longer than 10 minutes long (we want to keep the experiment time as low as possible to facilitate the work of the annotators and investigate a larger subset of tracks), and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
@@ -202,15 +205,14 @@ It is interesting to note that no Epiphyte track was selected as difficult, even
 On the other hand, the easiest 5 tracks were composed of 3 Epiphyte tracks, 1 Isophonics, and 1 pop-rock SALAMI.
 This suggests how the metric MGP is qualitatively working as expected.
 
-\section{Qualitative Explorations}
+\section{Acquiring Multiple Human Annotations}
 
 One of the most fundamental problems of music segmentation is the lack of a standard definition of \textit{section} or \textit{boundary}. 
 The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the audio of the hardest tracks: some boundaries seem rather arbitrary, leaving the final decision to the annotator, which might not agree with others.
 In this work we set up an experiment in order to test the amount of agreement of the boundaries among subjects as a way of exploring the degree of subjectivity of this task
 
 
-
-\subsection{Collecting Additional Human Annotations (Methodology)}
+\subsection{Methodology}
 
 We asked 5 music graduate students to identify the boundaries of the \textbf{SMA} dataset.
 Even though it has been shown that the perception of boundaries in music does not depend on the musical background of the participants\cite{Bruderer2009}, these subjects had an average of 15 years of musical training.
@@ -218,7 +220,7 @@ We asked them to identify the boundaries, following very similar guidelines as t
 The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and they had to report at least one musical/acoustic tag for each one they found difficult to segment.
 We start the analysis by taking a closer look to the reported tags.
 
-\subsection{Tags: What makes a song difficult to segment?}
+\subsection{Qualitative Analysis of Difficulty}
 
 We investigated all the reported tags and qualitatively clustered them into five main categories:
 
@@ -257,7 +259,7 @@ Now that we have a better idea of the main qualities that make some tracks diffi
   \label{fig:difficult-tags-type}
 \end{figure}%
 
-\subsection{Tags: Agreement}
+\subsection{Tags Agreement}
 
 Since tags were only submitted if humans found a specific track difficult to segment, we can easily check how uniformly humans reported tags for all the tracks of the \textbf{SMA} dataset.
 This would help us understand two main properties of the human data: (i) the degree of consistency when agreeing whether a track is difficult or not, and (ii) whether this agreement coordinates with the difficulty of segmenting tracks from a machine point of view.
@@ -284,6 +286,7 @@ Now we will analyze the actual boundaries that subjects annotated to evaluate th
 
 Now we looked at the surface, now we're gonna look at this more closely.
 
+
 \section{Quantitative Explorations}
 
 \subsection{Analysis of the Multiple Human Boundaries}
@@ -304,7 +307,7 @@ The amount of agreement is depicted in Figure \ref{fig:human-agreement} where it
 % TODO?:
 %explore what multiple human perspectives can tell you about a consistently bad datapoint
 
-\subsection{What happens if different annotations are ground truth?}
+\subsection{Using Multiple Annotations as Ground-truth}
 
 Turns out, everything still sucks. Why? because the notion of “Ground truth” is flawed for some tracks.
 
@@ -314,11 +317,10 @@ Treat each track differently, rank order metric over each track
 
 stability = average\_algo\_rank for all annotations for all tracks (300x)
 
-\subsection{Why is GT flawed? Because for some datapoints it’s subjective.}
+\subsection{Weight Boundaries and Evaluate}
 
 How subjective? Quite, for this particular subset. Name chords as a point of comparison, but realize that we cannot justify global subjectivity (i.e. boundary estimation can be subjective. not always, but certainly here). ≈75%, vs 90% for chords
 
-\subsection{Wait, only some datapoints?}
 
 Evidence A: Ya, we can look at ??? (x) versus MMA of annotators (y) as a scatter plot, showing that there’s a spectrum to this subjectivity (insanity).
 
@@ -326,7 +328,6 @@ Evidence B: Annotator Tags
 
 ScatPlot: \# of tags vs MMA
 
-\subsection{Okay, it can be subjective. Then what?}
 
 Well, if you average multiple reference annotations, the rank order stability metric is more consistent (hopefully)
 
