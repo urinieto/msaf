@@ -93,33 +93,6 @@ TODO.
 
 \section{Methodology and Setup}\label{sec:prelExp}
 
-How to figure out that segmentation is failing.
-
-\subsection{Big Dataset}
-
-To explore the difficulties of automatic methods when identifying music boundaries, we collected a large human annotated dataset of 2156 tracks that we refer to as \textbf{BIG} and is composed of four different subsets: Isophonics, SALAMI, Cerulean, and Epiphyte.
-
-\begin{itemize}
-  \item
-    \textbf{Isophonics}\footnote{http://isophonics.net/datasets}: This is the most common human-annotated dataset to analyze segmentation algorithms. 
-    It is composed of 300 tracks of pop rock music by The Beatles, Queen, Michael Jackson, and others.
-
-  \item
-    \textbf{SALAMI}\cite{Smith2011}: The largest dataset with human-annotations for music segmentation published to date. 
-    It is a set of over 700 tracks of a wide variety of genres, including classic, folk, world music, jazz, blues, and rock.
-    Some of these music genres can be particularly challenging to segment, both for machines and humans, as we will see in Section TODO. %\ref{section:m-vs-h}.
-
-  \item
-    \textbf{Cerulean}: This dataset is a private annotation from a company that would like to remain anonymous.
-    It is composed by 102 particularly challenging tracks, including progressive rock, death metal, and classical music.
-
-  \item
-    \textbf{Epiphyte}: This is another private dataset from yet another anonymous company.
-    In this case over 1000 tracks were human-annotated, most of them being short pop rock and electronic songs.
-    The intuition is that these should be fairly easy tracks to segment, due to their simple musical structures.
-
-\end{itemize}
-
 \subsection{Music Structural Analysis Framework}
 
 We select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results. 
@@ -164,6 +137,41 @@ These hits are then used to compute three scores: the Precision ($P$, number of 
   F = 2 \frac{P R}{P + R}
 \end{equation}
 
+\subsection{Big Dataset}
+
+To explore the difficulties of automatic methods when identifying music boundaries, we collected a large human annotated dataset of 2156 tracks that we refer to as \textbf{BIG} and is composed of four different subsets: Isophonics, SALAMI, Cerulean, and Epiphyte.
+
+\begin{itemize}
+  \item
+    \textbf{Isophonics}\footnote{http://isophonics.net/datasets}: This is the most common human-annotated dataset to analyze segmentation algorithms. 
+    It is composed of 300 tracks of pop rock music by The Beatles, Queen, Michael Jackson, and others.
+
+  \item
+    \textbf{SALAMI}\cite{Smith2011}: The largest dataset with human-annotations for music segmentation published to date. 
+    It is a set of over 700 tracks of a wide variety of genres, including classic, folk, world music, jazz, blues, and rock.
+    Some of these music genres can be particularly challenging to segment, both for machines and humans, as we will see in Section TODO. %\ref{section:m-vs-h}.
+
+  \item
+    \textbf{Cerulean}: This dataset is a private annotation from a company that would like to remain anonymous.
+    It is composed by 102 particularly challenging tracks, including progressive rock, death metal, and classical music.
+
+  \item
+    \textbf{Epiphyte}: This is another private dataset from yet another anonymous company.
+    In this case over 1000 tracks were human-annotated, most of them being short pop rock and electronic songs.
+    The intuition is that these should be fairly easy tracks to segment, due to their simple musical structures.
+
+\end{itemize}
+
+\subsection{Rank Stability Introduction and Stability of the Big Dataset}
+
+TODO: Eric
+
+\section{Acquiring Multiple Human Annotations}
+
+One of the most fundamental problems of music segmentation is the lack of a standard definition of \textit{section} or \textit{boundary}. 
+The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the audio of the hardest tracks: some boundaries seem rather arbitrary, leaving the final decision to the annotator, which might not agree with others.
+In this work we set up an experiment in order to test the amount of agreement of the boundaries among subjects as a way of exploring the degree of subjectivity of this task
+
 \subsection{Selection of Hardest and Easiest Tracks}\label{sub:hard-easy}
 
 We run our algorithms on our \textbf{BIG} dataset and sort their tracks based on their Mean Ground-truth Performance (MGP) using the hit rate at 3 seconds.
@@ -202,15 +210,7 @@ It is interesting to note that no Epiphyte track was selected as difficult, even
 On the other hand, the easiest 5 tracks were composed of 3 Epiphyte tracks, 1 Isophonics, and 1 pop-rock SALAMI.
 This suggests how the metric MGP is qualitatively working as expected.
 
-\section{Qualitative Explorations}
-
-One of the most fundamental problems of music segmentation is the lack of a standard definition of \textit{section} or \textit{boundary}. 
-The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the audio of the hardest tracks: some boundaries seem rather arbitrary, leaving the final decision to the annotator, which might not agree with others.
-In this work we set up an experiment in order to test the amount of agreement of the boundaries among subjects as a way of exploring the degree of subjectivity of this task
-
-
-
-\subsection{Collecting Additional Human Annotations (Methodology)}
+\subsection{Methodology}
 
 We asked 5 music graduate students to identify the boundaries of the \textbf{SMA} dataset.
 Even though it has been shown that the perception of boundaries in music does not depend on the musical background of the participants\cite{Bruderer2009}, these subjects had an average of 15 years of musical training.
@@ -218,7 +218,7 @@ We asked them to identify the boundaries, following very similar guidelines as t
 The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and they had to report at least one musical/acoustic tag for each one they found difficult to segment.
 We start the analysis by taking a closer look to the reported tags.
 
-\subsection{Tags: What makes a song difficult to segment?}
+\subsection{Qualitative Analysis of Difficulty}
 
 We investigated all the reported tags and qualitatively clustered them into five main categories:
 
@@ -249,15 +249,21 @@ Other important tags inside this group are the extended duration of some pieces 
 
 Now that we have a better idea of the main qualities that make some tracks difficult to segment from a human perspective we aim to explore the amount of agreement across subjects in order to better understand the degree of subjectivity for this task.
 
+TODO: Eric: Include the tags figure
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.47\textwidth]{plots/difficult-tags-type.pdf}
-  \caption{TODO}
-  \label{fig:difficult-tags-type}
-\end{figure}%
+%\begin{figure}
+  %\centering
+  %\includegraphics[width=0.47\textwidth]{plots/difficult-tags-type.pdf}
+  %\caption{TODO}
+  %\label{fig:difficult-tags-type}
+%\end{figure}%
 
-\subsection{Tags: Agreement}
+
+
+
+\section{Quantitative Explorations}
+
+\subsection{Tags Agreement}
 
 Since tags were only submitted if humans found a specific track difficult to segment, we can easily check how uniformly humans reported tags for all the tracks of the \textbf{SMA} dataset.
 This would help us understand two main properties of the human data: (i) the degree of consistency when agreeing whether a track is difficult or not, and (ii) whether this agreement coordinates with the difficulty of segmenting tracks from a machine point of view.
@@ -268,6 +274,8 @@ At a first glance we already see how the number of annotators reporting tags is 
 The five tracks considered easy from a machine perspective are marked with a green rectangle, and based on where they are located in the plot we can see that tracks that machines found easy, humans generally find easy too.
 The two easy tracks from a machine perspective that contain one tag each are fairly short (a few seconds under a minute), and the reported tag, which is the same for both tracks, is precisely this: ``too short''.
 We will go back to these tracks when performing the analysis of the boundary annotations.
+
+TODO: Use Eric Figure to comment on this, and remember to talk about the control group.
 
 %\begin{figure}
   %\centering
@@ -283,8 +291,6 @@ We have seen that subjectivity might play an important role when evaluating musi
 Now we will analyze the actual boundaries that subjects annotated to evaluate the degree of disagreement from a more objective data.
 
 Now we looked at the surface, now we're gonna look at this more closely.
-
-\section{Quantitative Explorations}
 
 \subsection{Analysis of the Multiple Human Boundaries}
 
@@ -304,7 +310,9 @@ The amount of agreement is depicted in Figure \ref{fig:human-agreement} where it
 % TODO?:
 %explore what multiple human perspectives can tell you about a consistently bad datapoint
 
-\subsection{What happens if different annotations are ground truth?}
+\subsection{Using Multiple Annotations as Ground-truth}
+
+TODO: Eric: Add the figure about the ranking of the algorithms depending on GT.
 
 Turns out, everything still sucks. Why? because the notion of “Ground truth” is flawed for some tracks.
 
@@ -314,11 +322,12 @@ Treat each track differently, rank order metric over each track
 
 stability = average\_algo\_rank for all annotations for all tracks (300x)
 
-\subsection{Why is GT flawed? Because for some datapoints it’s subjective.}
+\subsection{Weight Boundaries and Evaluate}
+
+TODO: Eric: Talk about the stability depending on the annotator used. See how it is much more stable when we aggregate them.
 
 How subjective? Quite, for this particular subset. Name chords as a point of comparison, but realize that we cannot justify global subjectivity (i.e. boundary estimation can be subjective. not always, but certainly here). ≈75%, vs 90% for chords
 
-\subsection{Wait, only some datapoints?}
 
 Evidence A: Ya, we can look at ??? (x) versus MMA of annotators (y) as a scatter plot, showing that there’s a spectrum to this subjectivity (insanity).
 
@@ -326,7 +335,6 @@ Evidence B: Annotator Tags
 
 ScatPlot: \# of tags vs MMA
 
-\subsection{Okay, it can be subjective. Then what?}
 
 Well, if you average multiple reference annotations, the rank order stability metric is more consistent (hopefully)
 
@@ -339,6 +347,31 @@ Find a way to assess what tracks warrant multiple perspectives.
 \section{Conclusions}
 
 TODO.
+
+\section{TODO}
+
+
+Section2:
+- framework
+- metrics
+- dataset
+- stability rank
+
+Section 3:
+- Small dataset in here (how we create it)
+- ``data set sorting''
+- Getting annotations
+- Annotation methodology
+
+Section 4:
+- Analysis of tags
+- Gray out the tags figure.
+- Talk control set (at least mention it)
+
+
+Conclusion:
+- How annotations should be done in the future
+
 
 %\section{Boundaries Evaluation Metrics}\label{sec:evalmetrics}
 
