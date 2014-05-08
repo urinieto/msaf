@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 CONTROL_IDX = np.array([8, 9, 10, 14, 37])
-FIGSIZE = (8, 6)
+FIGSIZE = (8, 4)
 DPI = 120
 INCLUDE_AVERAGED = False
 
@@ -20,7 +20,7 @@ scores = np.array(results['data'])
 mu = scores.mean(axis=0)
 
 colorset = ['b', 'g', 'r', 'y', 'm']
-fig = plt.figure(dpi=DPI)
+fig = plt.figure(figsize=FIGSIZE, dpi=DPI)
 ax = fig.gca()
 width = 0.1
 for ann_idx in range(mu.shape[0] + INCLUDE_AVERAGED - 1):
@@ -32,14 +32,17 @@ for ann_idx in range(mu.shape[0] + INCLUDE_AVERAGED - 1):
                               fc=colorset[alg_idx]))
 
 ax.set_xticks(np.arange(6) + (width * 5)/2.0)
-ax.set_xticklabels(range(1, 7))
-ax.set_xlabel("Annotator Index")
+ax.set_xticklabels(["GT", "Ann1", "Ann2", "Ann3", "Ann4", "Ann5"])
+#ax.set_xticklabels(range(1, 7))
+#ax.set_xlabel("Annotator Index")
 ax.set_ylabel("F3-Score")
-ax.set_ylim(mu.min()*0.85, mu.max()*1.01)
+ax.set_ylim(mu.min()*0.85, mu.max()*1.001)
 legend = ax.legend(
     [h[0] for h in handles],
     ["olda", "siplca", "serra", "levy", "foote"],
-    loc='lower right', shadow=False)
+    loc='upper left', shadow=False,
+    prop={'size':11.5})
+plt.title("Annotators as Ground Truth")
 
 fig.tight_layout()
 plt.show()
