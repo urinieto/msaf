@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 CONTROL_IDX = np.array([8, 9, 10, 14, 37])
-FIGSIZE = (6, 3)
+FIGSIZE = (6, 4)
 
 tag_json_file = "experiment/results/merged_tags_ejh_resolved.json"
 with open(tag_json_file) as fp:
@@ -50,22 +50,35 @@ for track_idx, tag_set in enumerate(tags.values()):
             tag_counts[tag] += 1
 
 colorset = ['b', 'g', 'r', 'y', 'm']
+final_labels = ["Annotator", "Audio Quality", "Form", "Instrumentation",
+                "Style"]
 width = 1.0
 tag_colors = dict([(n, c) for n, c in zip(tag_names, colorset)])
 tag_keys = tag_counts.keys()
 tag_keys.sort()
 
-fig = plt.figure(dpi=120)
+fig = plt.figure(dpi=120, figsize=FIGSIZE)
 ax = fig.gca()
+prev_tag = None
+labels = []
 for n, k in enumerate(tag_keys):
-    ax.bar((n - 0.5)*width,
+    ret = ax.bar((n - 0.5)*width,
            tag_counts[k],
            width=width,
            fc=tag_colors[k.split('-')[0]])
+    if prev_tag != tag_colors[k.split('-')[0]]:
+        labels.append(ret[0])
+        prev_tag = tag_colors[k.split('-')[0]]
 ax.set_xlim(-width, width*len(tag_keys))
 ax.set_xticks(range(len(tag_keys)))
+for i in xrange(len(tag_keys)):
+    tag_keys[i] = tag_keys[i].split("-")[1]
 ax.set_xticklabels(tag_keys, rotation=75, ha='right')
 ax.set_ylabel("Count")
 fig.tight_layout()
+plt.gcf().subplots_adjust(top=0.9)
+plt.xlim(-1, 22)
+ax.legend(tuple(labels), tuple(final_labels), prop={'size':10})
+plt.title("Reported Tags")
 
 plt.show()

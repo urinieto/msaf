@@ -95,8 +95,8 @@ TODO.
 
 \subsection{Music Structural Analysis Framework}
 
-We select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results. 
-Our MSAF is an open-source project where anyone can use the included segmentation algorithms on their private music datasets and contribute with their own segmentation techniques\footnote{URL not displayed for revision process.}.
+First of all, we select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results. 
+Our MSAF is an open-source project where anyone can use its segmentation algorithms on their private music datasets and contribute with their own segmentation techniques\footnote{URL not displayed for revision process.}.
 As we will see, MSAF significantly facilitates the work of ranking the tracks according to their difficulty from a machine perspective.
 
 %A framework to compare various music segmentation algorithms, sharing their features and their evaluations, can be one of the most effective methodologies in order to explore and understand multiple algorithm behaviors.
@@ -114,7 +114,7 @@ Based on the previous principles, we select the following algorithms:
   \item
     \textbf{Foote}: One of the first music segmentation algorithms proposed, yet highly efficient and with good reported results\cite{Foote1999}. It is a novelty-based method that uses a Gaussian kernel across the diagonal of a self similarity matrix to identify sudden changes in the audio features.
   \item
-    \textbf{Levy}: This approach uses Hidden Markov Model and constrained clustering to identify boundaries following a homogeneity-based principle\cite{Levy2008}.
+    \textbf{Levy}: This approach uses Hidden Markov Models and constrained clustering to identify boundaries following a homogeneity-based principle\cite{Levy2008}.
   \item
     \textbf{Serr\`a}: This method defines the structural features, a set of features that combine both repeated and homogeneous boundaries. Once used to compute a novelty curve to extract the boundaries, this method combines the three different approaches to music segmentation, and reports some of the best scores for this task\cite{Serra2013}.
   \item
