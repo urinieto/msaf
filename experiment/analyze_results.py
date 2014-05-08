@@ -336,7 +336,8 @@ def analyze_boundaries(annot_dir, trim, annotators):
     plt.show()
 
 
-def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
+def plot_ann_boundaries(jam_file, annotators, context="large_scale",
+                        ax=None):
     """Plots the different boundaries for a given track, contained in the
     jams file.
 
@@ -368,24 +369,30 @@ def plot_ann_boundaries(jam_file, annotators, context="large_scale"):
         annot_ids.append(annot_name_ids_dict[key])
 
     N = len(all_boundaries)  # Number of lists of boundaries
-    figsize = (5, 2.2)
-    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+    if ax is None:
+        figsize = (5, 2.2)
+        plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+        my_plt = plt
+    else:
+        my_plt = ax
     for i, boundaries in enumerate(all_boundaries):
         print boundaries
         for b in boundaries:
-            plt.axvline(b, i / float(N), (i + 1) / float(N))
-        plt.axhline(i / float(N), color="k", linewidth=1)
+            my_plt.axvline(b, i / float(N), (i + 1) / float(N))
+        my_plt.axhline(i / float(N), color="k", linewidth=1)
 
-    #plt.title("Nelly Furtado - Promiscuous")
-    #plt.title("Quartetto Italiano - String Quartet in F")
-    #plt.title("Prince & The Revolution - Purple Rain")
-    #plt.title("Yes - Starship Trooper")
-    plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
-    plt.gcf().subplots_adjust(bottom=0.22)
-    plt.gca().set_yticklabels(annot_ids)
-    #plt.gca().invert_yaxis()
-    plt.xlabel("Time (seconds)")
-    plt.show()
+    #my_plt.title("Nelly Furtado - Promiscuous")
+    #my_plt.title("Quartetto Italiano - String Quartet in F")
+    #my_plt.title("Prince & The Revolution - Purple Rain")
+    #my_plt.title("Yes - Starship Trooper")
+    if ax is None:
+        my_plt = plt.gca()
+    my_plt.set_yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
+    #my_plt.gcf().subplots_adjust(bottom=0.22)
+    my_plt.set_yticklabels(annot_ids)
+    #my_plt.gca().invert_yaxis()
+    my_plt.set_xlabel("Time (seconds)")
+    #my_plt.show()
 
 
 def process(annot_dir, trim=False):
