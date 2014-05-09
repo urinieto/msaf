@@ -65,24 +65,24 @@ Finally, we observe that this subjectivity exists on a continuum, and that some 
 
 Like many high-level tasks in music information retrieval, the automatic identification of segment boundaries remains a challenging, unsolved research topic. 
 This task aims to retrieve all the boundaries of the segments (or sections) from a music audio signal, in order to better understand the structure of the piece.
-Multiple automatic approaches have been presented \cite{Paulus2010}, yet it has been shown that not even humans seem to perform perfectly when manually undertake this task \cite{Serra2013}.
+Multiple automatic approaches have been presented \cite{Paulus2010}, yet it has been shown that not even humans seem to perform perfectly when they manually undertake this task \cite{Serra2013}.
 It remains unclear why this task can be so challenging, and in this work we aim to explore these difficulties and discuss how we could overcome some of them.
 
 Three different approaches have been established when classifying music boundaries: novelty, homogeneity, and repetition \cite{Paulus2010}. 
 Novelty-based approaches identify boundaries when there is a sudden change in some of the audio features (e.g. harmony, timbre).
 Homogeneity algorithms analyze blocks of audio and extract segment boundaries based on the consistency of these blocks, again based on one or more audio features.
 Finally, repetition-based methods aim to discover multiple occurrences of music patterns across the piece in order to identify the musical boundaries.
-In our work we implemented various boundary algorithms that use some of these approaches to retrieve boundaries and included them in a music structure analysis framework in order to facilitate their evaluation and analysis.
+In our work we implemented various boundary algorithms that use some of these approaches and included them in an open source music structure analysis framework in order to facilitate their evaluation and analysis.
 
 Following works like \cite{Grosche2010}, where they investigate the inherent problems of beat tracking, we decide to investigate some of the most arduous tracks in terms of segmentation and perform error analysis on them.
 Given the lack of a standard definition of \emph{segment} or \emph{boundary}, humans are not likely to agree on the same set of results for this task, which puts into question the notion of ground truth annotated by a single human.
-We decide to acquire multiple human annotations for a subset of hard tracks, and analyze their agreement, and see how the algorithm rank changes when using them as different ground truths.
+We decide to acquire multiple human annotations for a subset of hard tracks, and analyze their agreement, and see how the algorithm rank changes depending on the reference annotation used.
+Then, we show how a merged version of the annotated boundaries can result in a more stable ground truth, therefore alleviating some of the problems that arise from subjectivity.
+Finally, we see that only the hardest tracks would benefit from multiple set of annotations, since humans tend to agree on the easier ones.
 
-Error analysis, and maybe ground truth is not accurate enough.
+The rest of the paper is organized as follows: TODO.
 
 
-
-TODO.
 %The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
 %This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
 %Music segmentation intro: focusing on boundaries.
