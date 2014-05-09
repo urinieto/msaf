@@ -97,7 +97,7 @@ TODO.
 
 First of all, we select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results. 
 Our MSAF is an open-source project where anyone can use its segmentation algorithms on their private music datasets and contribute with their own segmentation techniques\footnote{URL not displayed for revision process.}.
-As we will see, MSAF significantly facilitates the work of ranking the tracks according to their difficulty from a machine perspective.
+MSAF significantly facilitates the work of ranking the tracks according to their difficulty from a machine perspective.
 
 %A framework to compare various music segmentation algorithms, sharing their features and their evaluations, can be one of the most effective methodologies in order to explore and understand multiple algorithm behaviors.
 
@@ -120,7 +120,7 @@ Based on the previous principles, we select the following algorithms:
   \item
     \textbf{SI-PLCA}: Shift-Invariance Probabilistic Latent Component Analysis is an algorithm that uses a probabilistic variant of Non-negative Matrix Factorization in order to identify harmonic patterns with allowed key transpositions and time-shifted segments\cite{Weiss2011}. It can be seen as a repetition plus homogeneity-based approach.
   \item 
-    \textbf{OLDA}: Ordinal Linear Discriminative Analysis uses the structural features defined in \cite{Serra2013} and applies a trained machine learning method (OLDA) to reduce their dimensionality and learn the most important set of features\cite{McFee2014}. This method obtains better results than Serr\`a's when using the hit rate at 0.5 seconds, and can be seen as an algorithm that also uses the three different principles of music segmentation.
+    \textbf{OLDA}: Ordinal Linear Discriminative Analysis uses the structural features defined in \cite{Serra2013} and applies a supervised machine learning method (OLDA) to reduce their dimensionality and learn the most important set of features\cite{McFee2014}. This method, like Serr\`a's, can be seen as an algorithm that also uses the three different principles of music segmentation.
 \end{itemize}
 
 Levy, OLDA and SI-PLCA implementations are available on-line as open source projects written by their first authors.
@@ -134,7 +134,7 @@ Therefore, in this work, we use it to evaluate our algorithms against human anno
 This metric considers an estimated boundary as \emph{correct} (a hit) if it falls under the specified time window centered at its corresponding reference boundary.
 These hits are then used to compute three scores: the Precision ($P$, number of hits over the number of estimated boundaries), the Recall ($R$, number of hits over the number of reference boundaries), and the F-measure (harmonic mean between Precision and Recall), which is computed as follows:
 
-\begin{equation}
+\begin{equation}\label{eq:fmeasure}
   F = 2 \frac{P R}{P + R}
 \end{equation}
 
@@ -165,18 +165,19 @@ To explore the difficulties of automatic methods when identifying music boundari
 
 \subsection{Rank Stability}
 
-TODO: Eric
+TODO: Eric. Introduce the rank. Show the stability for the subsets of the dataset separately.
 
 \section{Acquiring Multiple Human Annotations}
 
 One of the most fundamental problems of music segmentation is the lack of a standard definition of \textit{section} or \textit{boundary}. 
 The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the human annotations: some boundaries seem rather arbitrary, leaving the final decision to the annotator, which might not agree with others.
-In this work we aim to identify the most challenging tracks of our dataset (from a machine perspective) in order to setup an experiment to test the amount of boundaries agreement among multiple subjects.
+In this section we aim to identify the most challenging tracks of our dataset (from a machine perspective) in order to setup an experiment to collect multiple human annotations for these problematic tracks, which hopefully will help to identify some of the biggest challenges of the identification of boundaries.
+%test the amount of boundaries agreement among multiple subjects.
 %If the degree of agreement is low enough, we might be able to see how subjectivity play a strong role in the identification of boundaries.
 
 \subsection{Selection of Hardest and Easiest Tracks}\label{sub:hard-easy}
 
-We run our algorithms on our \textbf{BIG} dataset and sort their tracks based on their Mean Ground-truth Performance (MGP) using the hit rate at 3 seconds described in \ref{subsec:hitrate}.
+We run the five algorithms in MSAF on our \textbf{BIG} dataset and sort their tracks based on their Mean Ground-truth Performance (MGP) using the hit rate at 3 seconds described in \ref{subsec:hitrate}.
 Thus, we are able to know which are the tracks of our dataset that machines find hardest and easiest to segment by simply exploring the end and the beginning of the sorted list.
 
 In Figures \ref{fig:quartetto} and \ref{fig:promiscuous} we show examples of the boundaries of all the algorithms for a hard and an easy track, respectively, from a machine point of view.
@@ -200,7 +201,8 @@ The easy one is a popular dance song that is less than 3 minutes long, with a mu
 Now that we can easily rank the tracks of the \textbf{BIG} dataset based on the MGP of the five selected algorithms we can start investigating why some of these pieces are so difficult to segment, at least from a machine perspective. 
 One of the first ideas, that has been investigated before for the tasks of beat tracking \cite{Grosche2010} and chord recognition \cite{Ni2013}, is the problem of subjectivity.
 %After listening to various hard tracks, we hypothesize that subjectivity might play a strong role in the detection of music boundaries, and we see why this may be actually the case in the next section. 
-We try to simplify the problem by obtaining a small dataset where multiple humans can annotate its tracks.
+%We try to simplify the problem by obtaining a small dataset where multiple humans can annotate its tracks.
+We aim to address this problem by obtaining multiple human annotations for a smaller dataset.
 
 \subsection{Small Dataset}
 
@@ -244,10 +246,10 @@ We investigated all the reported tags and qualitatively clustered them into five
     \textbf{Style}: The final group is the one related with the music genre of the piece, which includes, among other qualities, the speed and the homogeneity of the track. Examples: ``fast'', ``jazz''.
 \end{itemize}
 
-In Figure \ref{fig:difficult-tags-type} the frequency of each tag group is shown, and it can be seen that two main clusters dominate the plot: style and form.
+In Figure \ref{fig:difficult-tags-type} the frequency of each reported tag is shown, and it can be seen that two main clusters dominate the plot: style and form.
 In terms of style, we hypothesize that there will be a strong bias depending on the preferred music genre of the subjects.
-For example, there was considerable agreement on finding the jazz pieces difficult to segment, while all the subjects were classically trained.
-On the other hand, the most reported tag of all the collection was the variability of a track, which falls in the form group (in red in the figure).
+For example, there is considerable agreement on finding the jazz pieces difficult to segment, while all the subjects are classically trained.
+On the other hand, the most reported tag of all the collection is the variability of a track, which falls in the form group (in red in the figure).
 Other important tags inside this group are the extended duration of some pieces and the amount of repetition.
 
 \begin{figure}
@@ -323,9 +325,9 @@ In Figure \ref{fig:annotatorsAsGT} we can see the scores for all the algorithms 
 \end{figure}%
 
 In the figure we can see how the ranking of the algorithms changes depending on what annotation is used as ground truth.
-We use the ranking stability measure in order to quantize this amount of variation, and we the results are shown in table \ref{tab:stability-multipleGT}.
+We use the ranking stability measure in order to quantize this amount of variation, and show the results in table \ref{tab:stability-multipleGT}.
 TODO: Table!
-This illustrates that the notion of ground truth is remarkably weak for boundary estimation.
+This illustrates that the notion of ground truth can be remarkably weak for boundary estimation, which becomes a serious problem when evaluating automatic approaches.
 
 \begin{table}[h]
   \center
@@ -346,7 +348,7 @@ This illustrates that the notion of ground truth is remarkably weak for boundary
 \end{table}
 
 
-In order to improve this problem, we aim to use multiple annotations as a weighted single ground truth in order to produce more stable results.
+In order to approach this problem, we aim to use multiple annotations as a weighted single ground truth in order to produce more stable results.
 
 \subsection{Weighted Boundaries}
 
@@ -369,9 +371,9 @@ Assuming we have a reference (or ground truth) of $N_r$ boundaries with associat
 \end{equation}
 
 where the indices $k_j$ correspond to those boundaries in the reference for which a hit has been found.
-In this case, as in the standard evaluation, a hit is found when an estimated boundary is within a 3 seconds window from the closest reference one.
+In this case, as in the standard evaluation, a hit is found when an estimated boundary is within 3 seconds from the closest reference one.
 
-Once we have the weighted $H$ computed, we obtain the precision and the recall values by normalizing using the weights of the estimation and reference, respectively:
+Once we have the weighted $H$ computed, we obtain the precision and the recall values by normalizing using the sum of the weights of the estimation and reference, respectively:
 
 \begin{equation}
   P = \frac{H}{\sum \textbf{w}_e} , R = \frac{H}{\sum \textbf{w}_r}
@@ -385,7 +387,7 @@ Since we only have $\textbf{w}_r$ (i.e. the implemented algorithms in MSAF do no
 \end{equation}
 
 where $M$ is the number of estimated boundaries that are not considered hits.
-The F-meauser between the precision and the recall is computed as usual.
+The F-measure between the precision and the recall is computed as usual (see equation \ref{eq:fmeasure}).
 
 
 %How subjective? Quite, for this particular subset. Name chords as a point of comparison, but realize that we cannot justify global subjectivity (i.e. boundary estimation can be subjective. not always, but certainly here). ≈75%, vs 90% for chords
