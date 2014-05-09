@@ -65,17 +65,25 @@ Finally, we observe that this subjectivity exists on a continuum, and that some 
 
 Like many high-level tasks in music information retrieval, the automatic identification of segment boundaries remains a challenging, unsolved research topic. 
 This task aims to retrieve all the boundaries of the segments (or sections) from a music audio signal, in order to better understand the structure of the piece.
-Multiple automatic approaches have been presented \cite{Paulus2010}, yet it has been shown that not even humans seem to perform perfectly when they manually undertake this task \cite{Serra2013}.
-It remains unclear why this task can be so challenging, and in this work we aim to explore these difficulties and discuss how we could overcome some of them.
+%It remains unclear why this task can be so challenging, and in this work we aim to explore these difficulties and discuss how we could overcome some of them.
+One inherent challenge of this task is the difficulty of formulating a standard definition of \emph{boundary} or \emph{segment}.
+This leads to subjectivity in responses, which is a known issue.
+% Definition problem, subjectivity in the oebserver
 
+%TODO Eric: Needs context. Hard to define task, and the criteria that consitutes a boundary is subjective.
+% So far, we have been able to define these boundaries:
 Three different approaches have been established when classifying music boundaries: novelty, homogeneity, and repetition \cite{Paulus2010}. 
 Novelty-based approaches identify boundaries when there is a sudden change in some of the audio features (e.g. harmony, timbre).
 Homogeneity algorithms analyze blocks of audio and extract segment boundaries based on the consistency of these blocks, again based on one or more audio features.
 Finally, repetition-based methods aim to discover multiple occurrences of music patterns across the piece in order to identify the musical boundaries.
 In our work we implemented various boundary algorithms that use some of these approaches and included them in an open source music structure analysis framework in order to facilitate their evaluation and analysis.
 
+% Performance is generally still quite low, and we try to understand why it is so bad.
+% Cite holzapfel and serra, say that we get tracks to get annotations.
+% Serra, might be advantageous to have multiple annotations.
+Multiple automatic approaches have been presented \cite{Paulus2010}, yet it has been shown that not even humans agree when they manually undertake this task \cite{Serra2013}.
 Following works like \cite{Grosche2010}, where they investigate the inherent problems of beat tracking, we decide to investigate some of the most arduous tracks in terms of segmentation and perform error analysis on them.
-Given the lack of a standard definition of \emph{segment} or \emph{boundary}, humans are not likely to agree on the same set of results for this task, which puts into question the notion of ground truth annotated by a single human.
+Given the current definitions of \emph{segment} or \emph{boundary}, humans are not likely to agree on the same set of results for this task, which puts into question the notion of ground truth annotated by a single human.
 We decide to acquire multiple human annotations for a subset of hard tracks, and analyze their agreement, and see how the algorithm rank changes depending on the reference annotation used.
 Then, we show how a merged version of the annotated boundaries can result in a more stable ground truth, therefore alleviating some of the problems that arise from subjectivity.
 Finally, we see that only the hardest tracks would benefit from multiple set of annotations, since humans tend to agree on the easier ones.
@@ -93,7 +101,7 @@ The rest of the paper is organized as follows: TODO.
 
 %Organization of the paper.
 
-\section{Methodology and Setup}\label{sec:prelExp}
+\section{Methodology}\label{sec:prelExp}
 
 \subsection{Music Structural Analysis Framework}
 
@@ -105,12 +113,15 @@ Our MSAF is an open-source project where anyone can use its segmentation algorit
 
 The audio features used as input for all the algorithms in MSAF are beat-synchronous and computed using Essentia \cite{Bogdanov2013}.
 The harmonic features are Harmonic Pitch Class Profiles (HPCP) and the timbral features are Mel-Frequency Cepstral Coefficients (MFCC), both features calculated using Essentia's default parameters.
-The beats are detected using the multi-feature Essentia's beat tracker, and synchronized with the audio features using Ellis' method \cite{Ellis2007}.
+The beats are detected using Essentia's multi-feature beat tracker, and synchronized with the audio features using the method in \cite{Ellis2007}.
 
-Two principles were applied when selecting the five algorithms to be used in this work: (i) The three different types of methodologies to extract boundaries should be represented, and (ii) the reported results of these methods should be competitive when compared with the state of the art.
-Note that this aims to emulate the behavior of having multiple human annotators segmenting the same tracks: it is not likely that they will always focus on the same type of boundaries (repetitive, homogeneous, novel), but we hope that all of them manage to retrieve fairly good quality boundaries in the end.
+Two criteria were applied when selecting the algorithms to be used in this work: (i) The three different types of methodologies to extract boundaries should be represented, and (ii) the reported results of these methods should be competitive when compared with the state of the art.
+TODO: We use various algorithms with the assumption that they will give us different information
+%Note that this aims to emulate the behavior of having multiple human annotators segmenting the same tracks: it is not likely that they will always focus on the same type of boundaries (repetitive, homogeneous, novel), but we hope that all of them manage to retrieve fairly good quality boundaries in the end.
 
-Based on the previous principles, we select the following algorithms:
+Based on the previous criteria, we select the following algorithms:
+
+TODO: Do we need these extensive descriptions?
 
 \begin{itemize}
   \item
@@ -126,9 +137,9 @@ Based on the previous principles, we select the following algorithms:
 \end{itemize}
 
 Levy, OLDA and SI-PLCA implementations are available on-line as open source projects written by their first authors.
-Foote and Serr\`a methods were implemented from scratch specifically for this work.
+Foote and Serr\`a methods were implemented specifically for this work.
 
-\subsection{Boundary Evaluation: Hit Rate}\label{subsec:hitrate}
+\subsection{Evaluation Metrics}\label{subsec:hitrate}
 
 The hit rate metric for boundary evaluation is the most common and established technique for this task and it is traditionally used with a specific time window of 3 seconds\cite{Ong2005}. 
 Therefore, in this work, we chose it to evaluate our algorithms against human annotations.
@@ -140,7 +151,9 @@ These hits are then used to compute three scores: the Precision ($P$, number of 
   F = 2 \frac{P R}{P + R}
 \end{equation}
 
-\subsection{Big Dataset}
+TODO: Average metrics over algorithms (MPG).
+
+\subsection{Data}
 
 To explore the difficulties of automatic methods when identifying music boundaries, we collected a large human annotated dataset of 2156 tracks that we refer to as \textbf{BIG} and is composed of four different subsets: Isophonics, SALAMI, Cerulean, and Epiphyte.
 
@@ -155,11 +168,11 @@ To explore the difficulties of automatic methods when identifying music boundari
     Some of these music genres can be particularly challenging to segment, both for machines and humans, as we will see in the next subsection.
 
   \item
-    \textbf{Cerulean}: This dataset is a private annotation from a company that would like to remain anonymous.
+    \textbf{Cerulean}: This is a private dataset from an anonymous company.
     It is composed by 102 particularly challenging tracks, including progressive rock, death metal, and classical music.
 
   \item
-    \textbf{Epiphyte}: This is another private dataset from yet another anonymous company.
+    \textbf{Epiphyte}: This is different private dataset from yet another anonymous company.
     In this case over 1000 tracks were human-annotated, most of them being short pop rock and electronic songs.
     The intuition is that these should be fairly easy tracks to segment, due to their simple musical structures.
 
@@ -177,10 +190,11 @@ In this section we aim to identify the most challenging tracks of our dataset (f
 %test the amount of boundaries agreement among multiple subjects.
 %If the degree of agreement is low enough, we might be able to see how subjectivity play a strong role in the identification of boundaries.
 
-\subsection{Selection of Hardest and Easiest Tracks}\label{sub:hard-easy}
+\subsection{Selection of Best and Worst Performing Tracks}\label{sub:hard-easy}
+\subsection{Sorting the \textbf{BIG} Data}\label{sub:hard-easy}
 
 We run the five algorithms in MSAF on our \textbf{BIG} dataset and sort their tracks based on their Mean Ground-truth Performance (MGP) using the hit rate at 3 seconds described in \ref{subsec:hitrate}.
-Thus, we are able to know which are the tracks of our dataset that machines find hardest and easiest to segment by simply exploring the end and the beginning of the sorted list.
+Thus, we are able to know which are the tracks of our dataset that machines find hardest and easiest to segment by exploring the end and the beginning of the sorted list.
 
 In Figures \ref{fig:quartetto} and \ref{fig:promiscuous} we show examples of the boundaries of all the algorithms for a hard and an easy track, respectively, from a machine point of view.
 The difficult track is a classical piece (string quartet) over 9 minutes long, and we can see the little agreement among algorithms when comparing their extracted boundaries.
@@ -200,13 +214,18 @@ The easy one is a popular dance song that is less than 3 minutes long, with a mu
   \label{fig:promiscuous}
 \end{figure}%
 
-Now that we can easily rank the tracks of the \textbf{BIG} dataset based on the MGP of the five selected algorithms we can focus on the subset of tracks that are more challenging from a machine perspective.
+Now that we can rank the tracks of the \textbf{BIG} dataset based on the MGP of the five selected algorithms we can focus on the subset of tracks that are more challenging from a machine perspective.
 Qualitatively, various boundaries of harder tracks are perceptually ambiguous, suggesting the significant influence of subjectivity for this task, a problem that has been investigated before for beat tracking \cite{Grosche2010} and chord recognition \cite{Ni2013}.
 %After listening to various hard tracks, we hypothesize that subjectivity might play a strong role in the detection of music boundaries, and we see why this may be actually the case in the next section. 
 %We try to simplify the problem by obtaining a small dataset where multiple humans can annotate its tracks.
 We aim to address this problem by obtaining multiple human annotations for a smaller dataset.
 
-\subsection{Small Dataset}
+TODO: They hold the greatest potential to better inform the task (the hard tracks) (3.1. or Intro or both?)
+
+
+\subsection{Sampling a Subset}
+
+TODO: Ideally we would use the entire BIG dataset, but not tractable, so picking 50 including a controlled group.
 
 Using the MGP, we create a small dataset that we refer to as \textbf{SMA} by selecting the hardest 45 tracks and the easiest 5 from the \textbf{BIG} dataset that meet the following requirements: (i) they are no longer than 10 minutes long (we want to keep the experiment time as low as possible to facilitate the work of the annotators and investigate a larger subset of tracks), and (ii) they are actual music pieces (in SALAMI we can find some tracks that are only speech fragments).
 
@@ -227,14 +246,18 @@ We asked them to identify the boundaries, following the same guidelines as the o
 The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and they had to report at least one musical/acoustic tag for each one they found difficult to segment.
 We start the analysis by taking a closer look to the reported tags.
 
-\subsection{Qualitative Analysis of Difficulty}
+\section{Data Analysis}
+
+\subsection{Exploring the Semantic Tags}
 
 We investigated all the reported tags and qualitatively clustered them into five main categories:
+
+TODO: Paragraph instead of items.
 
 \begin{itemize}
   \item
     \textbf{Annotator}: This group contains tags that express a certain problem related with the annotator him/herself. 
-    Examples: ``very ambiguous'', ``clueless''.
+    Example: ``clueless''.
 
   \item
     \textbf{Audio Quality}: In this group the tags related with the physical nature of the recording are clustered. 
@@ -250,7 +273,7 @@ We investigated all the reported tags and qualitatively clustered them into five
     \textbf{Style}: The final group is the one related with the music genre of the piece, which includes, among other qualities, the speed and the homogeneity of the track. Examples: ``fast'', ``jazz''.
 \end{itemize}
 
-In Figure \ref{fig:difficult-tags-type} the frequency of each reported tag is shown, and it can be seen that two main clusters dominate the plot: style and form.
+In Figure \ref{fig:difficult-tags-type} the count of each reported tag is shown, and it can be seen that two main clusters dominate the plot: style and form.
 In terms of style, we hypothesize that there will be a strong bias depending on the preferred music genre of the subjects.
 For example, there is considerable agreement on finding the jazz pieces difficult to segment, while all the subjects are classically trained.
 On the other hand, the most reported tag of all the collection is the variability of a track, which falls in the form group (in red in the figure).
@@ -270,9 +293,6 @@ Nevertheless, the low number of tags reported for the easy tracks compared with 
 %This suggests that short musical pieces might be easier for machines to identify their boundaries, while human annotators may have problem with such short The fact that 
 
 Now that we have a better idea of the main qualities that make some tracks difficult to segment from a human perspective we aim to explore the actual boundaries reported by the subjects to test the amount of agreement among them, in order to apprehend a deeper understanding of the difficulties of this task.
-
-\section{Quantitative Explorations}
-
 %\subsection{Tags Agreement}
 
 %Since tags were only submitted if humans found a specific track difficult to segment, we can easily check how uniformly humans reported tags for all the tracks of the \textbf{SMA} dataset.
@@ -309,15 +329,23 @@ Instead of comparing all the annotations against one ground truth (as we did in 
 In our case, the MMA does 15 comparisons ($N(N-1)/2$, where $N=6$ human annotations) using the hit rate measure as we did in the previous section.
 
 The amount of agreement is depicted in Figure \ref{fig:human-agreement} where it becomes apparent that our annotators never agree with each other on this dataset more than at 65\% of the hit rate measure.
-Moreover, the plot shows how these annotations tend to be ranked differently depending on what annotator they are being compared against.
-This fact encourages us to explore the behavior of the algorithms when using different annotations in order to test the notion of ground truth for boundary detection.
+%Moreover, the plot shows how these annotations tend to be ranked differently depending on what annotator they are being compared against.
+%This fact encourages us to explore the behavior of the algorithms when using different annotations in order to test the notion of ground truth for boundary detection.
+TODO: This figure shows that humans do not agree, and moreover there is variation in their results.
+We can not expect machines to do better.
+Now we are gonna see what this does to our evaluation.
 
 \begin{figure}
   \centering
   \includegraphics[width=0.47\textwidth]{plots/human-agreement.pdf}
-  \caption{Boundary agreement among annotators.}
+  \caption{TODO: Separate this into two plots: control group and the rest. Boundary agreement among annotators TODO: Add line to the max. Legend font smaller.}
   \label{fig:human-agreement}
 \end{figure}%
+
+mean easy: 78.38
+std easy: 17.05
+mean hard: 56.63
+std hard: 21.98
 
 % TODO?:
 %explore what multiple human perspectives can tell you about a consistently bad datapoint
@@ -337,7 +365,7 @@ In Figure \ref{fig:annotatorsAsGT} we can see the scores for all the algorithms 
 In the figure we can see how the ranking of the algorithms changes depending on what annotation is used as ground truth.
 We use the ranking stability measure in order to quantize this amount of variation, and show the results in table \ref{tab:stability-multipleGT}.
 TODO: Table!
-This illustrates that the notion of ground truth can be remarkably weak for boundary estimation, which becomes a serious problem when evaluating segmentation algorithms.
+This illustrates that the notion of ground truth can be remarkably weak for boundary estimation, which becomes a problem when evaluating segmentation algorithms.
 
 \begin{table}[h]
   \center
@@ -362,6 +390,8 @@ In order to approach this problem, we aim to use multiple annotations as a weigh
 
 \subsection{Weighted Boundaries}
 
+TODO: Needs context: Humans don't agree, stability is high, propose linear combination of the annotations.
+
 We merge all the annotated boundaries for the \textbf{SMA} dataset by quantizing them into 1 second windows and then averaging them, similarly to \cite{Thom2002}.
 We normalize all the weighted boundaries such that the maximum weight is 1 for all the tracks in the dataset.
 An example of this aggregation can be seen in Figure \ref{fig:merging-bounds}.
@@ -369,7 +399,7 @@ An example of this aggregation can be seen in Figure \ref{fig:merging-bounds}.
 \begin{figure}
   \centering
   \includegraphics[width=0.47\textwidth]{plots/merging-bounds.pdf}
-  \caption{Set of boundaries available on top for a given track (``You Never Give Me Your Money'', by The Beatles), and the weighted merged boundaries on the bottom.}
+  \caption{TODO: REDO! Set of boundaries available on top for a given track (``You Never Give Me Your Money'', by The Beatles), and the weighted merged boundaries on the bottom.}
   \label{fig:merging-bounds}
 \end{figure}
 
@@ -389,6 +419,8 @@ Once we have the weighted $H$ computed, we obtain the precision and the recall v
   P = \frac{H}{\sum \textbf{w}_e} , R = \frac{H}{\sum \textbf{w}_r}
 \end{equation}
 
+TODO: We can not compute precision without weight estimates for false positives.
+There fore, we do\dots
 Since we only have $\textbf{w}_r$ (i.e. the implemented algorithms in MSAF do not output weighted estimations), we use the weights in $\textbf{w}_r$ to approximate $\textbf{w}_e$ as follows:
 %when the estimated boundaries fall into a reference one, and the average across the reference weights for the rest of the estimated weights.
 
@@ -424,6 +456,7 @@ We have identified the most challenging tracks from a large segmentation dataset
 As expected, the annotators do not fully agree with each other, reinforcing the notion of subjectivity for the task of boundary identification.
 Using these subjects' annotations as ground truth, we have seen how the algorithm ranking varies, illustrating how the notion of ground truth is weak for this task.
 We have merged the annotations in order to obtain a more stable ground truth, and showed how only the most challenging tracks warrant multiple perspectives.
+TODO: Other methods of aggregating the weights.
 Future work should focus on the audio qualities of the hard tracks in order to explore the properties that could make segmentation algorithms better.
 
 %\section{TODO}
