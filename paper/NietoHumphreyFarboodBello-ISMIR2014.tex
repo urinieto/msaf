@@ -64,14 +64,17 @@ Finally, we observe that this subjectivity exists on a continuum, and that some 
 \section{Introduction}\label{sec:introduction}
 
 Like many high-level tasks in music information retrieval, the automatic identification of segment boundaries remains a challenging, unsolved research topic. 
-This task aims to retrieve all the boundaries of the segments (or sections) from a music audio signal, in order to better understand the structure of the piece.
+This task aims to retrieve all the boundaries of the segments (or sections) from a music audio signal, in order to better understand the structure of the piece \cite{Paulus2010}.
 %It remains unclear why this task can be so challenging, and in this work we aim to explore these difficulties and discuss how we could overcome some of them.
-One inherent challenge of this task is the difficulty of formulating a standard definition of \emph{boundary} or \emph{segment}.
-This leads to subjectivity in responses, which is a known issue.
+It can be particularly challenging due to (i) the difficulty of standardizing the definition of \emph{boundary} or \emph{segment} \cite{Smith2011}, and (ii) because of the apparent role that subjectivity plays on this task \cite{Bruderer2006a}.
+%This task is often associated with the labeling of these segments based on their acoustic similarity, but in this work we will only focus on the boundary identification problem.
+%One inherent challenge of this task is the difficulty of formulating a standard definition of \emph{boundary} or \emph{segment}.
+%This leads to multiple interpretations of the identification and placement of the boundaries, which suggests that subjectivity might play an important role \cite{Bruderer2006a}.
 % Definition problem, subjectivity in the oebserver
 
 %TODO Eric: Needs context. Hard to define task, and the criteria that consitutes a boundary is subjective.
 % So far, we have been able to define these boundaries:
+Nevertheless, multiple automatic techniques have been published, reporting results that indicate that we are still far from solving this task.
 Three different approaches have been established when classifying music boundaries: novelty, homogeneity, and repetition \cite{Paulus2010}. 
 Novelty-based approaches identify boundaries when there is a sudden change in some of the audio features (e.g. harmony, timbre).
 Homogeneity algorithms analyze blocks of audio and extract segment boundaries based on the consistency of these blocks, again based on one or more audio features.
@@ -81,14 +84,23 @@ In our work we implemented various boundary algorithms that use some of these ap
 % Performance is generally still quite low, and we try to understand why it is so bad.
 % Cite holzapfel and serra, say that we get tracks to get annotations.
 % Serra, might be advantageous to have multiple annotations.
-Multiple automatic approaches have been presented \cite{Paulus2010}, yet it has been shown that not even humans agree when they manually undertake this task \cite{Serra2013}.
-Following works like \cite{Grosche2010}, where they investigate the inherent problems of beat tracking, we decide to investigate some of the most arduous tracks in terms of segmentation and perform error analysis on them.
-Given the current definitions of \emph{segment} or \emph{boundary}, humans are not likely to agree on the same set of results for this task, which puts into question the notion of ground truth annotated by a single human.
-We decide to acquire multiple human annotations for a subset of hard tracks, and analyze their agreement, and see how the algorithm rank changes depending on the reference annotation used.
-Then, we show how a merged version of the annotated boundaries can result in a more stable ground truth, therefore alleviating some of the problems that arise from subjectivity.
+Using a similar approach as in \cite{Grosche2010}, where the authors investigate the inherent problems of beat tracking, we decide to explore some of the most arduous tracks in terms of segmentation and perform error analysis on them.
+We use our structural framework to analyze a large dataset of over 2,000 human annotated tracks to identify the worst and best performing pieces in Section \ref{sec:methodology}.
+This approach has proven to be reliable when identifying some of the biggest challenges in beat tracking \cite{Holzapfel2012}. % shown that this approach could help identify various audio cues that might help automatic beat tracking approaches to perform better \cite{Holzapfel2012}.
+%Moreover, studies have shown that by exploring the most challenging tracks of a large dataset, we can identify audio cues that might help us improve automatic approaches
+Moreover, it has been shown that not even humans agree when they manually undertake the task of boundary detection \cite{Serra2013}.
+This puts into question the notion of ground truth with a single human annotation, which motivates us to collect multiple annotations for a subset containing some of the most challenging tracks, a process that is described in Section \ref{sec:multiple-humans}.
+%Given the current definitions of \emph{segment} or \emph{boundary}, humans are not likely to agree on the same set of results for this task, which puts into question the notion of ground truth annotated by a single human.
+In Section \ref{sec:data-anal} we analyze the agreement of these new annotations and show how they yield different results when used as ground truth to evaluate the algorithms of our structural framework, which illustrates the weakness of the idea of ground truth for this task.
+Furthermore, in the same section, we show how a merged version of the annotated boundaries can result in a more stable ground truth, therefore alleviating some of the problems that arise from subjectivity.
 Finally, we see that only the hardest tracks would benefit from multiple set of annotations, since humans tend to agree on the easier ones.
+%Furthermore, in the same section, we aggregate the multiple boundaries into a single weighted annotation, and show how it becomes a much more stable and reliable ground truth.
 
-The rest of the paper is organized as follows: TODO.
+%We decide to acquire multiple human annotations for a subset of hard tracks, and analyze their agreement, and see how the algorithm rank changes depending on the reference annotation used.
+%Then, we show how a merged version of the annotated boundaries can result in a more stable ground truth, therefore alleviating some of the problems that arise from subjectivity.
+%Finally, we see that only the hardest tracks would benefit from multiple set of annotations, since humans tend to agree on the easier ones.
+
+%The rest of the paper is organized as follows: TODO.
 
 
 %The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
@@ -101,7 +113,7 @@ The rest of the paper is organized as follows: TODO.
 
 %Organization of the paper.
 
-\section{Methodology}\label{sec:prelExp}
+\section{Methodology}\label{sec:methodology}
 
 \subsection{Music Structural Analysis Framework}
 
@@ -182,7 +194,7 @@ To explore the difficulties of automatic methods when identifying music boundari
 
 TODO: Eric. Introduce the rank. Show the stability for the subsets of the dataset separately.
 
-\section{Acquiring Multiple Human Annotations}
+\section{Acquiring Multiple Human Annotations}\label{sec:multiple-humans}
 
 One of the most fundamental problems of music segmentation is the lack of a standard definition of \textit{section} or \textit{boundary}. 
 The difficulty of agreeing upon a single definition becomes apparent when qualitatively investigating the human annotations: some boundaries seem rather arbitrary, leaving the final decision to the annotator, which might not agree with others.
@@ -246,7 +258,7 @@ We asked them to identify the boundaries, following the same guidelines as the o
 The participants used the Sonic Visualiser\cite{Cannam2006} in order to segment the 50 tracks, and they had to report at least one musical/acoustic tag for each one they found difficult to segment.
 We start the analysis by taking a closer look to the reported tags.
 
-\section{Data Analysis}
+\section{Data Analysis}\label{sec:data-anal}
 
 \subsection{Exploring the Semantic Tags}
 
