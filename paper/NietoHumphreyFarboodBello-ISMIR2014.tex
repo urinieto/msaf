@@ -102,7 +102,6 @@ Finally, we see that only the hardest tracks would benefit from multiple set of 
 
 %The rest of the paper is organized as follows: TODO.
 
-
 %The automatic identification of segment boundaries in music has had a strong relevance in the field of Music Information Retrieval in the recent years.
 %This task presents many challenges, and arguably the most notable one is the subjectivity of the task itself: two humans do not always agree on the same set of boundaries.
 %Music segmentation intro: focusing on boundaries.
@@ -115,17 +114,34 @@ Finally, we see that only the hardest tracks would benefit from multiple set of 
 
 \section{Methodology}\label{sec:methodology}
 
-\subsection{Music Structural Analysis Framework}
+In this section we detail the large collection of human annotated boundaries used in our project; explain the algorithms to be run in in the dataset; describe the evaluation metrics to rate and rank the algorithms; and introduce a music structural analysis framework that will facilitate the exploration of the best and worst performing tracks, among other desired qualities.
 
-First of all, we select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results. 
-Our MSAF is an open-source project where anyone can use its segmentation algorithms on their private music datasets and contribute with their own segmentation techniques\footnote{URL not displayed for revision process.}.
-%MSAF significantly facilitates the work of ranking the tracks according to their difficulty from a machine perspective.
+\subsection{Data}
 
-%A framework to compare various music segmentation algorithms, sharing their features and their evaluations, can be one of the most effective methodologies in order to explore and understand multiple algorithm behaviors.
+To explore the difficulties of automatic methods when identifying music boundaries, we collected a large human annotated dataset of 2156 tracks that we refer to as \textbf{BIG} and is composed of four different subsets: Isophonics, SALAMI, Cerulean, and Epiphyte.
 
-The audio features used as input for all the algorithms in MSAF are beat-synchronous and computed using Essentia \cite{Bogdanov2013}.
-The harmonic features are Harmonic Pitch Class Profiles (HPCP) and the timbral features are Mel-Frequency Cepstral Coefficients (MFCC), both features calculated using Essentia's default parameters.
-The beats are detected using Essentia's multi-feature beat tracker, and synchronized with the audio features using the method in \cite{Ellis2007}.
+\begin{itemize}
+  \item
+    \textbf{Isophonics}\footnote{http://isophonics.net/datasets}: This is the most common human-annotated dataset to analyze segmentation algorithms. 
+    It is composed of 300 tracks of pop rock music by The Beatles, Queen, Michael Jackson, and others.
+
+  \item
+    \textbf{SALAMI}\cite{Smith2011}: The largest dataset with human-annotations for music segmentation published to date. 
+    It is a set of over 700 tracks of a wide variety of genres, including classic, folk, world music, jazz, blues, and rock.
+    Some of these music genres can be particularly challenging to segment, both for machines and humans, as we will see in the next subsection.
+
+  \item
+    \textbf{Cerulean}: This is a private dataset from an anonymous company.
+    It is composed by 102 particularly challenging tracks, including progressive rock, death metal, and classical music.
+
+  \item
+    \textbf{Epiphyte}: This is different private dataset from yet another anonymous company.
+    In this case over 1000 tracks were human-annotated, most of them being short pop rock and electronic songs.
+    The intuition is that these should be fairly easy tracks to segment, due to their simple musical structures.
+
+\end{itemize}
+
+\subsection{Methods}
 
 Two criteria were applied when selecting the algorithms to be used in this work: (i) The three different types of methodologies to extract boundaries should be represented, and (ii) the reported results of these methods should be competitive when compared with the state of the art.
 TODO: We use various algorithms with the assumption that they will give us different information
@@ -165,34 +181,22 @@ These hits are then used to compute three scores: the Precision ($P$, number of 
 
 TODO: Average metrics over algorithms (MPG).
 
-\subsection{Data}
-
-To explore the difficulties of automatic methods when identifying music boundaries, we collected a large human annotated dataset of 2156 tracks that we refer to as \textbf{BIG} and is composed of four different subsets: Isophonics, SALAMI, Cerulean, and Epiphyte.
-
-\begin{itemize}
-  \item
-    \textbf{Isophonics}\footnote{http://isophonics.net/datasets}: This is the most common human-annotated dataset to analyze segmentation algorithms. 
-    It is composed of 300 tracks of pop rock music by The Beatles, Queen, Michael Jackson, and others.
-
-  \item
-    \textbf{SALAMI}\cite{Smith2011}: The largest dataset with human-annotations for music segmentation published to date. 
-    It is a set of over 700 tracks of a wide variety of genres, including classic, folk, world music, jazz, blues, and rock.
-    Some of these music genres can be particularly challenging to segment, both for machines and humans, as we will see in the next subsection.
-
-  \item
-    \textbf{Cerulean}: This is a private dataset from an anonymous company.
-    It is composed by 102 particularly challenging tracks, including progressive rock, death metal, and classical music.
-
-  \item
-    \textbf{Epiphyte}: This is different private dataset from yet another anonymous company.
-    In this case over 1000 tracks were human-annotated, most of them being short pop rock and electronic songs.
-    The intuition is that these should be fairly easy tracks to segment, due to their simple musical structures.
-
-\end{itemize}
 
 \subsection{Rank Stability}
 
 TODO: Eric. Introduce the rank. Show the stability for the subsets of the dataset separately.
+
+\subsection{Music Structural Analysis Framework}
+
+First of all, we select various segmentation algorithms and put them together in a Music Structural Analysis Framework (MSAF) to facilitate their execution, evaluation and analysis of results. 
+Our MSAF is an open-source project where anyone can use its segmentation algorithms on their private music datasets and contribute with their own segmentation techniques\footnote{URL not displayed for revision process.}.
+%MSAF significantly facilitates the work of ranking the tracks according to their difficulty from a machine perspective.
+
+%A framework to compare various music segmentation algorithms, sharing their features and their evaluations, can be one of the most effective methodologies in order to explore and understand multiple algorithm behaviors.
+
+The audio features used as input for all the algorithms in MSAF are beat-synchronous and computed using Essentia \cite{Bogdanov2013}.
+The harmonic features are Harmonic Pitch Class Profiles (HPCP) and the timbral features are Mel-Frequency Cepstral Coefficients (MFCC), both features calculated using Essentia's default parameters.
+The beats are detected using Essentia's multi-feature beat tracker, and synchronized with the audio features using the method in \cite{Ellis2007}.
 
 \section{Acquiring Multiple Human Annotations}\label{sec:multiple-humans}
 
