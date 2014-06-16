@@ -192,7 +192,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # C-NMF params
     m = 13          # Size of median filter
     rank = 2        # Rank of decomposition
-    niter = 500     # Iterations for the matrix factorization and clustering
+    niter = 200     # Iterations for the matrix factorization and clustering
     k = 2           # Number of clusters for k-means
     convex = True   # Use convex or standard NMF
     dist = "correlation"
@@ -209,19 +209,24 @@ def process(in_path, feature="hpcp", annot_beats=False):
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
-    # Median filter
-    F = median_filter(F, M=m)
-    #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+    if F.shape[0] >= m:
+        # Median filter
+        F = median_filter(F, M=m)
+        #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Self similarity matrix
-    S = compute_ssm(F, metric=dist)
-    #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
+        # Self similarity matrix
+        S = compute_ssm(F, metric=dist)
+        #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Compute the matrix factorization
-    W, H = nmf(S, rank=rank, niter=niter, convex=convex)
+        # Compute the matrix factorization
+        W, H = nmf(S, rank=rank, niter=niter, convex=convex)
 
-    # Find the boundary indices from the factorization
-    bound_idxs = get_boundaries(W, H, rank, k, niter=niter)
+        # Find the boundary indices from the factorization
+        bound_idxs = get_boundaries(W, H, rank, k, niter=niter)
+    else:
+        # The track is too short. We will only output the first and last
+        # time stamps
+        bound_idxs = np.empty(0)
 
     # Concatenate first boundary
     bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
