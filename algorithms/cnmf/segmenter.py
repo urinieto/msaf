@@ -51,15 +51,6 @@ def mean_filter(x, M=9):
     return np.convolve(x, window, 'same')
 
 
-def compute_gaussian_krnl(M):
-    """Creates a gaussian kernel following Foote's paper."""
-    g = signal.gaussian(M, M / 3., sym=True)
-    G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
-    G[M / 2:, :M / 2] = -G[M / 2:, :M / 2]
-    G[:M / 2, M / 2:] = -G[:M / 2, M / 2:]
-    return G
-
-
 def compute_ssm(X, metric="seuclidean"):
     """Computes the self-similarity matrix of X."""
     D = distance.pdist(X, metric=metric)
