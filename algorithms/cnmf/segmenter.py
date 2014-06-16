@@ -148,8 +148,8 @@ def get_boundaries(W, H, rank, k, niter=500):
     bounds_idx: np.array
         Bound indeces found
     """
-    M = 9   # Size of the mean filter to compute the novelty curve
-    L = 16  # Size of the peak picking filter
+    M = 7   # Size of the mean filter to compute the novelty curve
+    L = 9   # Size of the peak picking filter
 
     # Find non filtered boundaries
     bound_idxs = np.empty(0)
@@ -190,7 +190,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # C-NMF params
-    m = 15          # Size of median filter
+    m = 13          # Size of median filter
     rank = 2        # Rank of decomposition
     niter = 500     # Iterations for the matrix factorization and clustering
     k = 2           # Number of clusters for k-means

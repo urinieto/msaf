@@ -23,11 +23,10 @@ sys.path.append("../../")
 import msaf_io as MSAF
 
 
-def process(in_path, annot_beats=False, feature="mfcc"):
+def process(in_path, annot_beats=False, feature="mfcc", ds_name="*"):
     """Main process."""
 
     # Get relevant files
-    ds_name = "*"
     jam_files = glob.glob(os.path.join(in_path, "annotations",
                                        "%s_*.jams" % ds_name))
     audio_files = glob.glob(os.path.join(in_path, "audio",
@@ -74,6 +73,12 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -83,7 +88,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats,
-            feature=args.feature)
+            feature=args.feature, ds_name=args.ds_name)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
