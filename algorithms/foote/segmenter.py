@@ -161,7 +161,7 @@ def main():
                         action="store",
                         help="Input path to the audio file")
     parser.add_argument("-f",
-                        action="store_true",
+                        action="store",
                         dest="feature",
                         help="Feature to use (mfcc or hpcp)",
                         default="hpcp")
