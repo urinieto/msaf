@@ -140,17 +140,16 @@ def nmf(S, rank=2, niter=500, convex=True):
     return W, H
 
 
-def get_boundaries(W, H, rank, k, niter=500):
+def get_boundaries(S, convex, rank, k, niter=500):
     """
     Gets the boundaries from the factorization matrices.
 
     Parameters
     ----------
-    W: np.array
-        Weights matrix (decomposed matrix)
-    H: np.array
-        Activation matrix (decomposed matrix)
-        (s.t. S ~= W * H)
+    S: np.array()
+        Self-similarity matrix
+    convex: boolean
+        Whether to use convex or standard nmf
     rank: int
         Rank of decomposition
     k: int
@@ -168,26 +167,34 @@ def get_boundaries(W, H, rank, k, niter=500):
 
     # Find non filtered boundaries
     bound_idxs = np.empty(0)
-    for r in range(rank):
-        # Compute decomposition matrix
-        D = (W[:, r] * H[r, :])
-        D /= D.max()
+    while True:
+        W, H = nmf(S, rank=rank, niter=niter, convex=convex)
+        for r in range(rank):
+            # Compute decomposition matrix
+            D = (W[:, r] * H[r, :])
+            D /= D.max()
 
-        # Apply k-means
-        #wD = whiten(D)
-        #codebook, dist = kmeans(wD[:, 0], k, iter=niter)
-        #codes, disto = vq(wD[:, 0], codebook)
-        codebook, dist = kmeans(D, k, iter=niter)
-        codes, disto = vq(D, codebook)
+            # Apply k-means
+            #wD = whiten(D)
+            #codebook, dist = kmeans(wD[:, 0], k, iter=niter)
+            #codes, disto = vq(wD[:, 0], codebook)
+            codebook, dist = kmeans(D, k, iter=niter)
+            codes, disto = vq(D, codebook)
 
-        # Find points where there's a cluster difference (boundary)
-        b = np.where(np.diff(codes) != 0)[0] + 1
-        bound_idxs = np.concatenate((bound_idxs, b))
+            # Find points where there's a cluster difference (boundary)
+            b = np.where(np.diff(codes) != 0)[0] + 1
+            bound_idxs = np.concatenate((bound_idxs, b))
 
-        #plt.imshow(D, aspect="auto", interpolation='nearest')
-        #for bb in b:
-            #plt.axvline(bb, linewidth=2, color="k")
-        #plt.show()
+            #plt.imshow(D, aspect="auto", interpolation='nearest')
+            #for bb in b:
+                #plt.axvline(bb, linewidth=2, color="k")
+            #plt.show()
+
+        # Increase rank if we found too few boundaries
+        if len(np.unique(bound_idxs)) <= 2:
+            rank += 1
+        else:
+            break
 
     # Compute novelty curve from initial boundaries
     nc = np.zeros(W.shape[0])
@@ -206,7 +213,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # C-NMF params
-    m = 13           # Size of median filter
+    m = 13          # Size of median filter
     rank = 2        # Rank of decomposition
     niter = 200     # Iterations for the matrix factorization and clustering
     k = 2           # Number of clusters for k-means
@@ -234,11 +241,8 @@ def process(in_path, feature="hpcp", annot_beats=False):
         S = compute_ssm(F, metric=dist)
         #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
-        # Compute the matrix factorization
-        W, H = nmf(S, rank=rank, niter=niter, convex=convex)
-
-        # Find the boundary indices from the factorization
-        bound_idxs = get_boundaries(W, H, rank, k, niter=niter)
+        # Find the boundary indices using matrix factorization
+        bound_idxs = get_boundaries(S, convex, rank, k, niter=niter)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
