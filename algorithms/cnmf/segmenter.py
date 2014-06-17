@@ -20,7 +20,6 @@ import logging
 import numpy as np
 import time
 from scipy.spatial import distance
-from scipy import signal
 from scipy.ndimage import filters
 from scipy.cluster.vq import whiten, vq, kmeans
 import sys
@@ -47,7 +46,7 @@ def median_filter(X, M=8):
 def mean_filter(x, M=9):
     """Average filter."""
     #window = np.ones(M) / float(M)
-    window = np.hamming(M)
+    window = np.hanning(M)
     return np.convolve(x, window, 'same')
 
 
@@ -80,16 +79,32 @@ def pick_peaks(nc, L=16):
     offset = nc.mean() / 2.
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    # plt.plot(nc)
-    # plt.plot(th)
-    # plt.show()
     peaks = []
+
+    k_hill = 0
+    hill = False
     for i in xrange(1, nc.shape[0] - 1):
-        # is it a peak?
-        if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
-            # is it above the threshold?
-            if nc[i] > th[i]:
-                peaks.append(i)
+        # is it above the threshold?
+        if nc[i] > th[i]:
+            # is it a peak?
+            if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
+                    k_hill = 0
+                    hill = False
+                    peaks.append(i)
+            # is it a flat hill?
+            if nc[i - 1] == nc[i] and nc[i] == nc[i - 1]:
+                hill = True
+                k_hill += 1
+        elif hill:
+            peaks.append(i - k_hill / 2)
+            k_hill = 0
+            hill = False
+
+    #plt.plot(nc)
+    #plt.plot(th)
+    #plt.show()
+    #print peaks
+
     return peaks
 
 
@@ -148,8 +163,8 @@ def get_boundaries(W, H, rank, k, niter=500):
     bounds_idx: np.array
         Bound indeces found
     """
-    M = 7   # Size of the mean filter to compute the novelty curve
-    L = 9   # Size of the peak picking filter
+    M = 9   # Size of the mean filter to compute the novelty curve
+    L = 15   # Size of the peak picking filter
 
     # Find non filtered boundaries
     bound_idxs = np.empty(0)
@@ -159,18 +174,19 @@ def get_boundaries(W, H, rank, k, niter=500):
         D /= D.max()
 
         # Apply k-means
-        wD = whiten(D)
-        codebook, dist = kmeans(wD[:, 1], k, iter=niter, thresh=1e-10)
-        codes, disto = vq(wD[:, 1], codebook)
+        #wD = whiten(D)
+        #codebook, dist = kmeans(wD[:, 0], k, iter=niter)
+        #codes, disto = vq(wD[:, 0], codebook)
+        codebook, dist = kmeans(D, k, iter=niter)
+        codes, disto = vq(D, codebook)
 
         # Find points where there's a cluster difference (boundary)
         b = np.where(np.diff(codes) != 0)[0] + 1
         bound_idxs = np.concatenate((bound_idxs, b))
 
-        #print bound_idxs
-        #plt.imshow(D.transpose(), interpolation='nearest')
+        #plt.imshow(D, aspect="auto", interpolation='nearest')
         #for bb in b:
-            #plt.axvline(bb, linewidth=2)
+            #plt.axvline(bb, linewidth=2, color="k")
         #plt.show()
 
     # Compute novelty curve from initial boundaries
@@ -190,7 +206,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     """Main process."""
 
     # C-NMF params
-    m = 13          # Size of median filter
+    m = 13           # Size of median filter
     rank = 2        # Rank of decomposition
     niter = 200     # Iterations for the matrix factorization and clustering
     k = 2           # Number of clusters for k-means
