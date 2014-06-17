@@ -171,15 +171,15 @@ def get_boundaries(S, convex, rank, k, niter=500):
         W, H = nmf(S, rank=rank, niter=niter, convex=convex)
         for r in range(rank):
             # Compute decomposition matrix
-            D = (W[:, r] * H[r, :])
+            D = W[:, r] * H[r, :]
             D /= D.max()
 
             # Apply k-means
             #wD = whiten(D)
             #codebook, dist = kmeans(wD[:, 0], k, iter=niter)
             #codes, disto = vq(wD[:, 0], codebook)
-            codebook, dist = kmeans(D, k, iter=niter)
-            codes, disto = vq(D, codebook)
+            codebook, dist = kmeans(D.T, k, iter=niter)
+            codes, disto = vq(D.T, codebook)
 
             # Find points where there's a cluster difference (boundary)
             b = np.where(np.diff(codes) != 0)[0] + 1
@@ -214,8 +214,8 @@ def process(in_path, feature="hpcp", annot_beats=False):
 
     # C-NMF params
     m = 13          # Size of median filter
-    rank = 2        # Rank of decomposition
-    niter = 200     # Iterations for the matrix factorization and clustering
+    rank = 3        # Rank of decomposition
+    niter = 300     # Iterations for the matrix factorization and clustering
     k = 2           # Number of clusters for k-means
     convex = True   # Use convex or standard NMF
     dist = "correlation"
