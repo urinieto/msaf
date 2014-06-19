@@ -133,7 +133,7 @@ def cnmf(S, rank=2, niter=500):
     return F, G, W
 
 
-def get_boundaries(S, rank, k, niter=500):
+def get_boundaries(S, rank, niter=500):
     """
     Gets the boundaries from the factorization matrices.
 
@@ -143,8 +143,6 @@ def get_boundaries(S, rank, k, niter=500):
         Self-similarity matrix
     rank: int
         Rank of decomposition
-    k: int
-        Number of clusters for k-means
     niter: int
         Number of iterations for k-means
 
@@ -154,12 +152,15 @@ def get_boundaries(S, rank, k, niter=500):
         Bound indeces found
     """
     M = 9   # Size of the mean filter to compute the novelty curve
-    L = 15   # Size of the peak picking filter
+    L = 13   # Size of the peak picking filter
 
     # Find non filtered boundaries
     bound_idxs = np.empty(0)
     while True:
-        F, G, W = cnmf(S, rank=rank, niter=niter)
+        try:
+            F, G, W = cnmf(S, rank=rank, niter=niter)
+        except:
+            return bound_idxs
 
         # Filter W
         idx = np.argmax(W, axis=1)
@@ -168,13 +169,13 @@ def get_boundaries(S, rank, k, niter=500):
         W[:, :] = 0
         W[max_idx] = idx + 1
 
-        # TODO: Pre-Filter?
-        #W = median_filter(W, 13)
+        # TODO: Order matters?
+        W = np.sum(W, axis=1)
+        W = median_filter(W[:, np.newaxis], 11)
         #plt.imshow(W, interpolation="nearest", aspect="auto")
         #plt.show()
 
-        W = np.sum(W, axis=1)
-        b = np.where(np.diff(W) != 0)[0] + 1
+        b = np.where(np.diff(W.flatten()) != 0)[0] + 1
         bound_idxs = np.concatenate((bound_idxs, b))
 
         # Increase rank if we found too few boundaries
@@ -209,7 +210,6 @@ def process(in_path, feature="hpcp", annot_beats=False):
     m = 13          # Size of median filter
     rank = 3        # Rank of decomposition
     niter = 300     # Iterations for the matrix factorization and clustering
-    k = 2           # Number of clusters for k-means
     dist = "correlation"
 
     # Read features
@@ -234,7 +234,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
         #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices using matrix factorization
-        bound_idxs = get_boundaries(S, rank, k, niter=niter)
+        bound_idxs = get_boundaries(S, rank, niter=niter)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
