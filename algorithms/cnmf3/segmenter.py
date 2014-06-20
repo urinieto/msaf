@@ -38,71 +38,6 @@ def median_filter(X, M=8):
     return X
 
 
-def mean_filter(x, M=9):
-    """Average filter."""
-    #window = np.ones(M) / float(M)
-    window = np.hanning(M)
-    return np.convolve(x, window, 'same')
-
-
-def compute_ssm(X, metric="seuclidean"):
-    """Computes the self-similarity matrix of X."""
-    D = distance.pdist(X, metric=metric)
-    D = distance.squareform(D)
-    D /= D.max()
-    return 1 - D
-
-
-def compute_nc(X, G):
-    """Computes the novelty curve from the self-similarity matrix X and
-        the gaussian kernel G."""
-    N = X.shape[0]
-    M = G.shape[0]
-    nc = np.zeros(N)
-
-    for i in xrange(M / 2, N - M / 2 + 1):
-        nc[i] = np.sum(X[i - M / 2:i + M / 2, i - M / 2:i + M / 2] * G)
-
-    # Normalize
-    nc += nc.min()
-    nc /= nc.max()
-    return nc
-
-
-def pick_peaks(nc, L=16):
-    """Obtain peaks from a novelty curve using an adaptive threshold."""
-    offset = nc.mean() / 2.
-    th = filters.median_filter(nc, size=L) + offset
-    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    peaks = []
-
-    k_hill = 0
-    hill = False
-    for i in xrange(1, nc.shape[0] - 1):
-        # is it above the threshold?
-        if nc[i] > th[i]:
-            # is it a peak?
-            if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
-                    k_hill = 0
-                    hill = False
-                    peaks.append(i)
-            # is it a flat hill?
-            if nc[i - 1] == nc[i] and nc[i] == nc[i - 1]:
-                hill = True
-                k_hill += 1
-        elif hill:
-            peaks.append(i - k_hill / 2)
-            k_hill = 0
-            hill = False
-
-    #plt.plot(nc)
-    #plt.plot(th)
-    #plt.show()
-    #print peaks
-
-    return peaks
-
-
 def cnmf(S, rank=2, niter=500, hull=False):
     """(Convex) Non-Negative Matrix Factorization.
 
@@ -194,16 +129,6 @@ def get_boundaries(X, rank, M, L, R, niter=500):
         else:
             break
 
-    # Compute novelty curve from initial boundaries
-    #nc = np.zeros(X.shape[1])
-    #for b in bound_idxs:
-        #nc[int(b)] += 1
-    #nc = mean_filter(nc, M=M)
-    ##plt.plot(nc); plt.show()
-
-    ## Pick peaks to obtain the best boundaries (filtered boundaries)
-    #bound_idxs = pick_peaks(nc, L=L)
-
     #plt.imshow(G.T, interpolation="nearest", aspect="auto")
     #for b in bound_idxs:
         #plt.axvline(b, linewidth=2.0, color="k")
@@ -212,18 +137,13 @@ def get_boundaries(X, rank, M, L, R, niter=500):
     return bound_idxs
 
 
-def process(in_path, feature="hpcp", annot_beats=False, h=16, M=3, L=16, R=12,
-            rank=4):
+def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=3):
     """Main process.
 
     Parameters
     ----------
     h : int
         Size of median filter
-    M : int
-        Size of the mean filter to compute the novelty curve
-    L : int
-        Size of the peak picking filter
     R : int
         Size of the median filter for activation matrix
     rank : int
