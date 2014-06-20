@@ -23,21 +23,23 @@ import eval as EV
 
 def process():
     ranks = np.arange(2, 6)
-    hh = np.arange(4, 17)
-    RR = np.arange(4, 17)
+    hh = np.arange(2, 18)
+    RR = np.arange(2, 18)
     in_path = "/Users/uri/datasets/Segments/"
-    res_file = "results.txt"
+    res_file = "results-salami.txt"
+    ds_name = "SALAMI"
+    feature = "hpcp"
     for rank in ranks:
         for h in hh:
             for R in RR:
                 logging.info("Computing rank: %d, h: %d, R: %d" %
                             (rank, h, R))
-                RB.process(in_path, feature="hpcp",
-                           ds_name="Isophonics", rank=rank, h=h, R=R)
-                res = EV.process(in_path, "cnmf3", ds_name="Beatles")
+                RB.process(in_path, feature=feature,
+                           ds_name=ds_name, rank=rank, h=h, R=R)
+                res = EV.process(in_path, "cnmf3", ds_name=ds_name)
                 res = res.mean(axis=0)
                 with open(res_file, "a") as f:
-                    str = "%d, %d, %d, %.4f, %4f, %4f, %.4f, %4f, %4f\n" % \
+                    str = "%d\t%d\t%d\t%.4f\t%4f\t%4f\t%.4f\t%4f\t%4f\n" % \
                         (rank, h, R, res[2], res[0], res[1], res[5], 
                          res[3], res[4])
                     f.write(str)

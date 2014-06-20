@@ -43,8 +43,8 @@ def cnmf(S, rank=2, niter=500, hull=False):
 
     Parameters
     ----------
-    S: np.array
-        Self-similarity matrix (must be symmetric)
+    S: np.array(p, N)
+        Features matrix. p row features and N column observations.
     rank: int
         Rank of decomposition
     niter: int
@@ -65,11 +65,10 @@ def cnmf(S, rank=2, niter=500, hull=False):
     nmf_mdl.factorize(niter=niter)
     F = np.asarray(nmf_mdl.W)
     G = np.asarray(nmf_mdl.H)
-    W = np.asarray(nmf_mdl.G)
-    return F, G, W
+    return F, G
 
 
-def get_boundaries(X, rank, M, L, R, niter=500):
+def get_boundaries(X, rank, R, niter=500):
     """
     Gets the boundaries from the factorization matrices.
 
@@ -79,10 +78,6 @@ def get_boundaries(X, rank, M, L, R, niter=500):
         Features matrix (e.g. chromagram)
     rank: int
         Rank of decomposition
-    M : int
-        Size of the average filter for the novelty curve
-    L : int
-        Size of the pick peaking method
     R: int
         Size of the median filter for activation matrix
     niter: int
@@ -98,7 +93,7 @@ def get_boundaries(X, rank, M, L, R, niter=500):
     bound_idxs = np.empty(0)
     while True:
         try:
-            F, G, W = cnmf(X, rank=rank, niter=niter, hull=False)
+            F, G = cnmf(X, rank=rank, niter=niter, hull=False)
         except:
             return bound_idxs
 
@@ -172,7 +167,7 @@ def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=3):
         #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices using matrix factorization
-        bound_idxs = get_boundaries(F.T, rank, M, L, R, niter=niter)
+        bound_idxs = get_boundaries(F.T, rank, R, niter=niter)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
