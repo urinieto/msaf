@@ -134,7 +134,7 @@ def cnmf(S, rank=2, niter=500, hull=False):
     return F, G, W
 
 
-def get_boundaries(X, rank, niter=500):
+def get_boundaries(X, rank, M, L, R, niter=500):
     """
     Gets the boundaries from the factorization matrices.
 
@@ -144,6 +144,12 @@ def get_boundaries(X, rank, niter=500):
         Features matrix (e.g. chromagram)
     rank: int
         Rank of decomposition
+    M : int
+        Size of the average filter for the novelty curve
+    L : int
+        Size of the pick peaking method
+    R: int
+        Size of the median filter for activation matrix
     niter: int
         Number of iterations for k-means
 
@@ -152,8 +158,6 @@ def get_boundaries(X, rank, niter=500):
     bounds_idx: np.array
         Bound indeces found
     """
-    M = 3   # Size of the mean filter to compute the novelty curve
-    L = 12   # Size of the peak picking filter
 
     # Find non filtered boundaries
     bound_idxs = np.empty(0)
@@ -174,7 +178,7 @@ def get_boundaries(X, rank, niter=500):
         # TODO: Order matters?
         #oG = np.copy(G)
         G = np.sum(G, axis=1)
-        G = median_filter(G[:, np.newaxis], 12)
+        G = median_filter(G[:, np.newaxis], R)
         #plt.subplot(1, 2, 1)
         #plt.imshow(oG, interpolation="nearest", aspect="auto")
         #plt.subplot(1, 2, 2)
@@ -191,16 +195,16 @@ def get_boundaries(X, rank, niter=500):
             break
 
     # Compute novelty curve from initial boundaries
-    nc = np.zeros(X.shape[1])
-    for b in bound_idxs:
-        nc[int(b)] += 1
-    nc = mean_filter(nc, M=M)
-    #plt.plot(nc); plt.show()
+    #nc = np.zeros(X.shape[1])
+    #for b in bound_idxs:
+        #nc[int(b)] += 1
+    #nc = mean_filter(nc, M=M)
+    ##plt.plot(nc); plt.show()
 
-    # Pick peaks to obtain the best boundaries (filtered boundaries)
-    bound_idxs = pick_peaks(nc, L=L)
+    ## Pick peaks to obtain the best boundaries (filtered boundaries)
+    #bound_idxs = pick_peaks(nc, L=L)
 
-    #plt.imshow(G, interpolation="nearest", aspect="auto")
+    #plt.imshow(G.T, interpolation="nearest", aspect="auto")
     #for b in bound_idxs:
         #plt.axvline(b, linewidth=2.0, color="k")
     #plt.show()
@@ -208,12 +212,26 @@ def get_boundaries(X, rank, niter=500):
     return bound_idxs
 
 
-def process(in_path, feature="hpcp", annot_beats=False):
-    """Main process."""
+def process(in_path, feature="hpcp", annot_beats=False, h=16, M=3, L=16, R=12,
+            rank=4):
+    """Main process.
+
+    Parameters
+    ----------
+    h : int
+        Size of median filter
+    M : int
+        Size of the mean filter to compute the novelty curve
+    L : int
+        Size of the peak picking filter
+    R : int
+        Size of the median filter for activation matrix
+    rank : int
+        Rank of decomposition
+
+    """
 
     # C-NMF params
-    m = 9          # Size of median filter
-    rank = 4        # Rank of decomposition
     niter = 300     # Iterations for the matrix factorization and clustering
 
     # Read features
@@ -228,13 +246,13 @@ def process(in_path, feature="hpcp", annot_beats=False):
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
-    if F.shape[0] >= m:
+    if F.shape[0] >= h:
         # Median filter
-        F = median_filter(F, M=m)
+        F = median_filter(F, M=h)
         #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices using matrix factorization
-        bound_idxs = get_boundaries(F.T, rank, niter=niter)
+        bound_idxs = get_boundaries(F.T, rank, M, L, R, niter=niter)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
@@ -255,7 +273,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     est_times = np.concatenate((est_times, [dur]))
 
     # Concatenate last boundary
-    logging.info("Estimated times: %s" % est_times)
+    #logging.info("Estimated times: %s" % est_times)
 
     return est_times
 

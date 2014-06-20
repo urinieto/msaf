@@ -255,7 +255,7 @@ def process(in_path, feature="hpcp", annot_beats=False):
     est_times = np.concatenate((est_times, [dur]))
 
     # Concatenate last boundary
-    logging.info("Estimated times: %s" % est_times)
+    #logging.info("Estimated times: %s" % est_times)
 
     return est_times
 
