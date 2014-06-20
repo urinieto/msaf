@@ -6,7 +6,7 @@ This framework contains a set of algorithms to segment a given music audio signa
 
 ## Boundary Algorithms ##
 
-* C-NMF (Nieto & Jehan 2013)
+* Improved C-NMF (Nieto & Jehan 2013)
 * Foote (Foote 2001)
 * Levy (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp)).
 * OLDA (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/olda)).
