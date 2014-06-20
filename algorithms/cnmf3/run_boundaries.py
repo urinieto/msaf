@@ -23,7 +23,8 @@ sys.path.append("../../")
 import msaf_io as MSAF
 
 
-def process(in_path, annot_beats=False, feature="mfcc", ds_name="*"):
+def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
+            rank=None, h=None, R=None):
     """Main process."""
 
     # Get relevant files
@@ -42,11 +43,15 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*"):
             if jam.beats[0].data == []:
                 continue
 
-        logging.info("Segmenting %s" % audio_file)
+        #logging.info("Segmenting %s" % audio_file)
 
         # C-NMF segmenter call
-        est_times = S.process(audio_file, feature=feature,
-                              annot_beats=annot_beats)
+        if rank is None:
+            est_times = S.process(audio_file, feature=feature,
+                                annot_beats=annot_beats)
+        else:
+            est_times = S.process(audio_file, feature=feature,
+                                annot_beats=annot_beats, rank=rank, h=h, R=R)
 
         #print est_times
         # Save
