@@ -75,7 +75,7 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
         # Save segments
         out_file = os.path.join(in_path, "estimations", 
             os.path.basename(jam_file).replace(".jams", ".json"))
-        MSAF.save_boundaries(out_file, times, annot_beats, "olda", 
+        MSAF.save_estimations(out_file, times, annot_beats, "olda", 
             version="1.0", **params)
 
 

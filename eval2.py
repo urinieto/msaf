@@ -156,11 +156,13 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
 
     try:
         if annotator == "GT":
-            ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                "sections", annotator=0, context=MSAF.prefix_dict[ds_prefix])
+            ann_inter, ann_labels = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator=0,
+                context=MSAF.prefix_dict[ds_prefix])
         else:
-            ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                "sections", annotator_name=annotator, context="large_scale")
+            ann_inter, ann_labels = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator_name=annotator,
+                context="large_scale")
     except:
         logging.warning("No annotations for file: %s" % jam_file)
         return {}
