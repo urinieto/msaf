@@ -85,13 +85,6 @@ def read_annot_bound_frames(audio_path, beats):
     """Reads the corresponding annotations file to retrieve the boundaries
         in frames."""
 
-    prefix_dict = {
-        "Cerulean"      : "large_scale",
-        "Epiphyte"      : "function",
-        "Isophonics"    : "function",
-        "SALAMI"        : "large_scale"
-    }
-
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
@@ -192,19 +185,40 @@ def create_estimation(times, annot_beats, **params):
     return est
 
 
-def save_boundaries(out_file, times, annot_beats, alg_name, **params):
-    """Saves the segment boundary times in the out_file using a JSON format.
-        if file exists, update with new annotation."""
+def save_estimations(out_file, estimations, annot_beats, alg_name,
+                     bounds=True, **params):
+    """Saves the segment estimations (either boundaries or labels) in the
+        out_file using a JSON format.
+        If file exists, update with new annotation.
+
+    Parameters
+    ----------
+    out_file : str
+        Path to the output JSON file.
+    estimations : list
+        Set of boundary times or labels to be stored.
+    annot_beats : boolean
+        Whether the estimations were obtained using annotated beats.
+    alg_name : str
+        Algorithm identifier.
+    bounds : boolean
+        Whether the estimations represent boundaries or lables.
+    params : dict
+        Extra parameters, algorithm dependant.
+    """
+    if bounds:
+        est_type = "boundaries"
+    else:
+        est_type = "labels"
     if os.path.isfile(out_file):
         # Add estimation
-        f = open(out_file, "r")
-        res = json.load(f)
+        res = json.load(open(out_file, "r"))
 
         # Check if estimation already exists
-        if "boundaries" in res.keys():
-            if alg_name in res["boundaries"]:
+        if est_type in res.keys():
+            if alg_name in res[est_type]:
                 found = False
-                for i, est in enumerate(res["boundaries"][alg_name]):
+                for i, est in enumerate(res[est_type][alg_name]):
                     if est["annot_beats"] == annot_beats:
                         found = True
                         for key in params:
@@ -213,29 +227,29 @@ def save_boundaries(out_file, times, annot_beats, alg_name, **params):
                                 break
                         if not found:
                             continue
-                        res["boundaries"][alg_name][i] = \
-                            create_estimation(times, annot_beats, **params)
+                        res[est_type][alg_name][i] = \
+                            create_estimation(estimations, 
+                                              annot_beats, **params)
                         break
                 if not found:
-                    res["boundaries"][alg_name].append(create_estimation(times,
-                                                annot_beats, **params))
+                    res[est_type][alg_name].append(create_estimation(
+                        estimations, annot_beats, **params))
             else:
-                res["boundaries"][alg_name] = []
-                res["boundaries"][alg_name].append(create_estimation(times,
+                res[est_type][alg_name] = []
+                res[est_type][alg_name].append(create_estimation(estimations,
                                                     annot_beats, **params))
         else:
-            res["boundaries"] = {}
-            res["boundaries"][alg_name] = []
-            res["boundaries"][alg_name].append(create_estimation(times,
+            res[est_type] = {}
+            res[est_type][alg_name] = []
+            res[est_type][alg_name].append(create_estimation(estimations,
                                                 annot_beats, **params))
-        f.close()
     else:
         # Create new estimation
         res = {}
-        res["boundaries"] = {}
-        res["boundaries"][alg_name] = []
-        res["boundaries"][alg_name].append(create_estimation(times,
-                                            annot_beats, **params))
+        res[est_type] = {}
+        res[est_type][alg_name] = []
+        res[est_type][alg_name].append(
+            create_estimation(estimations, annot_beats, **params))
 
     # Save dictionary to disk
     with open(out_file, "w") as f:

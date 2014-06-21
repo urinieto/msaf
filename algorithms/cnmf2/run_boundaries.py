@@ -52,7 +52,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*"):
         # Save
         out_file = os.path.join(in_path, "estimations",
                                 os.path.basename(audio_file)[:-4] + ".json")
-        MSAF.save_boundaries(out_file, est_times, annot_beats, "cnmf2",
+        MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf2",
                              feature=feature)
 
 

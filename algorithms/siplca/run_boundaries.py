@@ -75,7 +75,7 @@ def process(in_path, annot_beats=False):
         # Save segments
         out_file = os.path.join(in_path, "estimations", 
             os.path.basename(jam_file).replace(".jams", ".json"))
-        MSAF.save_boundaries(out_file, times, annot_beats, "siplca",
+        MSAF.save_estimations(out_file, times, annot_beats, "siplca",
             version="1.0", **params)
 
 
