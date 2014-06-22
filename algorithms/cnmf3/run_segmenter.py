@@ -47,10 +47,10 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
         # C-NMF segmenter call
         if rank is None:
-            est_times = S.process(audio_file, feature=feature,
+            est_times, est_labels = S.process(audio_file, feature=feature,
                                 annot_beats=annot_beats)
         else:
-            est_times = S.process(audio_file, feature=feature,
+            est_times, est_labels = S.process(audio_file, feature=feature,
                                 annot_beats=annot_beats, rank=rank, h=h, R=R)
 
         #print est_times
@@ -59,6 +59,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                                 os.path.basename(audio_file)[:-4] + ".json")
         MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
                               bounds=True, feature=feature)
+        MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
+                              bounds=False, feature=feature)
 
 
 def main():
