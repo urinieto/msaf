@@ -26,7 +26,7 @@ def est2lab(est_file, lab_file, annot_beats=False, bound_name="olda",
             label_name="olda"):
     """Estimation file (JSON) to lab file."""
 
-    bounds = MSAF.read_boundaries(est_file, bound_name, annot_beats)
+    bounds = MSAF.read_estimations(est_file, bound_name, annot_beats)
     bounds = zip(bounds, bounds[1:]) # Lab format
 
     # TODO: Labels

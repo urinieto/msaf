@@ -167,7 +167,9 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
         logging.warning("No annotations for file: %s" % jam_file)
         return {}
 
-    est_inter = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
+    est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats, **params)
+    est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats, 
+                                       bounds=False, **params)
     if est_inter == []:
         return {}
 
@@ -237,7 +239,7 @@ def get_all_est_boundaries(est_file, annot_beats):
 
     # Estimations
     for algo_id in MSAF.get_algo_ids(est_file):
-        est_inters = MSAF.read_boundaries(est_file, algo_id,
+        est_inters = MSAF.read_estimations(est_file, algo_id,
                         annot_beats, feature=feat_dict[algo_id])
         boundaries = intervals_to_times(est_inters)
         all_boundaries.append(boundaries)
