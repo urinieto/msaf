@@ -28,8 +28,9 @@ prefix_dict = {
 }
 
 
-def read_boundaries(est_file, alg_id, annot_beats, **params):
-    """Reads the boundaries from an estimated file.
+def read_estimations(est_file, alg_id, annot_beats, bounds=True, **params):
+    """Reads the estimations (either boundaries or labels) from an estimated
+    file.
 
     Parameters
     ----------
@@ -39,23 +40,32 @@ def read_boundaries(est_file, alg_id, annot_beats, **params):
         Algorithm ID from which to retrieve the boundaries. E.g. serra
     annot_beats: bool
         Whether to retrieve the boundaries using annotated beats or not.
+    bounds : bool
+        Whether to extract boundaries or labels
     params: dict
         Additional search parameters. E.g. {"features" : "hpcp"}
 
     Returns
     -------
-    bounds = np.array(N,2)
-        Set of read boundaries in an interval format (start, end).
+    estimations = np.array(N,2) or np.array(N)
+        Set of read estimations:
+            If boundaries: interval format (start, end).
+            If labels: flattened format.
     """
     est_data = json.load(open(est_file, "r"))
 
-    if alg_id not in est_data["boundaries"]:
+    if bounds:
+        est_type = "boundaries"
+    else:
+        est_type = "labels"
+
+    if alg_id not in est_data[est_type]:
         logging.error("Estimation not found for algorithm %s in %s" %
                       (est_file, alg_id))
         return []
 
-    bounds = []
-    for alg in est_data["boundaries"][alg_id]:
+    estimations = []
+    for alg in est_data[est_type][alg_id]:
         if alg["annot_beats"] == annot_beats:
             # Match non-empty parameters
             found = True
@@ -65,12 +75,14 @@ def read_boundaries(est_file, alg_id, annot_beats, **params):
 
             if found:
                 # Sort the boundaries by time
-                bounds = np.sort(np.array(alg["data"]))
+                estimations = np.sort(np.array(alg["data"]))
                 break
 
-    # Convert to interval
-    bounds = np.asarray(zip(bounds[:-1], bounds[1:]))
-    return bounds
+    # Convert to interval if needed
+    if bounds:
+        estimations = np.asarray(zip(estimations[:-1], estimations[1:]))
+
+    return estimations
 
 
 def get_algo_ids(est_file):

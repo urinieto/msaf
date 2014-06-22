@@ -144,7 +144,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
         logging.warning("No annotations for file: %s" % jam_file)
         return []
 
-    est_inter = MSAF.read_boundaries(est_file, alg_id, annot_beats, **params)
+    est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats, **params)
     if est_inter == []:
         return []
 
@@ -214,7 +214,7 @@ def get_all_est_boundaries(est_file, annot_beats):
 
     # Estimations
     for algo_id in MSAF.get_algo_ids(est_file):
-        est_inters = MSAF.read_boundaries(est_file, algo_id,
+        est_inters = MSAF.read_estimations(est_file, algo_id,
                         annot_beats, feature=feat_dict[algo_id])
         boundaries = intervals_to_times(est_inters)
         all_boundaries.append(boundaries)
@@ -236,9 +236,9 @@ def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
     est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_584.json"
     for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
         # Read estimated times from both algorithms
-        est_inters1 = MSAF.read_boundaries(est_file, algorithms[0],
+        est_inters1 = MSAF.read_estimations(est_file, algorithms[0],
                             annot_beats, feature=feat_dict[algorithms[0]])
-        est_inters2 = MSAF.read_boundaries(est_file, algorithms[1],
+        est_inters2 = MSAF.read_estimations(est_file, algorithms[1],
                             annot_beats, feature=feat_dict[algorithms[1]])
         if est_inters1 == [] or est_inters2 == []:
             continue
