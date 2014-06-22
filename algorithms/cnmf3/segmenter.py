@@ -68,9 +68,10 @@ def cnmf(S, rank=2, niter=500, hull=False):
     return F, G
 
 
-def get_boundaries(X, rank, R, niter=500):
+def get_segmentation(X, rank, R, niter=500):
     """
-    Gets the boundaries from the factorization matrices.
+    Gets the segmentation (boundaries and labels) from the factorization 
+    matrices.
 
     Parameters
     ----------
@@ -87,15 +88,16 @@ def get_boundaries(X, rank, R, niter=500):
     -------
     bounds_idx: np.array
         Bound indeces found
+    labels: np.array
+        Indeces of the labels representing the similarity between segments.
     """
 
     # Find non filtered boundaries
-    bound_idxs = np.empty(0)
     while True:
         try:
             F, G = cnmf(X, rank=rank, niter=niter, hull=False)
         except:
-            return bound_idxs
+            return np.empty(0), [1]
 
         # Filter G
         G = G.T
@@ -113,13 +115,15 @@ def get_boundaries(X, rank, R, niter=500):
         #plt.imshow(oG, interpolation="nearest", aspect="auto")
         #plt.subplot(1, 2, 2)
         #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
+        
+        G = G.flatten()
+        bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
-        b = np.where(np.diff(G.flatten()) != 0)[0] + 1
-        bound_idxs = np.concatenate((bound_idxs, b))
+        # Obtain labels
+        labels = np.concatenate(([G[0]], G[bound_idxs]))
 
         # Increase rank if we found too few boundaries
         if len(np.unique(bound_idxs)) <= 2:
-            bound_idxs = np.empty(0)
             rank += 1
         else:
             break
@@ -129,7 +133,7 @@ def get_boundaries(X, rank, R, niter=500):
         #plt.axvline(b, linewidth=2.0, color="k")
     #plt.show()
 
-    return bound_idxs
+    return bound_idxs, labels
 
 
 def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=3):
@@ -166,12 +170,13 @@ def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=3):
         F = median_filter(F, M=h)
         #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
-        # Find the boundary indices using matrix factorization
-        bound_idxs = get_boundaries(F.T, rank, R, niter=niter)
+        # Find the boundary indices and labels using matrix factorization
+        bound_idxs, est_labels = get_segmentation(F.T, rank, R, niter=niter)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
         bound_idxs = np.empty(0)
+        est_labels = [1]
 
     # Concatenate first boundary
     bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
@@ -188,9 +193,10 @@ def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=3):
     est_times = np.concatenate((est_times, [dur]))
 
     # Concatenate last boundary
-    #logging.info("Estimated times: %s" % est_times)
+    logging.info("Estimated times: %s" % est_times)
+    logging.info("Estimated labels: %s" % est_labels)
 
-    return est_times
+    return est_times, est_labels
 
 
 def main():

@@ -19,3 +19,10 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Numpy
 * Scipy
 * PyMF
+* Pandas
+* JAMS
+* mir_eval
+
+## Credits ##
+
+Created by Oriol Nieto (oriol@nyu.edu).
