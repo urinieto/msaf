@@ -138,7 +138,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
             ref_intervals, ref_labels, t_min=0)
         est_intervals, est_labels = mir_eval.util.adjust_intervals(
             est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
-        res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+        #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
 
     # Names
     base = os.path.basename(est_file)
