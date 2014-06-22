@@ -59,9 +59,10 @@ def read_estimations(est_file, alg_id, annot_beats, bounds=True, **params):
     else:
         est_type = "labels"
 
-    if alg_id not in est_data[est_type]:
-        logging.error("Estimation not found for algorithm %s in %s" %
-                      (est_file, alg_id))
+    if est_type not in est_data.keys() or alg_id not in est_data[est_type]:
+        if bounds:
+            logging.error("Estimation not found for algorithm %s in %s" %
+                          (est_file, alg_id))
         return []
 
     estimations = []
