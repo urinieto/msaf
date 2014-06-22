@@ -87,7 +87,8 @@ def intervals_to_times(inters):
     return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)
 
 
-def compute_results(ann_inter, est_inter, trim, bins, est_file):
+def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
+                    est_file):
     """Compute the results using all the available evaluations.
 
     Return
@@ -115,6 +116,7 @@ def compute_results(ann_inter, est_inter, trim, bins, est_file):
     """
     res = {}
 
+    ### Boundaries ###
     # Hit Rate
     res["P3"], res["R3"], res["F3"] = mir_eval.boundary.detection(
         ann_inter, est_inter, window=3, trim=trim)
@@ -129,8 +131,14 @@ def compute_results(ann_inter, est_inter, trim, bins, est_file):
     res["DevA2E"], res["DevE2A"] = mir_eval.boundary.deviation(
         ann_inter, est_inter, trim=trim)
 
-    # Pair-wise frame clustering
-    #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise
+    ### Labels ###
+    if est_labels != []:
+        # Pair-wise frame clustering
+        ref_intervals, ref_labels = mir_eval.util.adjust_intervals(
+            ref_intervals, ref_labels, t_min=0)
+        est_intervals, est_labels = mir_eval.util.adjust_intervals(
+            est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
+        res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
 
     # Names
     base = os.path.basename(est_file)
@@ -168,13 +176,14 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
         return {}
 
     est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats, **params)
-    est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats, 
+    est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats,
                                        bounds=False, **params)
     if est_inter == []:
         return {}
 
     # Compute the results and return
-    return compute_results(ann_inter, est_inter, trim, bins, est_file)
+    return compute_results(ann_inter, est_inter, ann_labels, est_labels, trim,
+                           bins, est_file)
 
 
 def plot_boundaries(all_boundaries, est_file):
