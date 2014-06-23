@@ -13,6 +13,11 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Serrà (Serrà et al. 2012)
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/)).
 
+## Labeling Algorithms ##
+
+* Improved C-NMF (Nieto & Jehan 2013)
+* SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/)).
+
 ## Requirements ##
 
 * Python 2.7
@@ -20,6 +25,7 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Scipy
 * PyMF
 * Pandas
+* Essentia
 * JAMS
 * mir_eval
 
