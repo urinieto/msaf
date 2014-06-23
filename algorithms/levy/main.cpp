@@ -31,11 +31,9 @@ vector<vector<double> > JSONValueTo2DVector(Json::Value &data) {
     vector<vector<double> > f;
     f.resize(T);
 
-    for (int i = 0; i < T; ++i)
-    {
+    for (int i = 0; i < T; ++i) {
         f[i].resize(F);
-        for (int j = 0; j < F; ++j)
-        {
+        for (int j = 0; j < F; ++j) {
             f[i][j] = data[i][j].asDouble();
         }
     }
@@ -53,8 +51,7 @@ vector<double> JSONValueToVector(Json::Value &data) {
     vector<double> f;
     f.resize(T);
 
-    for (int i = 0; i < T; ++i)
-    {
+    for (int i = 0; i < T; ++i) {
         f[i] = data[i].asDouble();
     }
 
@@ -73,8 +70,7 @@ vector<double> JAMSValueToVector(Json::Value &data) {
     vector<double> f;
     f.resize(T);
 
-    for (int i = 0; i < T; ++i)
-    {
+    for (int i = 0; i < T; ++i) {
         f[i] = data[i]["time"]["value"].asDouble();
     }
 
@@ -103,8 +99,7 @@ vector<vector<double> > readJSON(const char* json_path, bool annot_beats,
     bool parsingSuccessful = reader.parse( inputs, root );
 
     vector<vector<double> > f;
-    if ( !parsingSuccessful )
-    {
+    if ( !parsingSuccessful ) {
         // report to the user the failure and their locations in the document.
         std::cout  << "Failed to parse configuration\n"
                    << reader.getFormattedErrorMessages();
@@ -185,7 +180,30 @@ void createEstimation(Json::Value &est, vector<double> &times,
     est["data"] = vec;
     est["feature"] = feature;
     est["version"] = "1.0";
+}
 
+void createEstimationInt(Json::Value &est, vector<int> &labels, 
+        bool annot_beats, const char* feature) {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", &tstruct);
+
+    Json::Value vec(Json::arrayValue);
+
+    est["annot_beats"] = annot_beats;
+    est["timestamp"] = buf;
+
+    for (int i = 0; i < labels.size(); ++i)
+    {
+        vec.append(Json::Value(labels[i]));
+    }
+    est["data"] = vec;
+    est["feature"] = feature;
+    est["version"] = "1.0";
 }
 
 float getFileDur(const char* json_path) {
@@ -237,7 +255,41 @@ int getFileFrames(const char* json_path) {
     return root["est_beatsync"]["hpcp"].size() - 1;
 }
 
-void writeJSON(const char* est_file, vector<double> times, bool annot_beats, 
+void insertDataJSON(Json::Value &root, Json::Value &data, bool bounds, const char* feature, bool annot_beats) {
+    
+    char data_type[80];
+    if (bounds) {
+        sprintf(data_type, "boundaries");
+    }
+    else {
+        sprintf(data_type, "labels");
+    }
+
+    if (root[data_type]["levy"] == Json::nullValue) {
+        Json::Value vec(Json::arrayValue);
+        vec.append(data);
+        root[data_type]["levy"] = vec;
+    }
+    else {
+        // Find possible value to overwrite
+        bool found = false;
+        for (int i = 0; i < root[data_type]["levy"].size(); ++i)
+        {
+            if (strcmp(root[data_type]["levy"][i]["feature"].asCString(), feature) == 0
+                && root[data_type]["levy"][i]["annot_beats"].asBool() == annot_beats) {
+
+                found = true;
+                root[data_type]["levy"][i] = data;
+                break;
+            }
+        }
+        if (!found) {
+            root[data_type]["levy"].append(data);
+        }
+    }
+}
+
+void writeJSON(const char* est_file, vector<double> times, vector<int> labels, bool annot_beats, 
                const char* feature) {
 
     cout << "Writing to: " << est_file << endl;
@@ -246,11 +298,10 @@ void writeJSON(const char* est_file, vector<double> times, bool annot_beats,
     fb.open(est_file, ios::in);
     istream inputs(&fb);
 
-    Json::Value root;   // will contains the root value after parsing.
+    Json::Value root;   // will contain the root value after parsing.
     Json::Reader reader;
     bool parsingSuccessful = reader.parse( inputs, root );
 
-    vector<double> beats;
     if ( !parsingSuccessful )
     {
         // report to the user the failure and their locations in the document.
@@ -259,37 +310,25 @@ void writeJSON(const char* est_file, vector<double> times, bool annot_beats,
         return;
     }
 
-    Json::Value est;
-    createEstimation(est, times, annot_beats, feature);
+    Json::Value times_json;
+    createEstimation(times_json, times, annot_beats, feature);
+    insertDataJSON(root, times_json, true, feature, annot_beats);
 
-    if (root["boundaries"]["levy"] == Json::nullValue) {
-        Json::Value vec(Json::arrayValue);
-        vec.append(est);
-        root["boundaries"]["levy"] = vec;
-    }
-    else {
-        // Find possible value to overwrite
-        bool found = false;
-        for (int i = 0; i < root["boundaries"]["levy"].size(); ++i)
-        {
-            if (strcmp(root["boundaries"]["levy"][i]["feature"].asCString(), feature) == 0
-                && root["boundaries"]["levy"][i]["annot_beats"].asBool() == annot_beats) {
+    // Write JSON
+    ofstream myfile;
+    myfile.open(est_file);
+    myfile << root;
+    myfile.close();
 
-                found = true;
-                root["boundaries"]["levy"][i] = est;
-                break;
-            }
-        }
-        if (!found) {
-            root["boundaries"]["levy"].append(est);
-        }
-    }
+    parsingSuccessful = reader.parse( inputs, root );
+    Json::Value labels_json;
+    createEstimationInt(labels_json, labels, annot_beats, feature);
+    insertDataJSON(root, labels_json, false, feature, annot_beats);
 
     // cout << root << endl;
 
     // Write JSON
-    ofstream myfile;
-    myfile.open (est_file);
+    myfile.open(est_file);
     myfile << root;
     myfile.close();
 }
@@ -330,10 +369,27 @@ void writeResults(Segmentation segmentation, bool annot_beats,
         times[i+1] = beats[segmentation.segments[i].end];
     }
 
-    // Add last boundary if needed
+    vector<int> labels;
+    labels.resize(segmentation.segments.size());
+    for (int i = 0; i < segmentation.segments.size(); ++i)
+    {
+        labels[i] = segmentation.segments[i].type;
+    }
+
+    // Add last segment if needed
     if (times[segmentation.segments.size()-1] < dur - 0.5) {
        times.push_back(dur); 
+       labels.push_back(labels[labels.size()-1]);
     }
+
+    //for (auto c : times)
+        //std::cout << c << ' ';
+    //cout << endl;
+    //cout << times.size() << endl;
+    //for (auto c : labels)
+        //std::cout << c << ' ';
+    //cout << endl;
+    //cout << labels.size() << endl;
 
     // Get estimation file
     string est_path;
@@ -347,13 +403,17 @@ void writeResults(Segmentation segmentation, bool annot_beats,
     }
 
     // Write results
-    writeJSON(est_path.c_str(), times, annot_beats, feature);
+    writeJSON(est_path.c_str(), times, labels, annot_beats, feature);
     
 }
 
 int main(int argc, char const *argv[])
 {
 
+    if ( argc != 4 ) {
+        cout << "Usage:\n\t" << argv[0] << " path_to_features(file.json) annot_beats(0 or 1) features(mfcc|hpcp)" << endl;
+        return -1;
+    }
     const char *feature = argv[3]; // mffc or hpcp
 
     Segmentation segmentation;
