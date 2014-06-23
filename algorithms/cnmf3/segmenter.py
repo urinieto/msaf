@@ -15,7 +15,6 @@ import argparse
 import logging
 import numpy as np
 import time
-from scipy.spatial import distance
 from scipy.ndimage import filters
 import sys
 import pylab as plt
@@ -70,7 +69,7 @@ def cnmf(S, rank=2, niter=500, hull=False):
 
 def get_segmentation(X, rank, R, niter=500):
     """
-    Gets the segmentation (boundaries and labels) from the factorization 
+    Gets the segmentation (boundaries and labels) from the factorization
     matrices.
 
     Parameters
@@ -115,7 +114,7 @@ def get_segmentation(X, rank, R, niter=500):
         #plt.imshow(oG, interpolation="nearest", aspect="auto")
         #plt.subplot(1, 2, 2)
         #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
-        
+
         G = G.flatten()
         bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
@@ -136,7 +135,7 @@ def get_segmentation(X, rank, R, niter=500):
     return bound_idxs, labels
 
 
-def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=3):
+def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=5):
     """Main process.
 
     Parameters
