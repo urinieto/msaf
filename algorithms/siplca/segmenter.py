@@ -512,8 +512,9 @@ def _parse_args(args):
 
     if "b" not in kwargs:
         kwargs["b"] = False
- 
+
     return inputfilename, outputfilename, kwargs
+
 
 def _die_with_usage():
     usage = """
@@ -525,12 +526,12 @@ def _die_with_usage():
     print usage
     sys.exit(1)
 
+
 def _main(args):
     inputfilename, outputfilename, kwargs = _parse_args(args)
     output, beattimes, labels = segment_wavfile(inputfilename, **kwargs)
     with open(outputfilename, 'w') as f:
-	f.write(output)
-	f.close()
+        f.write(output)
 
 if __name__ == '__main__':
     _main(sys.argv[1:])

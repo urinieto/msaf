@@ -49,10 +49,14 @@ def print_results(results):
     """
     res = results.mean()
     logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
-                 "R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f" %
+                 "R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f, "
+                 "PWF: %.2f, PWP: %.2f, PWR: %.2f, Sf: %.2f, So: %.2f, "
+                 "Su: %.2f" %
                  (100 * res["F3"], 100 * res["P3"], 100 * res["R3"],
                   100 * res["F0.5"], 100 * res["P0.5"], 100 * res["R0.5"],
-                  res["D"], res["DevA2E"], res["DevE2A"]))
+                  res["D"], res["DevA2E"], res["DevE2A"],
+                  100 * res["PWF"], 100 * res["PWP"], 100 * res["PWR"],
+                  100 * res["Sf"], 100 * res["So"], 100 * res["Su"]))
 
 
 def times_to_intervals(times):
@@ -114,6 +118,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
             So  : Oversegmentation normalized entropy score
             Su  : Undersegmentation normalized entropy score
     """
+    logging.info("Evaluating %s" % os.path.basename(est_file))
     res = {}
 
     ### Boundaries ###
@@ -133,12 +138,29 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
 
     ### Labels ###
     if est_labels != []:
-        # Pair-wise frame clustering
-        ref_intervals, ref_labels = mir_eval.util.adjust_intervals(
-            ref_intervals, ref_labels, t_min=0)
-        est_intervals, est_labels = mir_eval.util.adjust_intervals(
-            est_intervals, est_labels, t_min=0, t_max=ref_intervals.max())
-        #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+        print ann_inter, ann_labels
+        ann_inter, ann_labels = mir_eval.util.adjust_intervals(
+            ann_inter, ann_labels, t_min=ann_inter[0][0])
+        print ann_inter, ann_labels
+        sys.exit()
+        try:
+            # Align labels with intervals
+            #print est_inter, est_labels
+            est_inter, est_labels = mir_eval.util.adjust_intervals(
+                est_inter, est_labels, t_min=0, t_max=ann_inter.max())
+            #print est_inter, est_labels
+
+            # Pair-wise frame clustering
+            res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+                ann_inter, ann_labels, est_inter, est_labels)
+
+            # Normalized Conditional Entropies
+            res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
+                ann_inter, ann_labels, est_inter, est_labels)
+        except:
+            logging.warning("Labeling evaluation failed in file: %s" %
+                            est_file)
+            return {}
 
     # Names
     base = os.path.basename(est_file)
