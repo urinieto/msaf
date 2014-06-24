@@ -24,7 +24,7 @@ import msaf_io as MSAF
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            rank=None, h=None, R=None):
+            rank=None, h=None, R=None, annot_bounds=False):
     """Main process."""
 
     # Get relevant files
@@ -48,17 +48,21 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         # C-NMF segmenter call
         if rank is None:
             est_times, est_labels = S.process(audio_file, feature=feature,
-                                annot_beats=annot_beats)
+                                              annot_beats=annot_beats,
+                                              annot_bounds=annot_bounds)
         else:
             est_times, est_labels = S.process(audio_file, feature=feature,
-                                annot_beats=annot_beats, rank=rank, h=h, R=R)
+                                              annot_beats=annot_beats,
+                                              rank=rank, h=h, R=R,
+                                              annot_bounds=annot_bounds)
 
         #print est_times
         # Save
         out_file = os.path.join(in_path, "estimations",
                                 os.path.basename(audio_file)[:-4] + ".json")
-        MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
-                              bounds=True, feature=feature)
+        if not annot_bounds:
+            MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
+                                bounds=True, feature=feature)
         MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
                               bounds=False, feature=feature)
 
@@ -80,6 +84,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",
@@ -94,8 +103,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats,
-            feature=args.feature, ds_name=args.ds_name)
+    process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
+            ds_name=args.ds_name, annot_bounds=args.annot_bounds)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
