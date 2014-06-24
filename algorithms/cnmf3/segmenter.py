@@ -15,9 +15,11 @@ import argparse
 import logging
 import numpy as np
 import time
+from scipy.spatial import distance
 from scipy.ndimage import filters
 import sys
 import pylab as plt
+from scipy.cluster.vq import whiten, vq, kmeans
 
 sys.path.append("../../")
 import msaf_io as MSAF
@@ -37,7 +39,7 @@ def median_filter(X, M=8):
     return X
 
 
-def cnmf(S, rank=2, niter=500, hull=False):
+def cnmf(S, rank, niter=500, hull=False):
     """(Convex) Non-Negative Matrix Factorization.
 
     Parameters
@@ -67,7 +69,44 @@ def cnmf(S, rank=2, niter=500, hull=False):
     return F, G
 
 
-def get_segmentation(X, rank, R, niter=500):
+def compute_labels(X, rank, bound_idxs, dist="correlation"):
+    D = distance.pdist(X.T, metric=dist)
+    D = distance.squareform(D)
+    D /= D.max()
+    S = 1 - D
+
+    F, G = cnmf(S, rank)
+
+    D = np.zeros((S.shape[0], rank))
+    for r in xrange(rank):
+        R = np.dot(F[:, r, np.newaxis], G[np.newaxis, r, :])
+        #plt.imshow(R, interpolation="nearest"); plt.show()
+        D[:, r] = np.diag(R)
+
+    k = 3
+    Dw = whiten(D)
+    codebook, dist = kmeans(Dw, k)
+    label_frames, disto = vq(Dw, codebook)
+    #print label_frames, bound_idxs
+
+    # Collapse labels based on the boundaries
+    labels = []
+    bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
+    #bound_inters = [(0, bound_idxs[0])] + bound_inters
+    for bound_inter in bound_inters:
+        if bound_inter[1] - bound_inter[0] <= 0:
+            labels.append(k)
+        else:
+            labels.append(np.median(
+                label_frames[bound_inter[0]: bound_inter[1]]))
+    #labels.append(label_frames[-1])
+
+    #plt.imshow(Dw, interpolation="nearest", aspect="auto"); plt.show()
+
+    return labels
+
+
+def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
     """
     Gets the segmentation (boundaries and labels) from the factorization
     matrices.
@@ -82,6 +121,8 @@ def get_segmentation(X, rank, R, niter=500):
         Size of the median filter for activation matrix
     niter: int
         Number of iterations for k-means
+    bound_idxs : list
+        Use previously found boundaries (None to detect them)
 
     Returns
     -------
@@ -93,33 +134,37 @@ def get_segmentation(X, rank, R, niter=500):
 
     # Find non filtered boundaries
     while True:
-        try:
-            F, G = cnmf(X, rank=rank, niter=niter, hull=False)
-        except:
-            return np.empty(0), [1]
+        if bound_idxs is None:
+            try:
+                F, G = cnmf(X, rank, niter=niter, hull=False)
+            except:
+                return np.empty(0), [1]
 
-        # Filter G
-        G = G.T
-        idx = np.argmax(G, axis=1)
-        max_idx = np.arange(G.shape[0])
-        max_idx = (max_idx, idx.flatten())
-        G[:, :] = 0
-        G[max_idx] = idx + 1
+            # Filter G
+            G = G.T
+            #originalG = np.copy(G)
+            idx = np.argmax(G, axis=1)
+            max_idx = np.arange(G.shape[0])
+            max_idx = (max_idx, idx.flatten())
+            G[:, :] = 0
+            G[max_idx] = idx + 1
 
-        # TODO: Order matters?
-        #oG = np.copy(G)
-        G = np.sum(G, axis=1)
-        G = median_filter(G[:, np.newaxis], R)
-        #plt.subplot(1, 2, 1)
-        #plt.imshow(oG, interpolation="nearest", aspect="auto")
-        #plt.subplot(1, 2, 2)
-        #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
+            # TODO: Order matters?
+            #oG = np.copy(G)
+            G = np.sum(G, axis=1)
+            G = median_filter(G[:, np.newaxis], R)
+            #plt.subplot(1, 2, 1)
+            #plt.imshow(originalG, interpolation="nearest", aspect="auto")
+            #plt.subplot(1, 2, 2)
+            #plt.imshow(F, interpolation="nearest", aspect="auto"); plt.show()
 
-        G = G.flatten()
-        bound_idxs = np.where(np.diff(G) != 0)[0] + 1
+            G = G.flatten()
+            bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
         # Obtain labels
-        labels = np.concatenate(([G[0]], G[bound_idxs]))
+        #labels = np.concatenate(([G[0]], G[bound_idxs]))
+
+        labels = compute_labels(X, 9, bound_idxs)
 
         # Increase rank if we found too few boundaries
         if len(np.unique(bound_idxs)) <= 2:
@@ -135,11 +180,20 @@ def get_segmentation(X, rank, R, niter=500):
     return bound_idxs, labels
 
 
-def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=5):
+def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
+            h=10, R=10, rank=5):
     """Main process.
 
     Parameters
     ----------
+    in_path : str
+        Path to audio file
+    feature : str
+        Identifier of the features to use
+    annot_beats : boolean
+        Whether to use annotated beats or not
+    annot_bounds : boolean
+        Whether to use annotated bounds or not (for labeling)
     h : int
         Size of median filter
     R : int
@@ -156,6 +210,9 @@ def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=5):
     chroma, mfcc, beats, dur = MSAF.get_features(in_path,
                                                  annot_beats=annot_beats)
 
+    # Read annotated bounds
+    ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
+
     # Use specific feature
     if feature == "hpcp":
         F = U.lognormalize_chroma(chroma)  # Normalize chromas
@@ -170,7 +227,12 @@ def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=5):
         #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices and labels using matrix factorization
-        bound_idxs, est_labels = get_segmentation(F.T, rank, R, niter=niter)
+        if annot_bounds:
+            bound_idxs, est_labels = get_segmentation(
+                F.T, rank, R, niter=niter, bound_idxs=ann_bounds)
+        else:
+            bound_idxs, est_labels = get_segmentation(
+                F.T, rank, R, niter=niter)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
@@ -180,8 +242,6 @@ def process(in_path, feature="hpcp", annot_beats=False, h=10, R=10, rank=5):
     # Concatenate first boundary
     bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
 
-    # Read annotated bounds for comparison purposes
-    #ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
     #logging.info("Annotated bounds: %s" % ann_bounds)
     #logging.info("Estimated bounds: %s" % bound_idxs)
 
@@ -217,6 +277,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -225,7 +290,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats)
+    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats,
+            annot_bounds=args.annot_bounds)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

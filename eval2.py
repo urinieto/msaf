@@ -92,7 +92,7 @@ def intervals_to_times(inters):
 
 
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
-                    est_file):
+                    est_file, annot_bounds=False):
     """Compute the results using all the available evaluations.
 
     Return
@@ -120,6 +120,9 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
     """
     logging.info("Evaluating %s" % os.path.basename(est_file))
     res = {}
+
+    if annot_bounds:
+        est_inter = ann_inter
 
     ### Boundaries ###
     # Hit Rate
@@ -150,11 +153,10 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
             #print est_inter, est_labels
             ann_labels = list(ann_labels)
             est_labels = list(est_labels)
-            ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter, 
+            ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
                                                                 ann_labels)
             est_inter, est_labels = mir_eval.util.adjust_intervals(
                 est_inter, est_labels, t_min=0, t_max=ann_inter.max())
-            #print est_inter, est_labels
 
             # Pair-wise frame clustering
             res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
@@ -177,7 +179,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
 
 
 def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
-                       annotator="GT", bins=251, **params):
+                       annotator="GT", bins=251, annot_bounds=False, **params):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
 
@@ -211,7 +213,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
 
     # Compute the results and return
     return compute_results(ann_inter, est_inter, ann_labels, est_labels, trim,
-                           bins, est_file)
+                           bins, est_file, annot_bounds=annot_bounds)
 
 
 def plot_boundaries(all_boundaries, est_file):
@@ -394,7 +396,7 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False,
-            trim=False, save=False, annotator="GT",
+            annot_bounds=False, trim=False, save=False, annotator="GT",
             sql_file="results/results.sqlite", **params):
     """Main process.
 
@@ -408,6 +410,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         Name of the dataset to be evaluated (e.g. SALAMI). * stands for all.
     annot_beats : boolean
         Whether to use the annotated beats or not.
+    annot_bounds : boolean
+        Whether to use the annotated bounds or not.
     trim : boolean
         Whether to trim the first and last boundary when evaluating boundaries.
     save: boolean
@@ -469,7 +473,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
                 continue
 
         one_res = compute_gt_results(est_file, trim, annot_beats,
-                                     jam_file, alg_id, annotator, **params)
+                                     jam_file, alg_id, annotator,
+                                     annot_bounds=annot_bounds, **params)
         if one_res == []:
             continue
 
@@ -514,6 +519,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
@@ -539,7 +549,8 @@ def main():
 
     # Run the algorithm
     process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-            trim=args.trim, save=args.save, feature=args.feature)
+            trim=args.trim, save=args.save, feature=args.feature,
+            annot_bounds=args.annot_bounds)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
