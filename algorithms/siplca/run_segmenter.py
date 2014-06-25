@@ -27,7 +27,7 @@ sys.path.append("../../")
 import msaf_io as MSAF
 
 
-def process(in_path, annot_beats=False):
+def process(in_path, annot_beats=False, annot_bounds=False):
     """Main process."""
 
     # Get relevant files
@@ -57,9 +57,8 @@ def process(in_path, annot_beats=False):
             "normalize_frames"  :   True,
             "viterbi_segmenter" :   True
         }
-        segments, beattimes, labels = S.segment_wavfile(audio_file,
-                                                        b=annot_beats,
-                                                        **params)
+        segments, beattimes, frame_labels = S.segment_wavfile(
+            audio_file, b=annot_beats, **params)
 
         # Convert segments to times
         lines = segments.split("\n")[:-1]
@@ -71,6 +70,24 @@ def process(in_path, annot_beats=False):
             label = line.strip("\n").split("\t")[2]
             labels.append(ord(label))
 
+        if annot_bounds:
+            chroma, mfcc, beats, dur = MSAF.get_features(
+                audio_file, annot_beats=annot_beats)
+            try:
+                bound_idxs = MSAF.read_annot_bound_frames(audio_file, beats)
+            except:
+                logging.warning("No annotation boundaries for %s" %
+                                audio_file)
+                continue
+
+            labels = []
+            start = bound_idxs[0]
+            for end in bound_idxs[1:]:
+                segment_labels = frame_labels[start:end]
+                label = np.argmax(np.bincount(segment_labels))
+                labels.append(label)
+                start = end
+
         # Add last one and reomve empty segments
         times, idxs = np.unique(times, return_index=True)
         labels = np.asarray(labels)[idxs]
@@ -81,8 +98,9 @@ def process(in_path, annot_beats=False):
         # Save segments
         out_file = os.path.join(in_path, "estimations",
             os.path.basename(jam_file).replace(".jams", ".json"))
-        MSAF.save_estimations(out_file, times, annot_beats, "siplca",
-            version="1.0", **params)
+        if not annot_bounds:
+            MSAF.save_estimations(out_file, times, annot_beats, "siplca",
+                version="1.0", **params)
         MSAF.save_estimations(out_file, labels, annot_beats, "siplca",
             bounds=False, version="1.0", **params)
 
@@ -101,6 +119,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -109,7 +132,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats)
+    process(args.in_path, annot_beats=args.annot_beats, 
+            annot_bounds=args.annot_bounds)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
