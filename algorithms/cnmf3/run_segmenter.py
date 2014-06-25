@@ -43,7 +43,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             if jam.beats[0].data == []:
                 continue
 
-        #logging.info("Segmenting %s" % audio_file)
+        logging.info("Segmenting %s" % audio_file)
 
         # C-NMF segmenter call
         if rank is None:

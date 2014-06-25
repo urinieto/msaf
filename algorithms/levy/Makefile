@@ -89,6 +89,7 @@ SOURCES := base/Pitch.cpp \
 					 maths/MathUtilities.cpp \
 					 maths/pca/pca.c \
 					 thread/Thread.cpp \
+					 json_io.cpp \
 					 main.cpp
 
 OBJECTS := $(SOURCES:.cpp=.o)

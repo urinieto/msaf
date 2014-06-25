@@ -105,17 +105,19 @@ def read_annot_bound_frames(audio_path, beats):
     jam_path = os.path.join(ds_path, "annotations",
                             os.path.basename(audio_path)[:-4] + ".jams")
     ds_prefix = os.path.basename(audio_path).split("_")[0]
-    ann_times, ann_labels = jams2.converters.load_jams_range(
+    ann_inters, ann_labels = jams2.converters.load_jams_range(
         jam_path, "sections", context=prefix_dict[ds_prefix])
     try:
-        ann_times, ann_labels = jams2.converters.load_jams_range(
+        ann_inters, ann_labels = jams2.converters.load_jams_range(
             jam_path, "sections", context=prefix_dict[ds_prefix])
     except:
         logging.warning("Annotation not found in %s" % jam_path)
         return []
 
+    # Intervals to times
+    ann_times = np.concatenate((ann_inters.flatten()[::2],
+                                [ann_inters[-1, -1]]))
     # align with beats
-    ann_times = np.concatenate((ann_times.flatten()[::2], [ann_times[-1, -1]]))
     dist = np.minimum.outer(ann_times, beats)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
 

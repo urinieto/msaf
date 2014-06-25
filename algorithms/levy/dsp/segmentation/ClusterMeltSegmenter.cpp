@@ -320,6 +320,12 @@ void ClusterMeltSegmenter::setFeatures(const vector<vector<double> >& f)
     // featureType = FEATURE_TYPE_UNKNOWN;
 }
 
+void ClusterMeltSegmenter::setAnnotBounds(const vector<int>& bounds)
+{
+    annotBounds = bounds;
+    // featureType = FEATURE_TYPE_UNKNOWN;
+}
+
 void ClusterMeltSegmenter::segment()
 {
     delete constq;
@@ -374,6 +380,13 @@ void ClusterMeltSegmenter::segment()
     clear();
 }
 
+int median(vector<int> &v)
+{
+    size_t n = v.size() / 2;
+    nth_element(v.begin(), v.begin()+n, v.end());
+    return v[n];
+}
+
 void ClusterMeltSegmenter::makeSegmentation(int* q, int len)
 {
     segmentation.segments.clear();
@@ -383,20 +396,41 @@ void ClusterMeltSegmenter::makeSegmentation(int* q, int len)
     Segment segment;
     segment.start = 0;
     segment.type = q[0];
-	
-    for (int i = 1; i < len; i++)
-    {
-        if (q[i] != q[i-1])
+
+    if (annotBounds.size() == 0) {
+        for (int i = 1; i < len; i++)
         {
-            // segment.end = i * getHopsize();
-            segment.end = i;
+            if (q[i] != q[i-1])
+            {
+                // segment.end = i * getHopsize();
+                segment.end = i;
+                segmentation.segments.push_back(segment);
+                segment.type = q[i];
+                segment.start = segment.end;
+            }
+        }
+        // segment.end = len * getHopsize();
+        segment.end = len-1;
+        segmentation.segments.push_back(segment);
+    }
+    else {
+        // Use Annotated Boundaries
+        for (int i = 0; annotBounds.size() - 2; i++) {
+            int start = annotBounds[i];
+            int end = annotBounds[i+1];
+            vector<int> temp_q;
+            for (int j = start; j < end; j++) {
+                temp_q.push_back(q[j]);
+                //cout << temp_q[j-start] << " ";
+            }
+            //cout << endl;
+            int med = median(temp_q);
+            //cout << "median: " << med << endl;
+            segment.start = start;
+            segment.end = end;
+            segment.type = med;
             segmentation.segments.push_back(segment);
-            segment.type = q[i];
-            segment.start = segment.end;
         }
     }
-    // segment.end = len * getHopsize();
-    segment.end = len-1;
-    segmentation.segments.push_back(segment);
 }
 

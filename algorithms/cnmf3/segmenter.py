@@ -83,7 +83,7 @@ def compute_labels(X, rank, bound_idxs, dist="correlation"):
         #plt.imshow(R, interpolation="nearest"); plt.show()
         D[:, r] = np.diag(R)
 
-    k = 3
+    k = 6
     Dw = whiten(D)
     codebook, dist = kmeans(Dw, k)
     label_frames, disto = vq(Dw, codebook)
@@ -169,6 +169,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
         # Increase rank if we found too few boundaries
         if len(np.unique(bound_idxs)) <= 2:
             rank += 1
+            bound_idxs = None
         else:
             break
 
@@ -181,7 +182,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=10, R=10, rank=5):
+            h=10, R=10, rank=3):
     """Main process.
 
     Parameters
@@ -211,7 +212,11 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
                                                  annot_beats=annot_beats)
 
     # Read annotated bounds
-    ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
+    try:
+        ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
+    except:
+        logging.warning("No annotated boundaries in file %s" % in_path)
+        ann_bounds = []
 
     # Use specific feature
     if feature == "hpcp":
@@ -252,8 +257,8 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
     est_times = np.concatenate((est_times, [dur]))
 
     # Concatenate last boundary
-    logging.info("Estimated times: %s" % est_times)
-    logging.info("Estimated labels: %s" % est_labels)
+    #logging.info("Estimated times: %s" % est_times)
+    #logging.info("Estimated labels: %s" % est_labels)
 
     return est_times, est_labels
 
