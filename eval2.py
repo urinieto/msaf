@@ -24,7 +24,6 @@ import mir_eval
 import jams2
 
 import msaf_io as MSAF
-import old_eval as OE
 
 
 feat_dict = {
@@ -149,15 +148,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
         #ann_inter[-1][-1] = last_time
         #ann_labels = ann_labels[1:-1]
 
-        #in_path = est_file.replace("features", "audio").replace("json", "mp3")
-        #chroma, mfcc, beats, dur = MSAF.get_features(in_path,
-                                                     #annot_beats=True)
-        #PWF, PWP, PWR = OE.eval_similarity(est_labels, ann_labels,
-                                           #intervals_to_times(ann_inter),
-                                           #beats)
-        #res["PWF"] = PWF
-        #res["PWP"] = PWP
-        #res["PWR"] = PWR
         try:
             # Align labels with intervals
             #print est_inter, est_labels

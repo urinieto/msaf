@@ -13,6 +13,9 @@
     COPYING included with this distribution for more information.
  */
 
+#ifndef __CLUSTERMELT_SEGMENT__H
+#define __CLUSTERMELT_SEGMENT__H
+
 #include <vector>
 
 #include "segment.h"
@@ -66,6 +69,7 @@ public:
     virtual int getHopsize();
     virtual void extractFeatures(const double* samples, int nsamples);
     void setFeatures(const vector<vector<double> >& f);		// provide the features yourself
+    void setAnnotBounds(const vector<int>& bounds);		// provide the annotated boundaries
     virtual void segment();		// segment into default number of segment-types
     void segment(int m);		// segment into m segment-types
     int getNSegmentTypes() { return nclusters; }
@@ -83,6 +87,7 @@ protected:
     model_t* model;				// the HMM
     int* q;					// the decoded HMM state sequence
     vector<vector<double> > histograms;	
+    vector<int> annotBounds;
     
     feature_types featureType;	
     double hopSize;		// in seconds
@@ -107,3 +112,5 @@ protected:
 
     Decimator *decimator;
 };
+
+#endif

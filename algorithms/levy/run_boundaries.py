@@ -16,13 +16,15 @@ import argparse
 import time
 import logging
 import jams
+import json
 import subprocess
 
 import sys
 sys.path.append("../../")
+import msaf_io as MSAF
 
 
-def process(in_path, annot_beats=False, feature="mfcc"):
+def process(in_path, annot_beats=False, feature="mfcc", annot_bounds=False):
     """Main process."""
 
     # Get relevant files
@@ -46,14 +48,28 @@ def process(in_path, annot_beats=False, feature="mfcc"):
             annot_beats_str = "1"
         else:
             annot_beats_str = "0"
+        if annot_bounds:
+            # write down the annotated boundary indeces to "annot_bounds.txt"
+            audio_file  = feat_file.replace("features", "audio")[:-5] + ".mp3"
+            chroma, mfcc, beats, dur = MSAF.get_features(
+                audio_file, annot_beats=annot_beats)
+            bounds_dict = {}
+            bounds_dict["bounds"] = list(
+                MSAF.read_annot_bound_frames(audio_file, beats))
+            with open("annot_bounds.json", "w") as f:
+                json.dump(bounds_dict, f)
+            annot_bounds_str = "1"
+        else:
+            annot_bounds_str = "0"
 
         logging.info("Segmenting %s" % feat_file)
 
         # Levy segmenter call
         cmd = ["./segmenter", feat_file.replace(" ", "\ ").replace("&", "\&").
                replace("'", "\\'").replace("(", "\(").replace(")", "\)"),
-               annot_beats_str, feature]
+               annot_beats_str, feature, annot_bounds_str]
         print " ".join(cmd)
+
         # Shell is needed for files with spaces
         subprocess.call(" ".join(cmd), shell=True)
 
@@ -75,6 +91,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -84,7 +105,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats,
-            feature=args.feature)
+            feature=args.feature, annot_bounds=args.annot_bounds)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
