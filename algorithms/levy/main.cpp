@@ -68,7 +68,7 @@ int main(int argc, char const *argv[])
             // Segment
             segmenter->segment();
             segmentation = segmenter->getSegmentation();
-        } while(segmentation.segments.size() <= 2 && f.size() >= 90);
+        } while(segmentation.segments.size() < 2 && f.size() >= 90);
 
         // Clean up
         delete segmenter;
@@ -81,7 +81,12 @@ int main(int argc, char const *argv[])
         segmentation.segments.push_back(s);
     }
 
-    cout << segmentation.segments.size() << endl;
+    //cout << segmentation.segments.size() << endl;
+    cout << "estimated labels: ";
+    for (auto b : segmentation.segments) {
+        cout << b.type << " ";
+    }
+    cout << endl;
 
     // Write the results
     writeResults(segmentation, atoi(argv[2]), argv[1], feature);

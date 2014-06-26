@@ -34,7 +34,7 @@ def process(in_path, annot_beats=False, feature="mfcc", annot_bounds=False):
     jam_files = glob.glob(os.path.join(in_path, "annotations",
                                        "%s_*.jams" % ds_name))
 
-    for feat_file, jam_file in zip(feat_files, jam_files):
+    for feat_file, jam_file in zip(feat_files, jam_files)[1100:]:
 
         # Only analize files with annotated beats
         if annot_beats:
@@ -54,8 +54,13 @@ def process(in_path, annot_beats=False, feature="mfcc", annot_bounds=False):
             chroma, mfcc, beats, dur = MSAF.get_features(
                 audio_file, annot_beats=annot_beats)
             bounds_dict = {}
-            bounds_dict["bounds"] = list(
-                MSAF.read_annot_bound_frames(audio_file, beats))
+            try:
+                bounds_dict["bounds"] = list(
+                    MSAF.read_annot_bound_frames(audio_file, beats))
+            except:
+                logging.warning("Could not find annotated boundaries in %s" %
+                                jam_file)
+                continue
             with open("annot_bounds.json", "w") as f:
                 json.dump(bounds_dict, f)
             annot_bounds_str = "1"
