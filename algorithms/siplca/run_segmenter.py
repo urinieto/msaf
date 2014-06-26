@@ -70,6 +70,13 @@ def process(in_path, annot_beats=False, annot_bounds=False):
             label = line.strip("\n").split("\t")[2]
             labels.append(ord(label))
 
+        # Add last one and reomve empty segments
+        times, idxs = np.unique(times, return_index=True)
+        labels = np.asarray(labels)[idxs]
+        times = np.concatenate((times,
+                                [float(lines[-1].strip("\n").split("\t")[1])]))
+        times = np.unique(times)
+
         if annot_bounds:
             chroma, mfcc, beats, dur = MSAF.get_features(
                 audio_file, annot_beats=annot_beats)
@@ -84,16 +91,12 @@ def process(in_path, annot_beats=False, annot_bounds=False):
             start = bound_idxs[0]
             for end in bound_idxs[1:]:
                 segment_labels = frame_labels[start:end]
-                label = np.argmax(np.bincount(segment_labels))
+                try:
+                    label = np.argmax(np.bincount(segment_labels))
+                except:
+                    label = frame_labels[start]
                 labels.append(label)
                 start = end
-
-        # Add last one and reomve empty segments
-        times, idxs = np.unique(times, return_index=True)
-        labels = np.asarray(labels)[idxs]
-        times = np.concatenate((times,
-                                [float(lines[-1].strip("\n").split("\t")[1])]))
-        times = np.unique(times)
 
         # Save segments
         out_file = os.path.join(in_path, "estimations",

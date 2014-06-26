@@ -415,20 +415,27 @@ void ClusterMeltSegmenter::makeSegmentation(int* q, int len)
     }
     else {
         // Use Annotated Boundaries
-        for (int i = 0; annotBounds.size() - 2; i++) {
+        cout << annotBounds.size() << endl;
+        for (int i = 0; i < annotBounds.size() - 1; i++) {
             int start = annotBounds[i];
             int end = annotBounds[i+1];
             vector<int> temp_q;
-            for (int j = start; j < end; j++) {
-                temp_q.push_back(q[j]);
-                //cout << temp_q[j-start] << " ";
+            //cout << "start:" << start << " end: " << end << " i: " << i << " " << len << endl;
+            if (start < len && end < len && end - start > 0) {
+                for (int j = start; j < end; j++) {
+                    temp_q.push_back(q[j]);
+                    //cout << temp_q[j-start] << " ";
+                }
+                //cout << endl;
+                int med = median(temp_q);
+                segment.type = med;
+                //cout << "median: " << med << endl;
             }
-            //cout << endl;
-            int med = median(temp_q);
-            //cout << "median: " << med << endl;
+            else {
+                segment.type = q[len-1];
+            }
             segment.start = start;
             segment.end = end;
-            segment.type = med;
             segmentation.segments.push_back(segment);
         }
     }

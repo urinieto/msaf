@@ -75,8 +75,10 @@ def read_estimations(est_file, alg_id, annot_beats, bounds=True, **params):
                     found = False
 
             if found:
-                # Sort the boundaries by time
-                estimations = np.sort(np.array(alg["data"]))
+                estimations = np.array(alg["data"])
+                if bounds:
+                    # Sort the boundaries by time
+                    estimations = np.sort(estimations)
                 break
 
     # Convert to interval if needed
