@@ -191,10 +191,11 @@ def get_features(audio_path, annot_beats=False):
     return C, M, beats, dur
 
 
-def create_estimation(times, annot_beats, **params):
+def create_estimation(times, annot_beats, annot_bounds, **params):
     """Creates a new estimation (dictionary)."""
     est = {}
     est["annot_beats"] = annot_beats
+    est["annot_bounds"] = annot_bounds
     est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
     est["data"] = list(times)
     for key in params:
@@ -203,7 +204,7 @@ def create_estimation(times, annot_beats, **params):
 
 
 def save_estimations(out_file, estimations, annot_beats, alg_name,
-                     bounds=True, **params):
+                     bounds=True, annot_bounds=False, **params):
     """Saves the segment estimations (either boundaries or labels) in the
         out_file using a JSON format.
         If file exists, update with new annotation.
@@ -220,6 +221,8 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
         Algorithm identifier.
     bounds : boolean
         Whether the estimations represent boundaries or lables.
+    annot_bounds : boolean
+        Whether the labels were obtained using the annotated boundaries.
     params : dict
         Extra parameters, algorithm dependant.
     """
@@ -227,6 +230,11 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
         est_type = "boundaries"
     else:
         est_type = "labels"
+
+    # Create new estimation
+    new_est = create_estimation(estimations, annot_beats, annot_bounds,
+                                **params)
+
     if os.path.isfile(out_file):
         # Add estimation
         res = json.load(open(out_file, "r"))
@@ -244,29 +252,29 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
                                 break
                         if not found:
                             continue
-                        res[est_type][alg_name][i] = \
-                            create_estimation(estimations, 
-                                              annot_beats, **params)
+                        # Check for annot_bounds only if saving labels
+                        if not bounds:
+                            if "annot_bounds" in est.keys():
+                                if est["annot_bounds"] != annot_bounds:
+                                    found = False
+                                    continue
+                        res[est_type][alg_name][i] = new_est
                         break
                 if not found:
-                    res[est_type][alg_name].append(create_estimation(
-                        estimations, annot_beats, **params))
+                    res[est_type][alg_name].append(new_est)
             else:
                 res[est_type][alg_name] = []
-                res[est_type][alg_name].append(create_estimation(estimations,
-                                                    annot_beats, **params))
+                res[est_type][alg_name].append(new_est)
         else:
             res[est_type] = {}
             res[est_type][alg_name] = []
-            res[est_type][alg_name].append(create_estimation(estimations,
-                                                annot_beats, **params))
+            res[est_type][alg_name].append(new_est)
     else:
         # Create new estimation
         res = {}
         res[est_type] = {}
         res[est_type][alg_name] = []
-        res[est_type][alg_name].append(
-            create_estimation(estimations, annot_beats, **params))
+        res[est_type][alg_name].append(new_est)
 
     # Save dictionary to disk
     with open(out_file, "w") as f:

@@ -64,7 +64,11 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
                                 bounds=True, feature=feature)
         MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
-                              bounds=False, feature=feature)
+                              bounds=False, annot_bounds=annot_bounds,
+                              feature=feature)
+        print annot_bounds
+        
+        break
 
 
 def main():
