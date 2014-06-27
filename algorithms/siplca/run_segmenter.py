@@ -19,12 +19,92 @@ import time
 import logging
 import jams
 
+from joblib import Parallel, delayed
+
 # SI-PLCA segmenter
 import segmenter as S
 
 import sys
 sys.path.append("../../")
 import msaf_io as MSAF
+
+
+def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
+    assert os.path.basename(audio_file)[:-4] == \
+        os.path.basename(jam_file)[:-5]
+
+    # Only analize files with annotated beats
+    if annot_beats:
+        jam = jams.load(jam_file)
+        if jam.beats == []:
+            continue
+        if jam.beats[0].data == []:
+            continue
+
+    logging.info("Segmenting %s" % audio_file)
+
+    # SI-PLCA Params (From MIREX)
+    params = {
+        "niter"             :   200,
+        "rank"              :   15,
+        "win"               :   60,
+        "alphaZ"            :   -0.01,
+        "normalize_frames"  :   True,
+        "viterbi_segmenter" :   True
+    }
+    segments, beattimes, frame_labels = S.segment_wavfile(
+        audio_file, b=annot_beats, **params)
+
+    # Convert segments to times
+    lines = segments.split("\n")[:-1]
+    times = []
+    labels = []
+    for line in lines:
+        time = float(line.strip("\n").split("\t")[0])
+        times.append(time)
+        label = line.strip("\n").split("\t")[2]
+        labels.append(ord(label))
+
+    # Add last one and reomve empty segments
+    times, idxs = np.unique(times, return_index=True)
+    labels = np.asarray(labels)[idxs]
+    times = np.concatenate((times,
+                            [float(lines[-1].strip("\n").split("\t")[1])]))
+    times = np.unique(times)
+
+    if annot_bounds:
+        chroma, mfcc, beats, dur = MSAF.get_features(
+            audio_file, annot_beats=annot_beats)
+        try:
+            bound_idxs = MSAF.read_annot_bound_frames(audio_file, beats)
+        except:
+            logging.warning("No annotation boundaries for %s" %
+                            audio_file)
+            continue
+
+        labels = []
+        start = bound_idxs[0]
+        for end in bound_idxs[1:]:
+            segment_labels = frame_labels[start:end]
+            try:
+                label = np.argmax(np.bincount(segment_labels))
+            except:
+                label = frame_labels[start]
+            labels.append(label)
+            start = end
+
+        times = beats[bound_idxs]
+
+    assert len(times) - 1 == len(labels)
+
+    # Save segments
+    out_file = os.path.join(in_path, "estimations",
+        os.path.basename(jam_file).replace(".jams", ".json"))
+    if not annot_bounds:
+        MSAF.save_estimations(out_file, times, annot_beats, "siplca",
+            version="1.0", **params)
+    MSAF.save_estimations(out_file, labels, annot_beats, "siplca",
+        bounds=False, annot_bounds=annot_bounds, version="1.0", **params)
 
 
 def process(in_path, annot_beats=False, annot_bounds=False):
@@ -34,78 +114,10 @@ def process(in_path, annot_beats=False, annot_bounds=False):
     jam_files = glob.glob(os.path.join(in_path, "annotations", "*.jams"))
     audio_files = glob.glob(os.path.join(in_path, "audio", "*.[wm][ap][v3]"))
 
-    for jam_file, audio_file in zip(jam_files, audio_files):
-        assert os.path.basename(audio_file)[:-4] == \
-            os.path.basename(jam_file)[:-5]
-
-        # Only analize files with annotated beats
-        if annot_beats:
-            jam = jams.load(jam_file)
-            if jam.beats == []:
-                continue
-            if jam.beats[0].data == []:
-                continue
-
-        logging.info("Segmenting %s" % audio_file)
-
-        # SI-PLCA Params (From MIREX)
-        params = {
-            "niter"             :   200,
-            "rank"              :   15,
-            "win"               :   60,
-            "alphaZ"            :   -0.01,
-            "normalize_frames"  :   True,
-            "viterbi_segmenter" :   True
-        }
-        segments, beattimes, frame_labels = S.segment_wavfile(
-            audio_file, b=annot_beats, **params)
-
-        # Convert segments to times
-        lines = segments.split("\n")[:-1]
-        times = []
-        labels = []
-        for line in lines:
-            time = float(line.strip("\n").split("\t")[0])
-            times.append(time)
-            label = line.strip("\n").split("\t")[2]
-            labels.append(ord(label))
-
-        # Add last one and reomve empty segments
-        times, idxs = np.unique(times, return_index=True)
-        labels = np.asarray(labels)[idxs]
-        times = np.concatenate((times,
-                                [float(lines[-1].strip("\n").split("\t")[1])]))
-        times = np.unique(times)
-
-        if annot_bounds:
-            chroma, mfcc, beats, dur = MSAF.get_features(
-                audio_file, annot_beats=annot_beats)
-            try:
-                bound_idxs = MSAF.read_annot_bound_frames(audio_file, beats)
-            except:
-                logging.warning("No annotation boundaries for %s" %
-                                audio_file)
-                continue
-
-            labels = []
-            start = bound_idxs[0]
-            for end in bound_idxs[1:]:
-                segment_labels = frame_labels[start:end]
-                try:
-                    label = np.argmax(np.bincount(segment_labels))
-                except:
-                    label = frame_labels[start]
-                labels.append(label)
-                start = end
-
-        # Save segments
-        out_file = os.path.join(in_path, "estimations",
-            os.path.basename(jam_file).replace(".jams", ".json"))
-        if not annot_bounds:
-            MSAF.save_estimations(out_file, times, annot_beats, "siplca",
-                version="1.0", **params)
-        MSAF.save_estimations(out_file, labels, annot_beats, "siplca",
-            bounds=False, version="1.0", **params)
+    n_jobs = 4
+    Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        in_path, audio_file, jam_file, annot_beats, annot_bounds)
+        for jam_file, audio_file in zip(jam_files, audio_files))
 
 
 def main():

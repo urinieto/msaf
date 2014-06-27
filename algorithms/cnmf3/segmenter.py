@@ -169,7 +169,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
         # Obtain labels
         #labels = np.concatenate(([G[0]], G[bound_idxs]))
 
-        labels = compute_labels(X, 8, bound_idxs, k=5)
+        labels = compute_labels(X, 5, bound_idxs, k=4)
         #print len(bound_idxs), len(labels)
 
         # Increase rank if we found too few boundaries
@@ -188,7 +188,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=10, R=10, rank=5):
+            h=12, R=10, rank=3):
     """Main process.
 
     Parameters
