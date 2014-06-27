@@ -18,14 +18,53 @@ import logging
 import jams
 import segmenter as S
 
+from joblib import Parallel, delayed
+
 import sys
 sys.path.append("../../")
 import msaf_io as MSAF
 
 
+def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
+            rank, h, R, annot_bounds):
+
+    # Only analize files with annotated beats
+    if annot_beats:
+        jam = jams.load(jam_file)
+        if jam.beats == []:
+            return
+        if jam.beats[0].data == []:
+            return
+
+    logging.info("Segmenting %s" % audio_file)
+
+    # C-NMF segmenter call
+    if rank is None:
+        est_times, est_labels = S.process(audio_file, feature=feature,
+                                          annot_beats=annot_beats,
+                                          annot_bounds=annot_bounds)
+    else:
+        est_times, est_labels = S.process(audio_file, feature=feature,
+                                          annot_beats=annot_beats,
+                                          rank=rank, h=h, R=R,
+                                          annot_bounds=annot_bounds)
+
+    # Save
+    out_file = os.path.join(in_path, "estimations",
+                            os.path.basename(audio_file)[:-4] + ".json")
+    if not annot_bounds:
+        MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
+                              bounds=True, feature=feature)
+    MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
+                          bounds=False, annot_bounds=annot_bounds,
+                          feature=feature)
+
+
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             rank=None, h=None, R=None, annot_bounds=False):
     """Main process."""
+
+    n_jobs = 4
 
     # Get relevant files
     jam_files = glob.glob(os.path.join(in_path, "annotations",
@@ -33,42 +72,11 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     audio_files = glob.glob(os.path.join(in_path, "audio",
                                          "%s_*.[wm][ap][v3]" % ds_name))
 
-    for audio_file, jam_file in zip(audio_files, jam_files):
-
-        # Only analize files with annotated beats
-        if annot_beats:
-            jam = jams.load(jam_file)
-            if jam.beats == []:
-                continue
-            if jam.beats[0].data == []:
-                continue
-
-        logging.info("Segmenting %s" % audio_file)
-
-        # C-NMF segmenter call
-        if rank is None:
-            est_times, est_labels = S.process(audio_file, feature=feature,
-                                              annot_beats=annot_beats,
-                                              annot_bounds=annot_bounds)
-        else:
-            est_times, est_labels = S.process(audio_file, feature=feature,
-                                              annot_beats=annot_beats,
-                                              rank=rank, h=h, R=R,
-                                              annot_bounds=annot_bounds)
-
-        #print est_times
-        # Save
-        out_file = os.path.join(in_path, "estimations",
-                                os.path.basename(audio_file)[:-4] + ".json")
-        if not annot_bounds:
-            MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
-                                bounds=True, feature=feature)
-        MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
-                              bounds=False, annot_bounds=annot_bounds,
-                              feature=feature)
-        print annot_bounds
-        
-        break
+    # Call in parallel
+    Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        in_path, audio_file, jam_file, annot_beats, feature, ds_name, rank, h,
+        R, annot_bounds)
+        for audio_file, jam_file in zip(audio_files, jam_files))
 
 
 def main():

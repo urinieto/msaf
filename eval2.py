@@ -225,7 +225,8 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
 
     est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats, **params)
     est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats,
-                                       bounds=False, **params)
+                                       bounds=False,
+                                       annot_bounds=annot_bounds, **params)
     if est_inter == []:
         return {}
 
