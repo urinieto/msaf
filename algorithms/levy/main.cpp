@@ -30,6 +30,8 @@ int main(int argc, char const *argv[])
 
     Segmentation segmentation;
     int nframes = getFileFrames(argv[1]);
+    bool annot_beats = atoi(argv[2]);
+    bool annot_bounds = atoi(argv[4]);
 
     /* Only segment if duration is greater than 15 seconds */
     if (nframes * 2048 > 15 * 11025) {
@@ -49,7 +51,7 @@ int main(int argc, char const *argv[])
         ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
 
         // Read features from JAMS
-        vector<vector<double> > f = readJSON(argv[1], atoi(argv[2]), feature);
+        vector<vector<double> > f = readJSON(argv[1], annot_beats, feature);
 
         // Segment until we have a potentially good result
         do {
@@ -60,7 +62,7 @@ int main(int argc, char const *argv[])
             segmenter->setFeatures(f);
 
             // Set Annotated Boundaries Indeces if needed
-            if (atoi(argv[4])) {
+            if (annot_bounds) {
                 vector<int> annotBounds = getAnnotBoundIdxs();
                 segmenter->setAnnotBounds(annotBounds);
             }
@@ -89,7 +91,7 @@ int main(int argc, char const *argv[])
     cout << endl;
 
     // Write the results
-    writeResults(segmentation, atoi(argv[2]), argv[1], feature);
+    writeResults(segmentation, annot_beats, annot_bounds, argv[1], feature);
 
     // Done
     return 0;
