@@ -19,6 +19,7 @@ import time
 import sqlite3
 import pylab as plt
 import pandas as pd
+from joblib import Parallel, delayed
 
 import mir_eval
 import jams2
@@ -414,9 +415,34 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
         cursor.execute(sql_cmd, evaluations)
 
 
+def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
+                  alg_id, annotator, annot_bounds, **params):
+    """Processes a single track."""
+
+    # Sanity check
+    assert os.path.basename(est_file)[:-4] == \
+        os.path.basename(jam_file)[:-4]
+
+    if salamii:
+        num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
+        if num < 956 or num > 1498:
+            return []
+
+    if beatles:
+        jam = jams2.load(jam_file)
+        if jam.metadata.artist != "The Beatles":
+            return []
+
+    one_res = compute_gt_results(est_file, trim, annot_beats, jam_file,
+                                 alg_id, annotator, annot_bounds=annot_bounds,
+                                 **params)
+
+    return one_res
+
+
 def process(in_path, alg_id, ds_name="*", annot_beats=False,
             annot_bounds=False, trim=False, save=False, annotator="GT",
-            sql_file="results/results.sqlite", **params):
+            sql_file="results/results.sqlite", n_jobs=4, **params):
     """Main process.
 
     Parameters
@@ -476,30 +502,17 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
     # All evaluations
     results = pd.DataFrame()
 
-    for est_file, jam_file in zip(est_files, jam_files):
-        # Sanity check
-        assert os.path.basename(est_file)[:-4] == \
-            os.path.basename(jam_file)[:-4]
+    # Evaluate in parallel
+    evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        est_file, jam_file, salamii, beatles, trim, annot_beats, alg_id,
+        annotator, annot_bounds, **params)
+        for est_file, jam_file in zip(est_files, jam_files))
 
-        if salamii:
-            num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
-            if num < 956 or num > 1498:
-                continue
+    for e in evals:
+        if e != []:
+            results = results.append(e, ignore_index=True)
 
-        if beatles:
-            jam = jams2.load(jam_file)
-            if jam.metadata.artist != "The Beatles":
-                continue
-
-        one_res = compute_gt_results(est_file, trim, annot_beats,
-                                     jam_file, alg_id, annotator,
-                                     annot_bounds=annot_bounds, **params)
-        if one_res == []:
-            continue
-
-        results = results.append(one_res, ignore_index=True)
-
-    # Save all results
+    # TODO: Save all results
     if save:
         save_results_ds(c, alg_id, results, annot_beats, trim, ds_name="all")
 
@@ -559,6 +572,12 @@ def main():
                         dest="save",
                         help="Whether to sasve the results in the SQL or not",
                         default=False)
+    parser.add_argument("-j",
+                        action="store",
+                        dest="n_jobs",
+                        default=4,
+                        type=int,
+                        help="The number of processes to run in parallel")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -569,7 +588,7 @@ def main():
     # Run the algorithm
     process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
             trim=args.trim, save=args.save, feature=args.feature,
-            annot_bounds=args.annot_bounds)
+            annot_bounds=args.annot_bounds, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

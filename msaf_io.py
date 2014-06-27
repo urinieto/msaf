@@ -28,7 +28,7 @@ prefix_dict = {
 }
 
 
-def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False, 
+def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
                      bounds=True, **params):
     """Reads the estimations (either boundaries or labels) from an estimated
     file.
@@ -78,8 +78,9 @@ def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
                     found = False
 
             if not bounds:
-                if alg["annot_bounds"] != annot_bounds:
-                    found = False
+                if "annot_bounds" in alg.keys():
+                    if alg["annot_bounds"] != annot_bounds:
+                        found = False
 
             if found:
                 estimations = np.array(alg["data"])
