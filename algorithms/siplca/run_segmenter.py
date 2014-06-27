@@ -37,9 +37,9 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
     if annot_beats:
         jam = jams.load(jam_file)
         if jam.beats == []:
-            continue
+            return
         if jam.beats[0].data == []:
-            continue
+            return
 
     logging.info("Segmenting %s" % audio_file)
 
@@ -80,7 +80,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
         except:
             logging.warning("No annotation boundaries for %s" %
                             audio_file)
-            continue
+            return
 
         labels = []
         start = bound_idxs[0]
@@ -97,24 +97,32 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
 
     assert len(times) - 1 == len(labels)
 
+    logging.info("Estimated boundaries: %s" % times)
+    logging.info("Estimated labels: %s" % labels)
+
     # Save segments
     out_file = os.path.join(in_path, "estimations",
         os.path.basename(jam_file).replace(".jams", ".json"))
+    logging.info("Writing results in: %s" % out_file)
     if not annot_bounds:
         MSAF.save_estimations(out_file, times, annot_beats, "siplca",
             version="1.0", **params)
+
     MSAF.save_estimations(out_file, labels, annot_beats, "siplca",
         bounds=False, annot_bounds=annot_bounds, version="1.0", **params)
 
 
-def process(in_path, annot_beats=False, annot_bounds=False):
+def process(in_path, ds_name="*", n_jobs=4, annot_beats=False,
+            annot_bounds=False):
     """Main process."""
 
     # Get relevant files
-    jam_files = glob.glob(os.path.join(in_path, "annotations", "*.jams"))
-    audio_files = glob.glob(os.path.join(in_path, "audio", "*.[wm][ap][v3]"))
+    jam_files = glob.glob(os.path.join(in_path, "annotations",
+                                       "%s_*.jams" % ds_name))
+    audio_files = glob.glob(os.path.join(in_path, "audio",
+                                         "%s_*.[wm][ap][v3]" % ds_name))
 
-    n_jobs = 4
+    # Run jobs in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
         in_path, audio_file, jam_file, annot_beats, annot_bounds)
         for jam_file, audio_file in zip(jam_files, audio_files))
@@ -139,6 +147,18 @@ def main():
                         dest="annot_bounds",
                         help="Use annotated bounds",
                         default=False)
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI")
+    parser.add_argument("-j",
+                        action="store",
+                        dest="n_jobs",
+                        default=4,
+                        type=int,
+                        help="The number of processes to run in parallel")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -147,8 +167,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats, 
-            annot_bounds=args.annot_bounds)
+    process(args.in_path, annot_beats=args.annot_beats, n_jobs=args.n_jobs,
+            annot_bounds=args.annot_bounds, ds_name=args.ds_name)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

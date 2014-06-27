@@ -26,6 +26,7 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Scipy
 * PyMF
 * Pandas
+* joblib
 * Essentia
 * JAMS
 * mir_eval
