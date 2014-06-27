@@ -28,7 +28,8 @@ prefix_dict = {
 }
 
 
-def read_estimations(est_file, alg_id, annot_beats, bounds=True, **params):
+def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False, 
+                     bounds=True, **params):
     """Reads the estimations (either boundaries or labels) from an estimated
     file.
 
@@ -40,6 +41,8 @@ def read_estimations(est_file, alg_id, annot_beats, bounds=True, **params):
         Algorithm ID from which to retrieve the boundaries. E.g. serra
     annot_beats: bool
         Whether to retrieve the boundaries using annotated beats or not.
+    annot_bounds: bool
+        Whether to retrieve the boundaries using annotated bounds or not.
     bounds : bool
         Whether to extract boundaries or labels
     params: dict
@@ -72,6 +75,10 @@ def read_estimations(est_file, alg_id, annot_beats, bounds=True, **params):
             found = True
             for key in params:
                 if params[key] != "" and alg[key] != params[key]:
+                    found = False
+
+            if not bounds:
+                if alg["annot_bounds"] != annot_bounds:
                     found = False
 
             if found:
@@ -235,6 +242,7 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
     new_est = create_estimation(estimations, annot_beats, annot_bounds,
                                 **params)
 
+    # Find correct place to store it within the estimation file
     if os.path.isfile(out_file):
         # Add estimation
         res = json.load(open(out_file, "r"))
@@ -266,11 +274,12 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
                 res[est_type][alg_name] = []
                 res[est_type][alg_name].append(new_est)
         else:
+            # Esitmation doesn't exist for this type of feature
             res[est_type] = {}
             res[est_type][alg_name] = []
             res[est_type][alg_name].append(new_est)
     else:
-        # Create new estimation
+        # Create new estimation file
         res = {}
         res[est_type] = {}
         res[est_type][alg_name] = []

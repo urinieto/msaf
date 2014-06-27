@@ -69,7 +69,12 @@ def cnmf(S, rank, niter=500, hull=False):
     return F, G
 
 
-def compute_labels(X, rank, bound_idxs, dist="correlation"):
+def most_frequent(x):
+    """Returns the most frequent value in x."""
+    return np.argmax(np.bincount(x))
+
+
+def compute_labels(X, rank, bound_idxs, dist="correlation", k=5):
     D = distance.pdist(X.T, metric=dist)
     D = distance.squareform(D)
     D /= D.max()
@@ -83,23 +88,22 @@ def compute_labels(X, rank, bound_idxs, dist="correlation"):
         #plt.imshow(R, interpolation="nearest"); plt.show()
         D[:, r] = np.diag(R)
 
-    k = 6
     Dw = whiten(D)
     codebook, dist = kmeans(Dw, k)
     label_frames, disto = vq(Dw, codebook)
     #print label_frames, bound_idxs
 
     # Collapse labels based on the boundaries
-    labels = []
+    labels = [label_frames[0]]
     bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
     #bound_inters = [(0, bound_idxs[0])] + bound_inters
     for bound_inter in bound_inters:
         if bound_inter[1] - bound_inter[0] <= 0:
             labels.append(k)
         else:
-            labels.append(np.median(
+            labels.append(most_frequent(
                 label_frames[bound_inter[0]: bound_inter[1]]))
-    #labels.append(label_frames[-1])
+    labels.append(label_frames[-1])
 
     #plt.imshow(Dw, interpolation="nearest", aspect="auto"); plt.show()
 
@@ -159,12 +163,14 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
             #plt.imshow(F, interpolation="nearest", aspect="auto"); plt.show()
 
             G = G.flatten()
-            bound_idxs = np.where(np.diff(G) != 0)[0] + 1
+            if bound_idxs is None:
+                bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
         # Obtain labels
         #labels = np.concatenate(([G[0]], G[bound_idxs]))
 
-        labels = compute_labels(X, 9, bound_idxs)
+        labels = compute_labels(X, 8, bound_idxs, k=5)
+        #print len(bound_idxs), len(labels)
 
         # Increase rank if we found too few boundaries
         if len(np.unique(bound_idxs)) <= 2:
@@ -182,7 +188,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=8, R=12, rank=4):
+            h=10, R=10, rank=5):
     """Main process.
 
     Parameters
@@ -211,12 +217,13 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
     chroma, mfcc, beats, dur = MSAF.get_features(in_path,
                                                  annot_beats=annot_beats)
 
-    # Read annotated bounds
-    try:
-        ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
-    except:
-        logging.warning("No annotated boundaries in file %s" % in_path)
-        ann_bounds = []
+    # Read annotated bounds if necessary
+    bound_idxs = None
+    if annot_bounds:
+        try:
+            bound_idxs = MSAF.read_annot_bound_frames(in_path, beats)[1:-1]
+        except:
+            logging.warning("No annotated boundaries in file %s" % in_path)
 
     # Use specific feature
     if feature == "hpcp":
@@ -232,33 +239,26 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
         #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices and labels using matrix factorization
-        if annot_bounds:
-            bound_idxs, est_labels = get_segmentation(
-                F.T, rank, R, niter=niter, bound_idxs=ann_bounds)
-        else:
-            bound_idxs, est_labels = get_segmentation(
-                F.T, rank, R, niter=niter)
+        bound_idxs, est_labels = get_segmentation(
+            F.T, rank, R, niter=niter, bound_idxs=bound_idxs)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
         bound_idxs = np.empty(0)
         est_labels = [1]
 
-    # Concatenate first boundary
+    # Add first and last boundary
     bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
+    est_times = beats[bound_idxs]  # Index to times
+    est_times = np.concatenate((est_times, [dur]))  # Last bound
 
     #logging.info("Annotated bounds: %s" % ann_bounds)
     #logging.info("Estimated bounds: %s" % bound_idxs)
 
-    # Get times
-    est_times = beats[bound_idxs]
+    logging.info("Estimated times: %s" % est_times)
+    logging.info("Estimated labels: %s" % est_labels)
 
-    # Concatenate last boundary
-    est_times = np.concatenate((est_times, [dur]))
-
-    # Concatenate last boundary
-    #logging.info("Estimated times: %s" % est_times)
-    #logging.info("Estimated labels: %s" % est_labels)
+    assert len(est_times) - 1 == len(est_labels)
 
     return est_times, est_labels
 
