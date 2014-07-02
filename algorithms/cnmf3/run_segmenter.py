@@ -61,10 +61,8 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            rank=None, h=None, R=None, annot_bounds=False):
+            rank=None, h=None, R=None, annot_bounds=False, n_jobs=4):
     """Main process."""
-
-    n_jobs = 4
 
     # Get relevant files
     jam_files = glob.glob(os.path.join(in_path, "annotations",
@@ -107,6 +105,12 @@ def main():
                         default="*",
                         help="The prefix of the dataset to use "
                         "(e.g. Isophonics, SALAMI")
+    parser.add_argument("-j",
+                        action="store",
+                        dest="n_jobs",
+                        default=4,
+                        type=int,
+                        help="The number of threads to use")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -116,7 +120,8 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
-            ds_name=args.ds_name, annot_bounds=args.annot_bounds)
+            ds_name=args.ds_name, annot_bounds=args.annot_bounds,
+            n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
