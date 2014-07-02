@@ -103,6 +103,28 @@ def pick_peaks(nc, L=16):
     return peaks
 
 
+def most_frequent(x):
+    """Returns the most frequent value in x."""
+    return np.argmax(np.bincount(x))
+
+
+def compute_labels(label_frames, bound_idxs):
+    """Computes the labels using the bounds."""
+
+    labels = [label_frames[0]]
+    bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
+    for bound_inter in bound_inters:
+        if bound_inter[1] - bound_inter[0] <= 0:
+            labels.append(np.max(label_frames) + 1)
+        else:
+            labels.append(most_frequent(
+                label_frames[bound_inter[0]: bound_inter[1]]))
+        #print bound_inter, labels[-1]
+    labels.append(label_frames[-1])
+
+    return labels
+
+
 def cnmf(S, rank=2, niter=500):
     """(Convex) Non-Negative Matrix Factorization.
 
@@ -133,34 +155,38 @@ def cnmf(S, rank=2, niter=500):
     return F, G, W
 
 
-def get_boundaries(S, rank, niter=500):
+def get_boundaries(S, rank, niter=500, bound_idxs=None):
     """
     Gets the boundaries from the factorization matrices.
 
     Parameters
     ----------
     S: np.array()
-        Self-similarity matrix
+        Self-similarity matrix.
     rank: int
-        Rank of decomposition
+        Rank of decomposition.
     niter: int
-        Number of iterations for k-means
+        Number of iterations for k-means.
+    bound_idxs : list
+        Use previously found boundaries (None to detect them).
 
     Returns
     -------
     bounds_idx: np.array
-        Bound indeces found
+        Bound indeces found.
+    labels: list
+        Estimated labels.
     """
-    M = 9   # Size of the mean filter to compute the novelty curve
-    L = 13   # Size of the peak picking filter
+    R = 9  # Size of the median filter for activation matrix
 
     # Find non filtered boundaries
-    bound_idxs = np.empty(0)
     while True:
         try:
             F, G, W = cnmf(S, rank=rank, niter=niter)
         except:
-            return bound_idxs
+            return bound_idxs, [0]
+
+        W = G.T
 
         # Filter W
         idx = np.argmax(W, axis=1)
@@ -169,45 +195,42 @@ def get_boundaries(S, rank, niter=500):
         W[:, :] = 0
         W[max_idx] = idx + 1
 
-        # TODO: Order matters?
-        W = np.sum(W, axis=1)
-        W = median_filter(W[:, np.newaxis], 11)
         #plt.imshow(W, interpolation="nearest", aspect="auto")
         #plt.show()
 
-        b = np.where(np.diff(W.flatten()) != 0)[0] + 1
-        bound_idxs = np.concatenate((bound_idxs, b))
+        # TODO: Order matters?
+        W = np.sum(W, axis=1)
+        W = median_filter(W[:, np.newaxis], R)
+
+        #plt.imshow(W, interpolation="nearest", aspect="auto")
+        #plt.show()
+
+        if bound_idxs is None:
+            bound_idxs = np.where(np.diff(W.flatten()) != 0)[0] + 1
 
         # Increase rank if we found too few boundaries
         if len(np.unique(bound_idxs)) <= 2:
-            bound_idxs = np.empty(0)
             rank += 1
+            bound_idxs = None
         else:
             break
 
-    # Compute novelty curve from initial boundaries
-    nc = np.zeros(S.shape[0])
-    for b in bound_idxs:
-        nc[int(b)] += 1
-    nc = mean_filter(nc, M=M)
-    #plt.plot(nc); plt.show()
+    labels = compute_labels(W.flatten().astype(int), bound_idxs)
 
-    # Pick peaks to obtain the best boundaries (filtered boundaries)
-    bound_idxs = pick_peaks(nc, L=L)
-
-    #plt.imshow(G, interpolation="nearest", aspect="auto")
+    #print labels
+    #plt.imshow(G, interpolation="nearest", aspect="auto", cmap="hot")
     #for b in bound_idxs:
-        #plt.axvline(b, linewidth=2.0, color="k")
+        #plt.axvline(b, linewidth=2.0, color="b")
     #plt.show()
 
-    return bound_idxs
+    return bound_idxs, labels
 
 
-def process(in_path, feature="hpcp", annot_beats=False):
+def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False):
     """Main process."""
 
     # C-NMF params
-    m = 13          # Size of median filter
+    m = 10          # Size of median filter
     rank = 3        # Rank of decomposition
     niter = 300     # Iterations for the matrix factorization and clustering
     dist = "correlation"
@@ -215,6 +238,14 @@ def process(in_path, feature="hpcp", annot_beats=False):
     # Read features
     chroma, mfcc, beats, dur = MSAF.get_features(in_path,
                                                  annot_beats=annot_beats)
+
+    # Read annotated bounds if necessary
+    bound_idxs = None
+    if annot_bounds:
+        try:
+            bound_idxs = MSAF.read_annot_bound_frames(in_path, beats)[1:-1]
+        except:
+            logging.warning("No annotated boundaries in file %s" % in_path)
 
     # Use specific feature
     if feature == "hpcp":
@@ -234,11 +265,13 @@ def process(in_path, feature="hpcp", annot_beats=False):
         #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices using matrix factorization
-        bound_idxs = get_boundaries(S, rank, niter=niter)
+        bound_idxs, est_labels = get_boundaries(S, rank, niter=niter,
+                                                bound_idxs=bound_idxs)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
         bound_idxs = np.empty(0)
+        est_labels = [0]
 
     # Concatenate first boundary
     bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
@@ -255,9 +288,12 @@ def process(in_path, feature="hpcp", annot_beats=False):
     est_times = np.concatenate((est_times, [dur]))
 
     # Concatenate last boundary
-    #logging.info("Estimated times: %s" % est_times)
+    logging.info("Estimated times: %s" % est_times)
+    logging.info("Estimated labels: %s" % est_labels)
 
-    return est_times
+    assert len(est_times) - 1 == len(est_labels)
+
+    return est_times, est_labels
 
 
 def main():
@@ -279,6 +315,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -287,7 +328,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats)
+    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats,
+            annot_bounds=args.annot_bounds)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

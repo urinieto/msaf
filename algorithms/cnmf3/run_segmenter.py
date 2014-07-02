@@ -15,7 +15,7 @@ import os
 import argparse
 import time
 import logging
-import jams
+import jams2
 import segmenter as S
 
 from joblib import Parallel, delayed
@@ -30,7 +30,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
 
     # Only analize files with annotated beats
     if annot_beats:
-        jam = jams.load(jam_file)
+        jam = jams2.load(jam_file)
         if jam.beats == []:
             return
         if jam.beats[0].data == []:
