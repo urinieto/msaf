@@ -188,7 +188,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=12, R=10, rank=3):
+            h=10, R=10, rank=3):
     """Main process.
 
     Parameters
