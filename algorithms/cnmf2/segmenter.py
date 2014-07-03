@@ -50,57 +50,9 @@ def compute_ssm(X, metric="seuclidean"):
     D = distance.pdist(X, metric=metric)
     D = distance.squareform(D)
     D /= D.max()
+    #D = D ** 2
+    D /= D.max()
     return 1 - D
-
-
-def compute_nc(X, G):
-    """Computes the novelty curve from the self-similarity matrix X and
-        the gaussian kernel G."""
-    N = X.shape[0]
-    M = G.shape[0]
-    nc = np.zeros(N)
-
-    for i in xrange(M / 2, N - M / 2 + 1):
-        nc[i] = np.sum(X[i - M / 2:i + M / 2, i - M / 2:i + M / 2] * G)
-
-    # Normalize
-    nc += nc.min()
-    nc /= nc.max()
-    return nc
-
-
-def pick_peaks(nc, L=16):
-    """Obtain peaks from a novelty curve using an adaptive threshold."""
-    offset = nc.mean() / 2.
-    th = filters.median_filter(nc, size=L) + offset
-    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    peaks = []
-
-    k_hill = 0
-    hill = False
-    for i in xrange(1, nc.shape[0] - 1):
-        # is it above the threshold?
-        if nc[i] > th[i]:
-            # is it a peak?
-            if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
-                    k_hill = 0
-                    hill = False
-                    peaks.append(i)
-            # is it a flat hill?
-            if nc[i - 1] == nc[i] and nc[i] == nc[i - 1]:
-                hill = True
-                k_hill += 1
-        elif hill:
-            peaks.append(i - k_hill / 2)
-            k_hill = 0
-            hill = False
-
-    #plt.plot(nc)
-    #plt.plot(th)
-    #plt.show()
-    #print peaks
-
-    return peaks
 
 
 def most_frequent(x):
@@ -155,7 +107,7 @@ def cnmf(S, rank=2, niter=500):
     return F, G, W
 
 
-def get_boundaries(S, rank, niter=500, bound_idxs=None):
+def get_boundaries(S, rank, R=9, niter=500, bound_idxs=None):
     """
     Gets the boundaries from the factorization matrices.
 
@@ -165,6 +117,8 @@ def get_boundaries(S, rank, niter=500, bound_idxs=None):
         Self-similarity matrix.
     rank: int
         Rank of decomposition.
+    R : int
+        Size of the median filter for activation matrix
     niter: int
         Number of iterations for k-means.
     bound_idxs : list
@@ -177,8 +131,6 @@ def get_boundaries(S, rank, niter=500, bound_idxs=None):
     labels: list
         Estimated labels.
     """
-    R = 9  # Size of the median filter for activation matrix
-
     # Find non filtered boundaries
     while True:
         try:
@@ -226,12 +178,29 @@ def get_boundaries(S, rank, niter=500, bound_idxs=None):
     return bound_idxs, labels
 
 
-def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False):
-    """Main process."""
+def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
+            h=16, R=9, rank=4):
+    """Main process. 
+    
+    Parameters
+    ----------
+    in_path : str
+        Path to the dataset folder.
+    feature : str
+        Type of feature (hpcp or mfcc).
+    annot_beats : bool
+        Whether to use annotated beats or not.
+    annot_bounds : bool
+        Whether to use annotated bounds or not.
+    h : int
+        Size of the median filter for the SSM.
+    R : int
+        Size of the median filter for the decomposed C-NMF matrix.
+    rank : int
+        Rank of decomposition
+    """
 
     # C-NMF params
-    m = 10          # Size of median filter
-    rank = 3        # Rank of decomposition
     niter = 300     # Iterations for the matrix factorization and clustering
     dist = "correlation"
 
@@ -255,9 +224,9 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False):
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
-    if F.shape[0] >= m:
+    if F.shape[0] >= h:
         # Median filter
-        F = median_filter(F, M=m)
+        F = median_filter(F, M=h)
         #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
         # Self similarity matrix
@@ -265,7 +234,7 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False):
         #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
         # Find the boundary indices using matrix factorization
-        bound_idxs, est_labels = get_boundaries(S, rank, niter=niter,
+        bound_idxs, est_labels = get_boundaries(S, rank, niter=niter, R=R,
                                                 bound_idxs=bound_idxs)
     else:
         # The track is too short. We will only output the first and last
