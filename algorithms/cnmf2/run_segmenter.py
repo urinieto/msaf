@@ -27,7 +27,7 @@ import msaf_io as MSAF
 
 
 def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
-                  annot_bounds):
+                  annot_bounds, rank, h, R):
 
     # Only analize files with annotated beats
     if annot_beats:
@@ -40,9 +40,15 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
     logging.info("Segmenting %s" % audio_file)
 
     # C-NMF segmenter call
-    est_times, est_labels = S.process(audio_file, feature=feature,
-                                      annot_beats=annot_beats,
-                                      annot_bounds=annot_bounds)
+    if rank is None:
+        est_times, est_labels = S.process(audio_file, feature=feature,
+                                          annot_beats=annot_beats,
+                                          annot_bounds=annot_bounds)
+    else:
+        est_times, est_labels = S.process(audio_file, feature=feature,
+                                          annot_beats=annot_beats,
+                                          annot_bounds=annot_bounds,
+                                          rank=rank, h=h, R=R)
 
     # Save
     out_file = os.path.join(in_path, "estimations",
@@ -58,7 +64,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*", n_jobs=4,
-            annot_bounds=False):
+            annot_bounds=False, rank=None, h=None, R=None):
     """Main process."""
 
     # Get relevant files
@@ -68,9 +74,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*", n_jobs=4,
                                          "%s_*.[wm][ap][v3]" % ds_name))
 
     # Call in parallel
-    result = Parallel(n_jobs=n_jobs)(delayed(process_track)(
+    Parallel(n_jobs=n_jobs)(delayed(process_track)(
         in_path, audio_file, jam_file, annot_beats, feature, ds_name,
-        annot_bounds)
+        annot_bounds, rank, h, R)
         for audio_file, jam_file in zip(audio_files, jam_files))
 
 

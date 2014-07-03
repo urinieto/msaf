@@ -15,7 +15,7 @@ import os
 import argparse
 import time
 import logging
-import jams
+import jams2
 import json
 import subprocess
 from joblib import Parallel, delayed
@@ -30,7 +30,7 @@ def process_track(jam_file, feat_file, annot_beats, feature, annot_bounds):
 
     # Only analize files with annotated beats
     if annot_beats:
-        jam = jams.load(jam_file)
+        jam = jams2.load(jam_file)
         if jam.beats == []:
             return
         if jam.beats[0].data == []:
@@ -98,6 +98,7 @@ def main():
                         help="Input dataset")
     parser.add_argument("feature",
                         action="store",
+                        default="mfcc",
                         help="Feature to be used (mfcc or hpcp)")
     parser.add_argument("-b",
                         action="store_true",
