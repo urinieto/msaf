@@ -2,29 +2,16 @@
 Adds boundaries to a specific audio file.
 """
 
-import glob
 import numpy as np
 import os
 from scikits import audiolab
 import subprocess
 
 
-maindir = "dataset"
-outputdir = "www/outputsongs"
-
-
 def ensure_dir(directory):
     """Checks if directory exists, and creates it otherwise."""
     if not os.path.exists(directory):
         os.makedirs(directory)
-
-
-def resample_audio():
-    """Resamples the audio from maindir/audio to 44100Hz."""
-    src_mp3s = glob.glob(os.path.join(maindir, "audio", "*.mp3"))
-    for src_mp3 in src_mp3s:
-        dest_wav = src_mp3.replace(".mp3", ".wav")
-        mp32wav(src_mp3, dest_wav)
 
 
 def mp32wav(mp3file, wavfile, sr=44100):
@@ -109,25 +96,24 @@ def add_boundaries(wavfile, boundaries, output='output.wav',
         read_frames = out[start_idx:end_idx].size
         out[start_idx:end_idx] += xb[:read_frames]
 
-    # Cut track adding some extra time
-    extra_time = 4 * fs
-    start_time = start * fs - extra_time
+    # Cut track if needed
+    start_time = start * fs
     if start_time < 0:
         start_time = 0
     if end is None:
         end_time = len(out)
     else:
-        end_time = end * fs + extra_time
+        end_time = end * fs
         if end_time > len(out):
             end_time = len(out)
 
-    out = out[start_time:end_time]
+    out = out[int(start_time):int(end_time)]
 
     # Write output wav
     audiolab.wavwrite(out, output, fs=fs)
 
     # Convert to MP3 and delete wav
-    dest_mp3 = output.replace(".wav", ".mp3").replace("##_", "")
+    dest_mp3 = output.replace(".wav", ".mp3")
     wav2mp3(output, dest_mp3)
     os.remove(output)
 
