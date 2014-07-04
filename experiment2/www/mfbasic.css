@@ -1,0 +1,145 @@
+/* mfbasic.css - a very simple style sheet for displaying data quickly*/
+
+body {
+margin: 0;
+padding: 0;
+font: 80% helvetica, arial, "Trebuchet MS", verdana, tahoma, sans-serif;
+line-height: 1.4em;
+color: #666; /* main text color */
+background: #e9e9e9;
+}
+
+#top {
+margin-top: 20px;
+padding : 0;
+}
+
+#container {
+width: 800px;
+margin-left: auto;
+margin-right: auto;
+padding: 0px;
+background: #ffffff; /* container background color */
+border-style:solid;
+border-color: #ccc;
+border-width:1px;
+}
+
+#content {
+padding: 20px;
+margin-left: 0px;
+margin-bottom: 0px;
+}
+
+#footer {
+clear:both;
+padding: 3px;
+margin: 0 0 0 0;
+font-size: .85em;
+text-align: center;
+border-top: 1px solid #c4cdee;
+color: #7a5755;
+background: inherit;
+/*background: #dddddd;*/
+}
+
+h1,h2,h3,h4,h5,p,ul,ol { 
+font-family: helvetica, arial, "Trebuchet MS", verdana, tahoma, sans-serif;
+}
+
+td,th {
+font: 80% helvetica, arial, "Trebuchet MS", verdana, tahoma, sans-serif;
+}
+
+pre { 
+font-family: monospace; 
+font-size: 110%;
+}
+
+.indented {
+margin-left: 20px
+}
+
+table {
+border-collapse:collapse;
+}
+
+table, th, td {
+margin-top: 5px;
+margin-bottom: 5px;
+border-style: solid;
+border-color: #ccc;
+border-width: 1px;
+padding: 5px;
+}
+
+th {
+background-color: #eee;
+color: black;
+}
+
+h1 {
+color: #5F5F5F; /* main text color */
+font-size: 1.7em;
+}
+
+h2 {
+padding-top: 4px;
+padding-bottom: 2px;
+padding-right: 3px;
+text-align: left;
+font-size: 1.3em;
+color:#7a5755;
+background: inherit;
+border-top: 1px solid #e6c6c6;
+border-bottom: 1px solid #e6c6c6;
+}
+
+h3 {
+font-size: 1.3em;
+color:#7a5755;
+}
+
+h4 {
+font-size: 1.1em;
+/*padding: 3px 25px 0px 5px;*/
+/*margin:5px;*/
+color: #503333;
+}
+
+
+a {
+color: #936967;
+text-decoration: none;
+border-bottom: 1px solid #e6c6c6;
+outline: none;
+background: inherit;
+}
+
+a:hover {
+color: #7a5755;
+text-decoration: none;
+border-bottom: 1px solid #7a5755;
+outline: none;
+background: inherit;
+}
+
+img {
+/*margin: 10px;*/
+/*border: 1px solid #dddddd;*/
+}
+
+.floatleft { float: left; }
+
+.floatright { float: right; }
+
+.box {
+text-align:left;
+font-style:italic;
+margin: 10px;
+background: inherit;
+color: #a99999;
+border: 1px solid #ddd;
+padding: 3px;
+}
+
