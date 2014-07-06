@@ -8,58 +8,58 @@ MARL, NYU
 -->
 <?php
 
-  /*
-  // Create connection
-  $db_server = "localhost";
-  $db_user = "urinieto_wp";
-  $db_pass = "carambola1234";
-  $db_name = "boundaries_experiment";
-  $con = mysqli_connect($db_server, $db_user, $db_pass, $db_name);
-  
-  // Check connection
-  if (mysqli_connect_errno($con)) {
-    echo "Failed to connect to MySQL: " . mysqli_connect_error();   
-  }
+    session_start();
 
-  // Update songs table
-  $result = mysqli_query($con, "SELECT * FROM songs ORDER BY n_results");
-  //while($row = mysqli_fetch_array($result)) {
-  //  echo $row['name'] . "<br />";
-  //}
+    if (isset($_SESSION["results"]))
+        $out = "set";
+    else
+        $out = "not set";
+    echo $out . " ok<br/>";
 
-  $row_1 = rand(0,7);
-  $row_2 = rand(0,7);
-  while ($row_2 == $row_1) {
-    $row_2 = rand(0,7);
-  }
+    // Create connection
+    $db_server = "localhost";
+    $db_user = "urinieto_wp";
+    $db_pass = "carambola1234";
+    $db_name = "urinieto_boundaries_experiment2";
+    $con = mysqli_connect($db_server, $db_user, $db_pass, $db_name);
 
-  //echo $result;
-  if (!mysqli_data_seek($result, $row_1)) {
-    echo "Cannot seek to row $row_1: " . mysql_error() . "\n";
-  }
-  $row = mysqli_fetch_assoc($result);
-  $s1_name = $row['name'];
-  if (!mysqli_data_seek($result, 0)) {
-    echo "Cannot seek to row 0: " . mysql_error() . "\n";
-  }
-  if (!mysqli_data_seek($result, $row_2)) {
-    echo "Cannot seek to row $row_2: " . mysql_error() . "\n";
-  }
-  $row = mysqli_fetch_assoc($result);
-  $s2_name = $row['name'];
-  mysqli_free_result($result);
+    // Check connection
+    if (mysqli_connect_errno($con)) {
+        echo "Failed to connect to MySQL: " . mysqli_connect_error();   
+    }
 
-  mysqli_close($con);
-  */
+    // Get the excerpts that have the least amount of results
+    $result = mysqli_query($con, "SELECT * FROM excerpts ORDER BY totalResults ASC");
+    $least_results = mysqli_fetch_array($result)['totalResults'];
+    $result = mysqli_query($con, "SELECT * FROM excerpts WHERE totalResults = $least_results ORDER BY RAND()");
+    
+    $excerpt = mysqli_fetch_array($result);
 
-    // TODO: Set excerpt number
-    $k = 1;
+    // Find the version that has the least amount of results for the given excerpt
+    $version_results = array(
+        "v1res" => $excerpt['v1Results'],
+        "v2res" => $excerpt['v2Results'],
+        "v3res" => $excerpt['v3Results']
+    );
+    $version = array_keys($version_results, min($version_results))[0][1];
+    //echo "Version: " . $version . "<br/>";
+    //echo $excerpt['id'] . " ok<br/>";
 
-    // TODO: Set audio
-    $audio = "audio/0_v1.mp3";
+    mysqli_close($con);
 
+    // Set excerpt number
+    $k = $excerpt['id'];
+
+    // Set audio
+    $audio = "audio/" . $k . "_v" . $version . ".mp3";
+    //echo $audio . "<br/>";
     // TODO: Set name for storing results
-    $name = "rating_" . $k;
+    $name = "ratings";
+
+    // TODO: Set the name of the variable to pass to the next page
+    $rating_name = "score_rating_" . $k;
+    $wrong_bounds_name = "score_bounds_" . $k;
+
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -71,6 +71,9 @@ MARL, NYU
 <script src="audiojs/audiojs/audio.min.js"></script>
 
 <script>
+
+  var wrong_bounds = 0;
+
   audiojs.events.ready(function() {
     var as = audiojs.createAll();
   });
@@ -90,11 +93,26 @@ MARL, NYU
   }
 
   function validateForm() {
-    if (!validateRadioButtons("rating_1")) {
+    if (!validateRadioButtons("ratings")) {
       alert("You must rate the boundaries of the track!");
       return false;
     }
   }
+
+  function update_wrong_bounds() {
+    document.getElementById("wbounds_text").value = wrong_bounds;
+  }
+
+  function add_wrong_bound() {
+      wrong_bounds++;
+      update_wrong_bounds();
+  }
+
+  function reset_wrong_bounds() {
+      wrong_bounds = 0;
+      update_wrong_bounds();
+  }
+
 </script>
 
 </head>
@@ -106,15 +124,16 @@ MARL, NYU
 <img src="images/MARL_cognition_header.jpg" width="780" height="71" alt="logo"/>
 <h1>Section Boundaries Experiment</h1>
 
-<p>The following excerpts have been marked with a "ding" sound for each section 
-  boundary. Please, listen to them carefully and rate the quality of the 
-  boundaries based on your own judgement.</p>
+<p>The following excerpts have been marked with a "bell" sound for each section 
+  boundary. Please, listen to them carefully and press the "Wrong Boundary!" button  every time you think that there is a boundary that shouldn't be there (false 
+  positive) or when there is a boundary that should be there (false negative). 
+  Finally, rate the overall quality of the boundaries based on your own judgement.
+</p>
 
 <p>
-<form name="experimentform" method="post" action="info.php" onsubmit="return validateForm()">
+<form name="experimentform" method="post" action="index.php" onsubmit="return validateForm()">
 <table width="760px">
     <?php
-        $var_name = "s". strval($i + 1) . "_name";
         echo '
         <tr>
             <td valign="top">
@@ -124,21 +143,30 @@ MARL, NYU
             <td>
                 Rating (1: Not Accurate, 5: Very Accurate)
             </td>
-        </tr>';
-        echo '
-          <tr>
+        </tr>
+        <tr>
             <td valign="top">
-                <audio src="'. $audio. '" preload="auto" />
+                <center><audio src="'. $audio. '" preload="auto" /></center>
             </td>
-            <td valign="top">
+            <td valign="center">
                 1<input type="radio" name="'. $name .'" id="'. $name .'_1" value=1>&nbsp&nbsp&nbsp&nbsp
                 2<input type="radio" name="'. $name .'" id="'. $name .'_2" value=2>&nbsp&nbsp&nbsp&nbsp
                 3<input type="radio" name="'. $name .'" id="'. $name .'_3" value=3>&nbsp&nbsp&nbsp&nbsp
                 4<input type="radio" name="'. $name .'" id="'. $name .'_4" value=4>&nbsp&nbsp&nbsp&nbsp
                 5<input type="radio" name="'. $name .'" id="'. $name .'_5" value=5>&nbsp&nbsp&nbsp&nbsp
             </td>
+        </tr>
+        <tr>
+            <td valign="top">
+                <center><button type="button" id="wbound" onclick="add_wrong_bound();">Wrong Boundary!</button></center>
+            </td>
+            <td valign="center">
+                <input type="text" id="wbounds_text" size=3 value="0" readonly>
+                <button type="button" onclick="reset_wrong_bounds();">Reset</button>
+            </td>
         </tr>';
   ?>
+    
     <tr>
         <td colspan="2" style="text-align:center">
             <input type="submit" value="Submit Results">
