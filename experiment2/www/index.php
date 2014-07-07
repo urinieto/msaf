@@ -9,7 +9,10 @@ MARL, NYU
 <?php
     require 'utils.php';
 
+    header('P3P: CP="IDC DSP COR CURa ADMa OUR IND PHY ONL COM STA"'); 
     session_start();
+    setcookie('BOUNDSSESSION', session_id(), 0, '/');
+
     //session_unset();
 
     // Establish DB connection
@@ -136,7 +139,8 @@ MARL, NYU
         (false positive) or when there is a boundary that should be there 
         (false negative). Note: The precise moment in time in which your press the button is not relevant.</li>
         <li>Rate the overall quality of the boundaries based on your own judgement.</li>
-        </ul></p>";
+        </ul><br/>
+        Recommended brosers: Firefox, Chrome. <strong>DOES NOT WORK ON SAFARI</strong>.</p>";
     $thank_you = "<p>Thanks! <strong>You have evaluated {$nExcerpts} {$excerpts_str}.
             </strong> You can evaluate as many as you like. 
             Whenever you want to finish the experiment, please press \"Finish\". ";
@@ -214,7 +218,7 @@ MARL, NYU
 
 <div id="footer">
     <a href="https://files.nyu.edu/onc202/public/" target="_blank">Oriol Nieto</a>, 
-        Music and Audio Research Lab, New York University, 2014.
+        Music and Audio Research Lab, New York University, <?php echo date("Y"); ?>.
 </div>
 
 </div>

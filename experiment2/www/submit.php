@@ -60,7 +60,7 @@ MARL, NYU
 
 <div id="footer">
     <a href="https://files.nyu.edu/onc202/public/" target="_blank">Oriol Nieto</a>, 
-        Music and Audio Research Lab, New York University, 2013.
+        Music and Audio Research Lab, New York University, <?php echo date("Y"); ?>.
 </div>
 
 </div>
