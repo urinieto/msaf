@@ -22,7 +22,7 @@ MARL, NYU
 <img src="images/MARL_cognition_header.jpg" width="780" height="71" alt="logo"/>
 <h1>Section Boundaries Experiment</h1>
 
-<p>Almost done. Please, fill up the following additional info.</p>
+<p>Almost done. Please, fill in the following additional info.</p>
 
 <p>
 <form name="subjectform" method="post" action="submit.php">
@@ -34,6 +34,7 @@ MARL, NYU
             </td>
         <td valign="top">
             <input  type="text" name="first_name" maxlength="50" size="30">
+            <input type="hidden" name="subjectID" value="<?php echo $_POST["subjectID"]; ?>">
         </td>
     </tr>
     <tr>

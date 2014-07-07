@@ -9,8 +9,6 @@ MARL, NYU
 <?php
     require 'utils.php';
 
-    session_start();
-
     // Establish DB connection
     $con = create_connection();
 
@@ -23,7 +21,7 @@ MARL, NYU
 
     // Update Subject
     update_subject($con, $first_name, $last_name, $email, $music_training, 
-        $comments, $_SESSION['subjectID']);
+        $comments, $_POST['subjectID']);
 
     // Send email
     $email_message = "You have a new result!";
