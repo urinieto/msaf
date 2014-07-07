@@ -63,6 +63,7 @@ MARL, NYU
 <script>
 
   var wrong_bounds = 0;
+  var time_up = false;
 
   audiojs.events.ready(function() {
     var as = audiojs.createAll();
@@ -83,8 +84,12 @@ MARL, NYU
   }
 
   function validateForm() {
+    if (!time_up) {
+      alert("You need more time to listen to the whole excerpt! Don't cheat you titan :-)");
+      return false;
+    }
     if (!validateRadioButtons("ratings")) {
-      alert("You must rate the boundaries of the track!");
+      alert("You must rate the boundaries of the excerpt!");
       return false;
     }
   }
@@ -102,6 +107,8 @@ MARL, NYU
       wrong_bounds = 0;
       update_wrong_bounds();
   }
+
+  setTimeout(function(){time_up = true;},90000);
 
 </script>
 
@@ -157,7 +164,7 @@ MARL, NYU
 ?>
 
 <p>
-<form name="experimentform" method="post" action="index.php" onsubmit="return validateForm()">
+<form name="experimentform" method="post" action="index.php" onsubmit="return validateForm();">
 <table width="760px">
     <?php
         echo '
