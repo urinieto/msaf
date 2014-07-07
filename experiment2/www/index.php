@@ -7,32 +7,30 @@ MARL, NYU
 
 -->
 <?php
-    
     require 'utils.php';
 
     session_start();
-    session_unset();
+    //session_unset();
 
     // Establish DB connection
     $con = create_connection();
 
-    $con = reset_database($con);
+    //$con = reset_database($con);
 
-    // If the subject has already submitted a result
-    if (isset($_SESSION["subjectID"])) {
-        // Get latest results
+    try {
+        // Get latest results (if exist)
         $excerptID = $_POST["excerptID"];
         $version = $_POST["version"];
         $ratings = $_POST["ratings"];
         $nWrongs = $_POST["nWrongs"];
 
-        // Insert the new results
+        // Insert them to the database
         insert_result($con, $excerptID, $version, $ratings, $nWrongs, 
-                      $_SESSION["subjectID"]);
+                    $_SESSION["subjectID"]);
         $_SESSION["i"]++; // New excerpt to evaluate
     }
-    // First time to access the page
-    else {
+    catch (Exception $e) {
+        // First time to access the page
         // Get new subject ID and store it to the session
         $_SESSION["subjectID"] = create_new_subject($con);
         $_SESSION["i"] = 1;
@@ -117,7 +115,9 @@ MARL, NYU
 <h1>Section Boundaries Experiment</h1>
 
 <?php
-    $nExcerpts = $_SESSION["i"];
+    $nExcerpts = $_SESSION["i"] - 1;
+    $excerpts_str = ($nExcerpts == 1) ? "excerpt" : "excerpts";
+    
     $instructions = "<p>
         The following excerpt has been marked with a \"bell\" sound for each section 
         boundary. A section boundary may occur when salient changes in various musical 
@@ -130,7 +130,7 @@ MARL, NYU
         (false negative). Note: The precise moment in time in which your press the button is not relevant.</li>
         <li>Rate the overall quality of the boundaries based on your own judgement.</li>
         </ul></p>";
-    $thank_you = "<p>Thanks! <strong>You have evaluated {$nExcerpts} excerpts.
+    $thank_you = "<p>Thanks! <strong>You have evaluated {$nExcerpts} {$excerpts_str}.
             </strong> You can evaluate as many as you like. 
             Whenever you want to finish the experiment, please press \"Finish\". ";
     $encourage = "But I encourage you to analyze at least 5 excerpts! :-)</p>";

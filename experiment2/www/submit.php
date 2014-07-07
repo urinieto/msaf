@@ -14,12 +14,19 @@ MARL, NYU
     // Establish DB connection
     $con = create_connection();
 
+    // Sanitize strings before inserting into dataset
+    $first_name = sanitize_str($_POST['first_name']);
+    $last_name = sanitize_str($_POST['last_name']);
+    $email = sanitize_str($_POST['email']);
+    $music_training = sanitize_str($_POST['music_training']);
+    $comments = sanitize_str($_POST['comments']);
+
     // Update Subject
-    update_subject($con, $_POST['first_name'], $_POST['last_name'], $_POST['email'], $_POST['music_training'], $_POST['comments'], $_SESSION['subjectID']);
+    update_subject($con, $first_name, $last_name, $email, $music_training, $comments, $_SESSION['subjectID']);
 
     // Send email
     $email_message = "You have a new result!";
-    $headers = 'From: '.$_POST['first_name']."\r\n".
+    $headers = 'From: '.$first_name."\r\n".
         'Reply-To: oriol@nyu.edu'."\r\n".
         'X-Mailer: PHP/' . phpversion();
     @mail("oriol@nyu.edu", "Boundaries Experiment", $email_message, $headers);  
@@ -35,13 +42,6 @@ MARL, NYU
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <link href="mfbasic.css" rel="stylesheet" type="text/css" />
-<script src="audiojs/audiojs/audio.min.js"></script>
-
-<script>
-  audiojs.events.ready(function() {
-    var as = audiojs.createAll();
-  });
-</script>
 
 </head>
 <body>
