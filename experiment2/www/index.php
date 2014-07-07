@@ -7,59 +7,51 @@ MARL, NYU
 
 -->
 <?php
+    
+    require 'utils.php';
 
     session_start();
+    session_unset();
 
-    if (isset($_SESSION["results"]))
-        $out = "set";
-    else
-        $out = "not set";
-    echo $out . " ok<br/>";
+    // Establish DB connection
+    $con = create_connection();
 
-    // Create connection
-    $db_server = "localhost";
-    $db_user = "urinieto_wp";
-    $db_pass = "carambola1234";
-    $db_name = "urinieto_boundaries_experiment2";
-    $con = mysqli_connect($db_server, $db_user, $db_pass, $db_name);
+    $con = reset_database($con);
 
-    // Check connection
-    if (mysqli_connect_errno($con)) {
-        echo "Failed to connect to MySQL: " . mysqli_connect_error();   
+    // If the subject has already submitted a result
+    if (isset($_SESSION["subjectID"])) {
+        // Get latest results
+        $excerptID = $_POST["excerptID"];
+        $version = $_POST["version"];
+        $ratings = $_POST["ratings"];
+        $nWrongs = $_POST["nWrongs"];
+
+        // Insert the new results
+        insert_result($con, $excerptID, $version, $ratings, $nWrongs, 
+                      $_SESSION["subjectID"]);
+        $_SESSION["i"]++; // New excerpt to evaluate
+    }
+    // First time to access the page
+    else {
+        // Get new subject ID and store it to the session
+        $_SESSION["subjectID"] = create_new_subject($con);
+        $_SESSION["i"] = 1;
     }
 
-    // Get the excerpts that have the least amount of results
-    $result = mysqli_query($con, "SELECT * FROM excerpts ORDER BY totalResults ASC");
-    $least_results = mysqli_fetch_array($result)['totalResults'];
-    $result = mysqli_query($con, "SELECT * FROM excerpts WHERE totalResults = $least_results ORDER BY RAND()");
-    
-    $excerpt = mysqli_fetch_array($result);
+    // Get the correct excerpt ID and version
+    $excerpt = get_next_excerpt($con);
+    $version = get_next_version($excerpt);
+    $excerptID = $excerpt['id'];
 
-    // Find the version that has the least amount of results for the given excerpt
-    $version_results = array(
-        "v1res" => $excerpt['v1Results'],
-        "v2res" => $excerpt['v2Results'],
-        "v3res" => $excerpt['v3Results']
-    );
-    $version = array_keys($version_results, min($version_results))[0][1];
-    //echo "Version: " . $version . "<br/>";
-    //echo $excerpt['id'] . " ok<br/>";
-
+    // Close DB connection
     mysqli_close($con);
 
-    // Set excerpt number
-    $k = $excerpt['id'];
-
     // Set audio
-    $audio = "audio/" . $k . "_v" . $version . ".mp3";
-    //echo $audio . "<br/>";
-    // TODO: Set name for storing results
-    $name = "ratings";
+    $audio = "audio/" . $excerptID . "_v" . $version . ".mp3";
 
-    // TODO: Set the name of the variable to pass to the next page
-    $rating_name = "score_rating_" . $k;
-    $wrong_bounds_name = "score_bounds_" . $k;
-
+    // Names for storing results
+    $ratings_name = "ratings";
+    $nWrongs_name = "nWrongs";
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -124,11 +116,45 @@ MARL, NYU
 <img src="images/MARL_cognition_header.jpg" width="780" height="71" alt="logo"/>
 <h1>Section Boundaries Experiment</h1>
 
-<p>The following excerpts have been marked with a "bell" sound for each section 
-  boundary. Please, listen to them carefully and press the "Wrong Boundary!" button  every time you think that there is a boundary that shouldn't be there (false 
-  positive) or when there is a boundary that should be there (false negative). 
-  Finally, rate the overall quality of the boundaries based on your own judgement.
-</p>
+<?php
+    $nExcerpts = $_SESSION["i"];
+    $instructions = "<p>
+        The following excerpt has been marked with a \"bell\" sound for each section 
+        boundary. A section boundary may occur when salient changes in various musical 
+        aspects (such as harmony, timbre, texture, rhythm, or tempo) take place. 
+        Please, listen to the excerpt carefully and:
+        <ul>
+        <li>Press the \"Wrong Boundary!\" button every time you think that there 
+        is a boundary that shouldn't be there 
+        (false positive) or when there is a boundary that should be there 
+        (false negative). Note: The precise moment in time in which your press the button is not relevant.</li>
+        <li>Rate the overall quality of the boundaries based on your own judgement.</li>
+        </ul></p>";
+    $thank_you = "<p>Thanks! <strong>You have evaluated {$nExcerpts} excerpts.
+            </strong> You can evaluate as many as you like. 
+            Whenever you want to finish the experiment, please press \"Finish\". ";
+    $encourage = "But I encourage you to analyze at least 5 excerpts! :-)</p>";
+    $reminder = "<p>As a reminder, here you have the intructions again: </p>";
+    $finish_button = '<p><form name="submitform" method="post" action="info.php" 
+        onsubmit=""><center><input type="submit" value="Finish"></form></center></p>';
+
+    if ($_SESSION["i"] == 1) {
+        echo $instructions;
+    }
+    else if ($_SESSION["i"] <= 5) {
+        echo $thank_you;
+        echo $encourage;
+        echo $finish_button;
+        echo $reminder;
+        echo $instructions;
+    }
+    else {
+        echo $thank_you . "<br/>";
+        echo $finish_button;
+        echo $reminder;
+        echo $instructions;
+    }
+?>
 
 <p>
 <form name="experimentform" method="post" action="index.php" onsubmit="return validateForm()">
@@ -137,8 +163,9 @@ MARL, NYU
         echo '
         <tr>
             <td valign="top">
-                <label for="s1_name_text"><font size="5"><strong>Excerpt '.$k.'</strong></font></label>
-                <input type="hidden" name="'.$var_name.'" value="'.$name.'">
+            <label for="s1_name_text"><font size="5"><strong>Excerpt '.$_SESSION["i"].'</strong></font></label>
+                <input type="hidden" name="excerptID" value="'.$excerptID.'">
+                <input type="hidden" name="version" value="'.$version.'">
             </td>
             <td>
                 Rating (1: Not Accurate, 5: Very Accurate)
@@ -149,11 +176,11 @@ MARL, NYU
                 <center><audio src="'. $audio. '" preload="auto" /></center>
             </td>
             <td valign="center">
-                1<input type="radio" name="'. $name .'" id="'. $name .'_1" value=1>&nbsp&nbsp&nbsp&nbsp
-                2<input type="radio" name="'. $name .'" id="'. $name .'_2" value=2>&nbsp&nbsp&nbsp&nbsp
-                3<input type="radio" name="'. $name .'" id="'. $name .'_3" value=3>&nbsp&nbsp&nbsp&nbsp
-                4<input type="radio" name="'. $name .'" id="'. $name .'_4" value=4>&nbsp&nbsp&nbsp&nbsp
-                5<input type="radio" name="'. $name .'" id="'. $name .'_5" value=5>&nbsp&nbsp&nbsp&nbsp
+                1<input type="radio" name="'. $ratings_name .'" id="'. $ratings_name .'_1" value=1>&nbsp&nbsp&nbsp&nbsp
+                2<input type="radio" name="'. $ratings_name .'" id="'. $ratings_name .'_2" value=2>&nbsp&nbsp&nbsp&nbsp
+                3<input type="radio" name="'. $ratings_name .'" id="'. $ratings_name .'_3" value=3>&nbsp&nbsp&nbsp&nbsp
+                4<input type="radio" name="'. $ratings_name .'" id="'. $ratings_name .'_4" value=4>&nbsp&nbsp&nbsp&nbsp
+                5<input type="radio" name="'. $ratings_name .'" id="'. $ratings_name .'_5" value=5>&nbsp&nbsp&nbsp&nbsp
             </td>
         </tr>
         <tr>
@@ -161,7 +188,7 @@ MARL, NYU
                 <center><button type="button" id="wbound" onclick="add_wrong_bound();">Wrong Boundary!</button></center>
             </td>
             <td valign="center">
-                <input type="text" id="wbounds_text" size=3 value="0" readonly>
+                <input type="text" name="'. $nWrongs_name .'" id="wbounds_text" size=3 value="0" readonly>
                 <button type="button" onclick="reset_wrong_bounds();">Reset</button>
             </td>
         </tr>';
