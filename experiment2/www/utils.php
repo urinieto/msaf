@@ -4,7 +4,7 @@
      */
     function my_exec_query($con, $query) {
         if (!mysqli_query($con, $query)) {
-            die('Error: ' . mysqli_error($con));
+            throw new Exception('Error: ' . mysqli_error($con));
         }
     }
 
@@ -143,5 +143,14 @@
         my_exec_query($con, $query);
 
         return $con;
+    }
+
+    /**
+     * Sanitize strings in case there are hackers within your subjects
+     */
+    function sanitize_str($con, $str) {
+        $str = strip_tags($str);
+        $city = mysqli_real_escape_string($con, $str); 
+        return $str;
     }
 ?>
