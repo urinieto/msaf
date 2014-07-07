@@ -1,28 +1,3 @@
-<?php
-    session_start();
-
-    $_SESSION['s1_rating1'] = $_POST['s1_rating1'];
-    $_SESSION['s1_rating2'] = $_POST['s1_rating2'];
-    $_SESSION['s1_rating3'] = $_POST['s1_rating3'];
-    $_SESSION['s2_rating1'] = $_POST['s2_rating1'];
-    $_SESSION['s2_rating2'] = $_POST['s2_rating2'];
-    $_SESSION['s2_rating3'] = $_POST['s2_rating3'];
-    $_SESSION['s3_rating1'] = $_POST['s3_rating1'];
-    $_SESSION['s3_rating2'] = $_POST['s3_rating2'];
-    $_SESSION['s3_rating3'] = $_POST['s3_rating3'];
-    $_SESSION['s4_rating1'] = $_POST['s4_rating1'];
-    $_SESSION['s4_rating2'] = $_POST['s4_rating2'];
-    $_SESSION['s4_rating3'] = $_POST['s4_rating3'];
-    $_SESSION['s5_rating1'] = $_POST['s5_rating1'];
-    $_SESSION['s5_rating2'] = $_POST['s5_rating2'];
-    $_SESSION['s5_rating3'] = $_POST['s5_rating3'];
-    $_SESSION['s1_name'] = $_POST['s1_name'];
-    $_SESSION['s2_name'] = $_POST['s2_name'];
-    $_SESSION['s3_name'] = $_POST['s3_name'];
-    $_SESSION['s4_name'] = $_POST['s4_name'];
-    $_SESSION['s5_name'] = $_POST['s5_name'];
-?>
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
 
@@ -114,7 +89,7 @@ MARL, NYU
 
 <div id="footer">
     <a href="https://files.nyu.edu/onc202/public/" target="_blank">Oriol Nieto</a>, 
-        Music and Audio Research Lab, New York University, 2013.
+        Music and Audio Research Lab, New York University, 2014.
 </div>
 
 </div>
