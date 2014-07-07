@@ -9,12 +9,6 @@ MARL, NYU
 <?php
     require 'utils.php';
 
-    header('P3P: CP="IDC DSP COR CURa ADMa OUR IND PHY ONL COM STA"'); 
-    session_start();
-    setcookie('BOUNDSSESSION', session_id(), 0, '/');
-
-    //session_unset();
-
     // Establish DB connection
     $con = create_connection();
 
@@ -29,14 +23,14 @@ MARL, NYU
 
         // Insert them to the database
         insert_result($con, $excerptID, $version, $ratings, $nWrongs, 
-                    $_SESSION["subjectID"]);
-        $_SESSION["i"]++; // New excerpt to evaluate
+                    $_POST["subjectID"]);
+        $_POST["i"]++; // New excerpt to evaluate
     }
     catch (Exception $e) {
         // First time to access the page
         // Get new subject ID and store it to the session
-        $_SESSION["subjectID"] = create_new_subject($con);
-        $_SESSION["i"] = 1;
+        $_POST["subjectID"] = create_new_subject($con);
+        $_POST["i"] = 1;
     }
 
     // Get the correct excerpt ID and version
@@ -95,6 +89,7 @@ MARL, NYU
       alert("You must rate the boundaries of the excerpt!");
       return false;
     }
+    return true;
   }
 
   function update_wrong_bounds() {
@@ -125,7 +120,7 @@ MARL, NYU
 <h1>Section Boundaries Experiment</h1>
 
 <?php
-    $nExcerpts = $_SESSION["i"] - 1;
+    $nExcerpts = $_POST["i"] - 1;
     $excerpts_str = ($nExcerpts == 1) ? "excerpt" : "excerpts";
     
     $instructions = "<p>
@@ -134,25 +129,27 @@ MARL, NYU
         aspects (such as harmony, timbre, texture, rhythm, or tempo) take place. 
         Please, listen to the excerpt carefully and:
         <ul>
-        <li>Press the \"Wrong Boundary!\" button every time you think that there 
-        is a boundary that shouldn't be there 
-        (false positive) or when there is a boundary that should be there 
-        (false negative). Note: The precise moment in time in which your press the button is not relevant.</li>
+        <li>Press the \"Wrong Boundary!\" button every time you think that there is a boundary that 
+        shouldn't be there (false positive) or when you think there should be a boundary but there 
+        was no bell sound (false negative). Note: The precise moment in time in which you press 
+        the button is not relevant.</li>
         <li>Rate the overall quality of the boundaries based on your own judgement.</li>
         </ul><br/>
-        Recommended brosers: Firefox, Chrome. <strong>DOES NOT WORK ON SAFARI</strong>.</p>";
+        </p>";
     $thank_you = "<p>Thanks! <strong>You have evaluated {$nExcerpts} {$excerpts_str}.
             </strong> You can evaluate as many as you like. 
             Whenever you want to finish the experiment, please press \"Finish\". ";
     $encourage = "But I encourage you to analyze at least 5 excerpts! :-)</p>";
     $reminder = "<p>As a reminder, here you have the intructions again: </p>";
     $finish_button = '<p><form name="submitform" method="post" action="info.php" 
-        onsubmit=""><center><input type="submit" value="Finish"></form></center></p>';
+        onsubmit="">
+        <input type="hidden" name="subjectID" value="'.$_POST["subjectID"].'">
+        <center><input type="submit" value="Finish"></form></center></p>';
 
-    if ($_SESSION["i"] == 1) {
+    if ($_POST["i"] == 1) {
         echo $instructions;
     }
-    else if ($_SESSION["i"] <= 5) {
+    else if ($_POST["i"] <= 5) {
         echo $thank_you;
         echo $encourage;
         echo $finish_button;
@@ -168,18 +165,20 @@ MARL, NYU
 ?>
 
 <p>
-<form name="experimentform" method="post" action="index.php" onsubmit="return validateForm();">
+<form name="experimentform" method="post" action="<?php echo $_SERVER['PHP_SELF'];?>" onsubmit="return validateForm();">
 <table width="760px">
     <?php
         echo '
         <tr>
             <td valign="top">
-            <label for="s1_name_text"><font size="5"><strong>Excerpt '.$_SESSION["i"].'</strong></font></label>
+            <label for="s1_name_text"><font size="5"><strong>Excerpt '.$_POST["i"].'</strong></font></label>
                 <input type="hidden" name="excerptID" value="'.$excerptID.'">
                 <input type="hidden" name="version" value="'.$version.'">
+                <input type="hidden" name="i" value="'.$_POST["i"].'">
+                <input type="hidden" name="subjectID" value="'.$_POST["subjectID"].'">
             </td>
             <td>
-                Rating (1: Not Accurate, 5: Very Accurate)
+                Rating (1: Many mistakes, 5: No mistakes)
             </td>
         </tr>
         <tr>
@@ -196,11 +195,11 @@ MARL, NYU
         </tr>
         <tr>
             <td valign="top">
-                <center><button type="button" id="wbound" onclick="add_wrong_bound();">Wrong Boundary!</button></center>
+                <center><button type="button" id="wbound" onclick="add_wrong_bound();">Wrong Boundary!</button>
+                <input type="text" name="'. $nWrongs_name .'" id="wbounds_text" size=3 value="0" readonly></center>
             </td>
             <td valign="center">
-                <input type="text" name="'. $nWrongs_name .'" id="wbounds_text" size=3 value="0" readonly>
-                <button type="button" onclick="reset_wrong_bounds();">Reset</button>
+                <button type="button" id="restart" onclick="reset_wrong_bounds();">Restart Counter</button>
             </td>
         </tr>';
   ?>
