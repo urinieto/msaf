@@ -103,7 +103,7 @@
 
         // Return random results if they are all the same
         if ($version_results[0] == $version_results[1] &&
-            $version_results[1] == $version_results[2]) {
+                $version_results[1] == $version_results[2]) {
             return rand(1, 3);
         }
         else if ($version_results[0] == $version_results[1]) {
@@ -149,7 +149,7 @@
      * Sanitize strings in case there are hackers within your subjects
      */
     function sanitize_str($con, $str) {
-        $str = strip_tags($str);
+        $str = strip_tags(addslashes($str));
         $city = mysqli_real_escape_string($con, $str); 
         return $str;
     }

@@ -15,14 +15,15 @@ MARL, NYU
     $con = create_connection();
 
     // Sanitize strings before inserting into dataset
-    $first_name = sanitize_str($_POST['first_name']);
-    $last_name = sanitize_str($_POST['last_name']);
-    $email = sanitize_str($_POST['email']);
-    $music_training = sanitize_str($_POST['music_training']);
-    $comments = sanitize_str($_POST['comments']);
+    $first_name = sanitize_str($con, $_POST['first_name']);
+    $last_name = sanitize_str($con, $_POST['last_name']);
+    $email = sanitize_str($con, $_POST['email']);
+    $music_training = sanitize_str($con, $_POST['music_training']);
+    $comments = sanitize_str($con, $_POST['comments']);
 
     // Update Subject
-    update_subject($con, $first_name, $last_name, $email, $music_training, $comments, $_SESSION['subjectID']);
+    update_subject($con, $first_name, $last_name, $email, $music_training, 
+        $comments, $_SESSION['subjectID']);
 
     // Send email
     $email_message = "You have a new result!";
