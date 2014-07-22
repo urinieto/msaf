@@ -572,7 +572,7 @@ def main():
     parser.add_argument("-s",
                         action="store_true",
                         dest="save",
-                        help="Whether to sasve the results in the SQL or not",
+                        help="Whether to save the results in the SQL or not",
                         default=False)
     parser.add_argument("-j",
                         action="store",

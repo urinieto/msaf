@@ -110,7 +110,54 @@ def compute_labels(X, rank, bound_idxs, dist="correlation", k=5):
     return labels
 
 
-def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
+def compute_labels2(X, rank, R, bound_idxs, niter=300):
+    """Computes the labels using the bounds."""
+
+    try:
+        F, G = cnmf(X, rank, niter=niter, hull=False)
+    except:
+        return [1]
+
+    label_frames = filter_activation_matrix(G.T, R)
+    label_frames = np.asarray(label_frames, dtype=int)
+
+    labels = [label_frames[0]]
+    bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
+    for bound_inter in bound_inters:
+        if bound_inter[1] - bound_inter[0] <= 0:
+            labels.append(np.max(label_frames) + 1)
+        else:
+            labels.append(most_frequent(
+                label_frames[bound_inter[0]: bound_inter[1]]))
+        #print bound_inter, labels[-1]
+    labels.append(label_frames[-1])
+
+    return labels
+
+
+def filter_activation_matrix(G, R):
+    """Filters the activation matrix G, and returns a flattened copy."""
+
+    #originalG = np.copy(G)
+    idx = np.argmax(G, axis=1)
+    max_idx = np.arange(G.shape[0])
+    max_idx = (max_idx, idx.flatten())
+    G[:, :] = 0
+    G[max_idx] = idx + 1
+
+    # TODO: Order matters?
+    #oG = np.copy(G)
+    G = np.sum(G, axis=1)
+    G = median_filter(G[:, np.newaxis], R)
+    #plt.subplot(1, 2, 1)
+    #plt.imshow(originalG, interpolation="nearest", aspect="auto")
+    #plt.subplot(1, 2, 2)
+    #plt.imshow(F, interpolation="nearest", aspect="auto"); plt.show()
+
+    return G.flatten()
+
+
+def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
     """
     Gets the segmentation (boundaries and labels) from the factorization
     matrices.
@@ -145,31 +192,14 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
                 return np.empty(0), [1]
 
             # Filter G
-            G = G.T
-            #originalG = np.copy(G)
-            idx = np.argmax(G, axis=1)
-            max_idx = np.arange(G.shape[0])
-            max_idx = (max_idx, idx.flatten())
-            G[:, :] = 0
-            G[max_idx] = idx + 1
-
-            # TODO: Order matters?
-            #oG = np.copy(G)
-            G = np.sum(G, axis=1)
-            G = median_filter(G[:, np.newaxis], R)
-            #plt.subplot(1, 2, 1)
-            #plt.imshow(originalG, interpolation="nearest", aspect="auto")
-            #plt.subplot(1, 2, 2)
-            #plt.imshow(F, interpolation="nearest", aspect="auto"); plt.show()
-
-            G = G.flatten()
+            G = filter_activation_matrix(G.T, R)
             if bound_idxs is None:
                 bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
         # Obtain labels
         #labels = np.concatenate(([G[0]], G[bound_idxs]))
 
-        labels = compute_labels(X, 5, bound_idxs, k=4)
+        #labels = compute_labels(X, 5, bound_idxs, k=4)
         #print len(bound_idxs), len(labels)
 
         # Increase rank if we found too few boundaries
@@ -178,6 +208,11 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
             bound_idxs = None
         else:
             break
+
+    rank_labels = 5
+    R_labels = 9
+    bound_idxs = np.asarray(bound_idxs, dtype=int)
+    labels = compute_labels2(X, rank_labels, R_labels, bound_idxs)
 
     #plt.imshow(G.T, interpolation="nearest", aspect="auto")
     #for b in bound_idxs:
@@ -188,7 +223,7 @@ def get_segmentation(X, rank, R, niter=500, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=10, R=10, rank=3):
+            h=10, R=9, rank=3):
     """Main process.
 
     Parameters
