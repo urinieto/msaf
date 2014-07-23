@@ -210,7 +210,7 @@ def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
             break
 
     rank_labels = 5
-    R_labels = 9
+    R_labels = 6
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     labels = compute_labels2(X, rank_labels, R_labels, bound_idxs)
 
@@ -223,7 +223,7 @@ def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=10, R=9, rank=3):
+            h=8, R=15, rank=3):
     """Main process.
 
     Parameters

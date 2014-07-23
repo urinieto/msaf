@@ -149,6 +149,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
         #ann_inter[-1][-1] = last_time
         #ann_labels = ann_labels[1:-1]
 
+        #print "Analyzing", est_file
         #ann_labels = list(ann_labels)
         #est_labels = list(est_labels)
         #print est_labels
@@ -190,6 +191,32 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
             logging.warning("Labeling evaluation failed in file: %s" %
                             est_file)
             return {}
+        
+        #done = False
+        #while not done:
+            #try:
+                ## Align labels with intervals
+                ##print est_inter, est_labels
+                #ann_labels = list(ann_labels)
+                #est_labels = list(est_labels)
+                #ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
+                                                                    #ann_labels)
+                #est_inter, est_labels = mir_eval.util.adjust_intervals(
+                    #est_inter, est_labels, t_min=0, t_max=ann_inter.max())
+
+                ## Pair-wise frame clustering
+                #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+                    #ann_inter, ann_labels, est_inter, est_labels)
+
+                ## Normalized Conditional Entropies
+                #res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
+                    #ann_inter, ann_labels, est_inter, est_labels)
+                #done = True
+            #except:
+                #logging.warning("Labeling evaluation failed in file: %s" %
+                                #est_file)
+                ##return {}
+
 
     # Names
     base = os.path.basename(est_file)
@@ -420,6 +447,11 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
 def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
                   alg_id, annotator, annot_bounds, **params):
     """Processes a single track."""
+
+    #if est_file != "/Users/uri/datasets/Segments/estimations/SALAMI_576.json":
+        #return {}
+    if est_file == "/Users/uri/datasets/Segments/estimations/SALAMI_920.json":
+        return {}
 
     # Sanity check
     assert os.path.basename(est_file)[:-4] == \
