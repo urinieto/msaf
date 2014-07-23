@@ -104,10 +104,8 @@ def get_algo_ids(est_file):
     return algo_ids
 
 
-def read_annot_bound_frames(audio_path, beats):
-    """Reads the corresponding annotations file to retrieve the boundaries
-        in frames."""
-
+def read_annotations(audio_path):
+    """Reads the boundary frames and the labels."""
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
@@ -127,6 +125,22 @@ def read_annot_bound_frames(audio_path, beats):
     # Intervals to times
     ann_times = np.concatenate((ann_inters.flatten()[::2],
                                 [ann_inters[-1, -1]]))
+
+    return ann_times, ann_labels
+
+
+def read_annot_labels(audio_path):
+    """Reads the annotated labels from the given audio path."""
+    ann_times, ann_labels = read_annotations(audio_path)
+    return ann_labels
+
+
+def read_annot_bound_frames(audio_path, beats):
+    """Reads the corresponding annotations file to retrieve the boundaries
+        in frames."""
+
+    ann_times, ann_labels = read_annotations(audio_path)
+
     # align with beats
     dist = np.minimum.outer(ann_times, beats)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
