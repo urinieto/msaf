@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''Runs the SIPLCA segmenter for boundaries and labels across the 
+'''Runs the SIPLCA segmenter for boundaries and labels across the
 a segmentation dataset.
 
 '''
@@ -10,14 +10,13 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import sys
 import glob
 import os
 import argparse
 import numpy as np
 import time
 import logging
-import jams
+import jams2
 
 from joblib import Parallel, delayed
 
@@ -35,7 +34,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
 
     # Only analize files with annotated beats
     if annot_beats:
-        jam = jams.load(jam_file)
+        jam = jams2.load(jam_file)
         if jam.beats == []:
             return
         if jam.beats[0].data == []:
