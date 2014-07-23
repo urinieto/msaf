@@ -558,7 +558,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         conn.commit()
         conn.close()
 
-    logging.info("%d tracks analized" % len(results))
+    logging.info("%d tracks analyzed" % len(results))
 
     return results
 
