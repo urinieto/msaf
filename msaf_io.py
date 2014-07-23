@@ -135,6 +135,23 @@ def read_annot_labels(audio_path):
     return ann_labels
 
 
+def read_annot_int_labels(audio_path):
+    """Reads the annotated labels using unique integers as identifiers
+    instead of strings."""
+    ann_labels = read_annot_labels(audio_path)
+    labels = []
+    label_dict = {}
+    k = 1
+    for ann_label in ann_labels:
+        if ann_label in label_dict.keys():
+            labels.append(label_dict[ann_label])
+        else:
+            label_dict[ann_label] = k
+            labels.append(k)
+            k += 1
+    return labels
+
+
 def read_annot_bound_frames(audio_path, beats):
     """Reads the corresponding annotations file to retrieve the boundaries
         in frames."""
