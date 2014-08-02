@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-'''Runs the new C-NMF segmenter (v3) for boundaries across the Segmentation
-dataset
+'''Runs the 2D-FMC segment similarity algorithm in the Segments dataset.
 '''
 
 __author__ = "Oriol Nieto"
@@ -9,7 +8,6 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import sys
 import glob
 import os
 import argparse
@@ -25,8 +23,8 @@ sys.path.append("../../")
 import msaf_io as MSAF
 
 
-def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
-            rank, h, R, annot_bounds):
+def process_track(in_path, audio_file, jam_file, annot_beats, ds_name,
+                  xmeans, k):
 
     # Only analize files with annotated beats
     if annot_beats:
@@ -38,30 +36,19 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
 
     logging.info("Segmenting %s" % audio_file)
 
-    # C-NMF segmenter call
-    if rank is None:
-        est_times, est_labels = S.process(audio_file, feature=feature,
-                                          annot_beats=annot_beats,
-                                          annot_bounds=annot_bounds)
-    else:
-        est_times, est_labels = S.process(audio_file, feature=feature,
-                                          annot_beats=annot_beats,
-                                          rank=rank, h=h, R=R,
-                                          annot_bounds=annot_bounds)
+    # 2D-FMC segmenter call
+    est_times, est_labels = S.process(audio_file, annot_beats=annot_beats,
+                                      xmeans=xmeans, k=k)
 
     # Save
     out_file = os.path.join(in_path, "estimations",
                             os.path.basename(audio_file)[:-4] + ".json")
-    if not annot_bounds:
-        MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
-                              bounds=True, feature=feature)
-    MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
-                          bounds=False, annot_bounds=annot_bounds,
-                          feature=feature)
+    MSAF.save_estimations(out_file, est_labels, annot_beats, "2dfmc",
+                          bounds=False, annot_bounds=True, feature="")
 
 
-def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            rank=None, h=None, R=None, annot_bounds=False, n_jobs=4):
+def process(in_path, annot_beats=False, feature="mfcc", ds_name="*", n_jobs=4,
+            xmeans=False, k=5):
     """Main process."""
 
     # Get relevant files
@@ -72,8 +59,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
     # Call in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        in_path, audio_file, jam_file, annot_beats, feature, ds_name, rank, h,
-        R, annot_bounds)
+        in_path, audio_file, jam_file, annot_beats, ds_name, xmeans, k)
         for audio_file, jam_file in zip(audio_files, jam_files))
 
 
@@ -86,18 +72,20 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("feature",
-                        action="store",
-                        help="Feature to be used (mfcc or hpcp)")
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
-    parser.add_argument("-bo",
+    parser.add_argument("-k",
+                        action="store",
+                        dest="k",
+                        help="Number of unique segments",
+                        default=6)
+    parser.add_argument("-x",
                         action="store_true",
-                        dest="annot_bounds",
-                        help="Use annotated bounds",
+                        dest="xmeans",
+                        help="Estimate K using the BIC method",
                         default=False)
     parser.add_argument("-d",
                         action="store",
@@ -119,9 +107,8 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
-            ds_name=args.ds_name, annot_bounds=args.annot_bounds,
-            n_jobs=args.n_jobs)
+    process(args.in_path, annot_beats=args.annot_beats, ds_name=args.ds_name,
+            n_jobs=args.n_jobs, xmeans=args.xmeans, k=args.k)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

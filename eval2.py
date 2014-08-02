@@ -36,7 +36,8 @@ feat_dict = {
     'kmeans':   'hpcp',
     'cnmf'  :   'hpcp',
     'cnmf2' :   'hpcp',
-    'cnmf3' :   'hpcp'
+    'cnmf3' :   'hpcp',
+    '2dfmc' :   ''
 }
 
 
@@ -149,6 +150,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
         #ann_inter[-1][-1] = last_time
         #ann_labels = ann_labels[1:-1]
 
+        #est_inter = est_inter[1:-1]
         #print "Analyzing", est_file
         #ann_labels = list(ann_labels)
         #est_labels = list(est_labels)
@@ -253,7 +255,11 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
         logging.warning("No annotations for file: %s" % jam_file)
         return {}
 
-    est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats, **params)
+    if annot_bounds:
+        est_inter = ann_inter
+    else:
+        est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats,
+                                          **params)
     est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats,
                                        bounds=False,
                                        annot_bounds=annot_bounds, **params)
