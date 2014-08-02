@@ -16,6 +16,7 @@ This framework contains a set of algorithms to segment a given music audio signa
 ## Labeling Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
+* 2D Fourier Magnitude Coefficients (Nieto & Bello 2014)
 * Levy (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
