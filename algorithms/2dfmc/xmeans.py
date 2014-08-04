@@ -7,7 +7,7 @@ import time
 import pylab as plt
 import scipy.cluster.vq as vq
 from scipy.spatial import distance
-import sys
+
 
 class XMeans:
     def __init__(self, X, init_K=2, plot=False):
@@ -15,7 +15,7 @@ class XMeans:
         self.init_K = init_K
         self.plot = plot
 
-    def estimate_K_xmeans(self, th=0.2):
+    def estimate_K_xmeans(self, th=0.2, maxK = 10):
         """Estimates K running X-means algorithm (Pelleg & Moore, 2000)."""
 
         # Run initial K-means
@@ -30,31 +30,33 @@ class XMeans:
             for k in xrange(curr_K):
                 # Find the data that corresponds to the k-th cluster
                 D = self.get_clustered_data(self.X, labels, k)
-                if len(D) == 0: continue
+                if len(D) == 0 or D.shape[0] == 1:
+                    continue
 
                 # Whiten and find whitened mean
-                stdD = np.std(D,axis=0)
+                stdD = np.std(D, axis=0)
                 #D = vq.whiten(D)
-                D /= stdD # Same as line above
+                D /= stdD  # Same as line above
                 mean = D.mean(axis=0)
 
                 # Cluster this subspace by half (K=2)
                 half_means, half_labels = self.run_kmeans(D, K=2)
 
-                # Get subclusters
-                D_half1 = self.get_clustered_data(D, half_labels, 0)
-                D_half2 = self.get_clustered_data(D, half_labels, 1)
-
                 # Compute BICs
-                bic1 = self.compute_bic(D, [mean], K=1, labels=np.zeros(D.shape[0]), R=D.shape[0])
-                bic2 = self.compute_bic(D, half_means, K=2, labels=half_labels, R=D.shape[0])
+                bic1 = self.compute_bic(D, [mean], K=1,
+                                        labels=np.zeros(D.shape[0]),
+                                        R=D.shape[0])
+                bic2 = self.compute_bic(D, half_means, K=2,
+                                        labels=half_labels, R=D.shape[0])
 
                 # Split or not
                 max_bic = np.max([np.abs(bic1), np.abs(bic2)])
-                norm_bic1 = bic1/max_bic
-                norm_bic2 = bic2/max_bic
+                norm_bic1 = bic1 / max_bic
+                norm_bic2 = bic2 / max_bic
                 diff_bic = np.abs(norm_bic1 - norm_bic2)
+
                 # Split!
+                print "diff_bic", diff_bic
                 if diff_bic > th:
                     final_means.append(half_means[0] * stdD)
                     final_means.append(half_means[1] * stdD)
@@ -66,31 +68,35 @@ class XMeans:
 
             final_means = np.asarray(final_means)
 
+            print "Estimated K: ", curr_K
             if self.plot:
-                plt.scatter(self.X[:,0], self.X[:,1])
-                plt.scatter(final_means[:,0], final_means[:,1], color="y")
+                plt.scatter(self.X[:, 0], self.X[:, 1])
+                plt.scatter(final_means[:, 0], final_means[:, 1], color="y")
                 plt.show()
 
-            labels, dist = vq.vq(self.X, final_means)
+            if curr_K >= maxK or self.X.shape[-1] != final_means.shape[-1]:
+                stop = True
+            else:
+                labels, dist = vq.vq(self.X, final_means)
 
         return curr_K
 
     def estimate_K_knee(self, th=.015, maxK=12):
-        """Estimates the K using K-means and BIC, by sweeping various K and 
+        """Estimates the K using K-means and BIC, by sweeping various K and
             choosing the optimal BIC."""
         # Sweep K-means
         if self.X.shape[0] < maxK:
             maxK = self.X.shape[0]
         if maxK < 2:
             maxK = 2
-        K = np.arange(1,maxK)
+        K = np.arange(1, maxK)
         bics = []
         for k in K:
             means, labels = self.run_kmeans(self.X, k)
-            bic = self.compute_bic(self.X, means, labels, K=k, R=self.X.shape[0])
+            bic = self.compute_bic(self.X, means, labels, K=k,
+                                   R=self.X.shape[0])
             bics.append(bic)
         diff_bics = np.diff(bics)
-        print maxK
         finalK = K[-1]
 
         if len(bics) == 1:
@@ -99,25 +105,27 @@ class XMeans:
             # Normalize
             bics = np.asarray(bics)
             bics -= bics.min()
-            bics /= bics.max()
+            #bics /= bics.max()
             diff_bics -= diff_bics.min()
-            diff_bics /= diff_bics.max()
+            #diff_bics /= diff_bics.max()
 
-            print bics, diff_bics
+            #print bics, diff_bics
 
             # Find optimum K
             for i in xrange(len(K[:-1])):
                 #if bics[i] > diff_bics[i]:
-                if diff_bics[i] < th:
+                if diff_bics[i] < th and K[i] != 1:
                     finalK = K[i]
                     break
 
+        print "Estimated K: ", finalK
         if self.plot:
-            plt.figure(0)
-            plt.plot(K, bics)
-            plt.plot(K[:-1], diff_bics)
-            plt.figure(1)
-            plt.scatter(self.X[:,0], self.X[:,1])
+            plt.subplot(2, 1, 1)
+            plt.plot(K, bics, label="BIC")
+            plt.plot(K[:-1], diff_bics, label="BIC diff")
+            plt.legend(loc=2)
+            plt.subplot(2, 1, 2)
+            plt.scatter(self.X[:, 0], self.X[:, 1])
             plt.show()
 
         return finalK
@@ -156,12 +164,12 @@ class XMeans:
 
         # Log-likelihood of the data
         l_D = - Rn/2. * np.log(2*np.pi) - (Rn * M)/2. * np.log(mle_var) - \
-                (Rn - K)/2. + Rn *  np.log(Rn) - Rn * np.log(R)
+            (Rn - K) / 2. + Rn * np.log(Rn) - Rn * np.log(R)
 
         # Params of BIC
         p = (K-1) + M * K + mle_var
 
-        print l_D, p, R, K
+        #print "BIC:", l_D, p, R, K
 
         # Return the bic
         return l_D - p/2. * np.log(R)
@@ -177,9 +185,9 @@ class XMeans:
         spread = 30
 
         # Generate random data
-        X = np.empty((0,2))
+        X = np.empty((0, 2))
         for i in xrange(K):
-            mean = np.array([np.random.random()*spread, 
+            mean = np.array([np.random.random()*spread,
                              np.random.random()*spread])
             x = np.random.normal(0.0, scale=1.0, size=(N, 2)) + mean
             X = np.append(X, x, axis=0)
@@ -193,10 +201,9 @@ def test_kmeans(K=5):
     wX = vq.whiten(X)
     dic, dist = vq.kmeans(wX, K, iter=100)
 
-    plt.scatter(wX[:,0], wX[:,1])
-    plt.scatter(dic[:,0], dic[:,1], color="m")
+    plt.scatter(wX[:, 0], wX[:, 1])
+    plt.scatter(dic[:, 0], dic[:, 1], color="m")
     plt.show()
-
 
 
 def main(args):
@@ -217,5 +224,3 @@ if __name__ == '__main__':
     parser.add_argument("-p", action="store_true", default=False,
                         dest="plot", help="Plot the results")
     main(parser.parse_args())
-
-
