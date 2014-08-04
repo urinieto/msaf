@@ -47,6 +47,9 @@ def get_pcp_segments(PCP, bound_idxs):
 def pcp_segments_to_2dfmc_max(pcp_segments):
     """From a list of PCP segments, return a list of 2D-Fourier Magnitude
         Coefs using the maximumg segment size and zero pad the rest."""
+    if len(pcp_segments) == 0:
+        return []
+
     # Get maximum segment size
     max_len = max([pcp_segment.shape[0] for pcp_segment in pcp_segments])
 
@@ -96,6 +99,8 @@ def compute_similarity(PCP, bound_idxs, xmeans=False, k=5):
 
     # Get the 2d-FMCs segments
     fmcs = pcp_segments_to_2dfmc_max(pcp_segments)
+    if fmcs == []:
+        return np.arange(len(bound_idxs) - 1)
 
     # Compute the labels using kmeans
     if xmeans:
@@ -130,6 +135,7 @@ def process(in_path, annot_beats=False, xmeans=False, k=5):
         bound_idxs = MSAF.read_annot_bound_frames(in_path, beats)[1:-1]
     except:
         logging.warning("No annotated boundaries in file %s" % in_path)
+        return np.asarray([0, dur]), np.asarray([1])
 
     # Use specific feature
     F = U.lognormalize_chroma(chroma)  # Normalize chromas
