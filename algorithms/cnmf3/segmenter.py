@@ -23,7 +23,6 @@ from scipy.cluster.vq import whiten, vq, kmeans
 
 sys.path.append("../../")
 import msaf_io as MSAF
-#import eval as EV
 import utils as U
 try:
     import pymf
@@ -265,6 +264,9 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
         F = U.lognormalize_chroma(chroma)  # Normalize chromas
     elif "mfcc":
         F = mfcc
+    elif "tonnetz":
+        F = U.lognormalize_chroma(chroma)  # Normalize chromas
+        F = U.chroma_to_tonnetz(F)
     else:
         logging.error("Feature type not recognized: %s" % feature)
 
