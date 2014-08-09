@@ -74,7 +74,8 @@ def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
             # Match non-empty parameters
             found = True
             for key in params:
-                if params[key] != "" and alg[key] != params[key]:
+                if key not in alg.keys() or \
+                        (params[key] != "" and alg[key] != params[key]):
                     found = False
 
             if not bounds:
@@ -287,7 +288,7 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
                     if est["annot_beats"] == annot_beats:
                         found = True
                         for key in params:
-                            if params[key] != est[key]:
+                            if key not in est.keys() or params[key] != est[key]:
                                 found = False
                                 break
                         if not found:
