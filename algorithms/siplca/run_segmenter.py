@@ -28,7 +28,8 @@ sys.path.append("../../")
 import msaf_io as MSAF
 
 
-def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
+def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
+                  features="hpcp"):
     assert os.path.basename(audio_file)[:-4] == \
         os.path.basename(jam_file)[:-5]
 
@@ -49,7 +50,8 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
         "win"               :   60,
         "alphaZ"            :   -0.01,
         "normalize_frames"  :   True,
-        "viterbi_segmenter" :   True
+        "viterbi_segmenter" :   True,
+        "feature"          :   features
     }
     segments, beattimes, frame_labels = S.segment_wavfile(
         audio_file, b=annot_beats, **params)
@@ -112,7 +114,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds):
 
 
 def process(in_path, ds_name="*", n_jobs=4, annot_beats=False,
-            annot_bounds=False):
+            annot_bounds=False, features="hpcp"):
     """Main process."""
 
     # Get relevant files
@@ -123,7 +125,7 @@ def process(in_path, ds_name="*", n_jobs=4, annot_beats=False,
 
     # Run jobs in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        in_path, audio_file, jam_file, annot_beats, annot_bounds)
+        in_path, audio_file, jam_file, annot_beats, annot_bounds, features)
         for jam_file, audio_file in zip(jam_files, audio_files))
 
 
@@ -146,6 +148,11 @@ def main():
                         dest="annot_bounds",
                         help="Use annotated bounds",
                         default=False)
+    parser.add_argument("-f",
+                        action="store",
+                        dest="features",
+                        default="hpcp",
+                        help="The type of features to be used.")
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",
@@ -167,7 +174,8 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats, n_jobs=args.n_jobs,
-            annot_bounds=args.annot_bounds, ds_name=args.ds_name)
+            annot_bounds=args.annot_bounds, ds_name=args.ds_name,
+            features=args.features)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

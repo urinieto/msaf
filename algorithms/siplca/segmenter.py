@@ -75,21 +75,15 @@ Copyright (C) 2009-2010 Ron J. Weiss <ronw@nyu.edu>
 LICENSE: This module is licensed under the GNU GPL. See COPYING for details.
 """
 
-import glob
 import logging
-import optparse
-import os
 import sys
-
 import numpy as np
-import scipy as sp
-import scipy.io
 
 import plca
 
-import sys
-sys.path.append( "../../" )
+sys.path.append("../../")
 import msaf_io as MSAF
+import utils as U
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s %(name)s %(asctime)s '
@@ -97,7 +91,8 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger('segmenter')
 
 
-def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False):
+def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False,
+                     feature="hpcp"):
     """Computes beat-synchronous chroma features from the given wave file
 
     Calls Dan Ellis' chrombeatftrs Matlab function.
@@ -111,6 +106,8 @@ def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False):
 
     # Get MSAF features
     feats, mfcc, beats, songlen = MSAF.get_features(wavfilename, annot_beats)
+    if feature == "tonnetz":
+        feats = U.chroma_to_tonnetz(feats)
 
     return feats.T, beats.flatten(), songlen
 
@@ -488,7 +485,8 @@ def segment_wavfile(wavfile, **kwargs):
 
     Returns a string containing list of segments in HTK label format.
     """
-    features, beattimes, songlen = extract_features(wavfile, annot_beats=kwargs["b"])
+    features, beattimes, songlen = extract_features(
+        wavfile, annot_beats=kwargs["b"], feature=kwargs["feature"])
     labels, W, Z, H, segfun, norm = segment_song(features, **kwargs)
     segments = convert_labels_to_segments(labels, beattimes, songlen)
     return segments, beattimes, labels

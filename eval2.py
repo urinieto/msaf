@@ -263,7 +263,9 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
     est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats,
                                        bounds=False,
                                        annot_bounds=annot_bounds, **params)
-    if est_inter == []:
+
+    if est_inter == [] or len(est_inter) == 0:
+        logging.warning("No estimations for file: %s" % est_file)
         return {}
 
     # Compute the results and return
