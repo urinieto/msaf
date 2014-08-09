@@ -39,7 +39,8 @@ typedef enum
 	FEATURE_TYPE_UNKNOWN = 0, 
 	FEATURE_TYPE_CONSTQ = 1, 
 	FEATURE_TYPE_CHROMA = 2,
-	FEATURE_TYPE_MFCC = 3
+	FEATURE_TYPE_MFCC = 3,
+	FEATURE_TYPE_TONNETZ = 4
 } feature_types;
 
 #ifdef __cplusplus

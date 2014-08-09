@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
 {
 
     if ( argc != 5 ) {
-        cout << "Usage:\n\t" << argv[0] << " path_to_features(file.json) annot_beats(0 or 1) features(mfcc|hpcp) annot_bounds(0 or 1)" << endl;
+        cout << "Usage:\n\t" << argv[0] << " path_to_features(file.json) annot_beats(0 or 1) features(mfcc|hpcp|tonnetz) annot_bounds(0 or 1)" << endl;
         return -1;
     }
     const char *feature = argv[3]; // mffc or hpcp
@@ -40,7 +40,7 @@ int main(int argc, char const *argv[])
         if (strcmp(feature, "mfcc")) {
             params.featureType = FEATURE_TYPE_MFCC;
         }
-        else if (strcmp(feature, "hpcp")) {
+        else if (strcmp(feature, "hpcp") || strcmp(feature, "tonnetz")) {
             params.featureType = FEATURE_TYPE_CHROMA;
         }
         // Set original paper parameters
