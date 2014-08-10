@@ -99,7 +99,7 @@ def main():
     parser.add_argument("feature",
                         action="store",
                         default="mfcc",
-                        help="Feature to be used (mfcc or hpcp)")
+                        help="Feature to be used (mfcc, hpcp or tonnetz)")
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
