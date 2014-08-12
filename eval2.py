@@ -273,7 +273,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
                            bins, est_file, annot_bounds=annot_bounds)
 
 
-def plot_boundaries(all_boundaries, est_file):
+def plot_boundaries(all_boundaries, est_file, algo_ids=None):
     """Plots all the boundaries.
 
     Parameters
@@ -283,16 +283,36 @@ def plot_boundaries(all_boundaries, est_file):
         for each algorithm.
     est_file: str
         Path to the estimated file (JSON file)
+    algo_ids : list
+        List of algorithm ids to to read boundaries from.
+        If None, all algorithm ids are read.
     """
+    translate_ids = {
+        "olda"  : "OLDA",
+        "cnmf3" : "C-NMF",
+        "foote" : "Foote",
+        "levy"  : "CC",
+        "serra" : "SF",
+        "siplca": "SI-PLCA"
+        }
+
     N = len(all_boundaries)  # Number of lists of boundaries
-    algo_ids = MSAF.get_algo_ids(est_file)
+    if algo_ids is None:
+        algo_ids = MSAF.get_algo_ids(est_file)
+
+    # Translate ids
+    for i, algo_id in enumerate(algo_ids):
+        algo_ids[i] = translate_ids[algo_id]
     algo_ids = ["GT"] + algo_ids
-    figsize = (5, 2.2)
+
+    figsize = (6, 4)
     plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
     for i, boundaries in enumerate(all_boundaries):
-        print boundaries
+        color = "b"
+        if i == 0:
+            color = "g"
         for b in boundaries:
-            plt.axvline(b, i / float(N), (i + 1) / float(N))
+            plt.axvline(b, i / float(N), (i + 1) / float(N), color=color)
         plt.axhline(i / float(N), color="k", linewidth=1)
 
     #plt.title(os.path.basename(est_file))
@@ -306,7 +326,7 @@ def plot_boundaries(all_boundaries, est_file):
     plt.show()
 
 
-def get_all_est_boundaries(est_file, annot_beats):
+def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
     """Gets all the estimated boundaries for all the algorithms.
 
     Parameters
@@ -315,6 +335,9 @@ def get_all_est_boundaries(est_file, annot_beats):
         Path to the estimated file (JSON file)
     annot_beats: bool
         Whether to use the annotated beats or not.
+    algo_ids : list
+        List of algorithm ids to to read boundaries from.
+        If None, all algorithm ids are read.
 
     Returns
     -------
@@ -334,9 +357,14 @@ def get_all_est_boundaries(est_file, annot_beats):
     all_boundaries.append(ann_times)
 
     # Estimations
-    for algo_id in MSAF.get_algo_ids(est_file):
+    if algo_ids is None:
+        algo_ids = MSAF.get_algo_ids(est_file)
+    for algo_id in algo_ids:
         est_inters = MSAF.read_estimations(est_file, algo_id,
                         annot_beats, feature=feat_dict[algo_id])
+        if len(est_inters) == 0:
+            logging.warning("no estimations for algorithm: %s" % algo_id)
+            continue
         boundaries = intervals_to_times(est_inters)
         all_boundaries.append(boundaries)
     return all_boundaries
