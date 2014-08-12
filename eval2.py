@@ -273,7 +273,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
                            bins, est_file, annot_bounds=annot_bounds)
 
 
-def plot_boundaries(all_boundaries, est_file, algo_ids=None):
+def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None):
     """Plots all the boundaries.
 
     Parameters
@@ -286,6 +286,8 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None):
     algo_ids : list
         List of algorithm ids to to read boundaries from.
         If None, all algorithm ids are read.
+    title : str
+        Title of the plot. If None, the name of the file is printed instead.
     """
     translate_ids = {
         "olda"  : "OLDA",
@@ -315,8 +317,10 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None):
             plt.axvline(b, i / float(N), (i + 1) / float(N), color=color)
         plt.axhline(i / float(N), color="k", linewidth=1)
 
-    #plt.title(os.path.basename(est_file))
-    plt.title("Nelly Furtado - Promiscuous")
+    if title is None:
+        title = os.path.basename(est_file).split(".")[0]
+    plt.title(title)
+    #plt.title("Nelly Furtado - Promiscuous")
     #plt.title("Quartetto Italiano - String Quartet in F")
     plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
     plt.gcf().subplots_adjust(bottom=0.22)
