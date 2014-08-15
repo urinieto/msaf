@@ -18,6 +18,7 @@ import numpy as np
 
 # Local stuff
 import jams2
+import eval2
 
 
 prefix_dict = {
@@ -321,3 +322,47 @@ def save_estimations(out_file, estimations, annot_beats, alg_name,
     # Save dictionary to disk
     with open(out_file, "w") as f:
         json.dump(res, f, indent=2)
+
+
+def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
+    """Gets all the estimated boundaries for all the algorithms.
+
+    Parameters
+    ----------
+    est_file: str
+        Path to the estimated file (JSON file)
+    annot_beats: bool
+        Whether to use the annotated beats or not.
+    algo_ids : list
+        List of algorithm ids to to read boundaries from.
+        If None, all algorithm ids are read.
+
+    Returns
+    -------
+    all_boundaries: list
+        A list of np.arrays containing the times of the boundaries, one array
+        for each algorithm
+    """
+    all_boundaries = []
+
+    # Get GT boundaries
+    jam_file = os.path.dirname(est_file) + "/../annotations/" + \
+        os.path.basename(est_file).replace("json", "jams")
+    ds_prefix = os.path.basename(est_file).split("_")[0]
+    ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
+                        "sections", context=prefix_dict[ds_prefix])
+    ann_times = eval2.intervals_to_times(ann_inter)
+    all_boundaries.append(ann_times)
+
+    # Estimations
+    if algo_ids is None:
+        algo_ids = get_algo_ids(est_file)
+    for algo_id in algo_ids:
+        est_inters = read_estimations(est_file, algo_id, annot_beats,
+                                      feature=eval2.feat_dict[algo_id])
+        if len(est_inters) == 0:
+            logging.warning("no estimations for algorithm: %s" % algo_id)
+            continue
+        boundaries = eval2.intervals_to_times(est_inters)
+        all_boundaries.append(boundaries)
+    return all_boundaries
