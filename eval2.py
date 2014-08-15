@@ -17,7 +17,6 @@ import os
 import numpy as np
 import time
 import sqlite3
-import pylab as plt
 import pandas as pd
 from joblib import Parallel, delayed
 
@@ -271,107 +270,6 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
     # Compute the results and return
     return compute_results(ann_inter, est_inter, ann_labels, est_labels, trim,
                            bins, est_file, annot_bounds=annot_bounds)
-
-
-def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None):
-    """Plots all the boundaries.
-
-    Parameters
-    ----------
-    all_boundaries: list
-        A list of np.arrays containing the times of the boundaries, one array
-        for each algorithm.
-    est_file: str
-        Path to the estimated file (JSON file)
-    algo_ids : list
-        List of algorithm ids to to read boundaries from.
-        If None, all algorithm ids are read.
-    title : str
-        Title of the plot. If None, the name of the file is printed instead.
-    """
-    translate_ids = {
-        "olda"  : "OLDA",
-        "cnmf3" : "C-NMF",
-        "foote" : "Foote",
-        "levy"  : "CC",
-        "serra" : "SF",
-        "siplca": "SI-PLCA"
-        }
-
-    N = len(all_boundaries)  # Number of lists of boundaries
-    if algo_ids is None:
-        algo_ids = MSAF.get_algo_ids(est_file)
-
-    # Translate ids
-    for i, algo_id in enumerate(algo_ids):
-        algo_ids[i] = translate_ids[algo_id]
-    algo_ids = ["GT"] + algo_ids
-
-    figsize = (6, 4)
-    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
-    for i, boundaries in enumerate(all_boundaries):
-        color = "b"
-        if i == 0:
-            color = "g"
-        for b in boundaries:
-            plt.axvline(b, i / float(N), (i + 1) / float(N), color=color)
-        plt.axhline(i / float(N), color="k", linewidth=1)
-
-    if title is None:
-        title = os.path.basename(est_file).split(".")[0]
-    plt.title(title)
-    #plt.title("Nelly Furtado - Promiscuous")
-    #plt.title("Quartetto Italiano - String Quartet in F")
-    plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
-    plt.gcf().subplots_adjust(bottom=0.22)
-    plt.gca().set_yticklabels(algo_ids)
-    #plt.gca().invert_yaxis()
-    plt.xlabel("Time (seconds)")
-    plt.show()
-
-
-def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
-    """Gets all the estimated boundaries for all the algorithms.
-
-    Parameters
-    ----------
-    est_file: str
-        Path to the estimated file (JSON file)
-    annot_beats: bool
-        Whether to use the annotated beats or not.
-    algo_ids : list
-        List of algorithm ids to to read boundaries from.
-        If None, all algorithm ids are read.
-
-    Returns
-    -------
-    all_boundaries: list
-        A list of np.arrays containing the times of the boundaries, one array
-        for each algorithm
-    """
-    all_boundaries = []
-
-    # Get GT boundaries
-    jam_file = os.path.dirname(est_file) + "/../annotations/" + \
-        os.path.basename(est_file).replace("json", "jams")
-    ds_prefix = os.path.basename(est_file).split("_")[0]
-    ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                        "sections", context=MSAF.prefix_dict[ds_prefix])
-    ann_times = intervals_to_times(ann_inter)
-    all_boundaries.append(ann_times)
-
-    # Estimations
-    if algo_ids is None:
-        algo_ids = MSAF.get_algo_ids(est_file)
-    for algo_id in algo_ids:
-        est_inters = MSAF.read_estimations(est_file, algo_id,
-                        annot_beats, feature=feat_dict[algo_id])
-        if len(est_inters) == 0:
-            logging.warning("no estimations for algorithm: %s" % algo_id)
-            continue
-        boundaries = intervals_to_times(est_inters)
-        all_boundaries.append(boundaries)
-    return all_boundaries
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
