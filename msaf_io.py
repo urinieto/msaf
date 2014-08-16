@@ -383,7 +383,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
 
     Returns
     -------
-    ref_times:  np.array
+    gt_times:  np.array
         Ground Truth boundaries in times.
     all_labels: list
         A list of np.arrays containing the labels corresponding to the ground
@@ -391,13 +391,14 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
     """
     all_labels = []
 
-    # Get GT boundaries
+    # Get GT boundaries and labels
     jam_file = os.path.dirname(est_file) + "/../annotations/" + \
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(
         jam_file, "sections", context=prefix_dict[ds_prefix])
-    ref_times = eval2.intervals_to_times(ann_inter)
+    gt_times = eval2.intervals_to_times(ann_inter)
+    all_labels.append(ann_labels)
 
     # Estimations
     if algo_ids is None:
@@ -410,4 +411,4 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
         all_labels.append(est_labels)
-    return ref_times, all_labels
+    return gt_times, all_labels
