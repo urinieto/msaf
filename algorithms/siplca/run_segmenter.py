@@ -105,7 +105,6 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     times = np.unique(times)
 
     if annot_bounds:
-        
         labels = []
         start = bound_idxs[0]
         for end in bound_idxs[1:]:
@@ -132,6 +131,14 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         MSAF.save_estimations(out_file, times, annot_beats, "siplca",
             version="1.0", **params)
 
+    # Remove paramaters that we don't want to store
+    params.pop("initW", None)
+    params.pop("initH", None)
+    params.pop("plotiter", None)
+    params.pop("win", None)
+    params.pop("rank", None)
+
+    # Save results
     MSAF.save_estimations(out_file, labels, annot_beats, "siplca",
         bounds=False, annot_bounds=annot_bounds, version="1.0", **params)
 
@@ -149,7 +156,7 @@ def process(in_path, ds_name="*", n_jobs=4, annot_beats=False,
     # Run jobs in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
         in_path, audio_file, jam_file, annot_beats, annot_bounds, features)
-        for jam_file, audio_file in zip(jam_files, audio_files)[:1])
+        for jam_file, audio_file in zip(jam_files, audio_files)[:])
 
 
 def main():
