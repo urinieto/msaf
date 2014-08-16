@@ -483,6 +483,7 @@ class SIPLCA(PLCA):
         return norm * WZH
 
     def plot(self, V, W, Z, H, curriter=-1):
+        print W.shape, H.shape
         rank = len(Z)
         nrows = rank + 2
         WZH = self.reconstruct(W, Z, H, circular=self.circular)
@@ -522,7 +523,7 @@ class SIPLCA(PLCA):
                           grid=False, clf=False, title=titles, yticks=[[]],
                           colorbar=False, cmap=plt.cm.hot, ylabel=r'$*$',
                           xticks=[[]]*(3*nrows-1) + [range(0, V.shape[1], 100)])
-        plt.draw()
+        plt.show()
 
     def initialize(self):
         W, Z, H = super(SIPLCA, self).initialize()

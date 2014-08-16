@@ -94,16 +94,9 @@ logger = logging.getLogger('segmenter')
 def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False,
                      feature="hpcp"):
     """Computes beat-synchronous chroma features from the given wave file
-
-    Calls Dan Ellis' chrombeatftrs Matlab function.
     """
     logger.info('Extracting beat-synchronous chroma features from %s',
                 wavfilename)
-    # x,fs = mlab.wavread(wavfilename, nout=2)
-    # feats,beats = mlab.chrombeatftrs(x.mean(1)[:,np.newaxis], fs, fctr, fsd,
-    #                                  type, nout=2)
-    # songlen = x.shape[0] / fs
-
     # Get MSAF features
     feats, mfcc, beats, songlen = MSAF.get_features(wavfilename, annot_beats)
     if feature == "tonnetz":

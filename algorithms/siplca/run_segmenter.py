@@ -16,7 +16,6 @@ import argparse
 import numpy as np
 import time
 import logging
-import jams2
 
 from joblib import Parallel, delayed
 
@@ -26,6 +25,8 @@ import segmenter as S
 import sys
 sys.path.append("../../")
 import msaf_io as MSAF
+import jams2
+import utils as U
 
 
 def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
@@ -51,8 +52,38 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         "alphaZ"            :   -0.01,
         "normalize_frames"  :   True,
         "viterbi_segmenter" :   True,
+        "plotiter"          :   None,
         "feature"          :   features
     }
+    if annot_bounds:
+        feats, mfcc, beats, dur = MSAF.get_features(
+            audio_file, annot_beats=annot_beats)
+        try:
+            bound_idxs = MSAF.read_annot_bound_frames(audio_file, beats)
+        except:
+            logging.warning("No annotation boundaries for %s" %
+                            audio_file)
+            return
+        if features == "tonnetz":
+            feats = U.chroma_to_tonnetz(feats)
+        n_segments = len(bound_idxs) - 1
+        max_beats_segment = np.max(np.diff(bound_idxs))
+        print "Longest segment: %d", max_beats_segment
+
+        # Inititalize the W and H matrices using the previously found bounds
+        initW = np.zeros((feats.shape[1], n_segments, max_beats_segment))
+        initH = np.zeros((n_segments, feats.shape[0]))
+        for i in xrange(n_segments):
+            dur = bound_idxs[i+1] - bound_idxs[i]
+            initW[:, i, :dur] = feats[bound_idxs[i]:bound_idxs[i+1]].T
+            initH[i, bound_idxs[i]] = 1
+
+        # Update parameters
+        params["win"] = max_beats_segment
+        params["rank"] = n_segments
+        params["initW"] = initW
+        params["initH"] = initH
+
     segments, beattimes, frame_labels = S.segment_wavfile(
         audio_file, b=annot_beats, **params)
 
@@ -74,15 +105,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     times = np.unique(times)
 
     if annot_bounds:
-        chroma, mfcc, beats, dur = MSAF.get_features(
-            audio_file, annot_beats=annot_beats)
-        try:
-            bound_idxs = MSAF.read_annot_bound_frames(audio_file, beats)
-        except:
-            logging.warning("No annotation boundaries for %s" %
-                            audio_file)
-            return
-
+        
         labels = []
         start = bound_idxs[0]
         for end in bound_idxs[1:]:
@@ -126,7 +149,7 @@ def process(in_path, ds_name="*", n_jobs=4, annot_beats=False,
     # Run jobs in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
         in_path, audio_file, jam_file, annot_beats, annot_bounds, features)
-        for jam_file, audio_file in zip(jam_files, audio_files))
+        for jam_file, audio_file in zip(jam_files, audio_files)[:1])
 
 
 def main():
