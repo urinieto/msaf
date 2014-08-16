@@ -483,7 +483,6 @@ class SIPLCA(PLCA):
         return norm * WZH
 
     def plot(self, V, W, Z, H, curriter=-1):
-        print W.shape, H.shape
         rank = len(Z)
         nrows = rank + 2
         WZH = self.reconstruct(W, Z, H, circular=self.circular)
