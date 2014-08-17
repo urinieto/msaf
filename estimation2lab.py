@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-This script converts the estimations to lab files in order to, e.g. analize them 
+This script converts the estimations to lab files in order to, e.g. analize them
 in Sonic Visualizer
 """
 
@@ -11,23 +11,21 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
-import glob
-import jams
 import logging
 import os
-import numpy as np
 import time
 import utils
 
 # Local stuff
-import msaf_io as MSAF
+import input_output as io
+
 
 def est2lab(est_file, lab_file, annot_beats=False, bound_name="olda",
             label_name="olda"):
     """Estimation file (JSON) to lab file."""
 
-    bounds = MSAF.read_estimations(est_file, bound_name, annot_beats)
-    bounds = zip(bounds, bounds[1:]) # Lab format
+    bounds = io.read_estimations(est_file, bound_name, annot_beats)
+    bounds = zip(bounds, bounds[1:])  # Lab format
 
     # TODO: Labels
     labels = ["TODO"]*(len(bounds))
@@ -60,7 +58,7 @@ def process(in_path, out_path, **args):
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
-        "Extracts a set of features from the Segmentation dataset or a given " \
+        "Extracts a set of features from the Segmentation dataset or a given "
         "audio file and saves them into the 'features' folder of the dataset",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
@@ -77,16 +75,16 @@ def main():
                         action="store",
                         default="labs",
                         help="Output dir or lab file")
-    parser.add_argument("-b", 
-                        action="store_true", 
-                        dest="annot_beats", 
+    parser.add_argument("-b",
+                        action="store_true",
+                        dest="annot_beats",
                         help="Estimated beats",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-   
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm

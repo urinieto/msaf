@@ -12,18 +12,18 @@ __email__       = "oriol@nyu.edu"
 
 import argparse
 import glob
-import logging
-import os
-import numpy as np
-import time
-import sqlite3
-import pandas as pd
 from joblib import Parallel, delayed
-
+import logging
 import mir_eval
-import jams2
+import numpy as np
+import os
+import pandas as pd
+import sqlite3
+import time
 
-import msaf_io as MSAF
+# Local stuff
+import jams2
+import input_output
 
 
 feat_dict = {
@@ -192,32 +192,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
             logging.warning("Labeling evaluation failed in file: %s" %
                             est_file)
             return {}
-        
-        #done = False
-        #while not done:
-            #try:
-                ## Align labels with intervals
-                ##print est_inter, est_labels
-                #ann_labels = list(ann_labels)
-                #est_labels = list(est_labels)
-                #ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                                    #ann_labels)
-                #est_inter, est_labels = mir_eval.util.adjust_intervals(
-                    #est_inter, est_labels, t_min=0, t_max=ann_inter.max())
-
-                ## Pair-wise frame clustering
-                #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
-                    #ann_inter, ann_labels, est_inter, est_labels)
-
-                ## Normalized Conditional Entropies
-                #res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
-                    #ann_inter, ann_labels, est_inter, est_labels)
-                #done = True
-            #except:
-                #logging.warning("Labeling evaluation failed in file: %s" %
-                                #est_file)
-                ##return {}
-
 
     # Names
     base = os.path.basename(est_file)
@@ -245,7 +219,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
         if annotator == "GT":
             ann_inter, ann_labels = jams2.converters.load_jams_range(
                 jam_file, "sections", annotator=0,
-                context=MSAF.prefix_dict[ds_prefix])
+                context=input_output.prefix_dict[ds_prefix])
         else:
             ann_inter, ann_labels = jams2.converters.load_jams_range(
                 jam_file, "sections", annotator_name=annotator,
@@ -257,9 +231,9 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
     if annot_bounds:
         est_inter = ann_inter
     else:
-        est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats,
+        est_inter = input_output.read_estimations(est_file, alg_id, annot_beats,
                                           **params)
-    est_labels = MSAF.read_estimations(est_file, alg_id, annot_beats,
+    est_labels = input_output.read_estimations(est_file, alg_id, annot_beats,
                                        bounds=False,
                                        annot_bounds=annot_bounds, **params)
 
