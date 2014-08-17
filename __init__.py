@@ -2,6 +2,7 @@
 
 # Import all submodules (for each task)
 from . import eval
+from . import featextract
 from . import input_output as io
 from . import plotting
 from . import utils
@@ -28,3 +29,15 @@ prefix_dict = {
     "Isophonics"    : "function",
     "SALAMI"        : "large_scale"
 }
+
+class Dataset():
+    # Directories
+    audio_dir = "audio"
+    estimations_dir = "estimations"
+    features_dir = "features"
+    references_dir = "references"
+
+    # Extensions
+    estimations_ext = ".jams"
+    features_ext = ".json"
+    references_ext = ".jams"
