@@ -16,16 +16,9 @@ import numpy as np
 import os
 
 # Local stuff
+import msaf
 from msaf import jams2
 from msaf import utils
-
-
-prefix_dict = {
-    "Cerulean"      : "large_scale",
-    "Epiphyte"      : "function",
-    "Isophonics"    : "function",
-    "SALAMI"        : "large_scale"
-}
 
 
 def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
@@ -115,10 +108,10 @@ def read_annotations(audio_path):
                             os.path.basename(audio_path)[:-4] + ".jams")
     ds_prefix = os.path.basename(audio_path).split("_")[0]
     ann_inters, ann_labels = jams2.converters.load_jams_range(
-        jam_path, "sections", context=prefix_dict[ds_prefix])
+        jam_path, "sections", context=msaf.prefix_dict[ds_prefix])
     try:
         ann_inters, ann_labels = jams2.converters.load_jams_range(
-            jam_path, "sections", context=prefix_dict[ds_prefix])
+            jam_path, "sections", context=msaf.prefix_dict[ds_prefix])
     except:
         logging.warning("Annotation not found in %s" % jam_path)
         return []
@@ -349,7 +342,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                        "sections", context=prefix_dict[ds_prefix])
+                        "sections", context=msaf.prefix_dict[ds_prefix])
     ann_times = utils.intervals_to_times(ann_inter)
     all_boundaries.append(ann_times)
 
@@ -358,7 +351,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
         algo_ids = get_algo_ids(est_file)
     for algo_id in algo_ids:
         est_inters = read_estimations(est_file, algo_id, annot_beats,
-                                      feature=eval.feat_dict[algo_id])
+                                      feature=msaf.feat_dict[algo_id])
         if len(est_inters) == 0:
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
@@ -395,7 +388,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(
-        jam_file, "sections", context=prefix_dict[ds_prefix])
+        jam_file, "sections", context=msaf.prefix_dict[ds_prefix])
     gt_times = utils.intervals_to_times(ann_inter)
     all_labels.append(ann_labels)
 
@@ -405,7 +398,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
     for algo_id in algo_ids:
         est_labels = read_estimations(est_file, algo_id, annot_beats,
                                       annot_bounds=True, bounds=False,
-                                      feature=eval.feat_dict[algo_id])
+                                      feature=msaf.feat_dict[algo_id])
         if len(est_labels) == 0:
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
