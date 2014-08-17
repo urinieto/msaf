@@ -52,8 +52,9 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         "alphaZ"            :   -0.01,
         "normalize_frames"  :   True,
         "viterbi_segmenter" :   True,
+        "min_segment_length":   1,
         "plotiter"          :   None,
-        "feature"          :   features
+        "feature"           :   features
     }
     if annot_bounds:
         feats, mfcc, beats, dur = MSAF.get_features(
