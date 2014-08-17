@@ -4,7 +4,7 @@ of MSAF.
 
 __author__      = "Oriol Nieto"
 __copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__     = "BSD"
+__license__     = "GPL"
 __version__     = "1.0"
 __email__       = "oriol@nyu.edu"
 
@@ -14,8 +14,8 @@ import os
 import pylab as plt
 
 # Local stuff
-import input_output
-import eval2 as EV
+import input_output as io
+import eval as EV
 
 
 translate_ids = {
@@ -65,7 +65,7 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
     """
     N = len(all_boundaries)  # Number of lists of boundaries
     if algo_ids is None:
-        algo_ids = input_output.get_algo_ids(est_file)
+        algo_ids = io.get_algo_ids(est_file)
 
     # Translate ids
     for i, algo_id in enumerate(algo_ids):
@@ -108,7 +108,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
     """
     N = len(all_labels)  # Number of lists of labels
     if algo_ids is None:
-        algo_ids = input_output.get_algo_ids(est_file)
+        algo_ids = io.get_algo_ids(est_file)
 
     # Translate ids
     for i, algo_id in enumerate(algo_ids):

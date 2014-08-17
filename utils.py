@@ -113,3 +113,35 @@ def chroma_to_tonnetz(C):
                 T[i, d] = 1 / denom * (phi[d, :] * C[i, :]).sum()
 
     return T
+
+
+def times_to_intervals(times):
+    """Given a set of times, convert them into intervals.
+
+    Parameters
+    ----------
+    times: np.array(N)
+        A set of times.
+
+    Returns
+    -------
+    inters: np.array(N-1, 2)
+        A set of intervals.
+    """
+    return np.asarray(zip(times[:-1], times[1:]))
+
+
+def intervals_to_times(inters):
+    """Given a set of intervals, convert them into times.
+
+    Parameters
+    ----------
+    inters: np.array(N-1, 2)
+        A set of intervals.
+
+    Returns
+    -------
+    times: np.array(N)
+        A set of times.
+    """
+    return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)

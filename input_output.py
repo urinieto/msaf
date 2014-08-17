@@ -17,8 +17,8 @@ import logging
 import numpy as np
 
 # Local stuff
-import jams2
-import eval2
+from . import jams2
+from . import utils
 
 
 prefix_dict = {
@@ -75,7 +75,7 @@ def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
             # Match non-empty parameters
             found = True
             for key in params:
-                if key != "feature" and (key not in alg.keys() or \
+                if key != "feature" and (key not in alg.keys() or
                         (params[key] != "" and alg[key] != params[key])):
                     found = False
 
@@ -351,7 +351,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
                         "sections", context=prefix_dict[ds_prefix])
-    ann_times = eval2.intervals_to_times(ann_inter)
+    ann_times = utils.intervals_to_times(ann_inter)
     all_boundaries.append(ann_times)
 
     # Estimations
@@ -359,11 +359,11 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
         algo_ids = get_algo_ids(est_file)
     for algo_id in algo_ids:
         est_inters = read_estimations(est_file, algo_id, annot_beats,
-                                      feature=eval2.feat_dict[algo_id])
+                                      feature=eval.feat_dict[algo_id])
         if len(est_inters) == 0:
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
-        boundaries = eval2.intervals_to_times(est_inters)
+        boundaries = utils.intervals_to_times(est_inters)
         all_boundaries.append(boundaries)
     return all_boundaries
 
@@ -397,7 +397,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(
         jam_file, "sections", context=prefix_dict[ds_prefix])
-    gt_times = eval2.intervals_to_times(ann_inter)
+    gt_times = utils.intervals_to_times(ann_inter)
     all_labels.append(ann_labels)
 
     # Estimations
@@ -406,7 +406,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
     for algo_id in algo_ids:
         est_labels = read_estimations(est_file, algo_id, annot_beats,
                                       annot_bounds=True, bounds=False,
-                                      feature=eval2.feat_dict[algo_id])
+                                      feature=eval.feat_dict[algo_id])
         if len(est_labels) == 0:
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
