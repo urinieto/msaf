@@ -23,7 +23,7 @@ import time
 
 # Local stuff
 import jams2
-import input_output
+import input_output as io
 
 
 feat_dict = {
@@ -58,38 +58,6 @@ def print_results(results):
                   res["D"], res["DevA2E"], res["DevE2A"],
                   100 * res["PWF"], 100 * res["PWP"], 100 * res["PWR"],
                   100 * res["Sf"], 100 * res["So"], 100 * res["Su"]))
-
-
-def times_to_intervals(times):
-    """Given a set of times, convert them into intervals.
-
-    Parameters
-    ----------
-    times: np.array(N)
-        A set of times.
-
-    Returns
-    -------
-    inters: np.array(N-1, 2)
-        A set of intervals.
-    """
-    return np.asarray(zip(times[:-1], times[1:]))
-
-
-def intervals_to_times(inters):
-    """Given a set of intervals, convert them into times.
-
-    Parameters
-    ----------
-    inters: np.array(N-1, 2)
-        A set of intervals.
-
-    Returns
-    -------
-    times: np.array(N)
-        A set of times.
-    """
-    return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)
 
 
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
@@ -219,7 +187,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
         if annotator == "GT":
             ann_inter, ann_labels = jams2.converters.load_jams_range(
                 jam_file, "sections", annotator=0,
-                context=input_output.prefix_dict[ds_prefix])
+                context=io.prefix_dict[ds_prefix])
         else:
             ann_inter, ann_labels = jams2.converters.load_jams_range(
                 jam_file, "sections", annotator_name=annotator,
@@ -231,11 +199,10 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
     if annot_bounds:
         est_inter = ann_inter
     else:
-        est_inter = input_output.read_estimations(est_file, alg_id, annot_beats,
-                                          **params)
-    est_labels = input_output.read_estimations(est_file, alg_id, annot_beats,
-                                       bounds=False,
-                                       annot_bounds=annot_bounds, **params)
+        est_inter = io.read_estimations(est_file, alg_id, annot_beats, **params)
+    est_labels = io.read_estimations(est_file, alg_id, annot_beats,
+                                     bounds=False,
+                                     annot_bounds=annot_bounds, **params)
 
     if est_inter == [] or len(est_inter) == 0:
         logging.warning("No estimations for file: %s" % est_file)

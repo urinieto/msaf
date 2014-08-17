@@ -2,9 +2,11 @@
 Converters for JAMS.
 """
 
-import jams2
 import logging
 import numpy as np
+
+# Local stuff
+from pyjams import Jams
 
 
 def get_annotator_idx(jam, feature_name, annotator_name, filename):
@@ -59,13 +61,13 @@ def load_jams_range(filename, feature_name, annotator=0, annotator_name=None,
     if converter is None:
         converter = float
 
-    jam = jams2.load(filename)
+    jam = Jams.load(filename)
     if annotator_name is not None:
         annotator = get_annotator_idx(jam, feature_name, annotator_name,
                                       filename)
 
     try:
-        jam = jams2.load(filename)
+        jam = Jams.load(filename)
     except:
         print "Error: could not open %s (JAMS module not installed?)" % \
             filename
