@@ -11,14 +11,13 @@ __email__ = "oriol@nyu.edu"
 
 import datetime
 import json
-import os
 import logging
-
 import numpy as np
+import os
 
 # Local stuff
-from . import jams2
-from . import utils
+from msaf import jams2
+from msaf import utils
 
 
 prefix_dict = {

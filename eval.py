@@ -24,6 +24,7 @@ import time
 # Local stuff
 import jams2
 import input_output as io
+import utils
 
 
 feat_dict = {
@@ -216,8 +217,8 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
     """Computes the information gain of the est_file from the annotated
     intervals and the estimated intervals."""
-    ann_times = intervals_to_times(ann_inter)
-    est_times = intervals_to_times(est_inter)
+    ann_times = utils.intervals_to_times(ann_inter)
+    est_times = utils.intervals_to_times(est_inter)
     #print est_file
     #D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     try:
