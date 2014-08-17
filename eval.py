@@ -12,18 +12,18 @@ __email__       = "oriol@nyu.edu"
 
 import argparse
 import glob
+from joblib import Parallel, delayed
 import logging
-import os
-import numpy as np
-import time
-import sqlite3
-import itertools
-import pylab as plt
-
 import mir_eval
-import jams2
+import numpy as np
+import os
+import pandas as pd
+import sqlite3
+import time
 
-import msaf_io as MSAF
+# Local stuff
+import jams2
+import input_output
 
 
 feat_dict = {
@@ -31,7 +31,12 @@ feat_dict = {
     'levy'  :   'hpcp',
     'foote' :   'hpcp',
     'siplca':   '',
-    'olda'  :   ''
+    'olda'  :   '',
+    'kmeans':   'hpcp',
+    'cnmf'  :   'hpcp',
+    'cnmf2' :   'hpcp',
+    'cnmf3' :   'hpcp',
+    '2dfmc' :   ''
 }
 
 
@@ -40,24 +45,19 @@ def print_results(results):
 
     Parameters
     ----------
-    results: np.array(9)
-        Results in the following format:
-            0   :   Precision 3 seconds
-            1   :   Recall 3 seconds
-            2   :   F-measure 3 seconds
-            3   :   Precision 0.5 seconds
-            4   :   Recall 0.5 seconds
-            5   :   F-measure 0.5 seconds
-            6   :   Information Gain
-            7   :   Median Deviation from Annotated to Estimated boundary
-            8   :   Median Deviation from Estimated to Annotated boundary
+    results: pd.DataFrame
+        Dataframe with all the results
     """
-    results = np.asarray(results)
-    res = results.mean(axis=0)
+    res = results.mean()
     logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
-                 "R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f" %
-                 (100 * res[2], 100 * res[0], 100 * res[1], 100 * res[5],
-                  100 * res[3], 100 * res[4], res[6], res[7], res[8]))
+                 "R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f, "
+                 "PWF: %.2f, PWP: %.2f, PWR: %.2f, Sf: %.2f, So: %.2f, "
+                 "Su: %.2f" %
+                 (100 * res["F3"], 100 * res["P3"], 100 * res["R3"],
+                  100 * res["F0.5"], 100 * res["P0.5"], 100 * res["R0.5"],
+                  res["D"], res["DevA2E"], res["DevE2A"],
+                  100 * res["PWF"], 100 * res["PWP"], 100 * res["PWR"],
+                  100 * res["Sf"], 100 * res["So"], 100 * res["Su"]))
 
 
 def times_to_intervals(times):
@@ -92,168 +92,158 @@ def intervals_to_times(inters):
     return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)
 
 
-def compute_results(ann_inter, est_inter, trim, bins, est_file):
-    """Compute the results using all the available evaluations."""
-    # F-measures
-    P3, R3, F3 = mir_eval.boundary.detection(ann_inter, est_inter,
-                                             window=3, trim=trim)
-    P05, R05, F05 = mir_eval.boundary.detection(ann_inter, est_inter,
-                                                window=0.5, trim=trim)
+def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
+                    est_file, annot_bounds=False):
+    """Compute the results using all the available evaluations.
+
+    Return
+    ------
+    results : dict
+        Contains the results of all the evaluations for the given file.
+        Keys are the following:
+            track_name  : Name of the track
+            ds_name :   Name of the data set
+            F3  :   F-measure of hit rate at 3 seconds
+            P3  :   Precision of hit rate at 3 seconds
+            R3  :   Recall of hit rate at 3 seconds
+            F0.5  :   F-measure of hit rate at 0.5 seconds
+            P0.5  :   Precision of hit rate at 0.5 seconds
+            R0.5  :   Recall of hit rate at 0.5 seconds
+            DevA2E  :   Median deviation of annotation to estimation
+            DevE2A  :   Median deviation of estimation to annotation
+            D   :   Information gain
+            PWF : F-measure of pair-wise frame clustering
+            PWP : Precision of pair-wise frame clustering
+            PWR : Recall of pair-wise frame clustering
+            Sf  : F-measure normalized entropy score
+            So  : Oversegmentation normalized entropy score
+            Su  : Undersegmentation normalized entropy score
+    """
+    logging.info("Evaluating %s" % os.path.basename(est_file))
+    res = {}
+
+    if annot_bounds:
+        est_inter = ann_inter
+
+    ### Boundaries ###
+    # Hit Rate
+    res["P3"], res["R3"], res["F3"] = mir_eval.boundary.detection(
+        ann_inter, est_inter, window=3, trim=trim)
+    res["P0.5"], res["R0.5"], res["F0.5"] = mir_eval.boundary.detection(
+        ann_inter, est_inter, window=.5, trim=trim)
 
     # Information gain
-    D = compute_information_gain(ann_inter, est_inter, est_file, bins=bins)
-    #D = compute_conditional_entropy(ann_inter, est_inter, window=3, trim=trim)
-    #D = R05
+    res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
+                                        bins=bins)
 
     # Median Deviations
-    ann_to_est, est_to_ann = mir_eval.boundary.deviation(ann_inter, est_inter,
-                                                         trim=trim)
-    if np.isnan(ann_to_est) or np.isnan(est_to_ann):
-        logging.warning("Nan in median deviation evaluation: "
-                        "DevA2E: %.2f\tDevE2A: %.2f\t%s" %
-                        (ann_to_est, est_to_ann, est_file))
-        ann_to_est = 3
-        est_to_ann = 3
+    res["DevA2E"], res["DevE2A"] = mir_eval.boundary.deviation(
+        ann_inter, est_inter, trim=trim)
 
-    return [P3, R3, F3, P05, R05, F05, D, ann_to_est, est_to_ann]
+    ### Labels ###
+    if est_labels != []:
+        # TODO: Remove silence?
+        #last_time = ann_inter[-1][-1]
+        #ann_inter = ann_inter[1:-1]
+        #ann_inter[0][0] = 0
+        #ann_inter[-1][-1] = last_time
+        #ann_labels = ann_labels[1:-1]
+
+        #est_inter = est_inter[1:-1]
+        #print "Analyzing", est_file
+        #ann_labels = list(ann_labels)
+        #est_labels = list(est_labels)
+        #print est_labels
+        #print est_inter
+        #print len(ann_labels), len(ann_inter)
+        #ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
+                                                            #ann_labels)
+        #est_inter, est_labels = mir_eval.util.adjust_intervals(
+            #est_inter, est_labels, t_min=0, t_max=ann_inter.max())
+        #print len(ann_labels), len(ann_inter)
+        #print len(est_labels), len(est_inter)
+        #print est_labels
+
+        ## Pair-wise frame clustering
+        #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+            #ann_inter, ann_labels, est_inter, est_labels)
+
+        ## Normalized Conditional Entropies
+        #res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
+            #ann_inter, ann_labels, est_inter, est_labels)
+        try:
+            # Align labels with intervals
+            #print est_inter, est_labels
+            ann_labels = list(ann_labels)
+            est_labels = list(est_labels)
+            ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
+                                                                ann_labels)
+            est_inter, est_labels = mir_eval.util.adjust_intervals(
+                est_inter, est_labels, t_min=0, t_max=ann_inter.max())
+
+            # Pair-wise frame clustering
+            res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+                ann_inter, ann_labels, est_inter, est_labels)
+
+            # Normalized Conditional Entropies
+            res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
+                ann_inter, ann_labels, est_inter, est_labels)
+        except:
+            logging.warning("Labeling evaluation failed in file: %s" %
+                            est_file)
+            return {}
+
+    # Names
+    base = os.path.basename(est_file)
+    res["track_id"] = base[:-5]
+    res["ds_name"] = base.split("_")[0]
+
+    return res
 
 
-def compute_gt_results(est_file, trim, annot_beats, jam_files, alg_id,
-                       beatles=False, annotator=0, bins=10, **params):
-    """Computes the results by using the ground truth dataset."""
+def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
+                       annotator="GT", bins=251, annot_bounds=False, **params):
+    """Computes the results by using the ground truth dataset identified by
+    the annotator parameter.
+
+    Return
+    ------
+    results : dict
+        Dictionary of the results (see function compute_results).
+    """
 
     # Get the ds_prefix
     ds_prefix = os.path.basename(est_file).split("_")[0]
 
-    # Get corresponding annotation file
-    jam_file = get_annotation(est_file, jam_files)
-
-    if beatles:
-        jam = jams2.load(jam_file)
-        if jam.metadata.artist != "The Beatles":
-            return []
-
     try:
-        if annotator == "GT" or annotator == 0:
-            ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                "sections", annotator=0, context=MSAF.prefix_dict[ds_prefix])
+        if annotator == "GT":
+            ann_inter, ann_labels = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator=0,
+                context=input_output.prefix_dict[ds_prefix])
         else:
-            ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                "sections", annotator_name=annotator, context="large_scale")
+            ann_inter, ann_labels = jams2.converters.load_jams_range(
+                jam_file, "sections", annotator_name=annotator,
+                context="large_scale")
     except:
         logging.warning("No annotations for file: %s" % jam_file)
-        return []
+        return {}
 
-    est_inter = MSAF.read_estimations(est_file, alg_id, annot_beats, **params)
-    if est_inter == []:
-        return []
+    if annot_bounds:
+        est_inter = ann_inter
+    else:
+        est_inter = input_output.read_estimations(est_file, alg_id, annot_beats,
+                                          **params)
+    est_labels = input_output.read_estimations(est_file, alg_id, annot_beats,
+                                       bounds=False,
+                                       annot_bounds=annot_bounds, **params)
+
+    if est_inter == [] or len(est_inter) == 0:
+        logging.warning("No estimations for file: %s" % est_file)
+        return {}
 
     # Compute the results and return
-    return compute_results(ann_inter, est_inter, trim, bins, est_file)
-
-
-def plot_boundaries(all_boundaries, est_file):
-    """Plots all the boundaries.
-
-    Parameters
-    ----------
-    all_boundaries: list
-        A list of np.arrays containing the times of the boundaries, one array
-        for each algorithm.
-    est_file: str
-        Path to the estimated file (JSON file)
-    """
-    N = len(all_boundaries)  # Number of lists of boundaries
-    algo_ids = MSAF.get_algo_ids(est_file)
-    algo_ids = ["GT"] + algo_ids
-    figsize = (5, 2.2)
-    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
-    for i, boundaries in enumerate(all_boundaries):
-        print boundaries
-        for b in boundaries:
-            plt.axvline(b, i / float(N), (i + 1) / float(N))
-        plt.axhline(i / float(N), color="k", linewidth=1)
-
-    #plt.title(os.path.basename(est_file))
-    plt.title("Nelly Furtado - Promiscuous")
-    #plt.title("Quartetto Italiano - String Quartet in F")
-    plt.yticks(np.arange(0, 1, 1 / float(N)) + 1 / (float(N) * 2))
-    plt.gcf().subplots_adjust(bottom=0.22)
-    plt.gca().set_yticklabels(algo_ids)
-    #plt.gca().invert_yaxis()
-    plt.xlabel("Time (seconds)")
-    plt.show()
-
-
-def get_all_est_boundaries(est_file, annot_beats):
-    """Gets all the estimated boundaries for all the algorithms.
-
-    Parameters
-    ----------
-    est_file: str
-        Path to the estimated file (JSON file)
-    annot_beats: bool
-        Whether to use the annotated beats or not.
-
-    Returns
-    -------
-    all_boundaries: list
-        A list of np.arrays containing the times of the boundaries, one array
-        for each algorithm
-    """
-    all_boundaries = []
-
-    # Get GT boundaries
-    jam_file = os.path.dirname(est_file) + "/../annotations/" + \
-        os.path.basename(est_file).replace("json", "jams")
-    ds_prefix = os.path.basename(est_file).split("_")[0]
-    ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                        "sections", context=MSAF.prefix_dict[ds_prefix])
-    ann_times = intervals_to_times(ann_inter)
-    all_boundaries.append(ann_times)
-
-    # Estimations
-    for algo_id in MSAF.get_algo_ids(est_file):
-        est_inters = MSAF.read_estimations(est_file, algo_id,
-                        annot_beats, feature=feat_dict[algo_id])
-        boundaries = intervals_to_times(est_inters)
-        all_boundaries.append(boundaries)
-    return all_boundaries
-
-
-def compute_mma_results(est_file, trim, annot_beats, bins=10, plot=True):
-    """Compute the Mean Measure Agreement for all the algorithms of the given
-    file est_file."""
-    results_mma = []
-    #est_file = "/Users/uri/datasets/Segments/estimations/Isophonics_16_-_The_End.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_1254.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_546.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_68.json" # Quartetto
-    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0220_promiscuous.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Leonard_Bernstein,_New_York_Philharmonic_&_Rudol.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/Epiphyte_0298_turnmeon.json"
-    #est_file = "/Users/uri/datasets/Segments/estimations/Cerulean_Bob_Dylan-Like_a_Rolling_Stone_(Live).json"
-    est_file = "/Users/uri/datasets/Segments/estimations/SALAMI_584.json"
-    for algorithms in itertools.combinations(MSAF.get_algo_ids(est_file), 2):
-        # Read estimated times from both algorithms
-        est_inters1 = MSAF.read_estimations(est_file, algorithms[0],
-                            annot_beats, feature=feat_dict[algorithms[0]])
-        est_inters2 = MSAF.read_estimations(est_file, algorithms[1],
-                            annot_beats, feature=feat_dict[algorithms[1]])
-        if est_inters1 == [] or est_inters2 == []:
-            continue
-
-        # Compute results
-        results = compute_results(est_inters1, est_inters2, trim, bins,
-                                  est_file)
-        results_mma.append(results)
-
-    if plot:
-        all_boundaries = get_all_est_boundaries(est_file, annot_beats)
-        plot_boundaries(all_boundaries, est_file)
-        print all_boundaries
-
-    return results_mma
+    return compute_results(ann_inter, est_inter, ann_labels, est_labels, trim,
+                           bins, est_file, annot_bounds=annot_bounds)
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
@@ -366,21 +356,69 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
         cursor.execute(sql_cmd, evaluations)
 
 
-def get_annotation(est_file, jam_files):
-    """Gets the JAMS annotation given an estimation file."""
-    idx = [i for i, s in enumerate(jam_files) if
-           os.path.basename(est_file)[:-5] in s][0]
-    jam_file = jam_files[idx]
+def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
+                  alg_id, annotator, annot_bounds, **params):
+    """Processes a single track."""
 
-    assert os.path.basename(est_file)[:-5] == \
-        os.path.basename(jam_file)[:-5]
+    #if est_file != "/Users/uri/datasets/Segments/estimations/SALAMI_576.json":
+        #return {}
+    if est_file == "/Users/uri/datasets/Segments/estimations/SALAMI_920.json":
+        return {}
 
-    return jam_file
+    # Sanity check
+    assert os.path.basename(est_file)[:-4] == \
+        os.path.basename(jam_file)[:-4]
+
+    if salamii:
+        num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
+        if num < 956 or num > 1498:
+            return []
+
+    if beatles:
+        jam = jams2.load(jam_file)
+        if jam.metadata.artist != "The Beatles":
+            return []
+
+    one_res = compute_gt_results(est_file, trim, annot_beats, jam_file,
+                                 alg_id, annotator, annot_bounds=annot_bounds,
+                                 **params)
+
+    return one_res
 
 
 def process(in_path, alg_id, ds_name="*", annot_beats=False,
-            trim=False, mma=False, save=False, annotator=0, **params):
-    """Main process."""
+            annot_bounds=False, trim=False, save=False, annotator="GT",
+            sql_file="results/results.sqlite", n_jobs=4, **params):
+    """Main process.
+
+    Parameters
+    ----------
+    in_path : str
+        Path to the dataset root folder.
+    alg_id : str
+        Algorithm identifier (e.g. siplca, cnmf)
+    ds_name : str
+        Name of the dataset to be evaluated (e.g. SALAMI). * stands for all.
+    annot_beats : boolean
+        Whether to use the annotated beats or not.
+    annot_bounds : boolean
+        Whether to use the annotated bounds or not.
+    trim : boolean
+        Whether to trim the first and last boundary when evaluating boundaries.
+    save: boolean
+        Whether to save the results into the SQLite database.
+    annotator: str
+        Annotator identifier of the JAMS to use as ground truth.
+    sql_file: str
+        Path to the SQLite results database.
+    params : dict
+        Additional parameters (e.g. features)
+
+    Return
+    ------
+    results : pd.DataFrame
+        DataFrame containing the evaluations for each file.
+    """
 
     # The Beatles hack
     beatles = False
@@ -394,85 +432,35 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         salamii = True
         ds_name = "SALAMI"
 
+    if save:
+        conn = sqlite3.connect(sql_file)
+        conn.text_factory = str     # Fixes the 8-bit encoding string problem
+        c = conn.cursor()
+
     # Get files
     jam_files = glob.glob(os.path.join(in_path, "annotations",
                                        "%s_*.jams" % ds_name))
     est_files = glob.glob(os.path.join(in_path, "estimations",
                                        "%s_*.json" % ds_name))
 
-    if save:
-        conn = sqlite3.connect("results/results.sqlite")
-        conn.text_factory = str     # Fixes the 8-bit encoding string problem
-        c = conn.cursor()
-
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
-    # Compute features for each file
-    results = np.empty((0, 9))      # Results: P3, R3, F3, P05, R05, F05, D,
-                                    # median deviations
+    # All evaluations
+    results = pd.DataFrame()
 
-    # Dataset results
-    results_ds = []
+    # Evaluate in parallel
+    evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        est_file, jam_file, salamii, beatles, trim, annot_beats, alg_id,
+        annotator, annot_bounds, **params)
+        for est_file, jam_file in zip(est_files, jam_files))
 
-    try:
-        feature = params["feature"]
-    except:
-        feature = ""
+    for e in evals:
+        if e != []:
+            results = results.append(e, ignore_index=True)
 
-    curr_ds = os.path.basename(est_files[0]).split("_")[0]
-    bins = 250
-
-    for est_file in est_files:
-        if salamii:
-            num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
-            if num < 956 or num > 1498:
-                continue
-
-        if mma:
-            alg_id = "mma"
-            feature = ""
-
-            # Compute the MMA for the current file
-            results_mma = compute_mma_results(est_file, trim, annot_beats,
-                                              bins=bins)
-
-            # Compute the averages
-            results_ds.append(np.mean(np.asarray(results_mma), axis=0))
-
-        else:
-            results_gt = compute_gt_results(est_file, trim, annot_beats,
-                                            jam_files, alg_id, beatles,
-                                            annotator, bins=bins, **params)
-            if results_gt == []:
-                continue
-            results_ds.append(results_gt)
-
-        # Save Track Result to database
-        if save:
-            save_results_ds(c, alg_id, results_ds[-1], annot_beats, trim,
-                            feature, track_id=os.path.basename(est_file))
-
-        # Store dataset results if needed
-        actual_ds_name = os.path.basename(est_file).split("_")[0]
-        if curr_ds != actual_ds_name:
-            if save:
-                save_results_ds(c, alg_id, results_ds, annot_beats, trim,
-                                feature, ds_name=curr_ds)
-            curr_ds = actual_ds_name
-            # Add to global results
-            results = np.concatenate((results, np.asarray(results_ds)))
-            results_ds = []
-
-    # Save and add last results
+    # TODO: Save all results
     if save:
-        save_results_ds(c, alg_id, results_ds, annot_beats, trim, feature,
-                        ds_name=curr_ds)
-    results = np.concatenate((results, np.asarray(results_ds)))
-
-    # Save all results
-    if save:
-        save_results_ds(c, alg_id, results, annot_beats, trim, feature,
-                        ds_name="all")
+        save_results_ds(c, alg_id, results, annot_beats, trim, ds_name="all")
 
     # Print results
     print_results(results)
@@ -482,7 +470,7 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         conn.commit()
         conn.close()
 
-    logging.info("%d tracks analized" % len(results))
+    logging.info("%d tracks analyzed" % len(results))
 
     return results
 
@@ -509,6 +497,11 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-bo",
+                        action="store_true",
+                        dest="annot_bounds",
+                        help="Use annotated bounds",
+                        default=False)
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
@@ -520,22 +513,17 @@ def main():
                         dest="trim",
                         help="Trim the first and last boundaries",
                         default=False)
-    parser.add_argument("-m",
-                        action="store_true",
-                        dest="mma",
-                        help="Compute the mean mutual agreement between,"
-                        "results",
-                        default=False)
-    parser.add_argument("-a",
-                        action="store_true",
-                        dest="all",
-                        help="Compute all the results.",
-                        default=False)
     parser.add_argument("-s",
                         action="store_true",
                         dest="save",
-                        help="Whether to sasve the results in the SQL or not",
+                        help="Whether to save the results in the SQL or not",
                         default=False)
+    parser.add_argument("-j",
+                        action="store",
+                        dest="n_jobs",
+                        default=4,
+                        type=int,
+                        help="The number of processes to run in parallel")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -543,20 +531,10 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=logging.INFO)
 
-    if args.all:
-        # boundary algorithms
-        for key in feat_dict.keys():
-            logging.info("Evaluating %s..." % key)
-            process(args.in_path, key, "*", args.annot_beats,
-                    trim=args.trim, mma=False, feature=feat_dict[key])
-        # MMA
-        process(args.in_path, "", "*", args.annot_beats,
-                trim=args.trim, mma=True, feature=args.feature)
-    else:
-        # Run the algorithm
-        process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-                trim=args.trim, mma=args.mma, save=args.save,
-                feature=args.feature)
+    # Run the algorithm
+    process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
+            trim=args.trim, save=args.save, feature=args.feature,
+            annot_bounds=args.annot_bounds, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
