@@ -79,11 +79,11 @@ import logging
 import sys
 import numpy as np
 
+# Local stuff
 import plca
 
-sys.path.append("../../")
-import msaf_io as MSAF
-import utils as U
+from msaf import input_output as io
+from msaf import utils as U
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s %(name)s %(asctime)s '
@@ -98,7 +98,7 @@ def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False,
     logger.info('Extracting beat-synchronous chroma features from %s',
                 wavfilename)
     # Get MSAF features
-    feats, mfcc, beats, songlen = MSAF.get_features(wavfilename, annot_beats)
+    feats, mfcc, beats, songlen = io.get_features(wavfilename, annot_beats)
     if feature == "tonnetz":
         feats = U.chroma_to_tonnetz(feats)
 

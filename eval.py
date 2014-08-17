@@ -22,23 +22,9 @@ import sqlite3
 import time
 
 # Local stuff
-import jams2
-import input_output as io
-import utils
-
-
-feat_dict = {
-    'serra' :   'mix',
-    'levy'  :   'hpcp',
-    'foote' :   'hpcp',
-    'siplca':   '',
-    'olda'  :   '',
-    'kmeans':   'hpcp',
-    'cnmf'  :   'hpcp',
-    'cnmf2' :   'hpcp',
-    'cnmf3' :   'hpcp',
-    '2dfmc' :   ''
-}
+from msaf import jams2
+from msaf import input_output as io
+from msaf import utils
 
 
 def print_results(results):

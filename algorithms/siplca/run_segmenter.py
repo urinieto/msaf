@@ -22,11 +22,9 @@ from joblib import Parallel, delayed
 # SI-PLCA segmenter
 import segmenter as S
 
-import sys
-sys.path.append("../../")
-import msaf_io as MSAF
-import jams2
-import utils as U
+from msaf import input_output as io
+from msaf import jams2
+from msaf import utils as U
 
 
 def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
@@ -57,10 +55,10 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         "feature"           :   features
     }
     if annot_bounds:
-        feats, mfcc, beats, dur = MSAF.get_features(
+        feats, mfcc, beats, dur = io.get_features(
             audio_file, annot_beats=annot_beats)
         try:
-            bound_idxs = MSAF.read_annot_bound_frames(audio_file, beats)
+            bound_idxs = io.read_annot_bound_frames(audio_file, beats)
         except:
             logging.warning("No annotation boundaries for %s" %
                             audio_file)
@@ -129,7 +127,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         os.path.basename(jam_file).replace(".jams", ".json"))
     logging.info("Writing results in: %s" % out_file)
     if not annot_bounds:
-        MSAF.save_estimations(out_file, times, annot_beats, "siplca",
+        io.save_estimations(out_file, times, annot_beats, "siplca",
             version="1.0", **params)
 
     # Remove paramaters that we don't want to store
@@ -140,7 +138,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     params.pop("rank", None)
 
     # Save results
-    MSAF.save_estimations(out_file, labels, annot_beats, "siplca",
+    io.save_estimations(out_file, labels, annot_beats, "siplca",
         bounds=False, annot_bounds=annot_bounds, version="1.0", **params)
 
 
