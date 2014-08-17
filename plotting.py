@@ -14,9 +14,8 @@ import os
 import pylab as plt
 
 # Local stuff
-import input_output as io
-import eval as EV
-
+from msaf import io
+from msaf import utils
 
 translate_ids = {
     "2dfmc" : "2D-FMC",
@@ -123,7 +122,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
     cm = plt.get_cmap('gist_rainbow')
 
     # To intervals
-    gt_inters = EV.times_to_intervals(gt_times)
+    gt_inters = utils.times_to_intervals(gt_times)
 
     # Plot labels
     figsize = (6, 4)
