@@ -17,6 +17,7 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
+import datetime
 import essentia
 import essentia.standard as ES
 from essentia.standard import YamlOutput
@@ -28,21 +29,23 @@ import os
 import time
 
 # Local stuff
-import jams2
-import utils
+import msaf
+from msaf import jams2
+from msaf import utils
 
 # Setup main params
 SAMPLE_RATE = 11025
 FRAME_SIZE = 2048
 HOP_SIZE = 512
+MFCC_COEFF = 14
 WINDOW_TYPE = "blackmanharris74"
 
 
 class STFTFeature:
     """Class to easily compute the features that require a frame based
         spectrum process (or STFT)."""
-    def __init__(self, frame_size, hop_size, window_type, feature,
-            beats, sample_rate):
+    def __init__(self, frame_size, hop_size, window_type, feature, sample_rate,
+                 beats=None):
         """STFTFeature constructor."""
         self.frame_size = frame_size
         self.hop_size = hop_size
@@ -70,7 +73,7 @@ class STFTFeature:
         # Convert to Essentia Numpy array
         features = essentia.array(features)
 
-        if self.beats != []:
+        if self.beats is not None and self.beats != []:
             framerate = self.sample_rate / float(self.hop_size)
             tframes = np.arange(features.shape[0]) / float(framerate)
             features = utils.resample_mx(features.T, tframes, self.beats).T
@@ -78,45 +81,61 @@ class STFTFeature:
         return features
 
 
-def double_beats(ticks):
+def double_beats(beats):
     """Double the beats."""
-    new_ticks = []
-    for i, tick in enumerate(ticks[:-1]):
-        new_ticks.append(tick)
-        new_ticks.append((tick + ticks[i + 1]) / 2.0)
-    return essentia.array(new_ticks)
+    new_beats = []
+    for i, beat in enumerate(beats[:-1]):
+        new_beats.append(beat)
+        new_beats.append((beat + beats[i + 1]) / 2.0)
+    return essentia.array(new_beats)
 
 
 def compute_beats(audio):
     """Computes the beats using Essentia."""
     logging.info("Computing Beats...")
     conf = 1.0
-    ticks, conf = ES.BeatTrackerMultiFeature()(audio)
-    # ticks = ES.BeatTrackerDegara()(audio)
-    ticks *= 44100 / SAMPLE_RATE  # Essentia requires 44100 input (-.-')
+    beats, conf = ES.BeatTrackerMultiFeature()(audio)
+    # beats = ES.BeatTrackerDegara()(audio)
+    beats *= 44100 / SAMPLE_RATE  # Essentia requires 44100 input (-.-')
 
     # Double the beats if found beats are too little
     th = 0.9  # 1 would equal to at least 1 beat per second
-    while ticks.shape[0] / (audio.shape[0] / float(SAMPLE_RATE)) < th and \
-            ticks.shape[0] > 2:
-        ticks = double_beats(ticks)
-    return ticks, conf
+    while beats.shape[0] / (audio.shape[0] / float(SAMPLE_RATE)) < th and \
+            beats.shape[0] > 2:
+        beats = double_beats(beats)
+    return beats, conf
 
 
-def compute_beatsync_features(ticks, audio):
+def compute_features(audio, beats=None):
     """Computes the HPCP and MFCC beat-synchronous features given a set
-        of beats (ticks)."""
+        of beats (beats)."""
+    beatsync_str = ""
+    if beats is not None:
+        beatsync_str = "Beat-synchronous "
+
     MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE,
-                       ES.MFCC(numberCoefficients=14), ticks, SAMPLE_RATE)
+                       ES.MFCC(numberCoefficients=MFCC_COEFF), SAMPLE_RATE,
+                       beats)
     HPCP = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.HPCP(),
-                       ticks, SAMPLE_RATE)
-    logging.info("Computing Beat-synchronous MFCCs...")
+                       SAMPLE_RATE, beats)
+    logging.info("Computing %sMFCCs..." % beatsync_str)
     mfcc = MFCC.compute_features(audio)
-    logging.info("Computing Beat-synchronous HPCPs...")
+    logging.info("Computing %sHPCPs..." % beatsync_str)
     hpcp = HPCP.compute_features(audio)
     #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
+    logging.info("Computing %sTonnetz..." % beatsync_str)
+    tonnetz = utils.chroma_to_tonnetz(hpcp)
+    return mfcc, hpcp, tonnetz
 
-    return mfcc, hpcp
+
+def save_features(key, pool, mfcc, hpcp, tonnetz):
+    """Saves the features into the specified pool under the given key."""
+    [pool.add(key + ".mfcc", essentia.array(mfcc_coeff))
+        for mfcc_coeff in mfcc]
+    [pool.add(key + ".hpcp", essentia.array(hpcp_coeff))
+        for hpcp_coeff in hpcp]
+    [pool.add(key + ".tonnetz", essentia.array(tonnetz_coeff))
+        for tonnetz_coeff in tonnetz]
 
 
 def compute_all_features(audio_file, audio_beats, overwrite):
@@ -126,7 +145,9 @@ def compute_all_features(audio_file, audio_beats, overwrite):
 
     # Output file
     out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
-                    "features", os.path.basename(audio_file)[:-4] + ".json")
+                            msaf.Dataset.features_dir,
+                            os.path.basename(audio_file)[:-4] +
+                            msaf.Dataset.features_ext)
     if os.path.isfile(out_file) and not overwrite:
         return  # Do nothing, file already exist and we are not overwriting it
 
@@ -134,18 +155,21 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
     audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
 
+    # Compute features
+    mfcc, hpcp, tonnetz = compute_features(audio)
+
     # Estimate Beats
-    ticks, conf = compute_beats(audio)
-    ticks = np.concatenate(([0], ticks))  # Add first time
-    ticks = essentia.array(np.unique(ticks))
+    beats, conf = compute_beats(audio)
+    beats = np.concatenate(([0], beats))  # Add first time
+    beats = essentia.array(np.unique(beats))
 
     # Compute Beat-sync features
-    mfcc, hpcp = compute_beatsync_features(ticks, audio)
+    bs_mfcc, bs_hpcp, bs_tonnetz = compute_features(audio, beats)
 
     # Save output as audio file
     if audio_beats:
         logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=ticks, type='beep',
+        marker = ES.AudioOnsetsMarker(onsets=beats, type='beep',
                                       sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav',
@@ -165,9 +189,11 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     #     ES.MonoWriter(filename='bounds.wav',
     #                   sampleRate=SAMPLE_RATE)(marked_audio)
 
-    # Read annotations if they exist in path/annotations/file.jams
+    # Read annotations if they exist in path/references_dir/file.jams
     jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
-                 "annotations", os.path.basename(audio_file)[:-4] + ".jams")
+                            msaf.Dataset.references_dir,
+                            os.path.basename(audio_file)[:-4] +
+                            msaf.Dataset.references_ext)
     if os.path.isfile(jam_file):
         jam = jams2.load(jam_file)
 
@@ -175,17 +201,17 @@ def compute_all_features(audio_file, audio_beats, overwrite):
         if jam.beats != []:
             logging.info("Reading beat annotations from JAMS")
             annot = jam.beats[0]
-            annot_ticks = []
+            annot_beats = []
             for data in annot.data:
-                annot_ticks.append(data.time.value)
-            annot_ticks = essentia.array(np.unique(annot_ticks).tolist())
-            annot_mfcc, annot_hpcp = compute_beatsync_features(annot_ticks,
-                                                               audio)
+                annot_beats.append(data.time.value)
+            annot_beats = essentia.array(np.unique(annot_beats).tolist())
+            annot_mfcc, annot_hpcp, annot_tonnetz = compute_features(
+                audio, annot_beats)
 
     # Save beats as an audio file if needed
     if audio_beats:
         logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=annot_ticks, type='beep',
+        marker = ES.AudioOnsetsMarker(onsets=annot_beats, type='beep',
                                       sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav',
@@ -195,21 +221,20 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     logging.info("Saving the JSON file in %s" % out_file)
     yaml = YamlOutput(filename=out_file, format='json')
     pool = essentia.Pool()
-    pool.add("beats.ticks", ticks)
+    pool.add("beats.times", beats)
     pool.add("beats.confidence", conf)
-    [pool.add("est_beatsync.mfcc", essentia.array(mfcc_coeff))
-        for mfcc_coeff in mfcc]
-    [pool.add("est_beatsync.hpcp", essentia.array(hpcp_coeff))
-        for hpcp_coeff in hpcp]
     pool.set("analysis.sample_rate", SAMPLE_RATE)
     pool.set("analysis.frame_rate", FRAME_SIZE)
     pool.set("analysis.hop_size", HOP_SIZE)
     pool.set("analysis.window_type", WINDOW_TYPE)
+    pool.set("analysis.mfcc_coeff", MFCC_COEFF)
+    pool.set("timestamp",
+             datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
+    save_features("framesync", pool, mfcc, hpcp, tonnetz)
+    save_features("est_beatsync", pool, bs_mfcc, bs_hpcp, bs_tonnetz)
     if os.path.isfile(jam_file) and jam.beats != []:
-        [pool.add("ann_beatsync.mfcc", essentia.array(mfcc_coeff))
-            for mfcc_coeff in annot_mfcc]
-        [pool.add("ann_beatsync.hpcp", essentia.array(hpcp_coeff))
-            for hpcp_coeff in annot_hpcp]
+        save_features("ann_beatsync", pool, annot_mfcc, annot_hpcp,
+                      annot_tonnetz)
     yaml(pool)
 
 
@@ -225,12 +250,13 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
         utils.ensure_dir(in_path)
 
         # Get files
-        audio_files = glob.glob(os.path.join(in_path, "audio",
+        audio_files = glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
                                              "*.[wm][ap][v3]"))
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
-            audio_file, audio_beats, overwrite) for audio_file in audio_files)
+            audio_file, audio_beats, overwrite)
+            for audio_file in audio_files[:1])
 
 
 def main():
