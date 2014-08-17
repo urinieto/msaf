@@ -12,12 +12,14 @@ import copy
 import numpy as np
 import os
 
+
 def lognormalize_chroma(C):
     """Log-normalizes chroma such that each vector is between -80 to 0."""
     C += np.abs(C.min()) + 0.1
     C = C/C.max(axis=0)
-    C = 80*np.log10(C) # Normalize from -80 to 0
+    C = 80 * np.log10(C)  # Normalize from -80 to 0
     return C
+
 
 def normalize_chroma(C):
     """Normalizes chroma such that each vector is between 0 to 1."""
@@ -25,16 +27,19 @@ def normalize_chroma(C):
     C = C/C.max(axis=0)
     return C
 
+
 def normalize_matrix(X):
     """Nomalizes a matrix such that it's maximum value is 1 and minimum is 0."""
     X += np.abs(X.min())
     X /= X.max()
     return X
 
+
 def ensure_dir(directory):
     """Makes sure that the given directory exists."""
     if not os.path.exists(directory):
         os.makedirs(directory)
+
 
 def resample_mx(X, incolpos, outcolpos):
     """
@@ -51,8 +56,8 @@ def resample_mx(X, incolpos, outcolpos):
     Y = np.zeros((X.shape[0], noutcols))
     # assign 'end times' to final columns
     if outcolpos.max() > incolpos.max():
-        incolpos = np.concatenate([incolpos,[outcolpos.max()]])
-        X = np.concatenate([X, X[:,-1].reshape(X.shape[0],1)], axis=1)
+        incolpos = np.concatenate([incolpos, [outcolpos.max()]])
+        X = np.concatenate([X, X[:, -1].reshape(X.shape[0], 1)], axis=1)
     outcolpos = np.concatenate([outcolpos, [outcolpos[-1]]])
     # durations (default weights) of input columns)
     incoldurs = np.concatenate([np.diff(incolpos), [1]])
@@ -60,17 +65,18 @@ def resample_mx(X, incolpos, outcolpos):
     for c in range(noutcols):
         firstincol = np.where(incolpos <= outcolpos[c])[0][-1]
         firstincolnext = np.where(incolpos < outcolpos[c+1])[0][-1]
-        lastincol = max(firstincol,firstincolnext)
+        lastincol = max(firstincol, firstincolnext)
         # default weights
         wts = copy.deepcopy(incoldurs[firstincol:lastincol+1])
         # now fix up by partial overlap at ends
         if len(wts) > 1:
             wts[0] = wts[0] - (outcolpos[c] - incolpos[firstincol])
             wts[-1] = wts[-1] - (incolpos[lastincol+1] - outcolpos[c+1])
-        wts = wts * 1. /sum(wts)
-        Y[:,c] = np.dot(X[:,firstincol:lastincol+1], wts)
+        wts = wts * 1. / sum(wts)
+        Y[:, c] = np.dot(X[:, firstincol:lastincol+1], wts)
     # done
     return Y
+
 
 def chroma_to_tonnetz(C):
     """Transforms chromagram to Tonnetz (Harte, Sandler, 2006)."""

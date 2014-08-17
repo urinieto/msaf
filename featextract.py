@@ -21,14 +21,15 @@ import essentia
 import essentia.standard as ES
 from essentia.standard import YamlOutput
 import glob
-import jams
-import logging
-import os
-import numpy as np
-import time
-import utils
-
 from joblib import Parallel, delayed
+import logging
+import numpy as np
+import os
+import time
+
+# Local stuff
+import jams2
+import utils
 
 # Setup main params
 SAMPLE_RATE = 11025
@@ -168,7 +169,7 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
                  "annotations", os.path.basename(audio_file)[:-4] + ".jams")
     if os.path.isfile(jam_file):
-        jam = jams.load(jam_file)
+        jam = jams2.load(jam_file)
 
         # If beat annotations exist, compute also annotated beatsyn features
         if jam.beats != []:

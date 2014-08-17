@@ -14,7 +14,7 @@ import os
 import pylab as plt
 
 # Local stuff
-import msaf_io as MSAF
+import input_output
 import eval2 as EV
 
 
@@ -30,6 +30,8 @@ translate_ids = {
 
 
 def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
+    """Formats the plot with the correct axis labels, title, ticks, and
+    so on."""
     if title is None:
         title = os.path.basename(est_file).split(".")[0]
     plt.title(title)
@@ -63,7 +65,7 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
     """
     N = len(all_boundaries)  # Number of lists of boundaries
     if algo_ids is None:
-        algo_ids = MSAF.get_algo_ids(est_file)
+        algo_ids = input_output.get_algo_ids(est_file)
 
     # Translate ids
     for i, algo_id in enumerate(algo_ids):
@@ -83,7 +85,6 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
     # Format plot
     _plot_formatting(title, est_file, algo_ids, all_boundaries[0][-1], N,
                      output_file)
-
 
 
 def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
@@ -107,7 +108,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
     """
     N = len(all_labels)  # Number of lists of labels
     if algo_ids is None:
-        algo_ids = MSAF.get_algo_ids(est_file)
+        algo_ids = input_output.get_algo_ids(est_file)
 
     # Translate ids
     for i, algo_id in enumerate(algo_ids):
