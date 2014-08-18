@@ -82,27 +82,11 @@ import numpy as np
 # Local stuff
 import plca
 
-from msaf import input_output as io
-from msaf import utils as U
-
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s %(name)s %(asctime)s '
                     '%(filename)s:%(lineno)d  %(message)s')
 logger = logging.getLogger('segmenter')
 
-
-def extract_features(wavfilename, fctr=400, fsd=1.0, type=1, annot_beats=False,
-                     feature="hpcp"):
-    """Computes beat-synchronous chroma features from the given wave file
-    """
-    logger.info('Extracting beat-synchronous chroma features from %s',
-                wavfilename)
-    # Get MSAF features
-    feats, mfcc, beats, songlen = io.get_features(wavfilename, annot_beats)
-    if feature == "tonnetz":
-        feats = U.chroma_to_tonnetz(feats)
-
-    return feats.T, beats.flatten(), songlen
 
 def segment_song(seq, rank=4, win=32, seed=None,
                  nrep=1, minsegments=3, maxlowen=10, maxretries=5,
@@ -356,38 +340,6 @@ def remove_short_segments(labels, min_segment_length):
 
         labels[start:end] = label
 
-def evaluate_segmentation(labels, gtlabels, Z=[0]):
-    """Calls Matlab to evaluate the given segmentation labels
-
-    labels and gtlabels are arrays containing a numerical label for
-    each frame of the sound (as returned by segment_song).
-
-    Returns a dictionary containing name-value pairs of the form
-    'metric name': value.
-    """
-
-    # Matlab is really picky about the shape of these vectors.  Make
-    # sure labels is a row vector.
-    nlabels = max(labels.shape)
-    if labels.ndim == 1:
-        labels = labels[np.newaxis,:]
-    elif labels.shape[0] == nlabels:
-        labels = labels.T
-
-    perf = {}
-    perf['pfm'], perf['ppr'], perf['prr'] = mlab.eval_segmentation_pairwise(
-        labels, gtlabels, nout=3)
-    perf['So'], perf['Su'] = mlab.eval_segmentation_entropy(labels, gtlabels,
-                                                            nout=2)
-
-    perf['nlabels'] = len(np.unique(labels))
-    perf['effrank'] = len(Z)
-    perf['nsegments'] = np.sum(np.diff(labels) != 0) + 1
-
-    for k,v in perf.iteritems():
-        perf[k] = float(v)
-
-    return perf
 
 def compute_effective_pattern_length(w):
     wsum = w.sum(0)
@@ -425,42 +377,6 @@ def convert_labels_to_segments(labels, frametimes, songlen=None):
 def _compute_summary_correlation(A, B):
     return sum(np.correlate(A[x], B[x], 'full') for x in xrange(A.shape[0]))
 
-def find_downbeat(V, W):
-    newW = W.copy()
-    for k in xrange(W.shape[1]):
-        Wlen = compute_effective_pattern_length(W[:,k,:])
-        Wk = W[:,k,:Wlen]
-        corr = np.array([_compute_summary_correlation(plca.shift(Wk, r, 1), V)
-                         for r in xrange(Wlen)])
-        bestshift = corr[:,Wlen:-Wlen].sum(1).argmin()
-        print k, Wlen, bestshift
-        newW[:,k,:Wlen] = plca.shift(Wk, bestshift, 1)
-    return newW
-
-def find_downbeat_slow(V, W, Z, H, **kwargs):
-    bopt = np.zeros(len(Z), dtype=int)
-    nW = np.zeros(W.shape)
-    nH = np.zeros(H.shape)
-    for k in np.argsort(Z)[::-1]:
-        Wlen = compute_effective_pattern_length(W[:,k,:])
-        params = []
-        logprobs = []
-        for b in xrange(Wlen):
-            initW = W
-            initW[:,k,:Wlen] = plca.shift(W[:,k,:Wlen], b, axis=1)
-            W,Z,H,norm,recon,logprob = plca.FactoredSIPLCA2.analyze(
-                V, rank=len(Z), win=[H.shape[1], W.shape[-1]],
-                niter=50, circular=[True,False],
-                initW=initW, initH=np.ones(H.shape), initZ=Z,
-                **kwargs)
-            params.append((W,Z,H))
-            logprobs.append(logprob)
-            print b, logprobs[-1]
-        bopt[k] = np.argmax(logprobs)
-        W[:,k] = params[bopt[k]][0][:,k]
-        nH[k] = params[bopt[k]][2][k]
-    return bopt, W, Z, nH
-
 def shift_key_to_zero(W, Z, H):
     newW = np.zeros(W.shape)
     newH = np.zeros(H.shape)
@@ -471,15 +387,13 @@ def shift_key_to_zero(W, Z, H):
         newH[k] = plca.shift(H[k], -main_key, axis=0, circular=True)
     return newW, Z, newH
     
-def segment_wavfile(wavfile, **kwargs):
-    """Convenience function to compute segmentation of the given wavfile
+def segment_wavfile(features, beattimes, songlen, **kwargs):
+    """Convenience function to compute segmentation.
 
     Keyword arguments are passed into segment_song.
 
     Returns a string containing list of segments in HTK label format.
     """
-    features, beattimes, songlen = extract_features(
-        wavfile, annot_beats=kwargs["b"], feature=kwargs["feature"])
     labels, W, Z, H, segfun, norm = segment_song(features, **kwargs)
     segments = convert_labels_to_segments(labels, beattimes, songlen)
     return segments, beattimes, labels
