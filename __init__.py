@@ -6,6 +6,7 @@ from . import featextract
 from . import input_output as io
 from . import plotting
 from . import utils
+from . import algorithms
 
 __version__ = '0.0.1'
 

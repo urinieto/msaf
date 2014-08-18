@@ -26,6 +26,7 @@ import msaf
 from msaf import input_output as io
 from msaf import jams2
 from msaf import utils
+import config
 
 
 def use_annot_bounds(audio_file, beats, feats, params):
@@ -36,6 +37,9 @@ def use_annot_bounds(audio_file, beats, feats, params):
         logging.warning("No annotation boundaries for %s" %
                         audio_file)
         return
+    # Remove first and last boundaries (silent labels)
+    bound_idxs = bound_idxs[1:-1]
+
     n_segments = len(bound_idxs) - 1
     max_beats_segment = np.max(np.diff(bound_idxs))
 
@@ -73,19 +77,14 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
 
     logging.info("Segmenting %s" % audio_file)
 
-    # SI-PLCA Params (From MIREX)
-    params = {
-        "niter"             :   200,
-        "rank"              :   15,
-        "win"               :   60,
-        "alphaZ"            :   -0.01,
-        "normalize_frames"  :   True,
-        "viterbi_segmenter" :   True,
-        "min_segment_length":   1,
-        "plotiter"          :   None,
-        "feature"           :   feature,
-        "framesync"         :   framesync
-    }
+    # SI-PLCA Params
+    params = config.config
+    params["annot_beats"] = annot_beats
+    params["feature"] = feature
+    params["framesync"] = framesync
+    params["plotiter"] = None,
+    params["rank"] = 15
+    params["win"] = 60
 
     # Get features
     hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
@@ -97,11 +96,9 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     if annot_bounds:
         boundaries_id = "gt"
         params, bound_idxs = use_annot_bounds(audio_file, beats, feats, params)
-        print "Annot bound idxs", bound_idxs
 
     segments, beattimes, frame_labels = S.segment_wavfile(
         feats.T, beats.flatten(), dur, **params)
-    print segments
 
     # Convert segments to times
     lines = segments.split("\n")[:-1]
@@ -134,12 +131,11 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
             start = end
 
         # First and last boundaries (silence labels)
-        times = np.concatenate(([0], np.unique(beats[bound_idxs]), [dur]))
+        times = np.concatenate(([0], beats[bound_idxs], [dur]))
         silencelabel = np.max(labels) + 1
-        labels[0] = silencelabel
-        labels[-1] = silencelabel
+        labels = np.concatenate(([silencelabel], labels, [silencelabel]))
 
-    assert len(times) - 1 == len(labels)
+    #assert len(times) - 1 == len(labels)
 
     logging.info("Estimated boundaries: %s" % times)
     logging.info("Estimated labels: %s" % labels)

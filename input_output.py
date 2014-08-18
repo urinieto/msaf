@@ -123,7 +123,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     boundaries = []
     labels = []
     for range in correct_est.data:
-        boundaries.append([range.start, range.end])
+        boundaries.append([range.start.value, range.end.value])
         # TODO: Multiple contexts. Right now MSAF algorithms only estimate one
         # single layer, so it is not really necessary yet.
         if labels_id is not None:

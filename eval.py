@@ -22,9 +22,11 @@ import sqlite3
 import time
 
 # Local stuff
+import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
+from msaf import algorithms
 
 
 def print_results(results):
@@ -48,7 +50,7 @@ def print_results(results):
 
 
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
-                    est_file, annot_bounds=False):
+                    est_file):
     """Compute the results using all the available evaluations.
 
     Return
@@ -76,9 +78,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
     """
     logging.info("Evaluating %s" % os.path.basename(est_file))
     res = {}
-
-    if annot_bounds:
-        est_inter = ann_inter
 
     ### Boundaries ###
     # Hit Rate
@@ -156,8 +155,8 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
     return res
 
 
-def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
-                       annotator="GT", bins=251, annot_bounds=False, **params):
+def compute_gt_results(est_file, trim, annot_beats, jam_file, boundaries_id,
+                       labels_id, annotator="GT", bins=251, **params):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
 
@@ -172,32 +171,37 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, alg_id,
 
     try:
         if annotator == "GT":
-            ann_inter, ann_labels = jams2.converters.load_jams_range(
+            ref_inter, ref_labels = jams2.converters.load_jams_range(
                 jam_file, "sections", annotator=0,
-                context=io.prefix_dict[ds_prefix])
+                context=msaf.prefix_dict[ds_prefix])
         else:
-            ann_inter, ann_labels = jams2.converters.load_jams_range(
+            ref_inter, ref_labels = jams2.converters.load_jams_range(
                 jam_file, "sections", annotator_name=annotator,
                 context="large_scale")
     except:
         logging.warning("No annotations for file: %s" % jam_file)
         return {}
 
-    if annot_bounds:
-        est_inter = ann_inter
-    else:
-        est_inter = io.read_estimations(est_file, alg_id, annot_beats, **params)
-    est_labels = io.read_estimations(est_file, alg_id, annot_beats,
-                                     bounds=False,
-                                     annot_bounds=annot_bounds, **params)
+    # Set up configuration based on algorithms parameters
+    algo_id = boundaries_id
+    if algo_id == "gt":
+        algo_id = labels_id
+    config = eval(algorithms.__name__ + "." + algo_id).config.config
+    config["annot_beats"] = annot_beats
+    for key in params.keys():
+        config[key] = params[key]
+
+    # Read estimations with correct configuration
+    est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
+                                                labels_id, **config)
 
     if est_inter == [] or len(est_inter) == 0:
         logging.warning("No estimations for file: %s" % est_file)
         return {}
 
     # Compute the results and return
-    return compute_results(ann_inter, est_inter, ann_labels, est_labels, trim,
-                           bins, est_file, annot_bounds=annot_bounds)
+    return compute_results(ref_inter, est_inter, ref_labels, est_labels, trim,
+                           bins, est_file)
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
@@ -311,7 +315,7 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
 
 
 def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
-                  alg_id, annotator, annot_bounds, **params):
+                  boundaries_id, labels_id, annotator, **params):
     """Processes a single track."""
 
     #if est_file != "/Users/uri/datasets/Segments/estimations/SALAMI_576.json":
@@ -334,14 +338,13 @@ def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
             return []
 
     one_res = compute_gt_results(est_file, trim, annot_beats, jam_file,
-                                 alg_id, annotator, annot_bounds=annot_bounds,
-                                 **params)
+                                 boundaries_id, labels_id, annotator, **params)
 
     return one_res
 
 
-def process(in_path, alg_id, ds_name="*", annot_beats=False,
-            annot_bounds=False, trim=False, save=False, annotator="GT",
+def process(in_path, boundaries_id, labels_id=None, ds_name="*",
+            annot_beats=False, trim=False, save=False, annotator="GT",
             sql_file="results/results.sqlite", n_jobs=4, **params):
     """Main process.
 
@@ -349,8 +352,10 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
     ----------
     in_path : str
         Path to the dataset root folder.
-    alg_id : str
-        Algorithm identifier (e.g. siplca, cnmf)
+    boundaries_id : str
+        Boundaries algorithm identifier (e.g. siplca, cnmf)
+    labels_id : str
+        Labels algorithm identifier (e.g. siplca, cnmf)
     ds_name : str
         Name of the dataset to be evaluated (e.g. SALAMI). * stands for all.
     annot_beats : boolean
@@ -392,10 +397,12 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
         c = conn.cursor()
 
     # Get files
-    jam_files = glob.glob(os.path.join(in_path, "annotations",
-                                       "%s_*.jams" % ds_name))
-    est_files = glob.glob(os.path.join(in_path, "estimations",
-                                       "%s_*.json" % ds_name))
+    jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
+                                       ("%s_*" + msaf.Dataset.references_ext)
+                                       % ds_name))
+    est_files = glob.glob(os.path.join(in_path, msaf.Dataset.estimations_dir,
+                                       ("%s_*" + msaf.Dataset.estimations_ext)
+                                       % ds_name))
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
@@ -404,8 +411,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
 
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        est_file, jam_file, salamii, beatles, trim, annot_beats, alg_id,
-        annotator, annot_bounds, **params)
+        est_file, jam_file, salamii, beatles, trim, annot_beats, boundaries_id,
+        labels_id, annotator, **params)
         for est_file, jam_file in zip(est_files, jam_files))
 
     for e in evals:
@@ -414,7 +421,8 @@ def process(in_path, alg_id, ds_name="*", annot_beats=False,
 
     # TODO: Save all results
     if save:
-        save_results_ds(c, alg_id, results, annot_beats, trim, ds_name="all")
+        save_results_ds(c, boundaries_id, results, annot_beats, trim,
+                        ds_name="all")
 
     # Print results
     print_results(results)
@@ -437,9 +445,16 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("alg_id",
+    parser.add_argument("boundaries_id",
                         action="store",
-                        help="Algorithm identifier (e.g. olda, siplca)")
+                        help="Boundary algorithm identifier "
+                        "(e.g. olda, siplca)")
+    parser.add_argument("-la",
+                        action="store",
+                        help="Label algorithm identifier "
+                        "(e.g. cnmf, siplca)",
+                        dest="labels_id",
+                        default=None)
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",
@@ -450,11 +465,6 @@ def main():
                         action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
-                        default=False)
-    parser.add_argument("-bo",
-                        action="store_true",
-                        dest="annot_bounds",
-                        help="Use annotated bounds",
                         default=False)
     parser.add_argument("-f",
                         action="store",
@@ -486,9 +496,9 @@ def main():
                         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.alg_id, args.ds_name, args.annot_beats,
-            trim=args.trim, save=args.save, feature=args.feature,
-            annot_bounds=args.annot_bounds, n_jobs=args.n_jobs)
+    process(args.in_path, args.boundaries_id, args.labels_id, args.ds_name,
+            args.annot_beats, trim=args.trim, save=args.save,
+            feature=args.feature, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
