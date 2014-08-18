@@ -97,9 +97,11 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     if annot_bounds:
         boundaries_id = "gt"
         params, bound_idxs = use_annot_bounds(audio_file, beats, feats, params)
+        print "Annot bound idxs", bound_idxs
 
     segments, beattimes, frame_labels = S.segment_wavfile(
         feats.T, beats.flatten(), dur, **params)
+    print segments
 
     # Convert segments to times
     lines = segments.split("\n")[:-1]
@@ -118,6 +120,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
                             [float(lines[-1].strip("\n").split("\t")[1])]))
     times = np.unique(times)
 
+    # Align with annotated boundaries if needed
     if annot_bounds:
         labels = []
         start = bound_idxs[0]
@@ -130,7 +133,11 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
             labels.append(label)
             start = end
 
-        times = beats[bound_idxs]
+        # First and last boundaries (silence labels)
+        times = np.concatenate(([0], np.unique(beats[bound_idxs]), [dur]))
+        silencelabel = np.max(labels) + 1
+        labels[0] = silencelabel
+        labels[-1] = silencelabel
 
     assert len(times) - 1 == len(labels)
 

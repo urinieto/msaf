@@ -313,6 +313,7 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
     curr_estimation.sandbox = sandbox
 
     # Save actual data
+    curr_estimation.data = []
     if labels is None:
         label = np.ones(len(boundaries)) * -1
     for bound_inter, label in zip(boundaries, labels):
