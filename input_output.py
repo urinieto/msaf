@@ -57,21 +57,26 @@ def find_estimation(all_estimations, boundaries_id, labels_id, params,
     correct_est : RangeAnnotation
         Correct estimation found in all the estimations.
         None if it couldn't be found.
+    corect_i : int
+        Index of the estimation in the all_estimations list.
     """
     correct_est = None
+    correct_i = -1
     found = False
-    for estimation in all_estimations:
+    for i, estimation in enumerate(all_estimations):
         est_params = estimation.sandbox
         if has_same_parameters(est_params, boundaries_id, labels_id,
                                params) and not found:
             correct_est = estimation
+            correct_i = i
             found = True
         elif has_same_parameters(est_params, boundaries_id, labels_id,
                                  params) and found:
             logging.warning("Multiple estimations match your parameters in "
                             "file %s" % est_file)
             correct_est = estimation
-    return correct_est
+            correct_i = i
+    return correct_est, correct_i
 
 
 def read_estimations(est_file, boundaries_id, labels_id=None, **params):
@@ -108,7 +113,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     all_estimations = jam.sections
 
     # Find correct estimation
-    correct_est = find_estimation(all_estimations, boundaries_id, labels_id,
+    correct_est, i = find_estimation(all_estimations, boundaries_id, labels_id,
                                   params, est_file)
     if correct_est is None:
         logging.error("Could not find estimation in %s" % est_file)
@@ -267,7 +272,72 @@ def get_features(audio_path, annot_beats=False, beatsync=True):
     return C, M, T, beats, dur, analysis
 
 
-def create_estimation(times, annot_beats, annot_bounds, **params):
+def create_estimation(boundaries_id, labels_id, **params):
+    """Creates a new estimation (dictionary)."""
+    est = {}
+    est["boundaries_id"] = boundaries_id
+    est["labels_id"] = labels_id
+    est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
+    for key in params:
+        est[key] = params[key]
+    return est
+
+
+def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
+                     **params):
+    """Saves the segment estimations in a JAMS file."""
+
+    curr_estimation = None
+    curr_i = -1
+
+    # Find estimation in file
+    if os.path.isfile(out_file):
+        jam = jams2.load(out_file)
+        all_estimations = jam.sections
+        curr_estimation, curr_i = find_estimation(
+            all_estimations, boundaries_id, labels_id, params, out_file)
+    else:
+        # Create new JAMS if it doesn't exist
+        jam = jams2.Jam()
+        jam.metadata.title = os.path.basename(out_file).replace(
+            msaf.Dataset.estimations_ext, "")
+
+    # Create new annotation if needed
+    if curr_estimation is None:
+        curr_estimation = jam.sections.create_annotation()
+
+    # Save metadata and parameters
+    curr_estimation.annotation_metadata.attribute = "sections"
+    curr_estimation.annotation_metadata.version = msaf.__version__
+    curr_estimation.annotation_metadata.origin = "MSAF"
+    curr_estimation.sandbox["boundaries_id"] = boundaries_id
+    curr_estimation.sandbox["labels_id"] = labels_id
+    curr_estimation.sandbox["timestamp"] = \
+        datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
+    for key in params:
+        curr_estimation.sandbox[key] = params[key]
+
+    # Save actual data
+    if labels is None:
+        label = np.ones(len(boundaries)) * -1
+    for bound_inter, label in zip(boundaries, labels):
+        segment = curr_estimation.create_datapoint()
+        segment.start.value = float(bound_inter[0])
+        segment.start.confidence = 0.0
+        segment.end.value = float(bound_inter[1])
+        segment.end.confidence = 0.0
+        segment.label.value = label
+        segment.label.confidence = 0.0
+        segment.label.context = "msaf"      # TODO: Use multiple contex
+
+    # Place estimation in its place
+    if curr_i != -1:
+        jam.sections[curr_i] = curr_estimation
+    with open(out_file, "w") as f:
+        json.dump(jam, f, indent=2)
+
+
+def create_estimation_old(times, annot_beats, annot_bounds, **params):
     """Creates a new estimation (dictionary)."""
     est = {}
     est["annot_beats"] = annot_beats
@@ -279,7 +349,7 @@ def create_estimation(times, annot_beats, annot_bounds, **params):
     return est
 
 
-def save_estimations(out_file, estimations, annot_beats, alg_name,
+def save_estimations_old(out_file, estimations, annot_beats, alg_name,
                      bounds=True, annot_bounds=False, **params):
     """Saves the segment estimations (either boundaries or labels) in the
         out_file using a JSON format.
