@@ -82,7 +82,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     params["annot_beats"] = annot_beats
     params["feature"] = feature
     params["framesync"] = framesync
-    params["plotiter"] = None,
+    params["plotiter"] = None
     params["rank"] = 15
     params["win"] = 60
 
