@@ -272,17 +272,6 @@ def get_features(audio_path, annot_beats=False, beatsync=True):
     return C, M, T, beats, dur, analysis
 
 
-def create_estimation(boundaries_id, labels_id, **params):
-    """Creates a new estimation (dictionary)."""
-    est = {}
-    est["boundaries_id"] = boundaries_id
-    est["labels_id"] = labels_id
-    est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-    for key in params:
-        est[key] = params[key]
-    return est
-
-
 def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
                      **params):
     """Saves the segment estimations in a JAMS file."""
@@ -335,98 +324,6 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
         jam.sections[curr_i] = curr_estimation
     with open(out_file, "w") as f:
         json.dump(jam, f, indent=2)
-
-
-def create_estimation_old(times, annot_beats, annot_bounds, **params):
-    """Creates a new estimation (dictionary)."""
-    est = {}
-    est["annot_beats"] = annot_beats
-    est["annot_bounds"] = annot_bounds
-    est["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-    est["data"] = list(times)
-    for key in params:
-        est[key] = params[key]
-    return est
-
-
-def save_estimations_old(out_file, estimations, annot_beats, alg_name,
-                     bounds=True, annot_bounds=False, **params):
-    """Saves the segment estimations (either boundaries or labels) in the
-        out_file using a JSON format.
-        If file exists, update with new annotation.
-
-    Parameters
-    ----------
-    out_file : str
-        Path to the output JSON file.
-    estimations : list
-        Set of boundary times or labels to be stored.
-    annot_beats : boolean
-        Whether the estimations were obtained using annotated beats.
-    alg_name : str
-        Algorithm identifier.
-    bounds : boolean
-        Whether the estimations represent boundaries or lables.
-    annot_bounds : boolean
-        Whether the labels were obtained using the annotated boundaries.
-    params : dict
-        Extra parameters, algorithm dependant.
-    """
-    if bounds:
-        est_type = "boundaries"
-    else:
-        est_type = "labels"
-
-    # Create new estimation
-    new_est = create_estimation(estimations, annot_beats, annot_bounds,
-                                **params)
-
-    # Find correct place to store it within the estimation file
-    if os.path.isfile(out_file):
-        # Add estimation
-        res = json.load(open(out_file, "r"))
-
-        # Check if estimation already exists
-        if est_type in res.keys():
-            if alg_name in res[est_type]:
-                found = False
-                for i, est in enumerate(res[est_type][alg_name]):
-                    if est["annot_beats"] == annot_beats:
-                        found = True
-                        for key in params:
-                            if key not in est.keys() or params[key] != est[key]:
-                                found = False
-                                break
-                        if not found:
-                            continue
-                        # Check for annot_bounds only if saving labels
-                        if not bounds:
-                            if "annot_bounds" in est.keys():
-                                if est["annot_bounds"] != annot_bounds:
-                                    found = False
-                                    continue
-                        res[est_type][alg_name][i] = new_est
-                        break
-                if not found:
-                    res[est_type][alg_name].append(new_est)
-            else:
-                res[est_type][alg_name] = []
-                res[est_type][alg_name].append(new_est)
-        else:
-            # Esitmation doesn't exist for this type of feature
-            res[est_type] = {}
-            res[est_type][alg_name] = []
-            res[est_type][alg_name].append(new_est)
-    else:
-        # Create new estimation file
-        res = {}
-        res[est_type] = {}
-        res[est_type][alg_name] = []
-        res[est_type][alg_name].append(new_est)
-
-    # Save dictionary to disk
-    with open(out_file, "w") as f:
-        json.dump(res, f, indent=2)
 
 
 def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
@@ -498,7 +395,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
 
     # Get GT boundaries and labels
     jam_file = os.path.dirname(est_file) + "/../" + \
-        msaf.Dataset.references_dir +"/" + \
+        msaf.Dataset.references_dir + "/" + \
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(
