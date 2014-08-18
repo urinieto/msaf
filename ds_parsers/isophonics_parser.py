@@ -57,7 +57,7 @@ def fill_global_metadata(jam, lab_file):
     #jam.metadata.genre = metadata[14]
 
 
-def fill_annoatation_metadata(annot, attribute):
+def fill_annotation_metadata(annot, attribute):
     """Fills the annotation metadata."""
     annot.annotation_metadata.attribute = attribute
     annot.annotation_metadata.corpus = "Isophonics"
@@ -76,7 +76,7 @@ def fill_section_annotation(lab_file, annot):
     """Fills the JAMS annot annotation given a lab file."""
 
     # Annotation Metadata
-    fill_annoatation_metadata(annot, "sections")
+    fill_annotation_metadata(annot, "sections")
 
     # Open lab file
     try:
@@ -112,7 +112,7 @@ def fill_beat_annotation(txt_file, annot):
     """Fills the JAMS annot annotation given a txt file."""
 
     # Annotation Metadata
-    fill_annoatation_metadata(annot, "beats")
+    fill_annotation_metadata(annot, "beats")
 
     # Open txt file
     try:
