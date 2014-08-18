@@ -9,22 +9,25 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
+import copy
 import glob
 import os
 import argparse
 import time
 import logging
-import jams2
 import segmenter as S
 
 from joblib import Parallel, delayed
 
 import msaf
+from msaf import jams2
 from msaf import io
+from msaf import utils
+from config import *
 
 
 def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
-            rank, h, R, annot_bounds):
+                  framesync, boundaries_id):
 
     # Only analize files with annotated beats
     if annot_beats:
@@ -37,40 +40,42 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
     logging.info("Segmenting %s" % audio_file)
 
     # C-NMF segmenter call
-    if rank is None:
-        est_times, est_labels = S.process(audio_file, feature=feature,
-                                          annot_beats=annot_beats,
-                                          annot_bounds=annot_bounds)
-    else:
-        est_times, est_labels = S.process(audio_file, feature=feature,
-                                          annot_beats=annot_beats,
-                                          rank=rank, h=h, R=R,
-                                          annot_bounds=annot_bounds)
+    est_times, est_labels = S.process(audio_file, feature=feature,
+                                      annot_beats=annot_beats,
+                                      boundaries_id=boundaries_id,
+                                      framesync=framesync, **config)
 
     # Save
     out_file = os.path.join(in_path, msaf.Dataset.estimations_dir,
                             os.path.basename(audio_file)[:-4] +
                             msaf.Dataset.estimations_ext)
     logging.info("Writing results in: %s" % out_file)
-    io.save_estimations(out_file, est_times, est_labels, boundaries_id,
-                        "siplca", **params)
-
+    est_inters = utils.times_to_intervals(est_times)
+    params = copy.deepcopy(config)
+    params["annot_beats"] = annot_beats
+    params["framesync"] = framesync
+    params["feature"] = feature
+    if boundaries_id is None:
+        boundaries_id = algo_id
+    io.save_estimations(out_file, est_inters, est_labels, boundaries_id,
+                        algo_id, **params)
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            rank=None, h=None, R=None, annot_bounds=False, n_jobs=4):
+            framesync=False, boundaries_id=None, n_jobs=4):
     """Main process."""
 
     # Get relevant files
-    jam_files = glob.glob(os.path.join(in_path, "annotations",
-                                       "%s_*.jams" % ds_name))
+    jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
+                                       ("%s_*" + msaf.Dataset.references_ext)
+                                       % ds_name))
     audio_files = glob.glob(os.path.join(in_path, "audio",
                                          "%s_*.[wm][ap][v3]" % ds_name))
 
     # Call in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        in_path, audio_file, jam_file, annot_beats, feature, ds_name, rank, h,
-        R, annot_bounds)
+        in_path, audio_file, jam_file, annot_beats, feature, ds_name,
+        framesync, boundaries_id)
         for audio_file, jam_file in zip(audio_files, jam_files))
 
 
@@ -85,17 +90,23 @@ def main():
                         help="Input dataset")
     parser.add_argument("feature",
                         action="store",
-                        help="Feature to be used (mfcc or hpcp)")
+                        help="Feature to be used (mfcc, hpcp, or tonnetz)")
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
-    parser.add_argument("-bo",
+    parser.add_argument("-fs",
                         action="store_true",
-                        dest="annot_bounds",
-                        help="Use annotated bounds",
+                        dest="framesync",
+                        help="Use frame-synchronous features",
                         default=False)
+    parser.add_argument("-bid",
+                        action="store",
+                        dest="boundaries_id",
+                        help="Algorithm id for the boundaries to use "
+                        "(None for C-NMF, and \"gt\" for ground truth)",
+                        default=None)
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",
@@ -117,8 +128,8 @@ def main():
 
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
-            ds_name=args.ds_name, annot_bounds=args.annot_bounds,
-            n_jobs=args.n_jobs)
+            ds_name=args.ds_name, framesync=args.framesync,
+            boundaries_id=args.boundaries_id, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

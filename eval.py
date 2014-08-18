@@ -38,15 +38,6 @@ def print_results(results):
         Dataframe with all the results
     """
     res = results.mean()
-    #logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
-                 #"R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f, "
-                 #"PWF: %.2f, PWP: %.2f, PWR: %.2f, Sf: %.2f, So: %.2f, "
-                 #"Su: %.2f" %
-                 #(100 * res["F3"], 100 * res["P3"], 100 * res["R3"],
-                  #100 * res["F0.5"], 100 * res["P0.5"], 100 * res["R0.5"],
-                  #res["D"], res["DevA2E"], res["DevE2A"],
-                  #100 * res["PWF"], 100 * res["PWP"], 100 * res["PWR"],
-                  #100 * res["Sf"], 100 * res["So"], 100 * res["Su"]))
     logging.info(res)
 
 
@@ -199,7 +190,7 @@ def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
     algo_id = boundaries_id
     if algo_id == "gt":
         algo_id = labels_id
-    config = eval(algorithms.__name__ + "." + algo_id).config.config
+    config = eval(algorithms.__name__ + "." + algo_id).config
     config["annot_beats"] = annot_beats
     for key in params.keys():
         config[key] = params[key]
@@ -339,7 +330,8 @@ def process_track(est_file, jam_file, salamii, beatles, annot_beats,
 
     # Sanity check
     assert os.path.basename(est_file)[:-4] == \
-        os.path.basename(jam_file)[:-4]
+        os.path.basename(jam_file)[:-4], "File names are different %s --- %s" \
+        % (os.path.basename(est_file)[:-4], os.path.basename(jam_file)[:-4])
 
     if salamii:
         num = int(os.path.basename(est_file).split("_")[1].split(".")[0])

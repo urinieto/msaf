@@ -23,6 +23,7 @@ from scipy.cluster.vq import whiten, vq, kmeans
 
 from msaf import io
 from msaf import utils as U
+
 try:
     import pymf
 except:
@@ -155,7 +156,8 @@ def filter_activation_matrix(G, R):
     return G.flatten()
 
 
-def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
+def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
+                     bound_idxs=None):
     """
     Gets the segmentation (boundaries and labels) from the factorization
     matrices.
@@ -207,8 +209,8 @@ def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
         else:
             break
 
-    rank_labels = 5
-    R_labels = 6
+    # Add first label
+    bound_idxs = np.concatenate(([0], bound_idxs))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     labels = compute_labels2(X, rank_labels, R_labels, bound_idxs)
 
@@ -221,7 +223,7 @@ def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
 
 
 def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
-            framesync=False, h=10, R=9, rank=3):
+            framesync=False, h=10, R=9, rank=3, R_labels=6, rank_labels=5):
     """Main process.
 
     Parameters
@@ -243,9 +245,11 @@ def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
         Size of the median filter for activation matrix
     rank : int
         Rank of decomposition
-
+    R_labels : int
+        Size of the median filter for activation matrix for the labels
+    rank_labels : int
+        Rank of decomposition for the labels
     """
-
     # C-NMF params
     niter = 300     # Iterations for the matrix factorization and clustering
 
@@ -279,7 +283,8 @@ def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
 
         # Find the boundary indices and labels using matrix factorization
         bound_idxs, est_labels = get_segmentation(
-            F.T, rank, R, niter=niter, bound_idxs=bound_idxs)
+            F.T, rank, R, rank_labels, R_labels, niter=niter,
+            bound_idxs=bound_idxs)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
