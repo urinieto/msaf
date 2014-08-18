@@ -31,7 +31,7 @@ def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
     est_file: str
         Path to the estimated file (JSON file).
     alg_id: str
-        Algorithm ID from which to retrieve the boundaries. E.g. serra
+        Algorithm ID from which to retrieve the boundaries. E.g. cnmf
     annot_beats: bool
         Whether to retrieve the boundaries using annotated beats or not.
     annot_bounds: bool
@@ -39,7 +39,7 @@ def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
     bounds : bool
         Whether to extract boundaries or labels
     params: dict
-        Additional search parameters. E.g. {"features" : "hpcp"}
+        Additional search parameters. E.g. {"feature" : "hpcp"}
 
     Returns
     -------
