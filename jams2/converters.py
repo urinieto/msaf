@@ -10,7 +10,7 @@ from fileio import load
 
 
 def get_annotator_idx(jam, feature_name, annotator_name, filename):
-    """Gets the annotator inddex of the annotation annotated by
+    """Gets the annotator index of the annotation annotated by
     annotator_name."""
     annotator_idx = -1
     for i, annotator in enumerate(jam[feature_name]):

@@ -21,7 +21,113 @@ from msaf import jams2
 from msaf import utils
 
 
-def read_estimations(est_file, alg_id, annot_beats, annot_bounds=False,
+def has_same_parameters(est_params, boundaries_id, labels_id, params):
+    """Checks whether the parameters in params are the same as the estimated
+    parameters in est_params."""
+    K = 0
+    for param_key in params.keys():
+        if param_key in est_params.keys() and \
+                est_params[param_key] == params[param_key] and \
+                boundaries_id == params["boundaries_id"] and \
+                (labels_id is None or labels_id == params["labels_id"]):
+            K += 1
+    return K == params.keys()
+
+
+def find_estimation(all_estimations, boundaries_id, labels_id, params,
+                    est_file):
+    """Finds the correct estimation from all the estimations contained in a
+    JAMS file given the specified arguments.
+
+    Parameters
+    ----------
+    all_estimations : list
+        List of section Range Annotations from a JAMS file.
+    boundaries_id : str
+        Identifier of the algorithm used to compute the boundaries.
+    labels_id : str
+        Identifier of the algorithm used to compute the labels.
+    params : dict
+        Additional search parameters. E.g. {"feature" : "hpcp"}.
+    est_file : str
+        Path to the estimated file (JAMS file).
+
+    Returns
+    -------
+    correct_est : RangeAnnotation
+        Correct estimation found in all the estimations.
+        None if it couldn't be found.
+    """
+    correct_est = None
+    found = False
+    for estimation in all_estimations:
+        est_params = estimation.sandbox
+        if has_same_parameters(est_params, boundaries_id, labels_id,
+                               params) and not found:
+            correct_est = estimation
+            found = True
+        elif has_same_parameters(est_params, boundaries_id, labels_id,
+                                 params) and found:
+            logging.warning("Multiple estimations match your parameters in "
+                            "file %s" % est_file)
+            correct_est = estimation
+    return correct_est
+
+
+def read_estimations(est_file, boundaries_id, labels_id=None, **params):
+    """Reads the estimations (boundaries and/or labels) from a jams file
+    containing the estimations of an algorithm.
+
+    Parameters
+    ----------
+    est_file : str
+        Path to the estimated file (JAMS file).
+    boundaries_id : str
+        Identifier of the algorithm used to compute the boundaries.
+    labels_id : str
+        Identifier of the algorithm used to compute the labels.
+    params : dict
+        Additional search parameters. E.g. {"feature" : "hpcp"}.
+
+    Returns
+    -------
+    boundaries : np.array((N,2))
+        Array containing the estimated boundaries in intervals.
+    labels : np.array(N)
+        Array containing the estimated labels.
+        Empty array if labels_id is None.
+    """
+    # Open file and read jams
+    try:
+        jam = jams2.load(est_file)
+    except:
+        logging.error("Could not open JAMS file %s" % est_file)
+        return np.array([]), np.array([])
+
+    # Get all the estimations for the sections
+    all_estimations = jam.sections
+
+    # Find correct estimation
+    correct_est = find_estimation(all_estimations, boundaries_id, labels_id,
+                                  params, est_file)
+    if correct_est is None:
+        logging.error("Could not find estimation in %s" % est_file)
+        return np.array([]), np.array([])
+
+    # Retrieve data
+    boundaries = []
+    labels = []
+    for range in correct_est.data:
+        boundaries.append([range.start, range.end])
+        # TODO: Multiple contexts. Right now MSAF algorithms only estimate one
+        # single layer, so it is not really necessary yet.
+        if labels_id is not None:
+            labels.append(range.label.value)
+
+    return np.asarray(boundaries), np.asarray(labels, dtype=int)
+
+
+def read_estimations_old(est_file, alg_id, annot_beats, annot_bounds=False,
                      bounds=True, **params):
     """Reads the estimations (either boundaries or labels) from an estimated
     file.
