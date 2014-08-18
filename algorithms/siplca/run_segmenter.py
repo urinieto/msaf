@@ -22,13 +22,44 @@ from joblib import Parallel, delayed
 # SI-PLCA segmenter
 import segmenter as S
 
+import msaf
 from msaf import input_output as io
 from msaf import jams2
-from msaf import utils as U
+from msaf import utils
+
+
+def use_annot_bounds(audio_file, beats, feats, params):
+    """We update the initial matrices using the annotated bounds."""
+    try:
+        bound_idxs = io.read_ref_bound_frames(audio_file, beats)
+    except:
+        logging.warning("No annotation boundaries for %s" %
+                        audio_file)
+        return
+    n_segments = len(bound_idxs) - 1
+    max_beats_segment = np.max(np.diff(bound_idxs))
+
+    # Inititalize the W and H matrices using the previously found bounds
+    initW = np.zeros((feats.shape[1], n_segments, max_beats_segment))
+    initH = np.zeros((n_segments, feats.shape[0]))
+    for i in xrange(n_segments):
+        dur = bound_idxs[i+1] - bound_idxs[i]
+        initW[:, i, :dur] = feats[bound_idxs[i]:bound_idxs[i+1]].T
+        initH[i, bound_idxs[i]] = 1
+
+    # Update parameters
+    params["win"] = max_beats_segment
+    params["rank"] = n_segments
+    params["initW"] = initW
+    params["initH"] = initH
+
+    return params, bound_idxs
 
 
 def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
-                  features="hpcp"):
+                  framesync=False, feature="hpcp"):
+    """Process one track in order to segment it using SI-PLCA."""
+
     assert os.path.basename(audio_file)[:-4] == \
         os.path.basename(jam_file)[:-5]
 
@@ -52,39 +83,23 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         "viterbi_segmenter" :   True,
         "min_segment_length":   1,
         "plotiter"          :   None,
-        "feature"           :   features
+        "feature"           :   feature,
+        "framesync"         :   framesync
     }
+
+    # Get features
+    hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
+        audio_file, annot_beats=annot_beats, framesync=framesync)
+    feats = eval(feature)
+
+    # Update the params if using annotated bounds
+    boundaries_id = "siplca"
     if annot_bounds:
-        feats, mfcc, beats, dur = io.get_features(
-            audio_file, annot_beats=annot_beats)
-        try:
-            bound_idxs = io.read_annot_bound_frames(audio_file, beats)
-        except:
-            logging.warning("No annotation boundaries for %s" %
-                            audio_file)
-            return
-        if features == "tonnetz":
-            feats = U.chroma_to_tonnetz(feats)
-        n_segments = len(bound_idxs) - 1
-        max_beats_segment = np.max(np.diff(bound_idxs))
-        print "Longest segment: %d", max_beats_segment
-
-        # Inititalize the W and H matrices using the previously found bounds
-        initW = np.zeros((feats.shape[1], n_segments, max_beats_segment))
-        initH = np.zeros((n_segments, feats.shape[0]))
-        for i in xrange(n_segments):
-            dur = bound_idxs[i+1] - bound_idxs[i]
-            initW[:, i, :dur] = feats[bound_idxs[i]:bound_idxs[i+1]].T
-            initH[i, bound_idxs[i]] = 1
-
-        # Update parameters
-        params["win"] = max_beats_segment
-        params["rank"] = n_segments
-        params["initW"] = initW
-        params["initH"] = initH
+        boundaries_id = "gt"
+        params, bound_idxs = use_annot_bounds(audio_file, beats, feats, params)
 
     segments, beattimes, frame_labels = S.segment_wavfile(
-        audio_file, b=annot_beats, **params)
+        feats.T, beats.flatten(), dur, **params)
 
     # Convert segments to times
     lines = segments.split("\n")[:-1]
@@ -122,14 +137,6 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     logging.info("Estimated boundaries: %s" % times)
     logging.info("Estimated labels: %s" % labels)
 
-    # Save segments
-    out_file = os.path.join(in_path, "estimations",
-        os.path.basename(jam_file).replace(".jams", ".json"))
-    logging.info("Writing results in: %s" % out_file)
-    if not annot_bounds:
-        io.save_estimations(out_file, times, annot_beats, "siplca",
-            version="1.0", **params)
-
     # Remove paramaters that we don't want to store
     params.pop("initW", None)
     params.pop("initH", None)
@@ -138,23 +145,29 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     params.pop("rank", None)
 
     # Save results
-    io.save_estimations(out_file, labels, annot_beats, "siplca",
-        bounds=False, annot_bounds=annot_bounds, version="1.0", **params)
+    bound_inters = utils.times_to_intervals(times)
+    out_file = os.path.join(in_path, msaf.Dataset.estimations_dir,
+                            os.path.basename(jam_file))
+    logging.info("Writing results in: %s" % out_file)
+    io.save_estimations(out_file, bound_inters, labels, boundaries_id, "siplca",
+                        **params)
 
 
 def process(in_path, ds_name="*", n_jobs=4, annot_beats=False,
-            annot_bounds=False, features="hpcp"):
+            annot_bounds=False, features="hpcp", framesync=False):
     """Main process."""
 
     # Get relevant files
-    jam_files = glob.glob(os.path.join(in_path, "annotations",
-                                       "%s_*.jams" % ds_name))
-    audio_files = glob.glob(os.path.join(in_path, "audio",
+    jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
+                                       ("%s_*" + msaf.Dataset.references_ext) %
+                                       ds_name))
+    audio_files = glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
                                          "%s_*.[wm][ap][v3]" % ds_name))
 
     # Run jobs in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        in_path, audio_file, jam_file, annot_beats, annot_bounds, features)
+        in_path, audio_file, jam_file, annot_beats, annot_bounds, framesync,
+        features)
         for jam_file, audio_file in zip(jam_files, audio_files)[:])
 
 
@@ -176,6 +189,11 @@ def main():
                         action="store_true",
                         dest="annot_bounds",
                         help="Use annotated bounds",
+                        default=False)
+    parser.add_argument("-fs",
+                        action="store_true",
+                        dest="framesync",
+                        help="Use frame-synchronous features",
                         default=False)
     parser.add_argument("-f",
                         action="store",
@@ -204,7 +222,7 @@ def main():
     # Run the algorithm
     process(args.in_path, annot_beats=args.annot_beats, n_jobs=args.n_jobs,
             annot_bounds=args.annot_bounds, ds_name=args.ds_name,
-            features=args.features)
+            features=args.features, framesync=args.framesync)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

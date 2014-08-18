@@ -28,10 +28,10 @@ def has_same_parameters(est_params, boundaries_id, labels_id, params):
     for param_key in params.keys():
         if param_key in est_params.keys() and \
                 est_params[param_key] == params[param_key] and \
-                boundaries_id == params["boundaries_id"] and \
-                (labels_id is None or labels_id == params["labels_id"]):
+                est_params["boundaries_id"] == boundaries_id and \
+                (labels_id is None or est_params["labels_id"] == labels_id):
             K += 1
-    return K == params.keys()
+    return K == len(params.keys())
 
 
 def find_estimation(all_estimations, boundaries_id, labels_id, params,
@@ -202,7 +202,7 @@ def read_ref_bound_frames(audio_path, beats):
     return bound_frames
 
 
-def get_features(audio_path, annot_beats=False, beatsync=True):
+def get_features(audio_path, annot_beats=False, framesync=False):
     """
     Gets the features of an audio file given the audio_path.
 
@@ -212,8 +212,8 @@ def get_features(audio_path, annot_beats=False, beatsync=True):
         Path to the audio file.
     annot_beats: bool
         Whether to use annotated beats or not.
-    beatsync: bool
-        Whether to use beat-sync features or not.
+    framesync: bool
+        Whether to use framesync features or not.
 
     Return
     ------
@@ -245,7 +245,10 @@ def get_features(audio_path, annot_beats=False, beatsync=True):
         feats = json.load(f)
 
     # Beat Synchronous Feats
-    if beatsync:
+    if framesync:
+        feat_str = "framesync"
+        beats = None
+    else:
         if annot_beats:
             feat_str = "ann_beatsync"
             beats = []
@@ -257,10 +260,7 @@ def get_features(audio_path, annot_beats=False, beatsync=True):
             beats = np.unique(beats)
         else:
             feat_str = "est_beatsync"
-            beats = np.asarray(feats["beats"]["ticks"])[0]
-    else:
-        feat_str = "framesync"
-        beats = None
+            beats = np.asarray(feats["beats"]["times"])[0]
     C = np.asarray(feats[feat_str]["hpcp"])
     M = np.asarray(feats[feat_str]["mfcc"])
     T = np.asarray(feats[feat_str]["tonnetz"])
@@ -276,6 +276,10 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
                      **params):
     """Saves the segment estimations in a JAMS file."""
 
+    # Sanity Check
+    assert len(boundaries) == len(labels), "Number of boundary intervals " \
+        "(%d) and labels (%d) do not match" % (len(boundaries), len(labels))
+
     curr_estimation = None
     curr_i = -1
 
@@ -287,7 +291,7 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
             all_estimations, boundaries_id, labels_id, params, out_file)
     else:
         # Create new JAMS if it doesn't exist
-        jam = jams2.Jam()
+        jam = jams2.Jams()
         jam.metadata.title = os.path.basename(out_file).replace(
             msaf.Dataset.estimations_ext, "")
 
@@ -299,12 +303,14 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
     curr_estimation.annotation_metadata.attribute = "sections"
     curr_estimation.annotation_metadata.version = msaf.__version__
     curr_estimation.annotation_metadata.origin = "MSAF"
-    curr_estimation.sandbox["boundaries_id"] = boundaries_id
-    curr_estimation.sandbox["labels_id"] = labels_id
-    curr_estimation.sandbox["timestamp"] = \
+    sandbox = {}
+    sandbox["boundaries_id"] = boundaries_id
+    sandbox["labels_id"] = labels_id
+    sandbox["timestamp"] = \
         datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
     for key in params:
-        curr_estimation.sandbox[key] = params[key]
+        sandbox[key] = params[key]
+    curr_estimation.sandbox = sandbox
 
     # Save actual data
     if labels is None:
