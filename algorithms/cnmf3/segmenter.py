@@ -210,7 +210,7 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
             break
 
     # Add first label
-    bound_idxs = np.concatenate(([0], bound_idxs))
+    bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1]-1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     labels = compute_labels2(X, rank_labels, R_labels, bound_idxs)
 
