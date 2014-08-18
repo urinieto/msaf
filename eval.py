@@ -199,6 +199,10 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, boundaries_id,
         logging.warning("No estimations for file: %s" % est_file)
         return {}
 
+    # Hack!
+    if algo_id == "gt":
+        est_inter = ref_inter
+
     # Compute the results and return
     return compute_results(ref_inter, est_inter, ref_labels, est_labels, trim,
                            bins, est_file)
