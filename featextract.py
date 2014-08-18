@@ -36,9 +36,9 @@ from msaf import utils
 # Setup main params
 SAMPLE_RATE = 11025
 FRAME_SIZE = 2048
-HOP_SIZE = 512
+HOP_SIZE = 1024
 MFCC_COEFF = 14
-WINDOW_TYPE = "blackmanharris74"
+WINDOW_TYPE = "blackmanharris62"
 
 
 class STFTFeature:
@@ -73,6 +73,7 @@ class STFTFeature:
         # Convert to Essentia Numpy array
         features = essentia.array(features)
 
+        # Make beat-synchronous if we have the beats
         if self.beats is not None and self.beats != []:
             framerate = self.sample_rate / float(self.hop_size)
             tframes = np.arange(features.shape[0]) / float(framerate)
@@ -155,16 +156,11 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
     audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
 
-    # Compute features
+    # Compute framesync features
     mfcc, hpcp, tonnetz = compute_features(audio)
 
     # Estimate Beats
     beats, conf = compute_beats(audio)
-    beats = np.concatenate(([0], beats))  # Add first time
-    beats = essentia.array(np.unique(beats))
-
-    # Compute Beat-sync features
-    bs_mfcc, bs_hpcp, bs_tonnetz = compute_features(audio, beats)
 
     # Save output as audio file
     if audio_beats:
@@ -175,19 +171,8 @@ def compute_all_features(audio_file, audio_beats, overwrite):
         ES.MonoWriter(filename='beats.wav',
                       sampleRate=SAMPLE_RATE)(marked_audio)
 
-    # Save boundaries as an audio file if needed
-    # if audio_beats:
-    #     logging.info("Saving Boundaries as an audio file")
-    #     bounds = []
-    #     for data in jam.sections[0].data:
-    #         bounds.append(data.start.value)
-    #         bounds.append(data.end.value)
-    #     bounds = essentia.array(np.unique(bounds))
-    #     marker = ES.AudioOnsetsMarker(onsets=bounds, type='beep',
-    #                                   sampleRate=SAMPLE_RATE)
-    #     marked_audio = marker(audio)
-    #     ES.MonoWriter(filename='bounds.wav',
-    #                   sampleRate=SAMPLE_RATE)(marked_audio)
+    # Compute Beat-sync features
+    bs_mfcc, bs_hpcp, bs_tonnetz = compute_features(audio, beats)
 
     # Read annotations if they exist in path/references_dir/file.jams
     jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
@@ -207,15 +192,6 @@ def compute_all_features(audio_file, audio_beats, overwrite):
             annot_beats = essentia.array(np.unique(annot_beats).tolist())
             annot_mfcc, annot_hpcp, annot_tonnetz = compute_features(
                 audio, annot_beats)
-
-    # Save beats as an audio file if needed
-    if audio_beats:
-        logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=annot_beats, type='beep',
-                                      sampleRate=SAMPLE_RATE)
-        marked_audio = marker(audio)
-        ES.MonoWriter(filename='beats.wav',
-                      sampleRate=SAMPLE_RATE)(marked_audio)
 
     # Save output as json file
     logging.info("Saving the JSON file in %s" % out_file)
@@ -256,7 +232,7 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
             audio_file, audio_beats, overwrite)
-            for audio_file in audio_files[:1])
+            for audio_file in audio_files)
 
 
 def main():
@@ -278,7 +254,7 @@ def main():
                         dest="n_jobs",
                         type=int,
                         help="Number of jobs (threads)",
-                        default=1)
+                        default=4)
     parser.add_argument("-ow",
                         action="store_true",
                         dest="overwrite",

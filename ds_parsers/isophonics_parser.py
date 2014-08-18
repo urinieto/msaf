@@ -39,11 +39,12 @@ __email__ = "oriol@nyu.edu"
 
 import argparse
 import glob
-import jams2
 import json
 import logging
 import os
 import time
+
+from msaf import jams2
 
 
 def fill_global_metadata(jam, lab_file):
@@ -91,6 +92,10 @@ def fill_section_annotation(lab_file, annot):
         start_time = section_raw[0]
         end_time = section_raw[1]
         label = section_raw[3]
+        if float(end_time) <= float(start_time):
+            logging.warning("Start time is after end time in file %s" %
+                            lab_file)
+            continue
         section = annot.create_datapoint()
         section.start.value = float(start_time)
         section.start.confidence = 1.0
@@ -99,9 +104,6 @@ def fill_section_annotation(lab_file, annot):
         section.label.value = label
         section.label.confidence = 1.0
         section.label.context = "function"  # Only function level of annotation
-        if float(end_time) < float(start_time):
-            logging.warning("Start time is after end time in file %s" %
-                            lab_file)
 
     f.close()
 
