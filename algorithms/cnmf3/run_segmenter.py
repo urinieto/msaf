@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import sys
 import glob
 import os
 import argparse
@@ -20,9 +19,8 @@ import segmenter as S
 
 from joblib import Parallel, delayed
 
-import sys
-sys.path.append("../../")
-import msaf_io as MSAF
+import msaf
+from msaf import io
 
 
 def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
@@ -50,14 +48,13 @@ def process_track(in_path, audio_file, jam_file, annot_beats, feature, ds_name,
                                           annot_bounds=annot_bounds)
 
     # Save
-    out_file = os.path.join(in_path, "estimations",
-                            os.path.basename(audio_file)[:-4] + ".json")
-    if not annot_bounds:
-        MSAF.save_estimations(out_file, est_times, annot_beats, "cnmf3",
-                              bounds=True, feature=feature)
-    MSAF.save_estimations(out_file, est_labels, annot_beats, "cnmf3",
-                          bounds=False, annot_bounds=annot_bounds,
-                          feature=feature)
+    out_file = os.path.join(in_path, msaf.Dataset.estimations_dir,
+                            os.path.basename(audio_file)[:-4] +
+                            msaf.Dataset.estimations_ext)
+    logging.info("Writing results in: %s" % out_file)
+    io.save_estimations(out_file, est_times, est_labels, boundaries_id,
+                        "siplca", **params)
+
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",

@@ -21,9 +21,8 @@ import sys
 import pylab as plt
 from scipy.cluster.vq import whiten, vq, kmeans
 
-sys.path.append("../../")
-import msaf_io as MSAF
-import utils as U
+from msaf import io
+from msaf import utils as U
 try:
     import pymf
 except:
@@ -221,8 +220,8 @@ def get_segmentation(X, rank, R, niter=300, bound_idxs=None):
     return bound_idxs, labels
 
 
-def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
-            h=10, R=9, rank=3):
+def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
+            framesync=False, h=10, R=9, rank=3):
     """Main process.
 
     Parameters
@@ -233,8 +232,11 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
         Identifier of the features to use
     annot_beats : boolean
         Whether to use annotated beats or not
-    annot_bounds : boolean
-        Whether to use annotated bounds or not (for labeling)
+    boundaries_id : str
+        Algorithm id for the boundaries algorithm to use
+        (None for C-NMF, and "gt" for ground truth)
+    framesync : bool
+        Whether to use framesync features
     h : int
         Size of median filter
     R : int
@@ -248,24 +250,24 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
     niter = 300     # Iterations for the matrix factorization and clustering
 
     # Read features
-    chroma, mfcc, beats, dur = MSAF.get_features(in_path,
-                                                 annot_beats=annot_beats)
+    hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
+        in_path, annot_beats=annot_beats, framesync=framesync)
 
     # Read annotated bounds if necessary
     bound_idxs = None
-    if annot_bounds:
+    if boundaries_id == "gt":
         try:
-            bound_idxs = MSAF.read_annot_bound_frames(in_path, beats)[1:-1]
+            bound_idxs = io.read_ref_bound_frames(in_path, beats)[1:-1]
         except:
             logging.warning("No annotated boundaries in file %s" % in_path)
 
     # Use specific feature
     if feature == "hpcp":
-        F = U.lognormalize_chroma(chroma)  # Normalize chromas
+        F = U.lognormalize_chroma(hpcp)  # Normalize chromas
     elif "mfcc":
         F = mfcc
     elif "tonnetz":
-        F = U.lognormalize_chroma(chroma)  # Normalize chromas
+        F = U.lognormalize_chroma(tonnetz)  # Normalize tonnetz
         F = U.chroma_to_tonnetz(F)
     else:
         logging.error("Feature type not recognized: %s" % feature)
@@ -284,18 +286,20 @@ def process(in_path, feature="hpcp", annot_beats=False, annot_bounds=False,
         bound_idxs = np.empty(0)
         est_labels = [1]
 
-    # Add first and last boundary
-    bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
-    est_times = beats[bound_idxs]  # Index to times
-    est_times = np.concatenate((est_times, [dur]))  # Last bound
+    # Use correct frames to find times
+    frames_to_times = beats
+    if framesync:
+        frames_to_times = U.get_time_frames(dur, anal)
 
-    #logging.info("Annotated bounds: %s" % ann_bounds)
-    #logging.info("Estimated bounds: %s" % bound_idxs)
+    # Add first and last boundaries
+    est_times = np.concatenate(([0], frames_to_times[bound_idxs], [dur]))
 
     logging.info("Estimated times: %s" % est_times)
     logging.info("Estimated labels: %s" % est_labels)
 
-    assert len(est_times) - 1 == len(est_labels)
+    assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
+        "and number of labels(%d) don't match" % (len(est_times),
+                                                  len(est_labels))
 
     return est_times, est_labels
 
@@ -314,16 +318,22 @@ def main():
                         dest="feature",
                         help="Feature to use (mfcc or hpcp)",
                         default="hpcp")
+    parser.add_argument("-fs",
+                        action="store_true",
+                        dest="framesync",
+                        help="Use frame-synchronous features",
+                        default=False)
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
-    parser.add_argument("-bo",
-                        action="store_true",
-                        dest="annot_bounds",
-                        help="Use annotated bounds",
-                        default=False)
+    parser.add_argument("-bid",
+                        action="store",
+                        dest="boundaries_id",
+                        help="Algorithm id for the boundaries to use "
+                        "(None for C-NMF, and \"gt\" for ground truth)",
+                        default=None)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -333,7 +343,7 @@ def main():
 
     # Run the algorithm
     process(args.in_path, feature=args.feature, annot_beats=args.annot_beats,
-            annot_bounds=args.annot_bounds)
+            boundaries_id=args.boundaries_id, framesync=args.framesync)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

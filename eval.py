@@ -38,18 +38,19 @@ def print_results(results):
         Dataframe with all the results
     """
     res = results.mean()
-    logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
-                 "R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f, "
-                 "PWF: %.2f, PWP: %.2f, PWR: %.2f, Sf: %.2f, So: %.2f, "
-                 "Su: %.2f" %
-                 (100 * res["F3"], 100 * res["P3"], 100 * res["R3"],
-                  100 * res["F0.5"], 100 * res["P0.5"], 100 * res["R0.5"],
-                  res["D"], res["DevA2E"], res["DevE2A"],
-                  100 * res["PWF"], 100 * res["PWP"], 100 * res["PWR"],
-                  100 * res["Sf"], 100 * res["So"], 100 * res["Su"]))
+    #logging.info("F3: %.2f, P3: %.2f, R3: %.2f, F05: %.2f, P05: %.2f, "
+                 #"R05: %.2f, D: %.4f, Ann2EstDev: %.2f, Est2AnnDev: %.2f, "
+                 #"PWF: %.2f, PWP: %.2f, PWR: %.2f, Sf: %.2f, So: %.2f, "
+                 #"Su: %.2f" %
+                 #(100 * res["F3"], 100 * res["P3"], 100 * res["R3"],
+                  #100 * res["F0.5"], 100 * res["P0.5"], 100 * res["R0.5"],
+                  #res["D"], res["DevA2E"], res["DevE2A"],
+                  #100 * res["PWF"], 100 * res["PWP"], 100 * res["PWR"],
+                  #100 * res["Sf"], 100 * res["So"], 100 * res["Su"]))
+    logging.info(res)
 
 
-def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
+def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
                     est_file):
     """Compute the results using all the available evaluations.
 
@@ -60,12 +61,18 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
         Keys are the following:
             track_name  : Name of the track
             ds_name :   Name of the data set
-            F3  :   F-measure of hit rate at 3 seconds
-            P3  :   Precision of hit rate at 3 seconds
-            R3  :   Recall of hit rate at 3 seconds
-            F0.5  :   F-measure of hit rate at 0.5 seconds
-            P0.5  :   Precision of hit rate at 0.5 seconds
-            R0.5  :   Recall of hit rate at 0.5 seconds
+            HitRate_3F  :   F-measure of hit rate at 3 seconds
+            HitRate_3P  :   Precision of hit rate at 3 seconds
+            HitRate_3R  :   Recall of hit rate at 3 seconds
+            HitRate_0.5F  :   F-measure of hit rate at 0.5 seconds
+            HitRate_0.5P  :   Precision of hit rate at 0.5 seconds
+            HitRate_0.5R  :   Recall of hit rate at 0.5 seconds
+            HitRate_t3F  :   F-measure of hit rate at 3 seconds (trimmed)
+            HitRate_t3P  :   Precision of hit rate at 3 seconds (trimmed)
+            HitRate_t3F  :   Recall of hit rate at 3 seconds (trimmed)
+            HitRate_t0.5F  :   F-measure of hit rate at 0.5 seconds (trimmed)
+            HitRate_t0.5P  :   Precision of hit rate at 0.5 seconds (trimmed)
+            HitRate_t0.5R  :   Recall of hit rate at 0.5 seconds (trimmed)
             DevA2E  :   Median deviation of annotation to estimation
             DevE2A  :   Median deviation of estimation to annotation
             D   :   Information gain
@@ -81,10 +88,14 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
 
     ### Boundaries ###
     # Hit Rate
-    res["P3"], res["R3"], res["F3"] = mir_eval.boundary.detection(
-        ann_inter, est_inter, window=3, trim=trim)
-    res["P0.5"], res["R0.5"], res["F0.5"] = mir_eval.boundary.detection(
-        ann_inter, est_inter, window=.5, trim=trim)
+    res["HitRate_3P"], res["HitRate_3R"], res["HitRate_3F"] = \
+        mir_eval.boundary.detection(ann_inter, est_inter, window=3, trim=False)
+    res["HitRate_0.5P"], res["HitRate_0.5R"], res["HitRate_0.5F"] = \
+        mir_eval.boundary.detection(ann_inter, est_inter, window=.5, trim=False)
+    res["HitRate_t3P"], res["HitRate_t3R"], res["HitRate_t3F"] = \
+        mir_eval.boundary.detection(ann_inter, est_inter, window=3, trim=True)
+    res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
+        mir_eval.boundary.detection(ann_inter, est_inter, window=.5, trim=True)
 
     # Information gain
     res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
@@ -92,7 +103,9 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
 
     # Median Deviations
     res["DevA2E"], res["DevE2A"] = mir_eval.boundary.deviation(
-        ann_inter, est_inter, trim=trim)
+        ann_inter, est_inter, trim=False)
+    res["DevtA2E"], res["DevtE2A"] = mir_eval.boundary.deviation(
+        ann_inter, est_inter, trim=True)
 
     ### Labels ###
     if est_labels != []:
@@ -155,7 +168,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, trim, bins,
     return res
 
 
-def compute_gt_results(est_file, trim, annot_beats, jam_file, boundaries_id,
+def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
                        labels_id, annotator="GT", bins=251, **params):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
@@ -204,7 +217,7 @@ def compute_gt_results(est_file, trim, annot_beats, jam_file, boundaries_id,
         est_inter = ref_inter
 
     # Compute the results and return
-    return compute_results(ref_inter, est_inter, ref_labels, est_labels, trim,
+    return compute_results(ref_inter, est_inter, ref_labels, est_labels,
                            bins, est_file)
 
 
@@ -248,7 +261,7 @@ def compute_conditional_entropy(ann_times, est_times, window=3, trim=False):
     return binary_entropy(R)
 
 
-def save_results_ds(cursor, alg_id, results, annot_beats, trim,
+def save_results_ds(cursor, alg_id, results, annot_beats,
                     feature, track_id=None, ds_name=None):
     """Saves the results into the dataset.
 
@@ -262,8 +275,6 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
         Array containing the results of this current algorithm to be saved.
     annot_beats: bool
         Whether to use the annotated beats or not.
-    trim: bool
-        Whether to trim the first and last boundaries or not.
     feature: str
         What type of feature to use for the specific algo_id. E.g. hpcp
     track_id: str
@@ -282,24 +293,23 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
 
     if track_id is not None:
         all_values = (track_id, res[5], res[3], res[4], res[2], res[0], res[1],
-                      res[6], res[7], res[8], annot_beats, feature, "none",
-                      trim)
+                      res[6], res[7], res[8], annot_beats, feature, "none")
         table = "%s_bounds" % alg_id
         select_where = "track_id=?"
-        select_values = (track_id, annot_beats, feature, trim)
+        select_values = (track_id, annot_beats, feature)
     elif ds_name is not None:
         # Aggregate results
         res = np.mean(res, axis=0)
         all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0],
                       res[1], res[6], res[7], res[8], annot_beats, feature,
-                      "none", trim)
+                      "none")
         table = "boundaries"
         select_where = "algo_id=? AND ds_name=?"
-        select_values = (alg_id, ds_name, annot_beats, feature, trim)
+        select_values = (alg_id, ds_name, annot_beats, feature)
 
     # Check if exists
     cursor.execute("SELECT * FROM %s WHERE %s AND annot_beat=? AND "
-                   "feature=? AND trim=?" % (table, select_where),
+                   "feature=?" % (table, select_where),
                    select_values)
 
     # Insert new if it doesn't exist
@@ -314,11 +324,11 @@ def save_results_ds(cursor, alg_id, results, annot_beats, trim,
         evaluations += select_values
         sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
             "P3=?, R3=?, D=?, DevA2E=?, DevE2A=?  WHERE %s AND annot_beat=? " \
-            "AND feature=? AND trim=?" % (table, select_where)
+            "AND feature=?" % (table, select_where)
         cursor.execute(sql_cmd, evaluations)
 
 
-def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
+def process_track(est_file, jam_file, salamii, beatles, annot_beats,
                   boundaries_id, labels_id, annotator, **params):
     """Processes a single track."""
 
@@ -341,14 +351,14 @@ def process_track(est_file, jam_file, salamii, beatles, trim, annot_beats,
         if jam.metadata.artist != "The Beatles":
             return []
 
-    one_res = compute_gt_results(est_file, trim, annot_beats, jam_file,
+    one_res = compute_gt_results(est_file, annot_beats, jam_file,
                                  boundaries_id, labels_id, annotator, **params)
 
     return one_res
 
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
-            annot_beats=False, trim=False, save=False, annotator="GT",
+            annot_beats=False, save=False, annotator="GT",
             sql_file="results/results.sqlite", n_jobs=4, **params):
     """Main process.
 
@@ -366,8 +376,6 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
         Whether to use the annotated beats or not.
     annot_bounds : boolean
         Whether to use the annotated bounds or not.
-    trim : boolean
-        Whether to trim the first and last boundary when evaluating boundaries.
     save: boolean
         Whether to save the results into the SQLite database.
     annotator: str
@@ -415,7 +423,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        est_file, jam_file, salamii, beatles, trim, annot_beats, boundaries_id,
+        est_file, jam_file, salamii, beatles, annot_beats, boundaries_id,
         labels_id, annotator, **params)
         for est_file, jam_file in zip(est_files, jam_files))
 
@@ -425,8 +433,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     # TODO: Save all results
     if save:
-        save_results_ds(c, boundaries_id, results, annot_beats, trim,
-                        ds_name="all")
+        save_results_ds(c, boundaries_id, results, annot_beats, ds_name="all")
 
     # Print results
     print_results(results)
@@ -476,11 +483,6 @@ def main():
                         default="",
                         type=str,
                         help="Type of features (e.g. mfcc, hpcp")
-    parser.add_argument("-t",
-                        action="store_true",
-                        dest="trim",
-                        help="Trim the first and last boundaries",
-                        default=False)
     parser.add_argument("-s",
                         action="store_true",
                         dest="save",
@@ -501,8 +503,8 @@ def main():
 
     # Run the algorithm
     process(args.in_path, args.boundaries_id, args.labels_id, args.ds_name,
-            args.annot_beats, trim=args.trim, save=args.save,
-            feature=args.feature, n_jobs=args.n_jobs)
+            args.annot_beats, save=args.save, feature=args.feature,
+            n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

@@ -145,3 +145,16 @@ def intervals_to_times(inters):
         A set of times.
     """
     return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)
+
+
+def get_num_frames(dur, anal):
+    """Given the duration of a track and a dictionary containing analysis
+    info, return the number of frames."""
+    total_samples = dur * anal["sample_rate"]
+    return int(total_samples / anal["hop_size"])
+
+
+def get_time_frames(dur, anal):
+    """Gets the time frames and puts them in a numpy array."""
+    n_frames = get_num_frames(dur, anal)
+    return np.linspace(0, dur, num=n_frames)
