@@ -422,3 +422,21 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
             continue
         all_labels.append(est_labels)
     return gt_times, all_labels
+
+
+def get_all_boundary_algorithms(algorithms):
+    algo_ids = []
+    for name in algorithms.__all__:
+        module = eval(algorithms.__name__ + "." + name)
+        if module.is_boundary_type:
+            algo_ids.append(module.algo_id)
+    return algo_ids
+
+
+def get_all_label_algorithms(algorithms):
+    algo_ids = []
+    for name in algorithms.__all__:
+        module = eval(algorithms.__name__ + "." + name)
+        if module.is_label_type:
+            algo_ids.append(module.algo_id)
+    return algo_ids

@@ -1,6 +1,6 @@
-"""Config for the SI-PLCA."""
+"""Config for the 2D-FMC."""
 
-# SI-PLCA Params (From MIREX)
+# 2D-FMC Params
 config = {
     "niter"             :   200,
     "alphaZ"            :   -0.01,
@@ -9,6 +9,7 @@ config = {
     "min_segment_length":   32
 }
 
-algo_id = "siplca"
-is_boundary_type = True
+# Other params
+algo_id = "2dfmc"
+is_boundary_type = False
 is_label_type = True

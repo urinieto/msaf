@@ -10,6 +10,7 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
+import copy
 import glob
 import os
 import argparse
@@ -78,7 +79,7 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
     logging.info("Segmenting %s" % audio_file)
 
     # SI-PLCA Params
-    params = config.config
+    params = copy.deepcopy(config)
     params["annot_beats"] = annot_beats
     params["feature"] = feature
     params["framesync"] = framesync
@@ -135,7 +136,8 @@ def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
         silencelabel = np.max(labels) + 1
         labels = np.concatenate(([silencelabel], labels, [silencelabel]))
 
-    #assert len(times) - 1 == len(labels)
+    # Remove empty segments if needed
+    times, labels = utils.remove_empty_segments(times, labels)
 
     logging.info("Estimated boundaries: %s" % times)
     logging.info("Estimated labels: %s" % labels)

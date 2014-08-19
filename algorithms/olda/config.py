@@ -1,6 +1,6 @@
-"""Config for the SI-PLCA."""
+"""Config for the OLDA algorithm."""
 
-# SI-PLCA Params (From MIREX)
+# Levy params
 config = {
     "niter"             :   200,
     "alphaZ"            :   -0.01,
@@ -9,6 +9,6 @@ config = {
     "min_segment_length":   32
 }
 
-algo_id = "siplca"
+algo_id = "olda"
 is_boundary_type = True
-is_label_type = True
+is_label_type = False
