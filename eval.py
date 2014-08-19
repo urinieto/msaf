@@ -22,10 +22,10 @@ import time
 
 # Local stuff
 import msaf
+import msaf.input_output as io
+import msaf.algorithms as algorithms
 from msaf import jams2
-from msaf import input_output as io
 from msaf import utils
-from msaf import algorithms
 
 
 def print_results(results):
@@ -238,23 +238,6 @@ def process_track(est_file, jam_file, salamii, beatles, boundaries_id,
     return one_res
 
 
-def get_configuration(feature, annot_beats, framesync, boundaries_id,
-                      labels_id):
-    """Gets the configuration dictionary from the current parameters of the
-    algorithms to be evaluated."""
-    config = {}
-    config["annot_beats"] = annot_beats
-    config["feature"] = feature
-    config["framesync"] = framesync
-    if boundaries_id != "gt":
-        bound_config = eval(algorithms.__name__ + "." + boundaries_id).config
-        config.update(bound_config)
-    if labels_id is not None:
-        label_config = eval(algorithms.__name__ + "." + labels_id).config
-        config.update(label_config)
-    return config
-
-
 def get_results_file_name(boundaries_id, labels_id, config, ds_name):
     """Based on the config and the dataset, get the file name to store the
     results."""
@@ -300,8 +283,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     """
 
     # Set up configuration based on algorithms parameters
-    config = get_configuration(feature, annot_beats, framesync,
-                               boundaries_id, labels_id)
+    config = io.get_configuration(feature, annot_beats, framesync,
+                                  boundaries_id, labels_id, algorithms)
 
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
@@ -393,7 +376,7 @@ def main():
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
-                        default="",
+                        default="hpcp",
                         type=str,
                         help="Type of features",
                         choices=["hpcp", "tonnetz", "mfcc"])

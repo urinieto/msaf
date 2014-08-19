@@ -18,8 +18,8 @@ import time
 from scipy.ndimage import filters
 import sys
 
-from msaf import io
-from msaf import utils as U
+import msaf.input_output as io
+import msaf.utils as U
 
 try:
     import pymf
@@ -118,7 +118,7 @@ def filter_activation_matrix(G, R):
 
 
 def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
-                     bound_idxs=None):
+                     bound_idxs=None, in_labels=None):
     """
     Gets the segmentation (boundaries and labels) from the factorization
     matrices.
@@ -135,6 +135,8 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
         Number of iterations for k-means
     bound_idxs : list
         Use previously found boundaries (None to detect them)
+    in_labels : np.array()
+        List of input labels (None to compute them)
 
     Returns
     -------
@@ -167,7 +169,10 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     # Add first label
     bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1]-1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
-    labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
+    if in_labels is None:
+        labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
+    else:
+        labels = np.ones(len(bound_idxs) - 1)
 
     #plt.imshow(G.T, interpolation="nearest", aspect="auto")
     #for b in bound_idxs:
@@ -177,21 +182,23 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     return bound_idxs, labels
 
 
-def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
-            framesync=False, h=10, R=9, rank=3, R_labels=6, rank_labels=5):
+def process(in_path, in_bound_times=None, in_labels=None, feature="hpcp",
+            annot_beats=False, framesync=False, h=10, R=9, rank=3, R_labels=6,
+            rank_labels=5):
     """Main process.
 
     Parameters
     ----------
     in_path : str
         Path to audio file
+    in_bound_times : np.array()
+        Array with the input boundary times (None for computing them)
+    in_labels: np.array()
+        Array with the input labels (None for computing them)
     feature : str
         Identifier of the features to use
     annot_beats : boolean
         Whether to use annotated beats or not
-    boundaries_id : str
-        Algorithm id for the boundaries algorithm to use
-        (None for C-NMF, and "gt" for ground truth)
     framesync : bool
         Whether to use framesync features
     h : int
@@ -212,13 +219,15 @@ def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
     hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
         in_path, annot_beats=annot_beats, framesync=framesync)
 
+    # Use correct frames to find times
+    frames_to_times = beats
+    if framesync:
+        frames_to_times = U.get_time_frames(dur, anal)
+
     # Read annotated bounds if necessary
     bound_idxs = None
-    if boundaries_id == "gt":
-        try:
-            bound_idxs = io.read_ref_bound_frames(in_path, beats)[1:-1]
-        except:
-            logging.warning("No annotated boundaries in file %s" % in_path)
+    if in_bound_times is not None:
+        bound_idxs = io.align_times(in_bound_times, frames_to_times)
 
     # Use specific feature
     if feature == "hpcp":
@@ -239,17 +248,12 @@ def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
         # Find the boundary indices and labels using matrix factorization
         bound_idxs, est_labels = get_segmentation(
             F.T, rank, R, rank_labels, R_labels, niter=niter,
-            bound_idxs=bound_idxs)
+            bound_idxs=bound_idxs, in_labels=in_labels)
     else:
         # The track is too short. We will only output the first and last
         # time stamps
         bound_idxs = np.empty(0)
         est_labels = [1]
-
-    # Use correct frames to find times
-    frames_to_times = beats
-    if framesync:
-        frames_to_times = U.get_time_frames(dur, anal)
 
     # Add first and last boundaries
     est_times = np.concatenate(([0], frames_to_times[bound_idxs], [dur]))
