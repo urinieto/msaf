@@ -9,3 +9,5 @@ config = {
 }
 
 algo_id = "cnmf3"
+is_boundary_type = True
+is_label_type = True

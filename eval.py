@@ -15,10 +15,8 @@ import glob
 from joblib import Parallel, delayed
 import logging
 import mir_eval
-import numpy as np
 import os
 import pandas as pd
-import sqlite3
 import sys
 import time
 
@@ -161,7 +159,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
 
 def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
-                       labels_id, annotator="GT", bins=251, **params):
+                       labels_id, bins=251, **params):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
 
@@ -175,14 +173,9 @@ def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
     ds_prefix = os.path.basename(est_file).split("_")[0]
 
     try:
-        if annotator == "GT":
-            ref_inter, ref_labels = jams2.converters.load_jams_range(
-                jam_file, "sections", annotator=0,
-                context=msaf.prefix_dict[ds_prefix])
-        else:
-            ref_inter, ref_labels = jams2.converters.load_jams_range(
-                jam_file, "sections", annotator_name=annotator,
-                context="large_scale")
+        ref_inter, ref_labels = jams2.converters.load_jams_range(
+            jam_file, "sections", annotator=0,
+            context=msaf.prefix_dict[ds_prefix])
     except:
         logging.warning("No annotations for file: %s" % jam_file)
         return {}
@@ -218,8 +211,6 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     intervals and the estimated intervals."""
     ann_times = utils.intervals_to_times(ann_inter)
     est_times = utils.intervals_to_times(est_inter)
-    #print est_file
-    #D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     try:
         D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
     except:
@@ -229,99 +220,8 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def binary_entropy(score):
-    """Binary entropy for the given score. Since it's binary,
-    the entropy will be maximum (1.0) when score=0.5"""
-    scores = np.asarray([score, 1 - score])
-    entropy = 0
-    for s in scores:
-        if s == 0:
-            s += 1e-17
-        entropy += s * np.log2(s)
-    entropy = -entropy
-    if entropy < 1e-10:
-        entropy = 0
-    return entropy
-
-
-def compute_conditional_entropy(ann_times, est_times, window=3, trim=False):
-    """Computes the conditional recall entropies."""
-    P, R, F = mir_eval.boundary.detection(ann_times, est_times, window=window,
-                                          trim=trim)
-    # Recall can be seen as the conditional probability of how likely it is
-    # for the algorithm to find all the annotated boundaries.
-    return binary_entropy(R)
-
-
-def save_results_ds(cursor, alg_id, results, annot_beats,
-                    feature, track_id=None, ds_name=None):
-    """Saves the results into the dataset.
-
-    Parameters
-    ----------
-    cursor: obj
-        Cursor connected to the results SQLite dataset.
-    alg_id: str
-        Identifier of the algorithm. E.g. serra, olda.
-    results: np.array
-        Array containing the results of this current algorithm to be saved.
-    annot_beats: bool
-        Whether to use the annotated beats or not.
-    feature: str
-        What type of feature to use for the specific algo_id. E.g. hpcp
-    track_id: str
-        The identifier of the current track, which is its filename.
-    ds_name: str
-        The name of the dataset (e.g. SALAMI, Cerulean). Use all datasets if
-        None.
-    """
-    # Sanity Check
-    if track_id is None and ds_name is None:
-        logging.error("You should pass at least a track id or a dataset name")
-        return
-
-    # Make sure that the results are stored in numpy arrays
-    res = np.asarray(results)
-
-    if track_id is not None:
-        all_values = (track_id, res[5], res[3], res[4], res[2], res[0], res[1],
-                      res[6], res[7], res[8], annot_beats, feature, "none")
-        table = "%s_bounds" % alg_id
-        select_where = "track_id=?"
-        select_values = (track_id, annot_beats, feature)
-    elif ds_name is not None:
-        # Aggregate results
-        res = np.mean(res, axis=0)
-        all_values = (alg_id, ds_name, res[5], res[3], res[4], res[2], res[0],
-                      res[1], res[6], res[7], res[8], annot_beats, feature,
-                      "none")
-        table = "boundaries"
-        select_where = "algo_id=? AND ds_name=?"
-        select_values = (alg_id, ds_name, annot_beats, feature)
-
-    # Check if exists
-    cursor.execute("SELECT * FROM %s WHERE %s AND annot_beat=? AND "
-                   "feature=?" % (table, select_where),
-                   select_values)
-
-    # Insert new if it doesn't exist
-    if cursor.fetchone() is None:
-        questions = "?," * len(all_values)
-        sql_cmd = "INSERT INTO %s VALUES (%s)" % (table, questions[:-1])
-        cursor.execute(sql_cmd, all_values)
-    else:
-        # Update row
-        evaluations = (res[5], res[3], res[4], res[2], res[0],
-                       res[1], res[6], res[7], res[8])
-        evaluations += select_values
-        sql_cmd = "UPDATE %s SET F05=?, P05=?, R05=?, F3=?, " \
-            "P3=?, R3=?, D=?, DevA2E=?, DevE2A=?  WHERE %s AND annot_beat=? " \
-            "AND feature=?" % (table, select_where)
-        cursor.execute(sql_cmd, evaluations)
-
-
 def process_track(est_file, jam_file, salamii, beatles, annot_beats,
-                  boundaries_id, labels_id, annotator, **params):
+                  boundaries_id, labels_id, **params):
     """Processes a single track."""
 
     #if est_file != "/Users/uri/datasets/Segments/estimations/SALAMI_576.json":
@@ -346,8 +246,7 @@ def process_track(est_file, jam_file, salamii, beatles, annot_beats,
 
     try:
         one_res = compute_gt_results(est_file, annot_beats, jam_file,
-                                     boundaries_id, labels_id, annotator,
-                                     **params)
+                                     boundaries_id, labels_id, **params)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
@@ -357,8 +256,7 @@ def process_track(est_file, jam_file, salamii, beatles, annot_beats,
 
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
-            annot_beats=False, save=False, annotator="GT",
-            sql_file="results/results.sqlite", n_jobs=4, **params):
+            annot_beats=False, save=False, n_jobs=4, **params):
     """Main process.
 
     Parameters
@@ -377,10 +275,6 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
         Whether to use the annotated bounds or not.
     save: boolean
         Whether to save the results into the SQLite database.
-    annotator: str
-        Annotator identifier of the JAMS to use as ground truth.
-    sql_file: str
-        Path to the SQLite results database.
     params : dict
         Additional parameters (e.g. features)
 
@@ -402,11 +296,6 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
         salamii = True
         ds_name = "SALAMI"
 
-    if save:
-        conn = sqlite3.connect(sql_file)
-        conn.text_factory = str     # Fixes the 8-bit encoding string problem
-        c = conn.cursor()
-
     # Get files
     jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
                                        ("%s_*" + msaf.Dataset.references_ext)
@@ -423,7 +312,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
         est_file, jam_file, salamii, beatles, annot_beats, boundaries_id,
-        labels_id, annotator, **params)
+        labels_id, **params)
         for est_file, jam_file in zip(est_files, jam_files))
 
     for e in evals:
@@ -432,15 +321,10 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     # TODO: Save all results
     if save:
-        save_results_ds(c, boundaries_id, results, annot_beats, ds_name="all")
+        pass
 
     # Print results
     print_results(results)
-
-    # Commit changes to database and close
-    if save:
-        conn.commit()
-        conn.close()
 
     logging.info("%d tracks analyzed" % len(results))
 
@@ -449,22 +333,26 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
 def main():
     """Main function to parse the arguments and call the main process."""
+    print "merda", io.get_all_boundary_algorithms(algorithms)
     parser = argparse.ArgumentParser(description=
         "Evaluates the estimated results of the Segmentation dataset",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("boundaries_id",
+    parser.add_argument("-bid",
                         action="store",
-                        help="Boundary algorithm identifier "
-                        "(e.g. olda, siplca)")
-    parser.add_argument("-la",
+                        help="Boundary algorithm identifier",
+                        dest="boundaries_id",
+                        default=None,
+                        choices=["gt"] +
+                        io.get_all_boundary_algorithms(algorithms))
+    parser.add_argument("-lid",
                         action="store",
-                        help="Label algorithm identifier "
-                        "(e.g. cnmf, siplca)",
+                        help="Label algorithm identifier",
                         dest="labels_id",
-                        default=None)
+                        default=None,
+                        choices= io.get_all_label_algorithms(algorithms))
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",

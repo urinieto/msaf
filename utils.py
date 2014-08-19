@@ -170,6 +170,3 @@ def remove_empty_segments(times, labels):
             new_inters.append(inter)
             new_labels.append(label)
     return intervals_to_times(np.asarray(new_inters)), new_labels
-
-
-
