@@ -15,11 +15,8 @@ import argparse
 import logging
 import numpy as np
 import time
-from scipy.spatial import distance
 from scipy.ndimage import filters
 import sys
-import pylab as plt
-from scipy.cluster.vq import whiten, vq, kmeans
 
 from msaf import io
 from msaf import utils as U
@@ -73,43 +70,7 @@ def most_frequent(x):
     return np.argmax(np.bincount(x))
 
 
-def compute_labels(X, rank, bound_idxs, dist="correlation", k=5):
-    D = distance.pdist(X.T, metric=dist)
-    D = distance.squareform(D)
-    D /= D.max()
-    S = 1 - D
-
-    F, G = cnmf(S, rank)
-
-    D = np.zeros((S.shape[0], rank))
-    for r in xrange(rank):
-        R = np.dot(F[:, r, np.newaxis], G[np.newaxis, r, :])
-        #plt.imshow(R, interpolation="nearest"); plt.show()
-        D[:, r] = np.diag(R)
-
-    Dw = whiten(D)
-    codebook, dist = kmeans(Dw, k)
-    label_frames, disto = vq(Dw, codebook)
-    #print label_frames, bound_idxs
-
-    # Collapse labels based on the boundaries
-    labels = [label_frames[0]]
-    bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
-    #bound_inters = [(0, bound_idxs[0])] + bound_inters
-    for bound_inter in bound_inters:
-        if bound_inter[1] - bound_inter[0] <= 0:
-            labels.append(k)
-        else:
-            labels.append(most_frequent(
-                label_frames[bound_inter[0]: bound_inter[1]]))
-    labels.append(label_frames[-1])
-
-    #plt.imshow(Dw, interpolation="nearest", aspect="auto"); plt.show()
-
-    return labels
-
-
-def compute_labels2(X, rank, R, bound_idxs, niter=300):
+def compute_labels(X, rank, R, bound_idxs, niter=300):
     """Computes the labels using the bounds."""
 
     try:
@@ -196,12 +157,6 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
             if bound_idxs is None:
                 bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
-        # Obtain labels
-        #labels = np.concatenate(([G[0]], G[bound_idxs]))
-
-        #labels = compute_labels(X, 5, bound_idxs, k=4)
-        #print len(bound_idxs), len(labels)
-
         # Increase rank if we found too few boundaries
         if len(np.unique(bound_idxs)) <= 2:
             rank += 1
@@ -212,7 +167,7 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     # Add first label
     bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1]-1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
-    labels = compute_labels2(X, rank_labels, R_labels, bound_idxs)
+    labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
 
     #plt.imshow(G.T, interpolation="nearest", aspect="auto")
     #for b in bound_idxs:
@@ -298,6 +253,9 @@ def process(in_path, feature="hpcp", annot_beats=False, boundaries_id=None,
 
     # Add first and last boundaries
     est_times = np.concatenate(([0], frames_to_times[bound_idxs], [dur]))
+
+    # Remove empty segments if needed
+    est_times, est_labels = U.remove_empty_segments(est_times, est_labels)
 
     logging.info("Estimated times: %s" % est_times)
     logging.info("Estimated labels: %s" % est_labels)
