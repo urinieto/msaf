@@ -19,6 +19,7 @@ import numpy as np
 import os
 import pandas as pd
 import sqlite3
+import sys
 import time
 
 # Local stuff
@@ -343,8 +344,14 @@ def process_track(est_file, jam_file, salamii, beatles, annot_beats,
         if jam.metadata.artist != "The Beatles":
             return []
 
-    one_res = compute_gt_results(est_file, annot_beats, jam_file,
-                                 boundaries_id, labels_id, annotator, **params)
+    try:
+        one_res = compute_gt_results(est_file, annot_beats, jam_file,
+                                     boundaries_id, labels_id, annotator,
+                                     **params)
+    except:
+        logging.warning("Could not compute evaluations for %s. Error: %s" %
+                        (est_file, sys.exc_info()[1]))
+        one_res = []
 
     return one_res
 

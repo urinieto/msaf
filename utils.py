@@ -158,3 +158,18 @@ def get_time_frames(dur, anal):
     """Gets the time frames and puts them in a numpy array."""
     n_frames = get_num_frames(dur, anal)
     return np.linspace(0, dur, num=n_frames)
+
+
+def remove_empty_segments(times, labels):
+    """Removes empty segments if needed."""
+    inters = times_to_intervals(times)
+    new_inters = []
+    new_labels = []
+    for inter, label in zip(inters, labels):
+        if inter[0] < inter[1]:
+            new_inters.append(inter)
+            new_labels.append(label)
+    return intervals_to_times(np.asarray(new_inters)), new_labels
+
+
+
