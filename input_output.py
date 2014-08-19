@@ -141,7 +141,7 @@ def get_algo_ids(est_file):
 
 
 def read_references(audio_path):
-    """Reads the boundary frames and the labels."""
+    """Reads the boundary times and the labels."""
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
@@ -160,8 +160,7 @@ def read_references(audio_path):
         return []
 
     # Intervals to times
-    ref_times = np.concatenate((ref_inters.flatten()[::2],
-                                [ref_inters[-1, -1]]))
+    ref_times = utils.intervals_to_times(ref_inters)
 
     return ref_times, ref_labels
 
@@ -189,16 +188,19 @@ def read_ref_int_labels(audio_path):
     return labels
 
 
+def align_times(times, frames):
+    """Aligns the times to the closes frame times (e.g. beats)."""
+    dist = np.minimum.outer(times, frames)
+    bound_frames = np.argmax(np.maximum(0, dist), axis=1)
+    return bound_frames
+
+
 def read_ref_bound_frames(audio_path, beats):
     """Reads the corresponding references file to retrieve the boundaries
         in frames."""
-
     ref_times, ref_labels = read_references(audio_path)
-
     # align with beats
-    dist = np.minimum.outer(ref_times, beats)
-    bound_frames = np.argmax(np.maximum(0, dist), axis=1)
-
+    bound_frames = align_times(ref_times, beats)
     return bound_frames
 
 
@@ -274,7 +276,24 @@ def get_features(audio_path, annot_beats=False, framesync=False):
 
 def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
                      **params):
-    """Saves the segment estimations in a JAMS file."""
+    """Saves the segment estimations in a JAMS file.close
+
+    Parameters
+    ----------
+    out_file : str
+        Path to the output JAMS file in which to save the estimations.
+    boundaries : np.array((N, 2))
+        Estimated boundary intervals.
+    labels : np.array(N, 2)
+        Estimated labels (None in case we are only storing boundary
+        evaluations).
+    boundaries_id : str
+        Boundary algorithm identifier.
+    labels_id : str
+        Labels algorithm identifier.
+    params : dict
+        Dictionary with additional parameters for both algorithms.
+    """
 
     # Sanity Check
     assert len(boundaries) == len(labels), "Number of boundary intervals " \
@@ -440,3 +459,20 @@ def get_all_label_algorithms(algorithms):
         if module.is_label_type:
             algo_ids.append(module.algo_id)
     return algo_ids
+
+
+def get_configuration(feature, annot_beats, framesync, boundaries_id,
+                      labels_id, algorithms):
+    """Gets the configuration dictionary from the current parameters of the
+    algorithms to be evaluated."""
+    config = {}
+    config["annot_beats"] = annot_beats
+    config["feature"] = feature
+    config["framesync"] = framesync
+    if boundaries_id != "gt":
+        bound_config = eval(algorithms.__name__ + "." + boundaries_id).config
+        config.update(bound_config)
+    if labels_id is not None:
+        label_config = eval(algorithms.__name__ + "." + labels_id).config
+        config.update(label_config)
+    return config
