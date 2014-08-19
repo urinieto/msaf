@@ -31,6 +31,9 @@ prefix_dict = {
     "SALAMI"        : "large_scale"
 }
 
+results_dir = "results"
+results_ext = ".csv"
+
 class Dataset():
     # Directories
     audio_dir = "audio"
