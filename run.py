@@ -9,9 +9,10 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import glob
-import os
 import argparse
+import glob
+import numpy as np
+import os
 import time
 import logging
 
@@ -58,7 +59,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
         # Identify segment boundaries
         if bounds_module is not None:
             est_times, est_labels = bounds_module.process(
-                audio_file, in_labels=None, **config)
+                audio_file, in_labels=[], **config)
         else:
             est_times, est_labels = io.read_references(audio_file)
 
@@ -67,7 +68,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             est_times, est_labels = labels_module.process(
                 audio_file, in_bound_times=est_times, **config)
         else:
-            est_labels = None
+            est_labels = np.ones(len(est_times) - 1) * -1
 
     return est_times, est_labels
 
