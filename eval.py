@@ -37,7 +37,7 @@ def print_results(results):
         Dataframe with all the results
     """
     res = results.mean()
-    logging.info(res)
+    logging.info("Results:\n%s" % res)
 
 
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
@@ -158,8 +158,8 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     return res
 
 
-def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
-                       labels_id, bins=251, **params):
+def compute_gt_results(est_file, jam_file, boundaries_id, labels_id, config,
+                       bins=251):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
 
@@ -180,15 +180,6 @@ def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
         logging.warning("No annotations for file: %s" % jam_file)
         return {}
 
-    # Set up configuration based on algorithms parameters
-    algo_id = boundaries_id
-    if algo_id == "gt":
-        algo_id = labels_id
-    config = eval(algorithms.__name__ + "." + algo_id).config
-    config["annot_beats"] = annot_beats
-    for key in params.keys():
-        config[key] = params[key]
-
     # Read estimations with correct configuration
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
                                                 labels_id, **config)
@@ -196,10 +187,6 @@ def compute_gt_results(est_file, annot_beats, jam_file, boundaries_id,
     if est_inter == [] or len(est_inter) == 0:
         logging.warning("No estimations for file: %s" % est_file)
         return {}
-
-    # Hack!
-    if algo_id == "gt":
-        est_inter = ref_inter
 
     # Compute the results and return
     return compute_results(ref_inter, est_inter, ref_labels, est_labels,
@@ -220,20 +207,16 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def process_track(est_file, jam_file, salamii, beatles, annot_beats,
-                  boundaries_id, labels_id, **params):
+def process_track(est_file, jam_file, salamii, beatles, boundaries_id,
+                  labels_id, config):
     """Processes a single track."""
-
-    #if est_file != "/Users/uri/datasets/Segments/estimations/SALAMI_576.json":
-        #return {}
-    if est_file == "/Users/uri/datasets/Segments/estimations/SALAMI_920.json":
-        return {}
 
     # Sanity check
     assert os.path.basename(est_file)[:-4] == \
         os.path.basename(jam_file)[:-4], "File names are different %s --- %s" \
         % (os.path.basename(est_file)[:-4], os.path.basename(jam_file)[:-4])
 
+    # Salami Internet hack
     if salamii:
         num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
         if num < 956 or num > 1498:
@@ -245,8 +228,8 @@ def process_track(est_file, jam_file, salamii, beatles, annot_beats,
             return []
 
     try:
-        one_res = compute_gt_results(est_file, annot_beats, jam_file,
-                                     boundaries_id, labels_id, **params)
+        one_res = compute_gt_results(est_file, jam_file, boundaries_id,
+                                     labels_id, config)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
@@ -255,8 +238,37 @@ def process_track(est_file, jam_file, salamii, beatles, annot_beats,
     return one_res
 
 
+def get_configuration(feature, annot_beats, boundaries_id, labels_id):
+    """Gets the configuration dictionary from the current parameters of the
+    algorithms to be evaluated."""
+    config = {}
+    config["annot_beats"] = annot_beats
+    config["feature"] = feature
+    if boundaries_id != "gt":
+        bound_config = eval(algorithms.__name__ + "." + boundaries_id).config
+        config.update(bound_config)
+    if labels_id is not None:
+        label_config = eval(algorithms.__name__ + "." + labels_id).config
+        config.update(label_config)
+    return config
+
+
+def get_results_file_name(boundaries_id, labels_id, config, ds_name):
+    """Based on the config and the dataset, get the file name to store the
+    results."""
+    if ds_name == "*":
+        ds_name = "All"
+    file_name = os.path.join(msaf.results_dir, "results_%s" % ds_name)
+    file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
+    sorted_keys = sorted(config.keys(),
+                         cmp=lambda x, y: cmp(x.lower(), y.lower()))
+    for key in sorted_keys:
+        file_name += "_%sE%s" % (key, str(config[key]))
+    return file_name + msaf.results_ext
+
+
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
-            annot_beats=False, save=False, n_jobs=4, **params):
+            annot_beats=False, feature="hpcp", save=False, n_jobs=4):
     """Main process.
 
     Parameters
@@ -283,6 +295,12 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     results : pd.DataFrame
         DataFrame containing the evaluations for each file.
     """
+
+    # Set up configuration based on algorithms parameters
+    config = get_configuration(feature, annot_beats, boundaries_id, labels_id)
+
+    # Get out file in case we want to save results
+    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
 
     # The Beatles hack
     beatles = False
@@ -311,17 +329,17 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        est_file, jam_file, salamii, beatles, annot_beats, boundaries_id,
-        labels_id, **params)
-        for est_file, jam_file in zip(est_files, jam_files))
+        est_file, jam_file, salamii, beatles, boundaries_id, labels_id, config)
+        for est_file, jam_file in zip(est_files, jam_files)[:])
 
+    # Aggregat evaluations in pandas format
     for e in evals:
         if e != []:
             results = results.append(e, ignore_index=True)
 
-    # TODO: Save all results
+    # Save all results
     if save:
-        pass
+        results.mean().to_csv(out_file)
 
     # Print results
     print_results(results)
@@ -333,7 +351,6 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
 def main():
     """Main function to parse the arguments and call the main process."""
-    print "merda", io.get_all_boundary_algorithms(algorithms)
     parser = argparse.ArgumentParser(description=
         "Evaluates the estimated results of the Segmentation dataset",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -344,7 +361,7 @@ def main():
                         action="store",
                         help="Boundary algorithm identifier",
                         dest="boundaries_id",
-                        default=None,
+                        default="gt",
                         choices=["gt"] +
                         io.get_all_boundary_algorithms(algorithms))
     parser.add_argument("-lid",
@@ -373,7 +390,7 @@ def main():
     parser.add_argument("-s",
                         action="store_true",
                         dest="save",
-                        help="Whether to save the results in the SQL or not",
+                        help="Whether to save the results or not",
                         default=False)
     parser.add_argument("-j",
                         action="store",
