@@ -238,12 +238,14 @@ def process_track(est_file, jam_file, salamii, beatles, boundaries_id,
     return one_res
 
 
-def get_configuration(feature, annot_beats, boundaries_id, labels_id):
+def get_configuration(feature, annot_beats, framesync, boundaries_id,
+                      labels_id):
     """Gets the configuration dictionary from the current parameters of the
     algorithms to be evaluated."""
     config = {}
     config["annot_beats"] = annot_beats
     config["feature"] = feature
+    config["framesync"] = framesync
     if boundaries_id != "gt":
         bound_config = eval(algorithms.__name__ + "." + boundaries_id).config
         config.update(bound_config)
@@ -268,7 +270,8 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
 
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
-            annot_beats=False, feature="hpcp", save=False, n_jobs=4):
+            annot_beats=False, framesync=False, feature="hpcp", save=False,
+            n_jobs=4):
     """Main process.
 
     Parameters
@@ -297,7 +300,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     """
 
     # Set up configuration based on algorithms parameters
-    config = get_configuration(feature, annot_beats, boundaries_id, labels_id)
+    config = get_configuration(feature, annot_beats, framesync,
+                               boundaries_id, labels_id)
 
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
@@ -336,15 +340,15 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     for e in evals:
         if e != []:
             results = results.append(e, ignore_index=True)
-
-    # Save all results
-    if save:
-        results.mean().to_csv(out_file)
+    logging.info("%d tracks analyzed" % len(results))
 
     # Print results
     print_results(results)
 
-    logging.info("%d tracks analyzed" % len(results))
+    # Save all results
+    if save:
+        logging.info("Writing average results in %s" % out_file)
+        results.mean().to_csv(out_file)
 
     return results
 
@@ -381,12 +385,18 @@ def main():
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-fs",
+                        action="store_true",
+                        dest="framesync",
+                        default=False,
+                        help="Whether to use framesync features or not")
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
                         default="",
                         type=str,
-                        help="Type of features (e.g. mfcc, hpcp")
+                        help="Type of features",
+                        choices=["hpcp", "tonnetz", "mfcc"])
     parser.add_argument("-s",
                         action="store_true",
                         dest="save",
@@ -408,7 +418,7 @@ def main():
     # Run the algorithm
     process(args.in_path, args.boundaries_id, args.labels_id, args.ds_name,
             args.annot_beats, save=args.save, feature=args.feature,
-            n_jobs=args.n_jobs)
+            n_jobs=args.n_jobs, framesync=args.framesync)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
