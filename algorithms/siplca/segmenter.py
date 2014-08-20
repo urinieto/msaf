@@ -415,26 +415,8 @@ def use_in_bounds(audio_file, in_bound_times, beats, feats, config):
 
 
 class Segmenter(SegmenterInterface):
-    def process(self, in_path, in_bound_times=None, in_labels=None,
-                feature="hpcp", annot_beats=False, framesync=False, **config):
+    def process(self):
         """Main process.
-
-        Parameters
-        ----------
-        in_path : str
-            Path to audio file
-        in_bound_times : np.array()
-            Array with the input boundary times (None for computing them)
-        in_labels: np.array()
-            Array with the input labels (None for computing them)
-        feature : str
-            Identifier of the features to use
-        annot_beats : boolean
-            Whether to use annotated beats or not
-        framesync : bool
-            Whether to use framesync features
-        confg : dict
-            Additional paramters for the configuration of the algorithm
 
         Returns
         -------
@@ -444,23 +426,25 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self.preprocess(
-            in_path, in_bound_times, feature, annot_beats, framesync,
+        F, frame_times, dur, bound_idxs = self._preprocess(
             valid_features=["hpcp", "tonnetz"])
 
         # Additional SI-PLCA params
-        config["plotiter"] = None
-        config["win"] = 60
-        config["rank"] = 15
+        self.config["plotiter"] = None
+        self.config["win"] = 60
+        self.config["rank"] = 15
 
         # Update parameters if using additional boundaries
-        if in_bound_times is not None:
-            config, bound_idxs = use_in_bounds(in_path, in_bound_times,
-                                            frame_times, F, config)
+        if self.in_bound_times is not None:
+            self.config, bound_idxs = use_in_bounds(self.audio_file,
+                                                    self.in_bound_times,
+                                                    frame_times,
+                                                    F,
+                                                    self.config)
 
         # Make segmentation
         segments, beattimes, frame_labels = segment_wavfile(
-            F.T, frame_times.flatten(), dur, **config)
+            F.T, frame_times.flatten(), dur, **self.config)
 
         # Convert segments to times
         lines = segments.split("\n")[:-1]
@@ -480,7 +464,7 @@ class Segmenter(SegmenterInterface):
         times = np.unique(times)
 
         # Align with annotated boundaries if needed
-        if in_bound_times is not None:
+        if self.in_bound_times is not None:
             labels = []
             start = bound_idxs[0]
             for end in bound_idxs[1:]:
@@ -498,13 +482,13 @@ class Segmenter(SegmenterInterface):
             labels = np.concatenate(([silencelabel], labels, [silencelabel]))
 
         # Remove paramaters that we don't want to store
-        config.pop("initW", None)
-        config.pop("initH", None)
-        config.pop("plotiter", None)
-        config.pop("win", None)
-        config.pop("rank", None)
+        self.config.pop("initW", None)
+        self.config.pop("initH", None)
+        self.config.pop("plotiter", None)
+        self.config.pop("win", None)
+        self.config.pop("rank", None)
 
         # Postprocess the estimations
-        est_times, est_labels = self.postprocess(in_labels, times, labels)
+        est_times, est_labels = self._postprocess(times, labels)
 
         return est_times, est_labels
