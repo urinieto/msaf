@@ -10,6 +10,7 @@ __email__       = "oriol@nyu.edu"
 
 import glob
 import os
+import interface
 
 # Get current path
 curr_path = os.path.dirname(os.path.realpath(__file__))

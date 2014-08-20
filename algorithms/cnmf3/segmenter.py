@@ -11,15 +11,14 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import argparse
 import logging
 import numpy as np
-import time
 from scipy.ndimage import filters
 import sys
 
 import msaf.input_output as io
 import msaf.utils as U
+from msaf.algorithms.interface import SegmenterInterface
 
 try:
     import pymf
@@ -182,138 +181,98 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     return bound_idxs, labels
 
 
-def process(in_path, in_bound_times=None, in_labels=None, feature="hpcp",
-            annot_beats=False, framesync=False, h=10, R=9, rank=3, R_labels=6,
-            rank_labels=5):
-    """Main process.
+class Segmenter(SegmenterInterface):
+    def process(self, in_path, in_bound_times=None, in_labels=None,
+                feature="hpcp", annot_beats=False, framesync=False, h=10, R=9,
+                rank=3, R_labels=6, rank_labels=5):
+        """Main process.
 
-    Parameters
-    ----------
-    in_path : str
-        Path to audio file
-    in_bound_times : np.array()
-        Array with the input boundary times (None for computing them)
-    in_labels: np.array()
-        Array with the input labels (None for computing them)
-    feature : str
-        Identifier of the features to use
-    annot_beats : boolean
-        Whether to use annotated beats or not
-    framesync : bool
-        Whether to use framesync features
-    h : int
-        Size of median filter
-    R : int
-        Size of the median filter for activation matrix
-    rank : int
-        Rank of decomposition
-    R_labels : int
-        Size of the median filter for activation matrix for the labels
-    rank_labels : int
-        Rank of decomposition for the labels
-    """
-    # C-NMF params
-    niter = 300     # Iterations for the matrix factorization and clustering
+        Parameters
+        ----------
+        in_path : str
+            Path to audio file
+        in_bound_times : np.array()
+            Array with the input boundary times (None for computing them)
+        in_labels: np.array()
+            Array with the input labels (None for computing them)
+        feature : str
+            Identifier of the features to use
+        annot_beats : boolean
+            Whether to use annotated beats or not
+        framesync : bool
+            Whether to use framesync features
+        h : int
+            Size of median filter
+        R : int
+            Size of the median filter for activation matrix
+        rank : int
+            Rank of decomposition
+        R_labels : int
+            Size of the median filter for activation matrix for the labels
+        rank_labels : int
+            Rank of decomposition for the labels
 
-    # Read features
-    hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-        in_path, annot_beats=annot_beats, framesync=framesync)
+        Returns
+        -------
+        est_times : np.array(N)
+            Estimated times for the segment boundaries in seconds.
+        est_labels : np.array(N-1)
+            Estimated labels for the segments.
+        """
+        # C-NMF params
+        niter = 300     # Iterations for the matrix factorization and clustering
 
-    # Use correct frames to find times
-    frames_to_times = beats
-    if framesync:
-        frames_to_times = U.get_time_frames(dur, anal)
+        # Read features
+        hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
+            in_path, annot_beats=annot_beats, framesync=framesync)
 
-    # Read annotated bounds if necessary
-    bound_idxs = None
-    if in_bound_times is not None:
-        bound_idxs = io.align_times(in_bound_times, frames_to_times)
+        # Use correct frames to find times
+        frames_to_times = beats
+        if framesync:
+            frames_to_times = U.get_time_frames(dur, anal)
 
-    # Use specific feature
-    if feature == "hpcp":
-        F = U.lognormalize_chroma(hpcp)  # Normalize chromas
-    elif "mfcc":
-        F = mfcc
-    elif "tonnetz":
-        F = U.lognormalize_chroma(tonnetz)  # Normalize tonnetz
-        F = U.chroma_to_tonnetz(F)
-    else:
-        logging.error("Feature type not recognized: %s" % feature)
+        # Read annotated bounds if necessary
+        bound_idxs = None
+        if in_bound_times is not None:
+            bound_idxs = io.align_times(in_bound_times, frames_to_times)
 
-    if F.shape[0] >= h:
-        # Median filter
-        F = median_filter(F, M=h)
-        #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+        # Use specific feature
+        if feature == "hpcp":
+            F = U.lognormalize_chroma(hpcp)  # Normalize chromas
+        elif "mfcc":
+            F = mfcc
+        elif "tonnetz":
+            F = U.lognormalize_chroma(tonnetz)  # Normalize tonnetz
+            F = U.chroma_to_tonnetz(F)
+        else:
+            logging.error("Feature type not recognized: %s" % feature)
 
-        # Find the boundary indices and labels using matrix factorization
-        bound_idxs, est_labels = get_segmentation(
-            F.T, rank, R, rank_labels, R_labels, niter=niter,
-            bound_idxs=bound_idxs, in_labels=in_labels)
-    else:
-        # The track is too short. We will only output the first and last
-        # time stamps
-        bound_idxs = np.empty(0)
-        est_labels = [1]
+        if F.shape[0] >= h:
+            # Median filter
+            F = median_filter(F, M=h)
+            #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Add first and last boundaries
-    est_times = np.concatenate(([0], frames_to_times[bound_idxs], [dur]))
+            # Find the boundary indices and labels using matrix factorization
+            bound_idxs, est_labels = get_segmentation(
+                F.T, rank, R, rank_labels, R_labels, niter=niter,
+                bound_idxs=bound_idxs, in_labels=in_labels)
+        else:
+            # The track is too short. We will only output the first and last
+            # time stamps
+            bound_idxs = np.empty(0)
+            est_labels = [1]
 
-    # Remove empty segments if needed
-    est_times, est_labels = U.remove_empty_segments(est_times, est_labels)
+        # Add first and last boundaries
+        est_times = np.concatenate(([0], frames_to_times[bound_idxs], [dur]))
 
-    logging.info("Estimated times: %s" % est_times)
-    logging.info("Estimated labels: %s" % est_labels)
+        # Remove empty segments if needed
+        est_times, est_labels = U.remove_empty_segments(est_times, est_labels)
 
-    assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
-        "and number of labels(%d) don't match" % (len(est_times),
-                                                  len(est_labels))
+        logging.info("Estimated times: %s" % est_times)
+        logging.info("Estimated labels: %s" % est_labels)
 
-    return est_times, est_labels
+        assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
+            "and number of labels(%d) don't match" % (len(est_times),
+                                                    len(est_labels))
 
-
-def main():
-    """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(description=
-        "Segments the given audio file using the new version of the C-NMF "
-                                     "method.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("in_path",
-                        action="store",
-                        help="Input path to the audio file")
-    parser.add_argument("-f",
-                        action="store",
-                        dest="feature",
-                        help="Feature to use (mfcc or hpcp)",
-                        default="hpcp")
-    parser.add_argument("-fs",
-                        action="store_true",
-                        dest="framesync",
-                        help="Use frame-synchronous features",
-                        default=False)
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
-    parser.add_argument("-bid",
-                        action="store",
-                        dest="boundaries_id",
-                        help="Algorithm id for the boundaries to use "
-                        "(None for C-NMF, and \"gt\" for ground truth)",
-                        default=None)
-    args = parser.parse_args()
-    start_time = time.time()
-
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
-
-    # Run the algorithm
-    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats,
-            boundaries_id=args.boundaries_id, framesync=args.framesync)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-if __name__ == '__main__':
-    main()
+        return est_times, est_labels

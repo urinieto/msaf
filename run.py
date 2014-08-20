@@ -11,7 +11,6 @@ __email__ = "oriol@nyu.edu"
 
 import argparse
 import glob
-import numpy as np
 import os
 import time
 import logging
@@ -54,7 +53,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     # Segment using the specified boundaries and labels
     if bounds_module is not None and labels_module is not None and \
             bounds_module.__name__ == labels_module.__name__:
-        est_times, est_labels = bounds_module.process(audio_file, **config)
+        est_times, est_labels = bounds_module.Segmenter().process(audio_file,
+                                                                  **config)
     else:
         # Identify segment boundaries
         if bounds_module is not None:
@@ -68,12 +68,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             est_times, est_labels = labels_module.process(
                 audio_file, in_bound_times=est_times, **config)
         else:
-            est_labels = np.ones(len(est_times) - 1) * -1
+            est_labels = [-1] * (len(est_times) - 1)
 
     return est_times, est_labels
 
 
-def process_track(in_path, audio_file, jam_file, ds_name, boundaries_id,
+def process_track2(in_path, audio_file, jam_file, ds_name, boundaries_id,
                   labels_id, config):
 
     # Only analize files with annotated beats
@@ -98,6 +98,34 @@ def process_track(in_path, audio_file, jam_file, ds_name, boundaries_id,
     est_inters = utils.times_to_intervals(est_times)
     io.save_estimations(out_file, est_inters, est_labels, boundaries_id,
                         labels_id, **config)
+
+
+def process_track(in_path, audio_file, jam_file, ds_name, boundaries_id,
+                  labels_id, config):
+
+
+    # Only analize files with annotated beats
+    if config["annot_beats"]:
+        jam = jams2.load(jam_file)
+        if jam.beats == []:
+            return
+        if jam.beats[0].data == []:
+            return
+
+    logging.info("Segmenting %s" % audio_file)
+
+    ## Get estimations
+    est_times, est_labels = run_algorithms(audio_file, boundaries_id, labels_id,
+                                           config)
+
+    ## Save
+    #out_file = os.path.join(in_path, msaf.Dataset.estimations_dir,
+                            #os.path.basename(audio_file)[:-4] +
+                            #msaf.Dataset.estimations_ext)
+    #logging.info("Writing results in: %s" % out_file)
+    #est_inters = utils.times_to_intervals(est_times)
+    #io.save_estimations(out_file, est_inters, est_labels, boundaries_id,
+                        #labels_id, **config)
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
