@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import sys
 import glob
 import os
 import argparse
@@ -20,12 +19,11 @@ import json
 import subprocess
 from joblib import Parallel, delayed
 
-import sys
-sys.path.append("../../")
-import msaf_io as MSAF
+import msaf.input_output as io
 
 
-def process_track(jam_file, feat_file, annot_beats, feature, annot_bounds):
+def process_track(jam_file, feat_file, annot_beats, feature, annot_bounds,
+                  framesync):
     """Processes one single track."""
 
     # Only analize files with annotated beats
@@ -43,12 +41,12 @@ def process_track(jam_file, feat_file, annot_beats, feature, annot_bounds):
     if annot_bounds:
         # write down the annotated boundary indeces to "annot_bounds.txt"
         audio_file  = feat_file.replace("features", "audio")[:-5] + ".mp3"
-        chroma, mfcc, beats, dur = MSAF.get_features(
+        chroma, mfcc, beats, dur = io.get_features(
             audio_file, annot_beats=annot_beats)
         bounds_dict = {}
         try:
             bounds_dict["bounds"] = list(
-                MSAF.read_annot_bound_frames(audio_file, beats))
+                MSAF.read_annot_bound_frames(audio_file, beats, framesync))
         except:
             logging.warning("Could not find annotated boundaries in %s" %
                             jam_file)
