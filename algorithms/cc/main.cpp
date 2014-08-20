@@ -8,7 +8,9 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 */
 
+
 #include <Python.h>
+#include <numpy/arrayobject.h>
 #include "ClusterMeltSegmenter.h"
 #include <iostream>
 #include <fstream>
@@ -19,16 +21,51 @@ __email__ = "oriol@nyu.edu"
 
 using namespace std;
 
+static PyObject* segment(PyObject *self, PyObject *args);
 
-static PyObject *
-cc_segment(PyObject *self, PyObject *args) {
-    const char *command;
-    int sts;
+static PyMethodDef CCMethods[] = {
+    {"segment",  segment, METH_VARARGS, 
+        "Segments an audio file using the Constrained Clustering method."},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+};
 
-    if (!PyArg_ParseTuple(args, "s", &command))
+
+PyMODINIT_FUNC initcc_segmenter(void)
+{
+    PyObject *m = Py_InitModule3("cc_segmenter", CCMethods,
+            "Module to segment audio files using the Constrained Clustering method");
+
+    if (m == NULL)
+        return;
+
+    /* Load `numpy` functionality. */
+    import_array();
+}
+
+
+static PyObject* segment(PyObject *self, PyObject *args) {
+
+    PyObject *features_obj;
+    npy_intp *shape_features;
+
+    if (!PyArg_ParseTuple(args, "O", &features_obj))
         return NULL;
-    sts = system(command);
-    return Py_BuildValue("i", sts);
+
+    PyObject *features_array = PyArray_FROM_OTF(features_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+
+    if (features_array == NULL) {
+        Py_XDECREF(features_array);
+        return NULL;
+    }
+
+    int N = (int)PyArray_DIM(features_array, 0);
+    shape_features = PyArray_DIMS(features_array);
+
+    cout << "N: " << N << endl;
+
+    //return Py_BuildValue("i", sts);
+    
+    return Py_None;
 }
 
 int main(int argc, char const *argv[])

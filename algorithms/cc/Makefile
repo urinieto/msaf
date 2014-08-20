@@ -99,6 +99,6 @@ $(EXEC): $(OBJECTS)
 		$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:  
-		rm $(EXEC)  
-		rm $(OBJECTS)
+		rm -rf $(EXEC)  
+		rm -rf $(OBJECTS)
 
