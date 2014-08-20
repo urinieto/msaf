@@ -53,22 +53,21 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     # Segment using the specified boundaries and labels
     if bounds_module is not None and labels_module is not None and \
             bounds_module.__name__ == labels_module.__name__:
-        est_times, est_labels = bounds_module.Segmenter().process(audio_file,
-                                                                  **config)
+        S = bounds_module.Segmenter(audio_file, **config)
+        est_times, est_labels = S.process()
     else:
         # Identify segment boundaries
         if bounds_module is not None:
-            est_times, est_labels = bounds_module.process(
-                audio_file, in_labels=[], **config)
+            S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
+            est_times, est_labels = S.process()
         else:
             est_times, est_labels = io.read_references(audio_file)
 
         # Label segments
         if labels_module is not None:
-            est_times, est_labels = labels_module.process(
-                audio_file, in_bound_times=est_times, **config)
-        else:
-            est_labels = [-1] * (len(est_times) - 1)
+            S = labels_module.Segmenter(audio_file, in_bound_times=est_times,
+                                        **config)
+            est_times, est_labels = S.process()
 
     return est_times, est_labels
 
