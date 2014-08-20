@@ -8,6 +8,7 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 */
 
+#include <Python.h>
 #include "ClusterMeltSegmenter.h"
 #include <iostream>
 #include <fstream>
@@ -18,6 +19,17 @@ __email__ = "oriol@nyu.edu"
 
 using namespace std;
 
+
+static PyObject *
+cc_segment(PyObject *self, PyObject *args) {
+    const char *command;
+    int sts;
+
+    if (!PyArg_ParseTuple(args, "s", &command))
+        return NULL;
+    sts = system(command);
+    return Py_BuildValue("i", sts);
+}
 
 int main(int argc, char const *argv[])
 {
