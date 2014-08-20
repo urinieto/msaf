@@ -3,6 +3,12 @@ import numpy as np
 import msaf.input_output as io
 import msaf.utils as U
 
+__author__ = "Oriol Nieto"
+__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
+__license__ = "GPL"
+__version__ = "1.0"
+__email__ = "oriol@nyu.edu"
+
 
 class SegmenterInterface:
     """This class is an interface for all the segmenter algorithms included
