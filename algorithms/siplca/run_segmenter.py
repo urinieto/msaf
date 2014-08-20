@@ -30,73 +30,11 @@ from msaf import utils
 from config import *
 
 
-def use_annot_bounds(audio_file, beats, feats, params):
-    """We update the initial matrices using the annotated bounds."""
-    try:
-        bound_idxs = io.read_ref_bound_frames(audio_file, beats)
-    except:
-        logging.warning("No annotation boundaries for %s" %
-                        audio_file)
-        return
-    # Remove first and last boundaries (silent labels)
-    bound_idxs = bound_idxs[1:-1]
-
-    n_segments = len(bound_idxs) - 1
-    max_beats_segment = np.max(np.diff(bound_idxs))
-
-    # Inititalize the W and H matrices using the previously found bounds
-    initW = np.zeros((feats.shape[1], n_segments, max_beats_segment))
-    initH = np.zeros((n_segments, feats.shape[0]))
-    for i in xrange(n_segments):
-        dur = bound_idxs[i+1] - bound_idxs[i]
-        initW[:, i, :dur] = feats[bound_idxs[i]:bound_idxs[i+1]].T
-        initH[i, bound_idxs[i]] = 1
-
-    # Update parameters
-    params["win"] = max_beats_segment
-    params["rank"] = n_segments
-    params["initW"] = initW
-    params["initH"] = initH
-
-    return params, bound_idxs
-
 
 def process_track(in_path, audio_file, jam_file, annot_beats, annot_bounds,
                   framesync=False, feature="hpcp"):
     """Process one track in order to segment it using SI-PLCA."""
 
-    assert os.path.basename(audio_file)[:-4] == \
-        os.path.basename(jam_file)[:-5]
-
-    # Only analize files with annotated beats
-    if annot_beats:
-        jam = jams2.load(jam_file)
-        if jam.beats == []:
-            return
-        if jam.beats[0].data == []:
-            return
-
-    logging.info("Segmenting %s" % audio_file)
-
-    # SI-PLCA Params
-    params = copy.deepcopy(config)
-    params["annot_beats"] = annot_beats
-    params["feature"] = feature
-    params["framesync"] = framesync
-    params["plotiter"] = None
-    params["rank"] = 15
-    params["win"] = 60
-
-    # Get features
-    hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-        audio_file, annot_beats=annot_beats, framesync=framesync)
-    feats = eval(feature)
-
-    # Update the params if using annotated bounds
-    boundaries_id = "siplca"
-    if annot_bounds:
-        boundaries_id = "gt"
-        params, bound_idxs = use_annot_bounds(audio_file, beats, feats, params)
 
     segments, beattimes, frame_labels = S.segment_wavfile(
         feats.T, beats.flatten(), dur, **params)

@@ -350,6 +350,7 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
         jam.sections[curr_i] = curr_estimation
     with open(out_file, "w") as f:
         json.dump(jam, f, indent=2)
+        #f.flush()
 
 
 def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):

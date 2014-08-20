@@ -76,8 +76,10 @@ LICENSE: This module is licensed under the GNU GPL. See COPYING for details.
 """
 
 import logging
-import sys
 import numpy as np
+
+import msaf.input_output as io
+import msaf.utils as U
 
 # Local stuff
 import plca
@@ -209,17 +211,6 @@ def segment_song(seq, rank=4, win=32, seed=None,
         W, Z, H, norm, recon, div = outputs[np.argmin(div)]
         nlowen_recon = np.sum(recon.sum(0) <= lowen)
 
-    if align_downbeats:
-        alignedW = plca.normalize(find_downbeat(seq, W)
-                                  + 0.1 * np.finfo(float).eps, 1)
-        rank = len(Z)
-        if uninformativeHinit:
-            kwargs['initH'] = np.ones((rank, T)) / T
-        if 'alphaZ' in kwargs:
-            kwargs['alphaZ'] = 0
-        W, Z, H, norm, recon, div = plca.SIPLCA.analyze(
-            seq, rank=rank, win=win, initW=alignedW, **kwargs)
-
     if viterbi_segmenter:
         segmentation_function = nmf_analysis_to_segmentation_using_viterbi_path
     else:
@@ -227,6 +218,7 @@ def segment_song(seq, rank=4, win=32, seed=None,
     labels, segfun = segmentation_function(seq, win, W, Z, H, **kwargs)
 
     return labels, W, Z, H, segfun, norm
+
 
 def create_sparse_W_prior(shape, cutoff, slope):
     """Constructs sparsity parameters for W (alphaW) to learn pattern length
@@ -260,11 +252,6 @@ def nmf_analysis_to_segmentation(seq, win, W, Z, H, min_segment_length=32,
         #     kernel_size += 1
         # score = sp.signal.medfilt(score, kernel_size)
         segfun.append(score)
-
-    # Combine correlated segment labels
-    C = np.reshape([np.correlate(x, y, mode='full')[:2*win].max()
-                    for x in segfun for y in segfun],
-                   (len(segfun), len(segfun)))
 
     segfun = np.array(segfun)
     segfun /= segfun.max()
@@ -386,7 +373,8 @@ def shift_key_to_zero(W, Z, H):
         newW[:,k] = plca.shift(W[:,k], main_key, axis=0, circular=True)
         newH[k] = plca.shift(H[k], -main_key, axis=0, circular=True)
     return newW, Z, newH
-    
+
+
 def segment_wavfile(features, beattimes, songlen, **kwargs):
     """Convenience function to compute segmentation.
 
@@ -399,44 +387,147 @@ def segment_wavfile(features, beattimes, songlen, **kwargs):
     return segments, beattimes, labels
 
 
-def _parse_args(args):
-    if len(args) < 4 or len(args) % 2 == 1:
-        _die_with_usage()
+def use_in_bounds(audio_file, in_bound_times, beats, feats, config):
+    """We update the initial matrices using the annotated bounds."""
+    bound_idxs = io.align_times(in_bound_times, beats)
 
-    kwargs = dict()
-    for key, value in zip(args[::2], args[1::2]):
-        if not key.startswith('-'):
-            print 'Error parsing argument "%s"' % key
-            _die_with_usage()
-        if key.lower() == '-i':
-            inputfilename = value
-        elif key.lower() == '-o':
-            outputfilename = value
-        else:
-            kwargs[key[1:]] = eval(value)
+    # Remove first and last boundaries (silent labels)
+    bound_idxs = bound_idxs[1:-1]
 
-    if "b" not in kwargs:
-        kwargs["b"] = False
+    n_segments = len(bound_idxs) - 1
+    max_beats_segment = np.max(np.diff(bound_idxs))
 
-    return inputfilename, outputfilename, kwargs
+    # Inititalize the W and H matrices using the previously found bounds
+    initW = np.zeros((feats.shape[1], n_segments, max_beats_segment))
+    initH = np.zeros((n_segments, feats.shape[0]))
+    for i in xrange(n_segments):
+        dur = bound_idxs[i+1] - bound_idxs[i]
+        initW[:, i, :dur] = feats[bound_idxs[i]:bound_idxs[i+1]].T
+        initH[i, bound_idxs[i]] = 1
+
+    # Update parameters
+    config["win"] = max_beats_segment
+    config["rank"] = n_segments
+    config["initW"] = initW
+    config["initH"] = initH
+
+    return config, bound_idxs
 
 
-def _die_with_usage():
-    usage = """
-    USAGE: segmenter.py -i inputfile.wav -o outputfile [-param1 val1] [-param2 val2] ...
+def process(in_path, in_bound_times=None, in_labels=None, feature="hpcp",
+            annot_beats=False, framesync=False, **config):
+    """Main process.
 
-    Segments inputfile.wav using the given parameters and writes the
-    output labels to outputfile.
+    Parameters
+    ----------
+    in_path : str
+        Path to audio file
+    in_bound_times : np.array()
+        Array with the input boundary times (None for computing them)
+    in_labels: np.array()
+        Array with the input labels (None for computing them)
+    feature : str
+        Identifier of the features to use
+    annot_beats : boolean
+        Whether to use annotated beats or not
+    framesync : bool
+        Whether to use framesync features
+    confg : dict
+        Additional paramters for the configuration of the algorithm
+
+    Returns
+    -------
+    est_times : np.array(N)
+        Estimated times for the segment boundaries in seconds.
+    est_labels : np.array(N-1)
+        Estimated labels for the segments.
     """
-    print usage
-    sys.exit(1)
+    # Read features
+    hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
+        in_path, annot_beats=annot_beats, framesync=framesync)
 
+    # Use correct frames to find times
+    frames_to_times = beats
+    if framesync:
+        frames_to_times = U.get_time_frames(dur, anal)
 
-def _main(args):
-    inputfilename, outputfilename, kwargs = _parse_args(args)
-    output, beattimes, labels = segment_wavfile(inputfilename, **kwargs)
-    with open(outputfilename, 'w') as f:
-        f.write(output)
+    # Read annotated bounds if necessary
+    bound_idxs = None
+    if in_bound_times is not None:
+        bound_idxs = io.align_times(in_bound_times, frames_to_times)
 
-if __name__ == '__main__':
-    _main(sys.argv[1:])
+    # Use specific feature
+    if feature == "hpcp":
+        F = U.lognormalize_chroma(hpcp)  # Normalize chromas
+    elif "mfcc":
+        F = mfcc
+    else:
+        logging.error("Feature type not valid : %s" % feature)
+
+    # Additional SI-PLCA params
+    config["plotiter"] = None
+    config["win"] = 60
+    config["rank"] = 15
+
+    # Update parameters if using additional boundaries
+    if in_bound_times is not None:
+        config, bound_idxs = use_in_bounds(in_path, in_bound_times,
+                                           frames_to_times, F, config)
+
+    # Make segmentation
+    segments, beattimes, frame_labels = segment_wavfile(
+        F.T, frames_to_times.flatten(), dur, **config)
+
+    # Convert segments to times
+    lines = segments.split("\n")[:-1]
+    times = []
+    labels = []
+    for line in lines:
+        time = float(line.strip("\n").split("\t")[0])
+        times.append(time)
+        label = line.strip("\n").split("\t")[2]
+        labels.append(ord(label))
+
+    # Add last one and reomve empty segments
+    times, idxs = np.unique(times, return_index=True)
+    labels = np.asarray(labels)[idxs]
+    times = np.concatenate((times,
+                            [float(lines[-1].strip("\n").split("\t")[1])]))
+    times = np.unique(times)
+
+    # Align with annotated boundaries if needed
+    if in_bound_times is not None:
+        labels = []
+        start = bound_idxs[0]
+        for end in bound_idxs[1:]:
+            segment_labels = frame_labels[start:end]
+            try:
+                label = np.argmax(np.bincount(segment_labels))
+            except:
+                label = frame_labels[start]
+            labels.append(label)
+            start = end
+
+        # First and last boundaries (silence labels)
+        times = np.concatenate(([0], beats[bound_idxs], [dur]))
+        silencelabel = np.max(labels) + 1
+        labels = np.concatenate(([silencelabel], labels, [silencelabel]))
+
+    if in_labels is not None:
+        est_labels = np.ones(len(times) - 1) * -1
+
+    # Remove empty segments if needed
+    est_times, est_labels = U.remove_empty_segments(times, labels)
+
+    assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
+        "and number of labels(%d) don't match" % (len(est_times),
+                                                  len(est_labels))
+
+    # Remove paramaters that we don't want to store
+    config.pop("initW", None)
+    config.pop("initH", None)
+    config.pop("plotiter", None)
+    config.pop("win", None)
+    config.pop("rank", None)
+
+    return est_times, est_labels
