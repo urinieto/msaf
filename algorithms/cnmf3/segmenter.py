@@ -243,7 +243,6 @@ class Segmenter(SegmenterInterface):
             F = mfcc
         elif "tonnetz":
             F = U.lognormalize_chroma(tonnetz)  # Normalize tonnetz
-            F = U.chroma_to_tonnetz(F)
         else:
             logging.error("Feature type not recognized: %s" % feature)
 

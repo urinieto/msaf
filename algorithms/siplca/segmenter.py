@@ -79,7 +79,6 @@ import logging
 import numpy as np
 
 import msaf.input_output as io
-import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 
 # Local stuff
@@ -444,27 +443,10 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        # Read features
-        hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-            in_path, annot_beats=annot_beats, framesync=framesync)
-
-        # Use correct frames to find times
-        frames_to_times = beats
-        if framesync:
-            frames_to_times = U.get_time_frames(dur, anal)
-
-        # Read annotated bounds if necessary
-        bound_idxs = None
-        if in_bound_times is not None:
-            bound_idxs = io.align_times(in_bound_times, frames_to_times)
-
-        # Use specific feature
-        if feature == "hpcp":
-            F = U.lognormalize_chroma(hpcp)  # Normalize chromas
-        elif "mfcc":
-            F = mfcc
-        else:
-            logging.error("Feature type not valid : %s" % feature)
+        # Preprocess to obtain features, times, and input boundary indeces
+        F, frame_times, dur, bound_idxs = self.preprocess(
+            in_path, in_bound_times, feature, annot_beats, framesync,
+            valid_features=["hpcp", "tonnetz"])
 
         # Additional SI-PLCA params
         config["plotiter"] = None
@@ -474,11 +456,11 @@ class Segmenter(SegmenterInterface):
         # Update parameters if using additional boundaries
         if in_bound_times is not None:
             config, bound_idxs = use_in_bounds(in_path, in_bound_times,
-                                            frames_to_times, F, config)
+                                            frame_times, F, config)
 
         # Make segmentation
         segments, beattimes, frame_labels = segment_wavfile(
-            F.T, frames_to_times.flatten(), dur, **config)
+            F.T, frame_times.flatten(), dur, **config)
 
         # Convert segments to times
         lines = segments.split("\n")[:-1]
@@ -511,19 +493,9 @@ class Segmenter(SegmenterInterface):
                 start = end
 
             # First and last boundaries (silence labels)
-            times = np.concatenate(([0], beats[bound_idxs], [dur]))
+            times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
             silencelabel = np.max(labels) + 1
             labels = np.concatenate(([silencelabel], labels, [silencelabel]))
-
-        if in_labels is not None:
-            est_labels = np.ones(len(times) - 1) * -1
-
-        # Remove empty segments if needed
-        est_times, est_labels = U.remove_empty_segments(times, labels)
-
-        assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
-            "and number of labels(%d) don't match" % (len(est_times),
-                                                    len(est_labels))
 
         # Remove paramaters that we don't want to store
         config.pop("initW", None)
@@ -531,5 +503,8 @@ class Segmenter(SegmenterInterface):
         config.pop("plotiter", None)
         config.pop("win", None)
         config.pop("rank", None)
+
+        # Postprocess the estimations
+        est_times, est_labels = self.postprocess(in_labels, times, labels)
 
         return est_times, est_labels
