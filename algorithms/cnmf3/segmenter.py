@@ -16,8 +16,6 @@ import numpy as np
 from scipy.ndimage import filters
 import sys
 
-import msaf.input_output as io
-import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 
 try:
@@ -182,36 +180,8 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
 
 
 class Segmenter(SegmenterInterface):
-    def process(self, in_path, in_bound_times=None, in_labels=None,
-                feature="hpcp", annot_beats=False, framesync=False, h=10, R=9,
-                rank=3, R_labels=6, rank_labels=5):
+    def process(self):
         """Main process.
-
-        Parameters
-        ----------
-        in_path : str
-            Path to audio file
-        in_bound_times : np.array()
-            Array with the input boundary times (None for computing them)
-        in_labels: np.array()
-            Array with the input labels (None for computing them)
-        feature : str
-            Identifier of the features to use
-        annot_beats : boolean
-            Whether to use annotated beats or not
-        framesync : bool
-            Whether to use framesync features
-        h : int
-            Size of median filter
-        R : int
-            Size of the median filter for activation matrix
-        rank : int
-            Rank of decomposition
-        R_labels : int
-            Size of the median filter for activation matrix for the labels
-        rank_labels : int
-            Rank of decomposition for the labels
-
         Returns
         -------
         est_times : np.array(N)
@@ -222,39 +192,19 @@ class Segmenter(SegmenterInterface):
         # C-NMF params
         niter = 300     # Iterations for the matrix factorization and clustering
 
-        # Read features
-        hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-            in_path, annot_beats=annot_beats, framesync=framesync)
+        # Preprocess to obtain features, times, and input boundary indeces
+        F, frame_times, dur, bound_idxs = self._preprocess()
 
-        # Use correct frames to find times
-        frames_to_times = beats
-        if framesync:
-            frames_to_times = U.get_time_frames(dur, anal)
-
-        # Read annotated bounds if necessary
-        bound_idxs = None
-        if in_bound_times is not None:
-            bound_idxs = io.align_times(in_bound_times, frames_to_times)
-
-        # Use specific feature
-        if feature == "hpcp":
-            F = U.lognormalize_chroma(hpcp)  # Normalize chromas
-        elif "mfcc":
-            F = mfcc
-        elif "tonnetz":
-            F = U.lognormalize_chroma(tonnetz)  # Normalize tonnetz
-        else:
-            logging.error("Feature type not recognized: %s" % feature)
-
-        if F.shape[0] >= h:
+        if F.shape[0] >= self.config["h"]:
             # Median filter
-            F = median_filter(F, M=h)
+            F = median_filter(F, M=self.config["h"])
             #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Find the boundary indices and labels using matrix factorization
             bound_idxs, est_labels = get_segmentation(
-                F.T, rank, R, rank_labels, R_labels, niter=niter,
-                bound_idxs=bound_idxs, in_labels=in_labels)
+                F.T, self.config["rank"], self.config["R"],
+                self.config["rank_labels"], self.config["R_labels"],
+                niter=niter, bound_idxs=bound_idxs, in_labels=self.in_labels)
         else:
             # The track is too short. We will only output the first and last
             # time stamps
@@ -262,16 +212,12 @@ class Segmenter(SegmenterInterface):
             est_labels = [1]
 
         # Add first and last boundaries
-        est_times = np.concatenate(([0], frames_to_times[bound_idxs], [dur]))
+        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
 
-        # Remove empty segments if needed
-        est_times, est_labels = U.remove_empty_segments(est_times, est_labels)
+        # Post process estimations
+        est_times, est_labels = self._postprocess(est_times, est_labels)
 
         logging.info("Estimated times: %s" % est_times)
         logging.info("Estimated labels: %s" % est_labels)
-
-        assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
-            "and number of labels(%d) don't match" % (len(est_times),
-                                                    len(est_labels))
 
         return est_times, est_labels
