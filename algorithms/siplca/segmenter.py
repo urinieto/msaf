@@ -80,6 +80,7 @@ import numpy as np
 
 import msaf.input_output as io
 import msaf.utils as U
+from msaf.algorithms.interface import SegmenterInterface
 
 # Local stuff
 import plca
@@ -414,120 +415,121 @@ def use_in_bounds(audio_file, in_bound_times, beats, feats, config):
     return config, bound_idxs
 
 
-def process(in_path, in_bound_times=None, in_labels=None, feature="hpcp",
-            annot_beats=False, framesync=False, **config):
-    """Main process.
+class Segmenter(SegmenterInterface):
+    def process(self, in_path, in_bound_times=None, in_labels=None,
+                feature="hpcp", annot_beats=False, framesync=False, **config):
+        """Main process.
 
-    Parameters
-    ----------
-    in_path : str
-        Path to audio file
-    in_bound_times : np.array()
-        Array with the input boundary times (None for computing them)
-    in_labels: np.array()
-        Array with the input labels (None for computing them)
-    feature : str
-        Identifier of the features to use
-    annot_beats : boolean
-        Whether to use annotated beats or not
-    framesync : bool
-        Whether to use framesync features
-    confg : dict
-        Additional paramters for the configuration of the algorithm
+        Parameters
+        ----------
+        in_path : str
+            Path to audio file
+        in_bound_times : np.array()
+            Array with the input boundary times (None for computing them)
+        in_labels: np.array()
+            Array with the input labels (None for computing them)
+        feature : str
+            Identifier of the features to use
+        annot_beats : boolean
+            Whether to use annotated beats or not
+        framesync : bool
+            Whether to use framesync features
+        confg : dict
+            Additional paramters for the configuration of the algorithm
 
-    Returns
-    -------
-    est_times : np.array(N)
-        Estimated times for the segment boundaries in seconds.
-    est_labels : np.array(N-1)
-        Estimated labels for the segments.
-    """
-    # Read features
-    hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-        in_path, annot_beats=annot_beats, framesync=framesync)
+        Returns
+        -------
+        est_times : np.array(N)
+            Estimated times for the segment boundaries in seconds.
+        est_labels : np.array(N-1)
+            Estimated labels for the segments.
+        """
+        # Read features
+        hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
+            in_path, annot_beats=annot_beats, framesync=framesync)
 
-    # Use correct frames to find times
-    frames_to_times = beats
-    if framesync:
-        frames_to_times = U.get_time_frames(dur, anal)
+        # Use correct frames to find times
+        frames_to_times = beats
+        if framesync:
+            frames_to_times = U.get_time_frames(dur, anal)
 
-    # Read annotated bounds if necessary
-    bound_idxs = None
-    if in_bound_times is not None:
-        bound_idxs = io.align_times(in_bound_times, frames_to_times)
+        # Read annotated bounds if necessary
+        bound_idxs = None
+        if in_bound_times is not None:
+            bound_idxs = io.align_times(in_bound_times, frames_to_times)
 
-    # Use specific feature
-    if feature == "hpcp":
-        F = U.lognormalize_chroma(hpcp)  # Normalize chromas
-    elif "mfcc":
-        F = mfcc
-    else:
-        logging.error("Feature type not valid : %s" % feature)
+        # Use specific feature
+        if feature == "hpcp":
+            F = U.lognormalize_chroma(hpcp)  # Normalize chromas
+        elif "mfcc":
+            F = mfcc
+        else:
+            logging.error("Feature type not valid : %s" % feature)
 
-    # Additional SI-PLCA params
-    config["plotiter"] = None
-    config["win"] = 60
-    config["rank"] = 15
+        # Additional SI-PLCA params
+        config["plotiter"] = None
+        config["win"] = 60
+        config["rank"] = 15
 
-    # Update parameters if using additional boundaries
-    if in_bound_times is not None:
-        config, bound_idxs = use_in_bounds(in_path, in_bound_times,
-                                           frames_to_times, F, config)
+        # Update parameters if using additional boundaries
+        if in_bound_times is not None:
+            config, bound_idxs = use_in_bounds(in_path, in_bound_times,
+                                            frames_to_times, F, config)
 
-    # Make segmentation
-    segments, beattimes, frame_labels = segment_wavfile(
-        F.T, frames_to_times.flatten(), dur, **config)
+        # Make segmentation
+        segments, beattimes, frame_labels = segment_wavfile(
+            F.T, frames_to_times.flatten(), dur, **config)
 
-    # Convert segments to times
-    lines = segments.split("\n")[:-1]
-    times = []
-    labels = []
-    for line in lines:
-        time = float(line.strip("\n").split("\t")[0])
-        times.append(time)
-        label = line.strip("\n").split("\t")[2]
-        labels.append(ord(label))
-
-    # Add last one and reomve empty segments
-    times, idxs = np.unique(times, return_index=True)
-    labels = np.asarray(labels)[idxs]
-    times = np.concatenate((times,
-                            [float(lines[-1].strip("\n").split("\t")[1])]))
-    times = np.unique(times)
-
-    # Align with annotated boundaries if needed
-    if in_bound_times is not None:
+        # Convert segments to times
+        lines = segments.split("\n")[:-1]
+        times = []
         labels = []
-        start = bound_idxs[0]
-        for end in bound_idxs[1:]:
-            segment_labels = frame_labels[start:end]
-            try:
-                label = np.argmax(np.bincount(segment_labels))
-            except:
-                label = frame_labels[start]
-            labels.append(label)
-            start = end
+        for line in lines:
+            time = float(line.strip("\n").split("\t")[0])
+            times.append(time)
+            label = line.strip("\n").split("\t")[2]
+            labels.append(ord(label))
 
-        # First and last boundaries (silence labels)
-        times = np.concatenate(([0], beats[bound_idxs], [dur]))
-        silencelabel = np.max(labels) + 1
-        labels = np.concatenate(([silencelabel], labels, [silencelabel]))
+        # Add last one and reomve empty segments
+        times, idxs = np.unique(times, return_index=True)
+        labels = np.asarray(labels)[idxs]
+        times = np.concatenate((times,
+                                [float(lines[-1].strip("\n").split("\t")[1])]))
+        times = np.unique(times)
 
-    if in_labels is not None:
-        est_labels = np.ones(len(times) - 1) * -1
+        # Align with annotated boundaries if needed
+        if in_bound_times is not None:
+            labels = []
+            start = bound_idxs[0]
+            for end in bound_idxs[1:]:
+                segment_labels = frame_labels[start:end]
+                try:
+                    label = np.argmax(np.bincount(segment_labels))
+                except:
+                    label = frame_labels[start]
+                labels.append(label)
+                start = end
 
-    # Remove empty segments if needed
-    est_times, est_labels = U.remove_empty_segments(times, labels)
+            # First and last boundaries (silence labels)
+            times = np.concatenate(([0], beats[bound_idxs], [dur]))
+            silencelabel = np.max(labels) + 1
+            labels = np.concatenate(([silencelabel], labels, [silencelabel]))
 
-    assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
-        "and number of labels(%d) don't match" % (len(est_times),
-                                                  len(est_labels))
+        if in_labels is not None:
+            est_labels = np.ones(len(times) - 1) * -1
 
-    # Remove paramaters that we don't want to store
-    config.pop("initW", None)
-    config.pop("initH", None)
-    config.pop("plotiter", None)
-    config.pop("win", None)
-    config.pop("rank", None)
+        # Remove empty segments if needed
+        est_times, est_labels = U.remove_empty_segments(times, labels)
 
-    return est_times, est_labels
+        assert len(est_times) - 1 == len(est_labels), "Number of boundaries (%d) " \
+            "and number of labels(%d) don't match" % (len(est_times),
+                                                    len(est_labels))
+
+        # Remove paramaters that we don't want to store
+        config.pop("initW", None)
+        config.pop("initH", None)
+        config.pop("plotiter", None)
+        config.pop("win", None)
+        config.pop("rank", None)
+
+        return est_times, est_labels
