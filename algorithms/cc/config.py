@@ -1,4 +1,4 @@
-"""Config for the Levy algorithm."""
+"""Config for the Constrained Clustering algorithm."""
 
 # Levy params
 config = {
@@ -9,6 +9,6 @@ config = {
     "min_segment_length":   32
 }
 
-algo_id = "levy"
+algo_id = "cc"
 is_boundary_type = True
 is_label_type = True
