@@ -42,6 +42,13 @@ PyMODINIT_FUNC initcc_segmenter(void)
     import_array();
 }
 
+template<typename T, int N> struct vector_wrapper {
+    vector_wrapper(T (&a)[N]) {
+        copy(a, a + N, back_inserter(v));
+    }
+
+    vector<T> v;
+};
 
 static PyObject* segment(PyObject *self, PyObject *args) {
 
@@ -60,10 +67,23 @@ static PyObject* segment(PyObject *self, PyObject *args) {
 
     int N = (int)PyArray_DIM(features_array, 0);
     shape_features = PyArray_DIMS(features_array);
+    const int M = (int)shape_features[1];
 
-    cout << "N: " << N << endl;
+    printf("N: %d, M: %d\n", N, M);
 
     //return Py_BuildValue("i", sts);
+    double *data = (double*)PyArray_DATA(features_array);
+    vector<vector<double> > f(N, vector<double>(M));
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            f[i][j] = data[i*M + j];
+        }
+    }
+
+    cout << "ok2" << endl;
+    for (int i = 0; i < f.size(); i++) {
+        cout << i << " " << f[i][0] << " " << data[i*M] << " " << f[i][M-1] << endl;
+    }
     
     return Py_None;
 }
