@@ -17,7 +17,6 @@ __email__ = "oriol@nyu.edu"
 #include <vector>
 #include <string>
 #include <time.h>
-#include "json_io.h"
 
 using namespace std;
 
