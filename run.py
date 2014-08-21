@@ -100,12 +100,14 @@ def process_track(in_path, audio_file, jam_file, ds_name, boundaries_id,
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            framesync=False, boundaries_id="gt", labels_id=None, n_jobs=4):
+            framesync=False, boundaries_id="gt", labels_id=None, n_jobs=4,
+            config=None):
     """Main process."""
 
     # Set up configuration based on algorithms parameters
-    config = io.get_configuration(feature, annot_beats, framesync,
-                                  boundaries_id, labels_id, algorithms)
+    if config is None:
+        config = io.get_configuration(feature, annot_beats, framesync,
+                                      boundaries_id, labels_id, algorithms)
     # Get relevant files
     jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
                                        ("%s_*" + msaf.Dataset.references_ext)
