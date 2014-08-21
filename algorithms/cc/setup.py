@@ -35,7 +35,6 @@ cc_segmenter = Extension("cc_segmenter",
                                   "maths/MathUtilities.cpp",
                                   "maths/pca/pca.c",
                                   "thread/Thread.cpp",
-                                  "json_io.cpp",
                                   "main.cpp"
                                   ],
                          include_dirs=["dsp/segmentation",
