@@ -6,7 +6,7 @@ CXXFLAGS  := $(CFLAGS)
 #include build/general/Makefile.inc
 
 LIBRARY ?= libqm-dsp.a
-EXEC ?= segmenter
+EXEC ?= main
 CXX ?= g++
 CC  ?= gcc
 AR  ?= ar

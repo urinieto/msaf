@@ -1,12 +1,10 @@
 """Config for the Constrained Clustering algorithm."""
 
-# Levy params
+# Levy params (from original paper)
 config = {
-    "niter"             :   200,
-    "alphaZ"            :   -0.01,
-    "normalize_frames"  :   True,
-    "viterbi_segmenter" :   True,
-    "min_segment_length":   32
+    "nHMMStates"            : 80,
+    "nclusters"             : 6,
+    "neighbourhoodLimit"    : 16
 }
 
 algo_id = "cc"

@@ -357,15 +357,18 @@ void ClusterMeltSegmenter::segment()
 	
     q = new int[features.size()];
 	
-    if (featureType == FEATURE_TYPE_UNKNOWN ||
-        featureType == FEATURE_TYPE_MFCC) {
-        cluster_segment(q, arrFeatures, features.size(), features[0].size(), nHMMStates, histogramLength, 
-                        nclusters, neighbourhoodLimit);
-    }
-    else {
-        constq_segment(q, arrFeatures, features.size(), nbins, ncoeff, featureType, 
-                       nHMMStates, histogramLength, nclusters, neighbourhoodLimit);
-    }
+    // uri: Do everything here. Chroma features are already normalised
+    cluster_segment(q, arrFeatures, features.size(), features[0].size(), nHMMStates, histogramLength, 
+                    nclusters, neighbourhoodLimit);
+    //if (featureType == FEATURE_TYPE_UNKNOWN ||
+        //featureType == FEATURE_TYPE_MFCC) {
+        //cluster_segment(q, arrFeatures, features.size(), features[0].size(), nHMMStates, histogramLength, 
+                        //nclusters, neighbourhoodLimit);
+    //}
+    //else {
+        //constq_segment(q, arrFeatures, features.size(), nbins, ncoeff, featureType, 
+                       //nHMMStates, histogramLength, nclusters, neighbourhoodLimit);
+    //}
 	
     // convert the cluster assignment sequence to a segmentation
     makeSegmentation(q, features.size());		
@@ -415,7 +418,7 @@ void ClusterMeltSegmenter::makeSegmentation(int* q, int len)
     }
     else {
         // Use Annotated Boundaries
-        cout << annotBounds.size() << endl;
+        //cout << annotBounds.size() << endl;
         for (int i = 0; i < annotBounds.size() - 1; i++) {
             int start = annotBounds[i];
             int end = annotBounds[i+1];
