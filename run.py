@@ -116,7 +116,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     # Call in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
         in_path, audio_file, jam_file, ds_name, boundaries_id, labels_id,
-        config) for audio_file, jam_file in zip(audio_files, jam_files))
+        config) for audio_file, jam_file in zip(audio_files, jam_files)[:])
 
 
 def main():

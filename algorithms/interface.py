@@ -61,13 +61,17 @@ class SegmenterInterface:
         this interface."""
         raise NotImplementedError("This method must be implemented")
 
-    def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc"]):
+    def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc"],
+                    normalize=True):
         """This method obtains the actual features, their frame times,
         and the boundary indeces in these features if needed."""
         # Read features
         hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
             self.audio_file, annot_beats=self.annot_beats,
             framesync=self.framesync)
+
+        # Store analysis parameters
+        self.anal = anal
 
         # Use correct frames to find times
         frame_times = beats
@@ -78,21 +82,22 @@ class SegmenterInterface:
         bound_idxs = None
         if self.in_bound_times is not None:
             bound_idxs = io.align_times(self.in_bound_times, frame_times)
+            bound_idxs = np.unique(bound_idxs)
 
         # Use specific feature
         if self.feature_str not in valid_features:
             raise RuntimeError("Feature %s in not valid for algorithm: %s" %
                                (self.feature_str, __name__))
         else:
-            if self.feature_str == "hpcp":
-                F = U.lognormalize_chroma(hpcp)  # Normalize chromas
-            elif "mfcc":
-                F = mfcc
-            elif "tonnetz":
-                F = U.lognormalize_chroma(tonnetz)  # Normalize tonnetz
-            else:
+            try:
+                F = eval(self.feature_str)
+            except:
                 raise RuntimeError("Feature %s in not supported by MSAF" %
                                    (self.feature_str))
+
+        # Normalize if needed
+        if normalize:
+            F = U.lognormalize_chroma(F)
 
         return F, frame_times, dur, bound_idxs
 

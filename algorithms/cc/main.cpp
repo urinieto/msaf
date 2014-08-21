@@ -42,115 +42,103 @@ PyMODINIT_FUNC initcc_segmenter(void)
     import_array();
 }
 
-template<typename T, int N> struct vector_wrapper {
-    vector_wrapper(T (&a)[N]) {
-        copy(a, a + N, back_inserter(v));
+/*
+ * Assigns the data in array "data" to the 2D vector v, of sizes N x M.
+ */
+void assignDataTo2dVector(double *data, vector<vector<double> > &v, int N, int M) {
+    for (int i = 0; i < N; i++) {
+        v[i].assign(&data[i*M], &data[i*M + M]);
     }
-
-    vector<T> v;
-};
+}
 
 static PyObject* segment(PyObject *self, PyObject *args) {
 
     PyObject *features_obj;
+    PyObject *in_bounds_obj;
     npy_intp *shape_features;
+    int is_harmonic;
+    int nHMMStates;
+    int nclusters;
+    int neighbourhoodLimit;
+    int sample_rate;
 
-    if (!PyArg_ParseTuple(args, "O", &features_obj))
+    if (!PyArg_ParseTuple(args, "iiiiiOO", &is_harmonic, &nHMMStates, &nclusters,
+                &neighbourhoodLimit, &sample_rate, &features_obj, &in_bounds_obj))
         return NULL;
 
+    // Get numpy arrays
     PyObject *features_array = PyArray_FROM_OTF(features_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-
-    if (features_array == NULL) {
+    PyObject *in_bounds_array = PyArray_FROM_OTF(in_bounds_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+    if (features_array == NULL || in_bounds_array == NULL) {
         Py_XDECREF(features_array);
+        Py_XDECREF(in_bounds_array);
         return NULL;
     }
 
-    int N = (int)PyArray_DIM(features_array, 0);
+    // Get numpy array dimensions
     shape_features = PyArray_DIMS(features_array);
-    const int M = (int)shape_features[1];
+    int N = (int)PyArray_DIM(features_array, 0);
+    int M = (int)shape_features[1];
+    int in_bounds_N = (int)PyArray_DIM(in_bounds_array, 0);
 
-    printf("N: %d, M: %d\n", N, M);
+    //printf("Features Size N: %d, M: %d\n", N, M);
+    //printf("sample rate: %d\n", sample_rate);
+    //printf("nHMMStates: %d\n", nHMMStates);
+    //printf("nclusters: %d\n", nclusters);
+    //printf("neighbourhoodLimit: %d\n", neighbourhoodLimit);
+    //printf("is_harmonic: %d\n", is_harmonic);
 
-    //return Py_BuildValue("i", sts);
-    double *data = (double*)PyArray_DATA(features_array);
+    // Numpy Arrays to vectors
+    double *features_data = (double*)PyArray_DATA(features_array);
     vector<vector<double> > f(N, vector<double>(M));
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
-            f[i][j] = data[i*M + j];
-        }
-    }
+    assignDataTo2dVector(features_data, f, N, M);
 
-    cout << "ok2" << endl;
-    for (int i = 0; i < f.size(); i++) {
-        cout << i << " " << f[i][0] << " " << data[i*M] << " " << f[i][M-1] << endl;
-    }
-    
-    return Py_None;
-}
+    // Input boundaries might be empty
+    double *in_bounds_data = (double*)PyArray_DATA(in_bounds_array);
+    vector<int> in_bounds(in_bounds_N);
+    in_bounds.assign(in_bounds_data, in_bounds_data + in_bounds_N);
 
-int main(int argc, char const *argv[])
-{
-
-    if ( argc != 5 ) {
-        cout << "Usage:\n\t" << argv[0] << " path_to_features(file.json) annot_beats(0 or 1) features(mfcc|hpcp|tonnetz) annot_bounds(0 or 1)" << endl;
-        return -1;
-    }
-    const char *feature = argv[3]; // mffc or hpcp
+    //printf("In Bounds Len: %d\n", in_bounds_N);
+    //for (int i = 0; i < in_bounds_N; i++) {
+        //cout << in_bounds[i] << " ";
+    //}
+    //cout << endl;
 
     Segmentation segmentation;
-    int nframes = getFileFrames(argv[1]);
-    bool annot_beats = atoi(argv[2]);
-    bool annot_bounds = atoi(argv[4]);
+    ClusterMeltSegmenterParams params;
 
-    /* Only segment if duration is greater than 15 seconds */
-    if (nframes * 2048 > 15 * 11025) {
-        ClusterMeltSegmenterParams params;
-
-        if (strcmp(feature, "mfcc")) {
-            params.featureType = FEATURE_TYPE_MFCC;
-        }
-        else if (strcmp(feature, "hpcp") || strcmp(feature, "tonnetz")) {
-            params.featureType = FEATURE_TYPE_CHROMA;
-        }
-        // Set original paper parameters
-        params.nHMMStates = 80;
-        params.nclusters = 6;
-        params.neighbourhoodLimit = 16;
-
-        ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
-
-        // Read features from JAMS
-        vector<vector<double> > f = readJSON(argv[1], annot_beats, feature);
-
-        // Segment until we have a potentially good result
-        do {
-            // Initialize segmenter
-            segmenter->initialise(11025);
-
-            // Set features
-            segmenter->setFeatures(f);
-
-            // Set Annotated Boundaries Indeces if needed
-            if (annot_bounds) {
-                vector<int> annotBounds = getAnnotBoundIdxs();
-                segmenter->setAnnotBounds(annotBounds);
-            }
-
-            // Segment
-            segmenter->segment();
-            segmentation = segmenter->getSegmentation();
-        } while(segmentation.segments.size() < 2 && f.size() >= 90);
-
-        // Clean up
-        delete segmenter;
+    if (is_harmonic) {
+        params.featureType = FEATURE_TYPE_CHROMA;
     }
     else {
-        Segment s;
-        s.start = 0;
-        s.end = nframes;
-        s.type = 0;
-        segmentation.segments.push_back(s);
+        params.featureType = FEATURE_TYPE_MFCC;
     }
+
+    // Set parameters
+    params.nHMMStates = nHMMStates;
+    params.nclusters = nclusters;
+    params.neighbourhoodLimit = neighbourhoodLimit;
+
+    ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
+
+    // Segment until we have a potentially good result
+    do {
+        // Initialize segmenter
+        segmenter->initialise(sample_rate);
+
+        // Set features
+        segmenter->setFeatures(f);
+
+        // Set previously computed Boundaries Indeces if needed
+        if (in_bounds_N > 0) {
+            segmenter->setAnnotBounds(in_bounds);
+        }
+
+        // Segment
+        segmenter->segment();
+        segmentation = segmenter->getSegmentation();
+    } while(segmentation.segments.size() < 2 && f.size() >= 90);
+
 
     //cout << segmentation.segments.size() << endl;
     cout << "estimated labels: ";
@@ -159,9 +147,41 @@ int main(int argc, char const *argv[])
     }
     cout << endl;
 
-    // Write the results
-    writeResults(segmentation, annot_beats, annot_bounds, argv[1], feature);
+    // Put segmentation times in a Python List
+    int times_len = segmentation.segments.size() + 1;
+    PyObject *times = PyList_New(times_len);
+    if (!times)
+        return NULL;
+    PyObject *num = PyInt_FromLong(segmentation.segments[0].start);
+    PyList_SET_ITEM(times, 0, num);
+    for (int i = 0; i < times_len - 1; i++) {
+        PyObject *num = PyInt_FromLong(segmentation.segments[i].end);
+        if (!num) {
+            Py_DECREF(times);
+            return NULL;
+        }
+        PyList_SET_ITEM(times, i + 1, num);
+    }
 
-    // Done
-    return 0;
+    // Put Labels in a Python list
+    int labels_len = segmentation.segments.size();
+    PyObject *labels = PyList_New(labels_len);
+    if (!labels)
+        return NULL;
+    for (int i = 0; i < labels_len; i++) {
+        PyObject *num = PyInt_FromLong(segmentation.segments[i].type);
+        if (!num) {
+            Py_DECREF(labels);
+            return NULL;
+        }
+        PyList_SET_ITEM(labels, i, num);
+    }
+
+    // Cleanup
+    Py_XDECREF(features_array);
+    Py_XDECREF(in_bounds_array);
+    delete segmenter;
+
+    // Return Python tuple (est_times, est_labels)
+    return Py_BuildValue("[O,O]", times, labels);
 }
