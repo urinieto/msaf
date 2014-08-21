@@ -4,8 +4,9 @@ import argparse
 import eval
 import logging
 import time
-import run
+import pandas as pd
 
+import run
 from msaf import input_output as io
 import msaf.algorithms as algorithms
 
@@ -19,6 +20,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     if ds_name == "Beatles":
         run_name = "Isophonics"
 
+    results_file = "results_sweep_boundsE%s_labelsE%s.csv" % (boundaries_id,
+                                                              labels_id)
+
     if labels_id == "cnmf3" and boundaries_id == "cnmf3":
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id, algorithms)
@@ -26,6 +30,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         hh = range(4, 20)
         RR = range(4, 20)
         ranks = range(2, 5)
+        all_results = pd.DataFrame()
         for rank in ranks:
             for h in hh:
                 for R in RR:
@@ -33,12 +38,24 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                     config["R"] = R
                     config["rank"] = rank
 
+                    # Run process
                     run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
                                 boundaries_id=boundaries_id,
                                 labels_id=labels_id, config=config)
 
-                    eval.process(in_path, boundaries_id, labels_id, ds_name,
-                                 save=True, n_jobs=n_jobs, config=config)
+                    # Compute evaluations
+                    results = eval.process(in_path, boundaries_id, labels_id,
+                                           ds_name, save=True, n_jobs=n_jobs,
+                                           config=config)
+
+                    # Save avg results
+                    new_columns = {"config_h": h, "config_R": R,
+                                   "config_rank": rank}
+                    results = results.append([new_columns],
+                                             ignore_index=True)
+                    all_results = all_results.append(results.mean(),
+                                                     ignore_index=True)
+                    all_results.to_csv(results_file)
 
     else:
         logging.error("Can't sweep parameters for %s algorithm. "

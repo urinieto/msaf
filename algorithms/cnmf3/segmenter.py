@@ -213,9 +213,9 @@ class Segmenter(SegmenterInterface):
 
         # Add first and last boundaries
         est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
-        #silencelabel = np.max(est_labels) + 1
-        #est_labels = np.concatenate(([silencelabel], est_labels,
-                                     #[silencelabel]))
+        silencelabel = np.max(est_labels) + 1
+        est_labels = np.concatenate(([silencelabel], est_labels,
+                                     [silencelabel]))
 
         # Post process estimations
         est_times, est_labels = self._postprocess(est_times, est_labels)
