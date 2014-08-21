@@ -254,7 +254,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
             annot_beats=False, framesync=False, feature="hpcp", save=False,
-            n_jobs=4):
+            n_jobs=4, config=None):
     """Main process.
 
     Parameters
@@ -283,8 +283,9 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     """
 
     # Set up configuration based on algorithms parameters
-    config = io.get_configuration(feature, annot_beats, framesync,
-                                  boundaries_id, labels_id, algorithms)
+    if config is None:
+        config = io.get_configuration(feature, annot_beats, framesync,
+                                      boundaries_id, labels_id, algorithms)
 
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
