@@ -55,7 +55,8 @@ def cnmf(S, rank, niter=500, hull=False):
     if hull:
         nmf_mdl = pymf.CHNMF(S, num_bases=rank)
     else:
-        nmf_mdl = pymf.CNMF(S, num_bases=rank)
+        #nmf_mdl = pymf.CNMF(S, num_bases=rank)
+        nmf_mdl = pymf.NMF(S, num_bases=rank)
     nmf_mdl.factorize(niter=niter)
     F = np.asarray(nmf_mdl.W)
     G = np.asarray(nmf_mdl.H)
