@@ -13,6 +13,7 @@ import datetime
 import json
 import logging
 import numpy as np
+from threading import Thread
 import os
 
 # Local stuff
@@ -274,6 +275,16 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     return C, M, T, beats, dur, analysis
 
 
+def safe_write(jam, out_file):
+    """This method is suposed to be called in a safe thread in order to
+    avoid interruptions and corrupt the file."""
+    try:
+        f = open(out_file, "w")
+        json.dump(jam, f, indent=2)
+    finally:
+        f.close()
+
+
 def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
                      **params):
     """Saves the segment estimations in a JAMS file.close
@@ -348,9 +359,11 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
     # Place estimation in its place
     if curr_i != -1:
         jam.sections[curr_i] = curr_estimation
-    with open(out_file, "w") as f:
-        json.dump(jam, f, indent=2)
-        f.flush()
+
+    # Write file and do not let users interrupt it
+    my_thread = Thread(target=safe_write, args=(jam, out_file,))
+    my_thread.start()
+    my_thread.join()
 
 
 def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):

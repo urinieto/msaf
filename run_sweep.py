@@ -27,35 +27,43 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id, algorithms)
 
-        hh = range(4, 20)
-        RR = range(4, 20)
-        ranks = range(2, 5)
+        hh = range(11, 12)
+        RR = range(10, 11)
+        ranks = range(2, 3)
+        RR_labels = range(4, 15)
+        ranks_labels = range(5, 8)
         all_results = pd.DataFrame()
         for rank in ranks:
             for h in hh:
                 for R in RR:
-                    config["h"] = h
-                    config["R"] = R
-                    config["rank"] = rank
+                    for rank_labels in ranks_labels:
+                        for R_labels in RR_labels:
+                            config["h"] = h
+                            config["R"] = R
+                            config["rank"] = rank
+                            config["rank_labels"] = rank_labels
+                            config["R_labels"] = R_labels
 
-                    # Run process
-                    run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
-                                boundaries_id=boundaries_id,
-                                labels_id=labels_id, config=config)
+                            # Run process
+                            run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
+                                        boundaries_id=boundaries_id,
+                                        labels_id=labels_id, config=config)
 
-                    # Compute evaluations
-                    results = eval.process(in_path, boundaries_id, labels_id,
-                                           ds_name, save=True, n_jobs=n_jobs,
-                                           config=config)
+                            # Compute evaluations
+                            results = eval.process(in_path, boundaries_id, labels_id,
+                                                ds_name, save=True, n_jobs=n_jobs,
+                                                config=config)
 
-                    # Save avg results
-                    new_columns = {"config_h": h, "config_R": R,
-                                   "config_rank": rank}
-                    results = results.append([new_columns],
-                                             ignore_index=True)
-                    all_results = all_results.append(results.mean(),
-                                                     ignore_index=True)
-                    all_results.to_csv(results_file)
+                            # Save avg results
+                            new_columns = {"config_h": h, "config_R": R,
+                                           "config_rank": rank,
+                                           "config_R_labels": R_labels,
+                                           "config_rank_labels": rank_labels}
+                            results = results.append([new_columns],
+                                                    ignore_index=True)
+                            all_results = all_results.append(results.mean(),
+                                                            ignore_index=True)
+                            all_results.to_csv(results_file)
 
     else:
         logging.error("Can't sweep parameters for %s algorithm. "

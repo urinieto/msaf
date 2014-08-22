@@ -11,9 +11,10 @@ __email__ = "oriol@nyu.edu"
 
 import argparse
 import glob
-import os
 import time
 import logging
+import os
+import numpy as np
 
 from joblib import Parallel, delayed
 
@@ -103,6 +104,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             framesync=False, boundaries_id="gt", labels_id=None, n_jobs=4,
             config=None):
     """Main process."""
+
+    # Seed random to reproduce results
+    np.random.seed(123)
 
     # Set up configuration based on algorithms parameters
     if config is None:
