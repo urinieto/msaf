@@ -1,11 +1,11 @@
 """Configuration for the C-NMF v3 algorithm."""
 
 config = {
-    "h" : 8,
-    "R" : 15,
+    "h" : 11,
+    "R" : 10,
     "rank" : 2,
-    "R_labels" : 6,
-    "rank_labels" : 4
+    "R_labels" : 11,
+    "rank_labels" : 6
 }
 
 algo_id = "cnmf3"

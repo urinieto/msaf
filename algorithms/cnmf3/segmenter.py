@@ -78,7 +78,8 @@ def compute_labels(X, rank, R, bound_idxs, niter=300):
     label_frames = filter_activation_matrix(G.T, R)
     label_frames = np.asarray(label_frames, dtype=int)
 
-    labels = [label_frames[0]]
+    #labels = [label_frames[0]]
+    labels = []
     bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
     for bound_inter in bound_inters:
         if bound_inter[1] - bound_inter[0] <= 0:
@@ -87,7 +88,7 @@ def compute_labels(X, rank, R, bound_idxs, niter=300):
             labels.append(most_frequent(
                 label_frames[bound_inter[0]: bound_inter[1]]))
         #print bound_inter, labels[-1]
-    labels.append(label_frames[-1])
+    #labels.append(label_frames[-1])
 
     return labels
 
@@ -95,7 +96,10 @@ def compute_labels(X, rank, R, bound_idxs, niter=300):
 def filter_activation_matrix(G, R):
     """Filters the activation matrix G, and returns a flattened copy."""
 
-    #originalG = np.copy(G)
+    #import pylab as plt
+    #plt.imshow(G, interpolation="nearest", aspect="auto")
+    #plt.show()
+
     idx = np.argmax(G, axis=1)
     max_idx = np.arange(G.shape[0])
     max_idx = (max_idx, idx.flatten())
@@ -103,13 +107,8 @@ def filter_activation_matrix(G, R):
     G[max_idx] = idx + 1
 
     # TODO: Order matters?
-    #oG = np.copy(G)
     G = np.sum(G, axis=1)
     G = median_filter(G[:, np.newaxis], R)
-    #plt.subplot(1, 2, 1)
-    #plt.imshow(originalG, interpolation="nearest", aspect="auto")
-    #plt.subplot(1, 2, 2)
-    #plt.imshow(F, interpolation="nearest", aspect="auto"); plt.show()
 
     return G.flatten()
 
@@ -143,6 +142,10 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
         Indeces of the labels representing the similarity between segments.
     """
 
+    #import pylab as plt
+    #plt.imshow(X, interpolation="nearest", aspect="auto")
+    #plt.show()
+
     # Find non filtered boundaries
     while True:
         if bound_idxs is None:
@@ -163,7 +166,7 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
         else:
             break
 
-    # Add first label
+    # Add first and last boundary
     bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1]-1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     if in_labels is None:
@@ -212,10 +215,12 @@ class Segmenter(SegmenterInterface):
             est_labels = [1]
 
         # Add first and last boundaries
+        bound_idxs = np.asarray(bound_idxs, dtype=int)
         est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
         silencelabel = np.max(est_labels) + 1
         est_labels = np.concatenate(([silencelabel], est_labels,
                                      [silencelabel]))
+        #print est_times, est_labels, len(est_times), len(est_labels)
 
         # Post process estimations
         est_times, est_labels = self._postprocess(est_times, est_labels)
