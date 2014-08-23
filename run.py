@@ -39,7 +39,7 @@ def get_labels_module(labels_id):
     if labels_id is None:
         return None
     module = eval(algorithms.__name__ + "." + labels_id)
-    if not module.is_boundary_type:
+    if not module.is_label_type:
         raise RuntimeError("Algorithm %s can not label segments!" %
                            labels_id)
     return module

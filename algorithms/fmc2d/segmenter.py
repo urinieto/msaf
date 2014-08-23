@@ -14,9 +14,6 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import argparse
-import sys
-import time
 import logging
 
 import numpy as np
@@ -28,10 +25,7 @@ import scipy.cluster.vq as vq
 import utils_2dfmc as utils2d
 from xmeans import XMeans
 
-sys.path.append("../../")
-import msaf_io as MSAF
-#import eval as EV
-import utils as U
+from msaf.algorithms.interface import SegmenterInterface
 
 MIN_LEN = 4
 
@@ -114,94 +108,36 @@ def compute_similarity(PCP, bound_idxs, xmeans=False, k=5):
     return labels_est
 
 
-def process(in_path, annot_beats=False, xmeans=False, k=5):
-    """Main process.
+class Segmenter(SegmenterInterface):
+    def process(self):
+        """Main process.
+        Returns
+        -------
+        est_times : np.array(N)
+            Estimated times for the segment boundaries in seconds.
+        est_labels : np.array(N-1)
+            Estimated labels for the segments.
+        """
+        # Preprocess to obtain features, times, and input boundary indeces
+        F, frame_times, dur, bound_idxs = self._preprocess()
 
-    Parameters
-    ----------
-    in_path : str
-        Path to audio file
-    annot_beats : boolean
-        Whether to use annotated beats or not
-    feature : str
-        Identifier of the features to use
-    """
-    # Read features
-    chroma, mfcc, beats, dur = MSAF.get_features(in_path,
-                                                 annot_beats=annot_beats)
+        # Find the labels using 2D-FMCs
+        est_labels = compute_similarity(F, bound_idxs,
+                                        xmeans=self.config["xmeans"],
+                                        k=self.config["k"])
 
-    # Read annotated bounds
-    try:
-        bound_idxs = MSAF.read_annot_bound_frames(in_path, beats)[1:-1]
-    except:
-        logging.warning("No annotated boundaries in file %s" % in_path)
-        return np.asarray([0, dur]), np.asarray([1])
+        # Add first and last boundaries
+        bound_idxs = np.asarray(bound_idxs, dtype=int)
+        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
+        silencelabel = np.max(est_labels) + 1
+        est_labels = np.concatenate(([silencelabel], est_labels,
+                                     [silencelabel]))
+        #print est_times, est_labels, len(est_times), len(est_labels)
 
-    # Use specific feature
-    F = U.lognormalize_chroma(chroma)  # Normalize chromas
+        # Post process estimations
+        est_times, est_labels = self._postprocess(est_times, est_labels)
 
-    # Find the labels using 2D-FMCs
-    est_labels = compute_similarity(F, bound_idxs, xmeans=xmeans, k=k)
+        logging.info("Estimated times: %s" % est_times)
+        logging.info("Estimated labels: %s" % est_labels)
 
-    # Get times
-    est_times = beats[bound_idxs]  # Index to times
-
-    # Add first and last boundary
-    bound_idxs = np.concatenate(([0], bound_idxs)).astype(int)
-    est_times = beats[bound_idxs]  # Index to times
-    est_times = np.concatenate((est_times, [dur]))  # Last bound
-    est_labels = np.concatenate(([-1], est_labels, [-1]))
-
-    # Print out
-    logging.info("Estimated times: %s" % est_times)
-    logging.info("Estimated labels: %s" % est_labels)
-
-    # Make sure labels and times match
-    assert len(est_times) - 1 == len(est_labels), "Labels and times do not " \
-        "match: len(est_times) = %d, len(est_labels) = %d." % \
-        (len(est_times), len(est_labels))
-
-    return est_times, est_labels
-
-
-def main():
-    """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(description=
-        "Segments the given audio file using the new version of the C-NMF "
-                                     "method.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("in_path",
-                        action="store",
-                        help="Input path to the audio file")
-    parser.add_argument("-k",
-                        action="store",
-                        dest="k",
-                        help="Number of unique segments",
-                        default=6)
-    parser.add_argument("-x",
-                        action="store_true",
-                        dest="xmeans",
-                        help="Estimate K using the BIC method",
-                        default=False)
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
-    args = parser.parse_args()
-    start_time = time.time()
-
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
-
-    # Run the algorithm
-    process(args.in_path, annot_beats=args.annot_beats, xmeans=args.xmeans,
-            k=args.k)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-if __name__ == '__main__':
-    main()
-
+        return est_times, est_labels
