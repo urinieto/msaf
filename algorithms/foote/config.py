@@ -2,11 +2,9 @@
 
 # C-NMF Params
 config = {
-    "niter"             :   200,
-    "alphaZ"            :   -0.01,
-    "normalize_frames"  :   True,
-    "viterbi_segmenter" :   True,
-    "min_segment_length":   32
+    "M_gaussian"    : 24,
+    "m_median"      : 1,
+    "L_peaks"       : 24
 }
 
 algo_id = "foote"
