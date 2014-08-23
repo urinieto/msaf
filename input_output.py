@@ -11,6 +11,7 @@ __email__ = "oriol@nyu.edu"
 
 import datetime
 import json
+import glob
 import logging
 import numpy as np
 from threading import Thread
@@ -492,13 +493,75 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     return config
 
 
-def filter_by_artist(jam_files, est_files, artist_name="The Beatles"):
+def filter_by_artist(jam_files, est_files, audio_files,
+                     artist_name="The Beatles"):
     """Filters jam files and est files by artist name."""
     new_jam_files = []
     new_est_files = []
-    for jam_file, est_file in zip(jam_files, est_files):
+    new_audio_files = []
+    for jam_file, est_file, audio_file in zip(jam_files, est_files,
+                                              audio_files):
         jam = jams2.load(jam_file)
         if jam.metadata.artist == artist_name:
             new_jam_files.append(jam_file)
             new_est_files.append(est_file)
-    return new_jam_files, new_est_files
+            new_audio_files.append(audio_file)
+    return new_jam_files, new_est_files, new_audio_files
+
+
+def get_SALAMI_internet(jam_files, est_files, audio_files):
+    """Gets the SALAMI Internet subset from SALAMI."""
+    new_jam_files = []
+    new_est_files = []
+    new_audio_files = []
+    for jam_file, est_file, audio_file in zip(jam_files, est_files,
+                                              audio_files):
+        num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
+        if num >= 956 and num <= 1498:
+            new_jam_files.append(jam_file)
+            new_est_files.append(est_file)
+            new_audio_files.append(audio_file)
+    return new_jam_files, new_est_files, new_audio_files
+
+
+def get_dataset_files(in_path, ds_name="*"):
+    """Gets the files of the dataset with a prefix of ds_name."""
+
+    # All datasets
+    ds_dict = {
+        "Beatles"   : "Isophonics",
+        "Cerulean"  : "Cerulean",
+        "Epiphyte"  : "Epiphyte",
+        "Isophonics": "Isophonics",
+        "SALAMI"    : "SALAMI",
+        "SALAMI-i"  : "SALAMI",
+        "*"         : "*"
+    }
+
+    try:
+        prefix = ds_dict[ds_name]
+    except KeyError:
+        raise RuntimeError("Dataset %s is not valid. Valid datasets are: %s" %
+                           (ds_name, ds_dict.keys()))
+
+    # Get files
+    jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
+                                       ("%s_*" + msaf.Dataset.references_ext)
+                                       % prefix))
+    est_files = glob.glob(os.path.join(in_path, msaf.Dataset.estimations_dir,
+                                       ("%s_*" + msaf.Dataset.estimations_ext)
+                                       % prefix))
+    audio_files = glob.glob(os.path.join(in_path, "audio",
+                                         "%s_*.[wm][ap][v3]" % prefix))
+
+    # Filter by the beatles
+    if ds_name == "Beatles":
+        jam_files, est_files, audio_files = filter_by_artist(
+            jam_files, est_files, audio_files, "The Beatles")
+
+    # Salami Internet hack
+    if ds_name == "SALAMI-i":
+        jam_files, est_files, audio_files = get_SALAMI_internet(
+            jam_files, est_files, audio_files)
+
+    return jam_files, est_files, audio_files
