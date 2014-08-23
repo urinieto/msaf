@@ -11,7 +11,6 @@ __version__     = "1.0"
 __email__       = "oriol@nyu.edu"
 
 import argparse
-import glob
 from joblib import Parallel, delayed
 import logging
 import mir_eval
@@ -99,38 +98,8 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
     ### Labels ###
     if est_labels != []:
-        # TODO: Remove silence?
-        #last_time = ann_inter[-1][-1]
-        #ann_inter = ann_inter[1:-1]
-        #ann_inter[0][0] = 0
-        #ann_inter[-1][-1] = last_time
-        #ann_labels = ann_labels[1:-1]
-
-        #est_inter = est_inter[1:-1]
-        #print "Analyzing", est_file
-        #ann_labels = list(ann_labels)
-        #est_labels = list(est_labels)
-        #print est_labels
-        #print est_inter
-        #print len(ann_labels), len(ann_inter)
-        #ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                            #ann_labels)
-        #est_inter, est_labels = mir_eval.util.adjust_intervals(
-            #est_inter, est_labels, t_min=0, t_max=ann_inter.max())
-        #print len(ann_labels), len(ann_inter)
-        #print len(est_labels), len(est_inter)
-        #print est_labels
-
-        ## Pair-wise frame clustering
-        #res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
-            #ann_inter, ann_labels, est_inter, est_labels)
-
-        ## Normalized Conditional Entropies
-        #res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
-            #ann_inter, ann_labels, est_inter, est_labels)
         try:
             # Align labels with intervals
-            #print est_inter, est_labels
             ann_labels = list(ann_labels)
             est_labels = list(est_labels)
             ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
