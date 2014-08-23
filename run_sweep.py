@@ -5,6 +5,7 @@ import eval
 import logging
 import time
 import pandas as pd
+import numpy as np
 
 import run
 from msaf import input_output as io
@@ -59,6 +60,47 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                                            "config_rank": rank,
                                            "config_R_labels": R_labels,
                                            "config_rank_labels": rank_labels}
+                            results = results.append([new_columns],
+                                                    ignore_index=True)
+                            all_results = all_results.append(results.mean(),
+                                                            ignore_index=True)
+                            all_results.to_csv(results_file)
+
+    elif labels_id is None and boundaries_id == "sf":
+        config = io.get_configuration(feature, annot_beats, framesync,
+                                      boundaries_id, labels_id, algorithms)
+
+        MM = range(8, 24)
+        mm = range(2, 4)
+        kk = np.arange(0.02, 0.1, 0.01)
+        Mpp = range(16, 24)
+        ott = np.arange(0.02, 0.1, 0.01)
+        all_results = pd.DataFrame()
+        for M in MM:
+            for m in mm:
+                for k in kk:
+                    for Mp in Mpp:
+                        for ot in ott:
+                            config["M_gaussian"] = M
+                            config["m_embedded"] = m
+                            config["k_nearest"] = k
+                            config["Mp_adaptive"] = Mp
+                            config["offset_thres"] = ot
+
+                            # Run process
+                            run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
+                                        boundaries_id=boundaries_id,
+                                        labels_id=labels_id, config=config)
+
+                            # Compute evaluations
+                            results = eval.process(in_path, boundaries_id, labels_id,
+                                                ds_name, save=True, n_jobs=n_jobs,
+                                                config=config)
+
+                            # Save avg results
+                            new_columns = {"config_M": M, "config_m": m,
+                                           "config_k": k, "config_Mp": Mp,
+                                           "config_ot": ot}
                             results = results.append([new_columns],
                                                     ignore_index=True)
                             all_results = all_results.append(results.mean(),
