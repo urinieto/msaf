@@ -207,7 +207,7 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def process_track(est_file, jam_file, salamii, beatles, boundaries_id,
+def process_track(est_file, jam_file, salamii, boundaries_id,
                   labels_id, config):
     """Processes a single track."""
 
@@ -220,11 +220,6 @@ def process_track(est_file, jam_file, salamii, beatles, boundaries_id,
     if salamii:
         num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
         if num < 956 or num > 1498:
-            return []
-
-    if beatles:
-        jam = jams2.load(jam_file)
-        if jam.metadata.artist != "The Beatles":
             return []
 
     try:
@@ -309,6 +304,10 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     est_files = glob.glob(os.path.join(in_path, msaf.Dataset.estimations_dir,
                                        ("%s_*" + msaf.Dataset.estimations_ext)
                                        % ds_name))
+    # Filter by the beatles
+    if beatles:
+        jam_files, est_files = io.filter_by_artist(jam_files, est_files,
+                                                   "The Beatles")
 
     logging.info("Evaluating %d tracks..." % len(jam_files))
 
@@ -317,7 +316,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        est_file, jam_file, salamii, beatles, boundaries_id, labels_id, config)
+        est_file, jam_file, salamii, boundaries_id, labels_id, config)
         for est_file, jam_file in zip(est_files, jam_files)[:])
 
     # Aggregat evaluations in pandas format

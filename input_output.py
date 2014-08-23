@@ -490,3 +490,15 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
         label_config = eval(algorithms.__name__ + "." + labels_id).config
         config.update(label_config)
     return config
+
+
+def filter_by_artist(jam_files, est_files, artist_name="The Beatles"):
+    """Filters jam files and est files by artist name."""
+    new_jam_files = []
+    new_est_files = []
+    for jam_file, est_file in zip(jam_files, est_files):
+        jam = jams2.load(jam_file)
+        if jam.metadata.artist == artist_name:
+            new_jam_files.append(jam_file)
+            new_est_files.append(est_file)
+    return new_jam_files, new_est_files

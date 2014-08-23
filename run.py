@@ -112,12 +112,23 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id, algorithms)
+    # The Beatles hack
+    beatles = False
+    if ds_name == "Beatles":
+        beatles = True
+        ds_name = "Isophonics"
+
     # Get relevant files
     jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
                                        ("%s_*" + msaf.Dataset.references_ext)
                                        % ds_name))
     audio_files = glob.glob(os.path.join(in_path, "audio",
                                          "%s_*.[wm][ap][v3]" % ds_name))
+
+    # Filter by the beatles
+    if beatles:
+        jam_files, audio_files = io.filter_by_artist(jam_files, audio_files,
+                                                   "The Beatles")
 
     # Call in parallel
     Parallel(n_jobs=n_jobs)(delayed(process_track)(
