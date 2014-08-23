@@ -15,19 +15,13 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import argparse
 import logging
 import numpy as np
-import time
 from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
 
-import sys
-sys.path.append("../../")
-import msaf_io as MSAF
-import eval as EV
-import utils as U
+from msaf.algorithms.interface import SegmenterInterface
 
 
 def median_filter(X, M=8):
@@ -88,100 +82,59 @@ def pick_peaks(nc, L=16):
     return peaks
 
 
-def process(in_path, feature="hpcp", annot_beats=False):
-    """Main process."""
+class Segmenter(SegmenterInterface):
+    def process(self):
+        """Main process.
+        Returns
+        -------
+        est_times : np.array(N)
+            Estimated times for the segment boundaries in seconds.
+        est_labels : np.array(N-1)
+            Estimated labels for the segments.
+        """
+        # Preprocess to obtain features, times, and input boundary indeces
+        F, frame_times, dur, bound_idxs = self._preprocess()
 
-    # Foote's params
-    M = 32   # Size of gaussian kernel
-    m = 1   # Size of median filter
+        # Median filter
+        F = median_filter(F, M=self.config["m_median"])
+        #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Read features
-    chroma, mfcc, beats, dur = MSAF.get_features(in_path,
-                                                 annot_beats=annot_beats)
+        # Self similarity matrix
+        S = compute_ssm(F)
 
-    # Use specific feature
-    if feature == "hpcp":
-        F = U.lognormalize_chroma(chroma)  # Normalize chromas
-    elif "mfcc":
-        F = mfcc
-    else:
-        logging.error("Feature type not recognized: %s" % feature)
+        # Compute gaussian kernel
+        G = compute_gaussian_krnl(self.config["M_gaussian"])
+        #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
 
-    # Median filter
-    F = median_filter(F, M=m)
-    #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+        # Compute the novelty curve
+        nc = compute_nc(S, G)
 
-    # Self similarity matrix
-    S = compute_ssm(F)
+        # Find peaks in the novelty curve
+        bound_idxs = pick_peaks(nc, L=self.config["L_peaks"])
 
-    # Compute gaussian kernel
-    G = compute_gaussian_krnl(M)
-    #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
+        # Add first and last frames
+        bound_idxs = np.concatenate(([0], bound_idxs,
+                                     [len(frame_times) - 1]))
 
-    # Compute the novelty curve
-    nc = compute_nc(S, G)
+        # Add first and last boundaries (silence)
+        bound_idxs = np.asarray(bound_idxs, dtype=int)
+        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
 
-    # Read annotated bounds for comparison purposes
-    #ann_bounds = MSAF.read_annot_bound_frames(in_path, beats)
-    #logging.info("Annotated bounds: %s" % ann_bounds)
+        # Empty labels
+        est_labels = np.ones(len(est_times) - 1) * -1
 
-    # Find peaks in the novelty curve
-    est_bounds = pick_peaks(nc, L=16)
+        # Post process estimations
+        est_times, est_labels = self._postprocess(est_times, est_labels)
 
-    # Concatenate first boundary
-    est_bounds = np.concatenate(([0], est_bounds)).astype(int)
+        # Concatenate last boundary
+        logging.info("Estimated times: %s" % est_times)
 
-    # Get times
-    est_times = beats[est_bounds]
-
-    # Concatenate last boundary
-    est_times = np.concatenate((est_times, [dur]))
-
-    # Concatenate last boundary
-    logging.info("Estimated times: %s" % est_times)
-
-    return est_times
-
-    # plt.figure(1)
-    # plt.plot(nc);
-    # [plt.axvline(p, color="m") for p in est_bounds]
-    # [plt.axvline(b, color="g") for b in ann_bounds]
-    # plt.figure(2)
-    # plt.imshow(S, interpolation="nearest", aspect="auto")
-    # [plt.axvline(b, color="g") for b in ann_bounds]
-    # plt.show()
-
-
-def main():
-    """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(description=
-        "Segments the given audio file using the Foote's method.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("in_path",
-                        action="store",
-                        help="Input path to the audio file")
-    parser.add_argument("-f",
-                        action="store",
-                        dest="feature",
-                        help="Feature to use (mfcc or hpcp)",
-                        default="hpcp")
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
-    args = parser.parse_args()
-    start_time = time.time()
-
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
-
-    # Run the algorithm
-    process(args.in_path, feature=args.feature, annot_beats=args.annot_beats)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-if __name__ == '__main__':
-    main()
+        return est_times, est_labels
+        # plt.figure(1)
+        # plt.plot(nc);
+        # [plt.axvline(p, color="m") for p in est_bounds]
+        # [plt.axvline(b, color="g") for b in ann_bounds]
+        # plt.figure(2)
+        # plt.imshow(S, interpolation="nearest", aspect="auto")
+        # [plt.axvline(b, color="g") for b in ann_bounds]
+        # plt.show()
