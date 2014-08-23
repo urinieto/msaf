@@ -28,10 +28,9 @@ This framework contains a set of algorithms to segment a given music audio signa
 * PyMF
 * Pandas
 * joblib
-* Essentia
-* JAMS
-* mir_eval
-* librosa
+* [Essentia](https://github.com/MTG/essentia)
+* [mir\_eval](https://github.com/craffel/mir_eval)
+* [librosa](https://github.com/bmcfee/librosa/)
 
 ## Credits ##
 
