@@ -31,6 +31,7 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Essentia
 * JAMS
 * mir_eval
+* librosa
 
 ## Credits ##
 
