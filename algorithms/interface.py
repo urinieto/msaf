@@ -46,7 +46,8 @@ class SegmenterInterface:
     In these cases, est_times or est_labels will be empty (None).
     """
     def __init__(self, audio_file, in_bound_times=None, in_labels=None,
-                 feature="hpcp", annot_beats=False, framesync=False, **config):
+                 feature="hpcp", annot_beats=False, framesync=False,
+                 features=None, **config):
         """Inits the Segmenter."""
         self.audio_file = audio_file
         self.in_bound_times = in_bound_times
@@ -55,6 +56,7 @@ class SegmenterInterface:
         self.annot_beats = annot_beats
         self.framesync = framesync
         self.config = config
+        self.features = features
 
     def process(self):
         """Main process. You must implement it yourself if you want to use
@@ -66,9 +68,22 @@ class SegmenterInterface:
         """This method obtains the actual features, their frame times,
         and the boundary indeces in these features if needed."""
         # Read features
-        hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-            self.audio_file, annot_beats=self.annot_beats,
-            framesync=self.framesync)
+        if self.features is None:
+            # Features stored in a json file
+            hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
+                self.audio_file, annot_beats=self.annot_beats,
+                framesync=self.framesync)
+        else:
+            # Features passed as parameters
+            feat_prefix = ""
+            if not self.framesync:
+                feat_prefix = "bs_"
+            hpcp = self.features["%shpcp" % feat_prefix]
+            mfcc = self.features["%smfcc" % feat_prefix]
+            tonnetz = self.features["%stonnetz" % feat_prefix]
+            beats = self.features["beats"]
+            dur = self.features["anal"]["dur"]
+            anal = self.features["anal"]
 
         # Store analysis parameters
         self.anal = anal

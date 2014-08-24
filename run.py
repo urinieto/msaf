@@ -10,7 +10,6 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import argparse
-import glob
 import time
 import logging
 import os
@@ -22,6 +21,7 @@ import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
+from msaf import featextract
 import msaf.algorithms as algorithms
 
 
@@ -113,12 +113,21 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id, algorithms)
 
-    jam_files, est_files, audio_files = io.get_dataset_files(in_path, ds_name)
+    if os.path.isfile(in_path):
+        # Audio file, simply extract features
+        audio, features = featextract.compute_features_for_audio_file(in_path)
+        config["features"] = features
 
-    # Call in parallel
-    Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        in_path, audio_file, jam_file, ds_name, boundaries_id, labels_id,
-        config) for audio_file, jam_file in zip(audio_files, jam_files)[:])
+        # And run the algorithms
+        run_algorithms(in_path, boundaries_id, labels_id, config)
+    else:
+        jam_files, est_files, audio_files = io.get_dataset_files(in_path,
+                                                                 ds_name)
+
+        # Call in parallel
+        Parallel(n_jobs=n_jobs)(delayed(process_track)(
+            in_path, audio_file, jam_file, ds_name, boundaries_id, labels_id,
+            config) for audio_file, jam_file in zip(audio_files, jam_files)[:])
 
 
 def main():
