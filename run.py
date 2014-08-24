@@ -17,13 +17,11 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
-import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
 from msaf import featextract
 import msaf.algorithms as algorithms
-from msaf.input_output import FileStruct
 
 
 def get_boundaries_module(boundaries_id):

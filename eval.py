@@ -127,7 +127,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     return res
 
 
-def compute_gt_results(est_file, jam_file, boundaries_id, labels_id, config,
+def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                        bins=251):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
@@ -143,10 +143,10 @@ def compute_gt_results(est_file, jam_file, boundaries_id, labels_id, config,
 
     try:
         ref_inter, ref_labels = jams2.converters.load_jams_range(
-            jam_file, "sections", annotator=0,
+            ref_file, "sections", annotator=0,
             context=msaf.prefix_dict[ds_prefix])
     except:
-        logging.warning("No annotations for file: %s" % jam_file)
+        logging.warning("No references for file: %s" % ref_file)
         return {}
 
     # Read estimations with correct configuration
@@ -176,16 +176,19 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def process_track(est_file, jam_file, boundaries_id, labels_id, config):
+def process_track(file_struct, boundaries_id, labels_id, config):
     """Processes a single track."""
+
+    est_file = file_struct.est_file
+    ref_file = file_struct.ref_file
 
     # Sanity check
     assert os.path.basename(est_file)[:-4] == \
-        os.path.basename(jam_file)[:-4], "File names are different %s --- %s" \
-        % (os.path.basename(est_file)[:-4], os.path.basename(jam_file)[:-4])
+        os.path.basename(ref_file)[:-4], "File names are different %s --- %s" \
+        % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
 
     try:
-        one_res = compute_gt_results(est_file, jam_file, boundaries_id,
+        one_res = compute_gt_results(est_file, ref_file, boundaries_id,
                                      labels_id, config)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
@@ -248,17 +251,17 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
 
     # Get files
-    jam_files, est_files, audio_files = io.get_dataset_files(in_path, ds_name)
+    file_structs = io.get_dataset_files(in_path, ds_name)
 
-    logging.info("Evaluating %d tracks..." % len(jam_files))
+    logging.info("Evaluating %d tracks..." % len(file_structs))
 
     # All evaluations
     results = pd.DataFrame()
 
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        est_file, jam_file, boundaries_id, labels_id, config)
-        for est_file, jam_file in zip(est_files, jam_files)[:])
+        file_struct, boundaries_id, labels_id, config)
+        for file_struct in file_structs)
 
     # Aggregat evaluations in pandas format
     for e in evals:

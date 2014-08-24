@@ -17,10 +17,6 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             config=None):
     """Sweeps parameters across the specified algorithm."""
 
-    run_name = ds_name
-    if ds_name == "Beatles":
-        run_name = "Isophonics"
-
     results_file = "results_sweep_boundsE%s_labelsE%s.csv" % (boundaries_id,
                                                               labels_id)
 
@@ -46,7 +42,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["R_labels"] = R_labels
 
                             # Run process
-                            run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
+                            run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
                                         boundaries_id=boundaries_id,
                                         labels_id=labels_id, config=config)
 
