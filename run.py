@@ -23,6 +23,7 @@ from msaf import input_output as io
 from msaf import utils
 from msaf import featextract
 import msaf.algorithms as algorithms
+from msaf.input_output import FileStruct
 
 
 def get_boundaries_module(boundaries_id):
@@ -73,31 +74,29 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     return est_times, est_labels
 
 
-def process_track(in_path, audio_file, jam_file, ds_name, boundaries_id,
-                  labels_id, config):
+def process_track(file_struct, boundaries_id, labels_id, config):
 
     # Only analize files with annotated beats
     if config["annot_beats"]:
-        jam = jams2.load(jam_file)
-        if jam.beats == []:
-            return
-        if jam.beats[0].data == []:
+        jam = jams2.load(file_struct.ref_file)
+        if len(jam.beats) > 0 and len(jam.beats[0].data) > 0:
+            pass
+        else:
+            logging.warning("No beat information in file %s" %
+                            file_struct.ref_file)
             return
 
-    logging.info("Segmenting %s" % audio_file)
+    logging.info("Segmenting %s" % file_struct.audio_file)
 
     # Get estimations
-    est_times, est_labels = run_algorithms(audio_file, boundaries_id, labels_id,
-                                           config)
+    est_times, est_labels = run_algorithms(file_struct.audio_file,
+                                           boundaries_id, labels_id, config)
 
     # Save
-    out_file = os.path.join(in_path, msaf.Dataset.estimations_dir,
-                            os.path.basename(audio_file)[:-4] +
-                            msaf.Dataset.estimations_ext)
-    logging.info("Writing results in: %s" % out_file)
+    logging.info("Writing results in: %s" % file_struct.est_file)
     est_inters = utils.times_to_intervals(est_times)
-    io.save_estimations(out_file, est_inters, est_labels, boundaries_id,
-                        labels_id, **config)
+    io.save_estimations(file_struct.est_file, est_inters, est_labels,
+                        boundaries_id, labels_id, **config)
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
@@ -121,13 +120,12 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         # And run the algorithms
         run_algorithms(in_path, boundaries_id, labels_id, config)
     else:
-        jam_files, est_files, audio_files = io.get_dataset_files(in_path,
-                                                                 ds_name)
+        file_structs = io.get_dataset_files(in_path, ds_name)
 
         # Call in parallel
         Parallel(n_jobs=n_jobs)(delayed(process_track)(
-            in_path, audio_file, jam_file, ds_name, boundaries_id, labels_id,
-            config) for audio_file, jam_file in zip(audio_files, jam_files)[:])
+            file_struct, boundaries_id, labels_id, config)
+            for file_struct in file_structs)
 
 
 def main():

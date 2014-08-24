@@ -34,6 +34,7 @@ prefix_dict = {
 results_dir = "results"
 results_ext = ".csv"
 
+
 class Dataset():
     # Directories
     audio_dir = "audio"
@@ -45,3 +46,4 @@ class Dataset():
     estimations_ext = ".jams"
     features_ext = ".json"
     references_ext = ".jams"
+    audio_exts = [".wav", "mp3", ".aif"]
