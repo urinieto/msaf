@@ -21,7 +21,6 @@ import datetime
 import essentia
 import essentia.standard as ES
 from essentia.standard import YamlOutput
-import glob
 from joblib import Parallel, delayed
 import logging
 import numpy as np
@@ -29,9 +28,9 @@ import os
 import time
 
 # Local stuff
-import msaf
 from msaf import jams2
 from msaf import utils
+from msaf import input_output as io
 
 # Setup main params
 SAMPLE_RATE = 11025
@@ -170,21 +169,19 @@ def compute_features_for_audio_file(audio_file):
     return audio, features
 
 
-def compute_all_features(audio_file, audio_beats, overwrite):
+def compute_all_features(file_struct, audio_beats=False, overwrite=False):
     """Computes all the features for a specific audio file and its respective
         human annotations. It creates an audio file with the estimated
         beats if needed."""
 
     # Output file
-    out_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
-                            msaf.Dataset.features_dir,
-                            os.path.basename(audio_file)[:-4] +
-                            msaf.Dataset.features_ext)
+    out_file = file_struct.features_file
+
     if os.path.isfile(out_file) and not overwrite:
         return  # Do nothing, file already exist and we are not overwriting it
 
     # Compute the features for the given audio file
-    audio, features = compute_features_for_audio_file(audio_file)
+    audio, features = compute_features_for_audio_file(file_struct.audio_file)
 
     # Save output as audio file
     if audio_beats:
@@ -196,12 +193,8 @@ def compute_all_features(audio_file, audio_beats, overwrite):
                       sampleRate=SAMPLE_RATE)(marked_audio)
 
     # Read annotations if they exist in path/references_dir/file.jams
-    jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
-                            msaf.Dataset.references_dir,
-                            os.path.basename(audio_file)[:-4] +
-                            msaf.Dataset.references_ext)
-    if os.path.isfile(jam_file):
-        jam = jams2.load(jam_file)
+    if os.path.isfile(file_struct.ref_file):
+        jam = jams2.load(file_struct.ref_file)
 
         # If beat annotations exist, compute also annotated beatsyn features
         if jam.beats != []:
@@ -231,7 +224,7 @@ def compute_all_features(audio_file, audio_beats, overwrite):
                   features["tonnetz"])
     save_features("est_beatsync", pool, features["bs_mfcc"],
                   features["bs_hpcp"], features["bs_tonnetz"])
-    if os.path.isfile(jam_file) and jam.beats != []:
+    if os.path.isfile(file_struct.ref_file) and jam.beats != []:
         save_features("ann_beatsync", pool, annot_mfcc, annot_hpcp,
                       annot_tonnetz)
     yaml(pool)
@@ -249,13 +242,12 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
         utils.ensure_dir(in_path)
 
         # Get files
-        audio_files = glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
-                                             "*.[wm][ap][v3]"))
+        file_structs = io.get_dataset_files(in_path)
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
-            audio_file, audio_beats, overwrite)
-            for audio_file in audio_files)
+            file_struct, audio_beats, overwrite)
+            for file_struct in file_structs)
 
 
 def main():
