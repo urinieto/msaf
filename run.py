@@ -17,6 +17,7 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
+import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
@@ -73,7 +74,6 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
 
 
 def process_track(file_struct, boundaries_id, labels_id, config):
-
     # Only analize files with annotated beats
     if config["annot_beats"]:
         jam = jams2.load(file_struct.ref_file)
@@ -85,6 +85,10 @@ def process_track(file_struct, boundaries_id, labels_id, config):
             return
 
     logging.info("Segmenting %s" % file_struct.audio_file)
+
+    # Compute features if needed
+    if not os.path.isfile(file_struct.features_file):
+        featextract.compute_all_features(file_struct)
 
     # Get estimations
     est_times, est_labels = run_algorithms(file_struct.audio_file,
@@ -111,13 +115,14 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                                       boundaries_id, labels_id, algorithms)
 
     if os.path.isfile(in_path):
-        # Audio file, simply extract features
+        # Single file mode
         audio, features = featextract.compute_features_for_audio_file(in_path)
         config["features"] = features
 
         # And run the algorithms
         run_algorithms(in_path, boundaries_id, labels_id, config)
     else:
+        # Collection mode
         file_structs = io.get_dataset_files(in_path, ds_name)
 
         # Call in parallel
