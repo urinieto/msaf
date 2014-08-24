@@ -23,6 +23,33 @@ from msaf import jams2
 from msaf import utils
 
 
+class FileStruct:
+    def __init__(self, audio_file):
+        """Creates the entire file structure given the audio file."""
+        self.ds_path = os.path.dirname(os.path.dirname(audio_file))
+        self.audio_file = audio_file
+        self.est_file = self._get_dataset_file(msaf.Dataset.estimations_dir,
+                                               msaf.Dataset.estimations_ext)
+        self.features_file = self._get_dataset_file(msaf.Dataset.features_dir,
+                                                    msaf.Dataset.features_ext)
+        self.ref_file = self._get_dataset_file(msaf.Dataset.references_dir,
+                                               msaf.Dataset.references_ext)
+
+    def _get_dataset_file(self, dir, ext):
+        """Gets the desired dataset file."""
+        audio_file_ext = "." + self.audio_file.split(".")[-1]
+        base_file = os.path.basename(self.audio_file).replace(
+            audio_file_ext, ext)
+        return os.path.join(self.ds_path, dir, base_file)
+
+    def __repr__(self):
+        """Prints the file structure."""
+        return "FileStruct(\n\tds_path=%s,\n\taudio_file=%s,\n\test_file=%s," \
+            "\n\tfeatures_file=%s,\n\tref_file=%s\n)" % (
+                self.ds_path, self.audio_file, self.est_file,
+                self.features_file, self.ref_file)
+
+
 def has_same_parameters(est_params, boundaries_id, labels_id, params):
     """Checks whether the parameters in params are the same as the estimated
     parameters in est_params."""
@@ -493,35 +520,25 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     return config
 
 
-def filter_by_artist(jam_files, est_files, audio_files,
-                     artist_name="The Beatles"):
-    """Filters jam files and est files by artist name."""
-    new_jam_files = []
-    new_est_files = []
-    new_audio_files = []
-    for jam_file, est_file, audio_file in zip(jam_files, est_files,
-                                              audio_files):
-        jam = jams2.load(jam_file)
+def filter_by_artist(file_structs, artist_name="The Beatles"):
+    """Filters data set files by artist name."""
+    new_file_structs = []
+    for file_struct in file_structs:
+        jam = jams2.load(file_struct.ref_file)
         if jam.metadata.artist == artist_name:
-            new_jam_files.append(jam_file)
-            new_est_files.append(est_file)
-            new_audio_files.append(audio_file)
-    return new_jam_files, new_est_files, new_audio_files
+            new_file_structs.append(file_struct)
+    return new_file_structs
 
 
-def get_SALAMI_internet(jam_files, est_files, audio_files):
-    """Gets the SALAMI Internet subset from SALAMI."""
-    new_jam_files = []
-    new_est_files = []
-    new_audio_files = []
-    for jam_file, est_file, audio_file in zip(jam_files, est_files,
-                                              audio_files):
-        num = int(os.path.basename(est_file).split("_")[1].split(".")[0])
+def get_SALAMI_internet(file_structs):
+    """Gets the SALAMI Internet subset from SALAMI (bit of a hack...)"""
+    new_file_structs = []
+    for file_struct in file_structs:
+        num = int(os.path.basename(file_struct.est_file).split("_")[1].
+                  split(".")[0])
         if num >= 956 and num <= 1498:
-            new_jam_files.append(jam_file)
-            new_est_files.append(est_file)
-            new_audio_files.append(audio_file)
-    return new_jam_files, new_est_files, new_audio_files
+            new_file_structs.append(file_struct)
+    return new_file_structs
 
 
 def get_dataset_files(in_path, ds_name="*"):
@@ -544,24 +561,23 @@ def get_dataset_files(in_path, ds_name="*"):
         raise RuntimeError("Dataset %s is not valid. Valid datasets are: %s" %
                            (ds_name, ds_dict.keys()))
 
-    # Get files
-    jam_files = glob.glob(os.path.join(in_path, msaf.Dataset.references_dir,
-                                       ("%s_*" + msaf.Dataset.references_ext)
-                                       % prefix))
-    est_files = glob.glob(os.path.join(in_path, msaf.Dataset.estimations_dir,
-                                       ("%s_*" + msaf.Dataset.estimations_ext)
-                                       % prefix))
-    audio_files = glob.glob(os.path.join(in_path, "audio",
-                                         "%s_*.[wm][ap][v3]" % prefix))
+    # Get audio files
+    audio_files = []
+    for ext in msaf.Dataset.audio_exts:
+        audio_files += glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
+                                              ("%s_*" + ext) % prefix))
+
+    # Get the file structs
+    file_structs = []
+    for audio_file in audio_files:
+        file_structs.append(FileStruct(audio_file))
 
     # Filter by the beatles
     if ds_name == "Beatles":
-        jam_files, est_files, audio_files = filter_by_artist(
-            jam_files, est_files, audio_files, "The Beatles")
+        file_structs = filter_by_artist(file_structs, "The Beatles")
 
     # Salami Internet hack
     if ds_name == "SALAMI-i":
-        jam_files, est_files, audio_files = get_SALAMI_internet(
-            jam_files, est_files, audio_files)
+        file_structs = get_SALAMI_internet(file_structs)
 
-    return jam_files, est_files, audio_files
+    return file_structs
