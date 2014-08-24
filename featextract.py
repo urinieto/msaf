@@ -139,6 +139,37 @@ def save_features(key, pool, mfcc, hpcp, tonnetz):
         for tonnetz_coeff in tonnetz]
 
 
+def compute_features_for_audio_file(audio_file):
+    # Load Audio
+    logging.info("Loading audio file %s" % os.path.basename(audio_file))
+    audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
+
+    # Output features dict
+    features = {}
+
+    # Compute framesync features
+    features["mfcc"], features["hpcp"], features["tonnetz"] = \
+        compute_features(audio)
+
+    # Estimate Beats
+    features["beats"], features["beats_conf"] = compute_beats(audio)
+
+    # Compute Beat-sync features
+    features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"] = \
+        compute_features(audio, features["beats"])
+
+    # Analysis parameters
+    features["anal"] = {}
+    features["anal"]["frame_rate"] = FRAME_SIZE
+    features["anal"]["hop_size"] = HOP_SIZE
+    features["anal"]["mfcc_coeff"] = MFCC_COEFF
+    features["anal"]["sample_rate"] = SAMPLE_RATE
+    features["anal"]["window_type"] = WINDOW_TYPE
+    features["anal"]["dur"] = audio.shape[0] / float(SAMPLE_RATE)
+
+    return audio, features
+
+
 def compute_all_features(audio_file, audio_beats, overwrite):
     """Computes all the features for a specific audio file and its respective
         human annotations. It creates an audio file with the estimated
@@ -152,27 +183,17 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     if os.path.isfile(out_file) and not overwrite:
         return  # Do nothing, file already exist and we are not overwriting it
 
-    # Load Audio
-    logging.info("Loading audio file %s" % os.path.basename(audio_file))
-    audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
-
-    # Compute framesync features
-    mfcc, hpcp, tonnetz = compute_features(audio)
-
-    # Estimate Beats
-    beats, conf = compute_beats(audio)
+    # Compute the features for the given audio file
+    audio, features = compute_features_for_audio_file(audio_file)
 
     # Save output as audio file
     if audio_beats:
         logging.info("Saving Beats as an audio file")
-        marker = ES.AudioOnsetsMarker(onsets=beats, type='beep',
+        marker = ES.AudioOnsetsMarker(onsets=features["beats"], type='beep',
                                       sampleRate=SAMPLE_RATE)
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav',
                       sampleRate=SAMPLE_RATE)(marked_audio)
-
-    # Compute Beat-sync features
-    bs_mfcc, bs_hpcp, bs_tonnetz = compute_features(audio, beats)
 
     # Read annotations if they exist in path/references_dir/file.jams
     jam_file = os.path.join(os.path.dirname(os.path.dirname(audio_file)),
@@ -197,8 +218,8 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     logging.info("Saving the JSON file in %s" % out_file)
     yaml = YamlOutput(filename=out_file, format='json')
     pool = essentia.Pool()
-    pool.add("beats.times", beats)
-    pool.add("beats.confidence", conf)
+    pool.add("beats.times", features["beats"])
+    pool.add("beats.confidence", features["beats_conf"])
     pool.set("analysis.sample_rate", SAMPLE_RATE)
     pool.set("analysis.frame_rate", FRAME_SIZE)
     pool.set("analysis.hop_size", HOP_SIZE)
@@ -206,8 +227,10 @@ def compute_all_features(audio_file, audio_beats, overwrite):
     pool.set("analysis.mfcc_coeff", MFCC_COEFF)
     pool.set("timestamp",
              datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
-    save_features("framesync", pool, mfcc, hpcp, tonnetz)
-    save_features("est_beatsync", pool, bs_mfcc, bs_hpcp, bs_tonnetz)
+    save_features("framesync", pool, features["mfcc"], features["hpcp"],
+                  features["tonnetz"])
+    save_features("est_beatsync", pool, features["bs_mfcc"],
+                  features["bs_hpcp"], features["bs_tonnetz"])
     if os.path.isfile(jam_file) and jam.beats != []:
         save_features("ann_beatsync", pool, annot_mfcc, annot_hpcp,
                       annot_tonnetz)
