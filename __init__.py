@@ -11,19 +11,6 @@ import algorithms
 __version__ = '0.0.1'
 
 # Global Config
-feat_dict = {
-    'serra' :   'mix',
-    'levy'  :   'hpcp',
-    'foote' :   'hpcp',
-    'siplca':   '',
-    'olda'  :   '',
-    'kmeans':   'hpcp',
-    'cnmf'  :   'hpcp',
-    'cnmf2' :   'hpcp',
-    'cnmf3' :   'hpcp',
-    '2dfmc' :   ''
-}
-
 prefix_dict = {
     "Cerulean"      : "large_scale",
     "Epiphyte"      : "function",
@@ -33,6 +20,15 @@ prefix_dict = {
 
 results_dir = "results"
 results_ext = ".csv"
+
+
+# Analysis Params
+class Anal():
+    sample_rate = 11025
+    frame_size = 2048
+    hop_size = 1024
+    mfcc_coeff = 14
+    window_type = "blackmanharris62"
 
 
 class Dataset():
@@ -47,3 +43,17 @@ class Dataset():
     features_ext = ".json"
     references_ext = ".jams"
     audio_exts = [".wav", "mp3", ".aif"]
+
+
+feat_dict = {
+    'serra' :   'mix',
+    'levy'  :   'hpcp',
+    'foote' :   'hpcp',
+    'siplca':   '',
+    'olda'  :   '',
+    'kmeans':   'hpcp',
+    'cnmf'  :   'hpcp',
+    'cnmf2' :   'hpcp',
+    'cnmf3' :   'hpcp',
+    '2dfmc' :   ''
+}
