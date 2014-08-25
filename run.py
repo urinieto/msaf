@@ -100,11 +100,46 @@ def process_track(file_struct, boundaries_id, labels_id, config):
     io.save_estimations(file_struct.est_file, est_inters, est_labels,
                         boundaries_id, labels_id, **config)
 
+    return est_times, est_labels
+
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             framesync=False, boundaries_id="gt", labels_id=None, n_jobs=4,
             config=None):
-    """Main process."""
+    """Main process to segment a file or a collection of files.
+
+    Parameters
+    ----------
+    in_path: str
+        Input path. If a directory, MSAF will function in collection mode.
+        If audio file, MSAF will be in single file mode.
+    annot_beats: bool
+        Whether to use annotated beats or not. Only available in collection
+        mode.
+    feature: str
+        String representing the feature to be used (e.g. hpcp, mfcc, tonnetz)
+    ds_name: str
+        Prefix of the dataset to be used (e.g. SALAMI, Isophonics)
+    framesync: str
+        Whether to use framesync features or not (default: False -> beatsync)
+    boundaries_id: str
+        Identifier of the boundaries algorithm (use "gt" for groundtruth)
+    labels_id: str
+        Identifier of the labels algorithm (use None to not compute labels)
+    n_jobs: int
+        Number of processes to run in parallel. Only available in collection
+        mode.
+    config: dict
+        Dictionary containing custom configuration parameters for the
+        algorithms.  If None, the default parameters are used.
+
+    Returns
+    -------
+    results : list
+        List containing tuples of (est_times, est_labels) of estimated
+        boundary times and estimated labels.
+        If labels_id is None, est_labels will be a list of -1.
+    """
 
     # Seed random to reproduce results
     np.random.seed(123)
@@ -120,13 +155,13 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config["features"] = features
 
         # And run the algorithms
-        run_algorithms(in_path, boundaries_id, labels_id, config)
+        return run_algorithms(in_path, boundaries_id, labels_id, config)
     else:
         # Collection mode
         file_structs = io.get_dataset_files(in_path, ds_name)
 
         # Call in parallel
-        Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config)
             for file_struct in file_structs)
 

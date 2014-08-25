@@ -20,15 +20,15 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     results_file = "results_sweep_boundsE%s_labelsE%s.csv" % (boundaries_id,
                                                               labels_id)
 
-    if labels_id == "cnmf3" and boundaries_id == "cnmf3":
+    if labels_id == "cnmf3" or boundaries_id == "cnmf3":
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id, algorithms)
 
-        hh = range(11, 12)
-        RR = range(10, 11)
-        ranks = range(2, 3)
-        RR_labels = range(4, 15)
-        ranks_labels = range(5, 8)
+        hh = range(8, 16)
+        RR = range(8, 16)
+        ranks = range(2, 4)
+        RR_labels = range(11, 12)
+        ranks_labels = range(6, 7)
         all_results = pd.DataFrame()
         for rank in ranks:
             for h in hh:

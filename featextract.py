@@ -28,16 +28,10 @@ import os
 import time
 
 # Local stuff
+import msaf
 from msaf import jams2
 from msaf import utils
 from msaf import input_output as io
-
-# Setup main params
-SAMPLE_RATE = 11025
-FRAME_SIZE = 2048
-HOP_SIZE = 1024
-MFCC_COEFF = 14
-WINDOW_TYPE = "blackmanharris62"
 
 
 class STFTFeature:
@@ -96,11 +90,11 @@ def compute_beats(audio):
     conf = 1.0
     beats, conf = ES.BeatTrackerMultiFeature()(audio)
     # beats = ES.BeatTrackerDegara()(audio)
-    beats *= 44100 / SAMPLE_RATE  # Essentia requires 44100 input (-.-')
+    beats *= 44100 / msaf.sample_rate  # Essentia requires 44100 input (-.-')
 
     # Double the beats if found beats are too little
     th = 0.9  # 1 would equal to at least 1 beat per second
-    while beats.shape[0] / (audio.shape[0] / float(SAMPLE_RATE)) < th and \
+    while beats.shape[0] / (audio.shape[0] / float(msaf.sample_rate)) < th and \
             beats.shape[0] > 2:
         beats = double_beats(beats)
     return beats, conf
@@ -113,11 +107,11 @@ def compute_features(audio, beats=None):
     if beats is not None:
         beatsync_str = "Beat-synchronous "
 
-    MFCC = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE,
-                       ES.MFCC(numberCoefficients=MFCC_COEFF), SAMPLE_RATE,
-                       beats)
-    HPCP = STFTFeature(FRAME_SIZE, HOP_SIZE, WINDOW_TYPE, ES.HPCP(),
-                       SAMPLE_RATE, beats)
+    MFCC = STFTFeature(msaf.frame_size, msaf.hop_size, msaf.window_type,
+                       ES.MFCC(numberCoefficients=msaf.mfcc_coeff),
+                       msaf.sample_rate, beats)
+    HPCP = STFTFeature(msaf.frame_rate, msaf.hop_size, msaf.window_type,
+                       ES.HPCP(), msaf.sample_rate, beats)
     logging.info("Computing %sMFCCs..." % beatsync_str)
     mfcc = MFCC.compute_features(audio)
     logging.info("Computing %sHPCPs..." % beatsync_str)
@@ -141,7 +135,7 @@ def save_features(key, pool, mfcc, hpcp, tonnetz):
 def compute_features_for_audio_file(audio_file):
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
-    audio = ES.MonoLoader(filename=audio_file, sampleRate=SAMPLE_RATE)()
+    audio = ES.MonoLoader(filename=audio_file, sampleRate=msaf.sample_rate)()
 
     # Output features dict
     features = {}
@@ -159,12 +153,12 @@ def compute_features_for_audio_file(audio_file):
 
     # Analysis parameters
     features["anal"] = {}
-    features["anal"]["frame_rate"] = FRAME_SIZE
-    features["anal"]["hop_size"] = HOP_SIZE
-    features["anal"]["mfcc_coeff"] = MFCC_COEFF
-    features["anal"]["sample_rate"] = SAMPLE_RATE
-    features["anal"]["window_type"] = WINDOW_TYPE
-    features["anal"]["dur"] = audio.shape[0] / float(SAMPLE_RATE)
+    features["anal"]["frame_rate"] = msaf.frame_rate
+    features["anal"]["hop_size"] = msaf.hop_size
+    features["anal"]["mfcc_coeff"] = msaf.mfcc_coeff
+    features["anal"]["sample_rate"] = msaf.sample_rate
+    features["anal"]["window_type"] = msaf.window_type
+    features["anal"]["dur"] = audio.shape[0] / float(msaf.sample_rate)
 
     return audio, features
 
@@ -187,10 +181,10 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
     if audio_beats:
         logging.info("Saving Beats as an audio file")
         marker = ES.AudioOnsetsMarker(onsets=features["beats"], type='beep',
-                                      sampleRate=SAMPLE_RATE)
+                                      sampleRate=msaf.sample_rate)
         marked_audio = marker(audio)
         ES.MonoWriter(filename='beats.wav',
-                      sampleRate=SAMPLE_RATE)(marked_audio)
+                      sampleRate=msaf.sample_rate)(marked_audio)
 
     # Read annotations if they exist in path/references_dir/file.jams
     if os.path.isfile(file_struct.ref_file):
@@ -213,11 +207,11 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
     pool = essentia.Pool()
     pool.add("beats.times", features["beats"])
     pool.add("beats.confidence", features["beats_conf"])
-    pool.set("analysis.sample_rate", SAMPLE_RATE)
-    pool.set("analysis.frame_rate", FRAME_SIZE)
-    pool.set("analysis.hop_size", HOP_SIZE)
-    pool.set("analysis.window_type", WINDOW_TYPE)
-    pool.set("analysis.mfcc_coeff", MFCC_COEFF)
+    pool.set("analysis.sample_rate", msaf.sample_rate)
+    pool.set("analysis.frame_rate", msaf.frame_rate)
+    pool.set("analysis.hop_size", msaf.hop_size)
+    pool.set("analysis.window_type", msaf.window_type)
+    pool.set("analysis.mfcc_coeff", msaf.mfcc_coeff)
     pool.set("timestamp",
              datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
     save_features("framesync", pool, features["mfcc"], features["hpcp"],
