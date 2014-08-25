@@ -32,6 +32,17 @@ This framework contains a set of algorithms to segment a given music audio signa
 * [mir\_eval](https://github.com/craffel/mir_eval)
 * [librosa](https://github.com/bmcfee/librosa/)
 
+
+## Note on Parallel Processes for OSX Users ##
+
+By default, Numpy is compiled against the Accelerate Framework by Apple.
+While this framework is extremely fast, Apple [does not want you to fork()
+without exec](http://mail.scipy.org/pipermail/numpy-discussion/2012-August/063589.html), which may result in nasty crashes when using more than one thread (`-j > 1`).
+
+The solution is to use an alternative framework, like OpenBLAS, and link it to
+Numpy instead of the Accelerate Framework.
+There is a nice explanation to do so [here](http://stackoverflow.com/a/14391693/777706).
+
 ## Credits ##
 
 Created by [Oriol Nieto](https://files.nyu.edu/onc202/public/) (<oriol@nyu.edu>).
