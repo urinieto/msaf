@@ -211,7 +211,7 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
     pool.add("beats.times", features["beats"])
     pool.add("beats.confidence", features["beats_conf"])
     pool.set("analysis.sample_rate", msaf.Anal.sample_rate)
-    pool.set("analysis.frame_rate", msaf.Anal.frame_rate)
+    pool.set("analysis.frame_rate", msaf.Anal.frame_size)
     pool.set("analysis.hop_size", msaf.Anal.hop_size)
     pool.set("analysis.window_type", msaf.Anal.window_type)
     pool.set("analysis.mfcc_coeff", msaf.Anal.mfcc_coeff)
