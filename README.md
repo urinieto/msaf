@@ -7,17 +7,17 @@ This framework contains a set of algorithms to segment a given music audio signa
 ## Boundary Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
-* Foote (Foote 2000)
-* Levy (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
+* Checkerboard-like Kernel (Foote 2000)
+* Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * OLDA (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/olda))
-* Serrà (Serrà et al. 2012)
+* Structural Features (Serrà et al. 2012)
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
 ## Labeling Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
 * 2D Fourier Magnitude Coefficients (Nieto & Bello 2014)
-* Levy (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
+* Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
 ## Requirements ##
