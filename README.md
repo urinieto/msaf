@@ -20,6 +20,26 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
+## Using MSAF ##
+
+MSAF can be run in two different modes: **single file** and **collection** modes.
+
+###Single File Mode###
+
+
+
+###Collection Mode###
+
+
+###As a Python module###
+
+Place the ```msaf``` module in your Python Path ($PYTHONPATH).
+
+```python
+import msaf
+```
+
+
 ## Requirements ##
 
 * Python 2.7
