@@ -37,6 +37,7 @@ Place the ```msaf``` module in your Python Path ($PYTHONPATH).
 
 ```python
 import msaf
+msaf.run
 ```
 
 
