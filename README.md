@@ -32,6 +32,8 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 
 You can run MSAF on a collection of files by inputting the correctly formatted folder to the dataset.
 
+####Running Collection####
+
 The MSAF datasets should be formatted as follows:
 
     my_collection/
@@ -55,6 +57,8 @@ By default the number of processors is 4, this can be explicitly set by typing:
 For more information, please type:
 
     ./run.py -h
+
+####Evaluating Collection####
 
 
 ###As a Python module###
