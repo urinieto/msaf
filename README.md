@@ -26,6 +26,11 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 
 ###Single File Mode###
 
+Run audio file:
+
+Run audio file and output boundaries:
+
+Run audio file and plot:
 
 
 ###Collection Mode###
@@ -139,6 +144,8 @@ There is a nice explanation to do so [here](http://stackoverflow.com/a/14391693/
 ## References ##
 
 Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio Novelty. In Proc. of the IEEE International Conference of Multimedia and Expo (pp. 452–455). New York City, NY, USA.
+
+Humphrey, E. J., Salamon, J., Nieto, O., Forsyth, J., Bittner, R. M., & Bello, J. P. (2014). JAMS: A JSON Annotated Music Specification for Reproducible MIR Research. In Proc. of the 15th International Society for Music Information Retrieval Conference. Taipei, Taiwan.
 
 Levy, M., & Sandler, M. (2008). Structural Segmentation of Musical Audio by Constrained Clustering. IEEE Transactions on Audio, Speech, and Language Processing, 16(2), 318–326. doi:10.1109/TASL.2007.910781
 
