@@ -31,6 +31,7 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 ###Collection Mode###
 
 You can run MSAF on a collection of files by inputting the correctly formatted folder to the dataset.
+After running the collection, you can also evaluate it using the standard music segmentation evaluation metrics.
 
 ####Running Collection####
 
