@@ -92,7 +92,7 @@ The output contains the following evaluation metrics:
 | HitRate\_t3P | Hit Rate Precision using 3 seconds window without first and last boundaries (trimmed)|
 | HitRate\_t3R | Hit Rate Recall using 3 seconds window without first and last boundaries (trimmed)|
 
-
+For more information read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
 
 ###As a Python module###
 
