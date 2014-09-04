@@ -20,6 +20,7 @@ prefix_dict = {
 
 results_dir = "results"
 results_ext = ".csv"
+out_boundaries_ext = "-bounds.wav"
 
 
 # Analysis Params

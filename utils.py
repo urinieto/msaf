@@ -9,14 +9,17 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import copy
+import mir_eval
 import numpy as np
 import os
+import scipy.io.wavfile
 
+import msaf
 
 def lognormalize_chroma(C):
     """Log-normalizes chroma such that each vector is between -80 to 0."""
     C += np.abs(C.min()) + 0.1
-    C = C/C.max(axis=0)
+    C = C / C.max(axis=0)
     C = 80 * np.log10(C)  # Normalize from -80 to 0
     return C
 
@@ -170,3 +173,11 @@ def remove_empty_segments(times, labels):
             new_inters.append(inter)
             new_labels.append(label)
     return intervals_to_times(np.asarray(new_inters)), new_labels
+
+
+def write_audio_boundaries(audio, est_times, out_file):
+    """Writes the estimated boundary times into the output file."""
+    fs = msaf.Anal.sample_rate
+    audio_bounds = mir_eval.sonify.clicks(est_times, fs)
+    audio_bounds[:len(audio)] += audio
+    scipy.io.wavfile.write(out_file, fs, audio_bounds)
