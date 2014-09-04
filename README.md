@@ -30,6 +30,20 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 
 ###Collection Mode###
 
+You can run MSAF on a collection of files by inputting the correctly formatted folder to the dataset.
+
+The MSAF datasets should be formatted as follows:
+
+    my\_collection/
+        audio: The audio files of your collection.
+        estimations: Estimations (output) by MSAF. Should be empty initially.
+        features: Feature files for speeding up running time. Should be empty initially.
+        references: Human references for evaluation purposes.
+
+Using this toy dataset as an example, we could run MSAF by simply:
+
+    ./run.py my\_collection
+
 
 ###As a Python module###
 
