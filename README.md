@@ -77,6 +77,20 @@ The output contains the following evaluation metrics:
 | D             | Information Gain  |
 | DevE2R        | Median Deviation from Estimation to Reference |
 | DevR2E        | Median Deviation from Reference to Estimation |
+| DevtE2R       | Median Deviation from Estimation to Reference without first and last boundaries (trimmed)|
+| DevtR2E       | Median Deviation from Reference to Estimation without first and last boundaries (trimmed)|
+| HitRate\_0.5F | Hit Rate F-measure using 0.5 seconds window |
+| HitRate\_0.5P | Hit Rate Precision using 0.5 seconds window |
+| HitRate\_0.5R | Hit Rate Recall using 0.5 seconds window |
+| HitRate\_3F | Hit Rate F-measure using 3 seconds window |
+| HitRate\_3P | Hit Rate Precision using 3 seconds window |
+| HitRate\_3R | Hit Rate Recall using 3 seconds window |
+| HitRate\_t0.5F | Hit Rate F-measure using 0.5 seconds window without first and last boundaries (trimmed)|
+| HitRate\_t0.5P | Hit Rate Precision using 0.5 seconds window without first and last boundaries (trimmed)|
+| HitRate\_t0.5R | Hit Rate Recall using 0.5 seconds window without first and last boundaries (trimmed)|
+| HitRate\_t3F | Hit Rate F-measure using 3 seconds window without first and last boundaries (trimmed)|
+| HitRate\_t3P | Hit Rate Precision using 3 seconds window without first and last boundaries (trimmed)|
+| HitRate\_t3R | Hit Rate Recall using 3 seconds window without first and last boundaries (trimmed)|
 
 
 
