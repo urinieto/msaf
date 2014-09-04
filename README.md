@@ -40,7 +40,7 @@ The MSAF datasets should be formatted as follows:
         features: Feature files for speeding up running time. Should be empty initially.
         references: Human references for evaluation purposes.
 
-Using this toy dataset as an example, we could run MSAF using the Foote algorithm for boundaries by simply:
+Using this toy dataset as an example, we could run MSAF using the Foote algorithm for boundaries and using hpcp features by simply:
 
     ./run.py my_collection -f hpcp -bid foote
 
