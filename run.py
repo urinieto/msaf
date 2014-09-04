@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Runs one boundary algorithm and a label algorithm on a specified dataset.
+Runs one boundary algorithm and a label algorithm on a specified audio file or
+dataset.
 """
 
 __author__ = "Oriol Nieto"
@@ -104,8 +105,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            framesync=False, boundaries_id="gt", labels_id=None, n_jobs=4,
-            config=None):
+            framesync=False, boundaries_id="gt", labels_id=None,
+            out_audio=False, n_jobs=4, config=None):
     """Main process to segment a file or a collection of files.
 
     Parameters
@@ -126,6 +127,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         Identifier of the boundaries algorithm (use "gt" for groundtruth)
     labels_id: str
         Identifier of the labels algorithm (use None to not compute labels)
+    out_audio: bool
+        Whether to write an output audio file with the annotated boundaries
+        or not (only available in Single File Mode).
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
@@ -155,7 +159,16 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config["features"] = features
 
         # And run the algorithms
-        return run_algorithms(in_path, boundaries_id, labels_id, config)
+        est_times, est_labels = run_algorithms(in_path, boundaries_id,
+                                               labels_id, config)
+
+        if out_audio:
+            # TODO: Set a nicer output file name?
+            #out_file = in_path[:-4] + msaf.out_boundaries_ext
+            out_file = "out_boundaries.wav"
+            utils.write_audio_boundaries(audio, est_times, out_file)
+
+        return est_times
     else:
         # Collection mode
         file_structs = io.get_dataset_files(in_path, ds_name)
@@ -173,7 +186,7 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
-                        help="Input dataset")
+                        help="Input audio file or dataset")
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
@@ -209,13 +222,18 @@ def main():
                         dest="ds_name",
                         default="*",
                         help="The prefix of the dataset to use "
-                        "(e.g. Isophonics, SALAMI")
+                        "(e.g. Isophonics, SALAMI)")
     parser.add_argument("-j",
                         action="store",
                         dest="n_jobs",
                         default=4,
                         type=int,
                         help="The number of threads to use")
+    parser.add_argument("-a",
+                        action="store_true",
+                        dest="out_audio",
+                        help="Output estimated boundaries with audio",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -227,7 +245,7 @@ def main():
     process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
             ds_name=args.ds_name, framesync=args.framesync,
             boundaries_id=args.boundaries_id, labels_id=args.labels_id,
-            n_jobs=args.n_jobs)
+            n_jobs=args.n_jobs, out_audio=args.out_audio)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

@@ -111,7 +111,7 @@ def compute_features(audio, beats=None):
                        msaf.Anal.window_type,
                        ES.MFCC(numberCoefficients=msaf.Anal.mfcc_coeff),
                        msaf.Anal.sample_rate, beats)
-    HPCP = STFTFeature(msaf.Anal.frame_rate, msaf.Anal.hop_size,
+    HPCP = STFTFeature(msaf.Anal.frame_size, msaf.Anal.hop_size,
                        msaf.Anal.window_type, ES.HPCP(), msaf.Anal.sample_rate,
                        beats)
     logging.info("Computing %sMFCCs..." % beatsync_str)
@@ -156,7 +156,7 @@ def compute_features_for_audio_file(audio_file):
 
     # Analysis parameters
     features["anal"] = {}
-    features["anal"]["frame_rate"] = msaf.Anal.frame_rate
+    features["anal"]["frame_rate"] = msaf.Anal.frame_size
     features["anal"]["hop_size"] = msaf.Anal.hop_size
     features["anal"]["mfcc_coeff"] = msaf.Anal.mfcc_coeff
     features["anal"]["sample_rate"] = msaf.Anal.sample_rate
