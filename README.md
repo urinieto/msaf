@@ -34,15 +34,24 @@ You can run MSAF on a collection of files by inputting the correctly formatted f
 
 The MSAF datasets should be formatted as follows:
 
-    my\_collection/
+    my_collection/
         audio: The audio files of your collection.
         estimations: Estimations (output) by MSAF. Should be empty initially.
         features: Feature files for speeding up running time. Should be empty initially.
         references: Human references for evaluation purposes.
 
-Using this toy dataset as an example, we could run MSAF by simply:
+Using this toy dataset as an example, we could run MSAF using the Foote algorithm for boundaries by simply:
 
-    ./run.py my\_collection
+    ./run.py my_collection -f hpcp -bid foote
+
+Additionally, we can spread the work across multiple processors, by using the `-j` flag.
+By default the number of processors is 4, this can be set by typing:
+
+    ./run.py my_collection -f hpcp -bid foote -j 4
+
+For more information, please type:
+
+    ./run.py -h
 
 
 ###As a Python module###
