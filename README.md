@@ -98,7 +98,9 @@ The output contains the following evaluation metrics:
 | So           | Normalized Entropy Scores Precision |
 | Su           | Normalized Entropy Scores Recall |
 
-For more information read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
+Please, note that before you can run the `eval.py` script on a specific feature and set of algorithms, you **must** have run the `run,py` script first.
+
+For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
 
 ###As a Python module###
 
@@ -132,6 +134,24 @@ without exec](http://mail.scipy.org/pipermail/numpy-discussion/2012-August/06358
 The solution is to use an alternative framework, like OpenBLAS, and link it to
 Numpy instead of the Accelerate Framework.
 There is a nice explanation to do so [here](http://stackoverflow.com/a/14391693/777706).
+
+## References ##
+
+Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio Novelty. In Proc. of the IEEE International Conference of Multimedia and Expo (pp. 452–455). New York City, NY, USA.
+
+Levy, M., & Sandler, M. (2008). Structural Segmentation of Musical Audio by Constrained Clustering. IEEE Transactions on Audio, Speech, and Language Processing, 16(2), 318–326. doi:10.1109/TASL.2007.910781
+
+McFee, B., & Ellis, D. P. W. (2014). Learnign to Segment Songs With Ordinal Linear Discriminant Analysis. In Proc. of the 39th IEEE International Conference on Acoustics Speech and Signal Processing (pp. 5197–5201). Florence, Italy.
+
+Nieto, O., & Bello, J. P. (2014). Music Segment Similarity Using 2D-Fourier Magnitude Coefficients. In Proc. of the 39th IEEE International Conference on Acoustics Speech and Signal Processing (pp. 664–668). Florence, Italy.
+
+Nieto, O., & Jehan, T. (2013). Convex Non-Negative Matrix Factorization For Automatic Music Structure Identification. In Proc. of the 38th IEEE International Conference on Acoustics Speech and Signal Processing (pp. 236–240). Vancouver, Canada.
+
+Raffel, C., Mcfee, B., Humphrey, E. J., Salamon, J., Nieto, O., Liang, D., & Ellis, D. P. W. (2014). mir_eval: A Transparent Implementation of Common MIR Metrics. In Proc. of the 15th International Society for Music Information Retrieval Conference. Taipei, Taiwan.
+
+Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2014). Unsupervised Music Structure Annotation by Time Series Structure Features and Segment Similarity. IEEE Transactions on Multimedia, Special Issue on Music Data Mining, 16(5), 1229 – 1240. doi:10.1109/TMM.2014.2310701
+
+Weiss, R., & Bello, J. P. (2011). Unsupervised Discovery of Temporal Structure in Music. IEEE Journal of Selected Topics in Signal Processing, 5(6), 1240–1251.
 
 ## Credits ##
 
