@@ -101,8 +101,9 @@ class SegmenterInterface:
 
         # Use specific feature
         if self.feature_str not in valid_features:
-            raise RuntimeError("Feature %s in not valid for algorithm: %s" %
-                               (self.feature_str, __name__))
+            raise RuntimeError("Feature %s in not valid for algorithm: %s "
+                               "(valid features are %s)." %
+                               (self.feature_str, __name__, valid_features))
         else:
             try:
                 F = eval(self.feature_str)

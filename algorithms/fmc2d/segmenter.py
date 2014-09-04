@@ -33,8 +33,8 @@ MIN_LEN = 4
 def get_pcp_segments(PCP, bound_idxs):
     """Returns a set of segments defined by the bound_idxs."""
     pcp_segments = []
-    for i in xrange(len(bound_idxs)-1):
-        pcp_segments.append(PCP[bound_idxs[i]:bound_idxs[i+1], :])
+    for i in xrange(len(bound_idxs) - 1):
+        pcp_segments.append(PCP[bound_idxs[i]:bound_idxs[i + 1], :])
     return pcp_segments
 
 
@@ -119,7 +119,8 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess()
+        F, frame_times, dur, bound_idxs = self._preprocess(
+            valid_features=["hpcp"])
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, bound_idxs,
