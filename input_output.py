@@ -131,6 +131,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         Array containing the estimated labels.
         Empty array if labels_id is None.
     """
+
     # Open file and read jams
     try:
         jam = jams2.load(est_file)
