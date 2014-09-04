@@ -44,8 +44,11 @@ Using this toy dataset as an example, we could run MSAF using the Foote algorith
 
     ./run.py my_collection -f hpcp -bid foote
 
-Additionally, we can spread the work across multiple processors, by using the `-j` flag.
-By default the number of processors is 4, this can be set by typing:
+There is an example dataset included in the MSAF package, in the folder `ds_example`. 
+It includes the SALAMI and Isophonics datasets (not the audio though).
+
+Additionally, we can spread the work across multiple processors by using the `-j` flag.
+By default the number of processors is 4, this can be explicitly set by typing:
 
     ./run.py my_collection -f hpcp -bid foote -j 4
 
