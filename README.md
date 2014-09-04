@@ -65,7 +65,20 @@ For more information, please type:
 
 ####Evaluating Collection####
 
-    ./eval.py my_collection -f mfcc -bid foote
+Once you have run the desired algorithm on a specified collection, the next thing you might probably want to do is to evaluate its results.
+To do so, use the `eval.py` script, just like this (following the example above):
+
+    ./eval.py my_collection -f hpcp -bid foote
+
+The output contains the following evaluation metrics:
+
+| Metric        | Description       |
+| --------------|-------------------|
+| D             | Information Gain  |
+| DevE2R        | Median Deviation from Estimation to Reference |
+| DevR2E        | Median Deviation from Reference to Estimation |
+
+
 
 ###As a Python module###
 

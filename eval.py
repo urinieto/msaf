@@ -78,22 +78,22 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     ### Boundaries ###
     # Hit Rate
     res["HitRate_3P"], res["HitRate_3R"], res["HitRate_3F"] = \
-        mir_eval.boundary.detection(ann_inter, est_inter, window=3, trim=False)
+        mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
     res["HitRate_0.5P"], res["HitRate_0.5R"], res["HitRate_0.5F"] = \
-        mir_eval.boundary.detection(ann_inter, est_inter, window=.5, trim=False)
+        mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=False)
     res["HitRate_t3P"], res["HitRate_t3R"], res["HitRate_t3F"] = \
-        mir_eval.boundary.detection(ann_inter, est_inter, window=3, trim=True)
+        mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
     res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
-        mir_eval.boundary.detection(ann_inter, est_inter, window=.5, trim=True)
+        mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
 
     # Information gain
     res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
                                         bins=bins)
 
     # Median Deviations
-    res["DevA2E"], res["DevE2A"] = mir_eval.boundary.deviation(
+    res["DevR2E"], res["DevE2R"] = mir_eval.segment.deviation(
         ann_inter, est_inter, trim=False)
-    res["DevtA2E"], res["DevtE2A"] = mir_eval.boundary.deviation(
+    res["DevtR2E"], res["DevtE2R"] = mir_eval.segment.deviation(
         ann_inter, est_inter, trim=True)
 
     ### Labels ###
@@ -108,11 +108,11 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
                 est_inter, est_labels, t_min=0, t_max=ann_inter.max())
 
             # Pair-wise frame clustering
-            res["PWP"], res["PWR"], res["PWF"] = mir_eval.structure.pairwise(
+            res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
                 ann_inter, ann_labels, est_inter, est_labels)
 
             # Normalized Conditional Entropies
-            res["So"], res["Su"], res["Sf"] = mir_eval.structure.nce(
+            res["So"], res["Su"], res["Sf"] = mir_eval.segment.nce(
                 ann_inter, ann_labels, est_inter, est_labels)
         except:
             logging.warning("Labeling evaluation failed in file: %s" %
@@ -261,7 +261,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     # Evaluate in parallel
     evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
         file_struct, boundaries_id, labels_id, config)
-        for file_struct in file_structs)
+        for file_struct in file_structs[:])
 
     # Aggregat evaluations in pandas format
     for e in evals:
