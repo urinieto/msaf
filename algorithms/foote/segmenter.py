@@ -67,11 +67,13 @@ def compute_nc(X, G):
 def pick_peaks(nc, L=16):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
     offset = nc.mean() / 2.
+
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    # plt.plot(nc)
-    # plt.plot(th)
-    # plt.show()
+
+    nc = filters.gaussian_filter1d(nc, sigma=2)  # Hack for Musichackathon
+    th = np.zeros(len(nc))  # Hack continues
+
     peaks = []
     for i in xrange(1, nc.shape[0] - 1):
         # is it a peak?
@@ -79,6 +81,13 @@ def pick_peaks(nc, L=16):
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
+    import pylab as plt
+    plt.plot(nc)
+    plt.plot(th)
+    for peak in peaks:
+        plt.axvline(peak)
+    plt.show()
+
     return peaks
 
 
