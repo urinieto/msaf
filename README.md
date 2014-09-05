@@ -40,13 +40,13 @@ After running the collection, you can also evaluate it using the standard music 
 
 ####Running Collection####
 
-The MSAF datasets should be formatted as follows:
+The MSAF datasets should have the following folder structure:
 
     my_collection/
-        audio: The audio files of your collection.
-        estimations: Estimations (output) by MSAF. Should be empty initially.
-        features: Feature files for speeding up running time. Should be empty initially.
-        references: Human references for evaluation purposes.
+    ├──  audio: The audio files of your collection.
+    ├──  estimations: Estimations (output) by MSAF. Should be empty initially.
+    ├──  features: Feature files for speeding up running time. Should be empty initially.
+    └──  references: Human references for evaluation purposes.
 
 Using this toy dataset as an example, we could run MSAF using the Foote algorithm for boundaries and using hpcp features by simply:
 
