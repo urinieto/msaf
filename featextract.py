@@ -134,11 +134,17 @@ def save_features(key, pool, mfcc, hpcp, tonnetz):
         for tonnetz_coeff in tonnetz]
 
 
+def read_audio(audio_file, sample_rate):
+    """Reads the audio file using Essentia."""
+    audio = ES.MonoLoader(filename=audio_file,
+                          sampleRate=sample_rate)()
+    return audio
+
+
 def compute_features_for_audio_file(audio_file):
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
-    audio = ES.MonoLoader(filename=audio_file,
-                          sampleRate=msaf.Anal.sample_rate)()
+    audio = read_audio(audio_file, msaf.Anal.sample_rate)
 
     # Output features dict
     features = {}

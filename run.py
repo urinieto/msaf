@@ -166,7 +166,11 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             # TODO: Set a nicer output file name?
             #out_file = in_path[:-4] + msaf.out_boundaries_ext
             out_file = "out_boundaries.wav"
-            utils.write_audio_boundaries(audio, est_times, out_file)
+            logging.info("Sonifying boundaries in %s" % out_file)
+            fs = 44100
+            audio_hq = featextract.read_audio(in_path, fs)
+            utils.write_audio_boundaries(audio_hq, np.delete(est_times, 1),
+                                         out_file, fs)
 
         return est_times
     else:
