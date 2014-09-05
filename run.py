@@ -23,6 +23,7 @@ from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
 from msaf import featextract
+from msaf import plotting
 import msaf.algorithms as algorithms
 
 
@@ -106,7 +107,7 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             framesync=False, boundaries_id="gt", labels_id=None,
-            out_audio=False, n_jobs=4, config=None):
+            out_audio=False, plot=False, n_jobs=4, config=None):
     """Main process to segment a file or a collection of files.
 
     Parameters
@@ -130,6 +131,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     out_audio: bool
         Whether to write an output audio file with the annotated boundaries
         or not (only available in Single File Mode).
+    plot: bool
+        Whether to plot the boundaries and labels against the ground truth.
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
@@ -166,11 +169,15 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             # TODO: Set a nicer output file name?
             #out_file = in_path[:-4] + msaf.out_boundaries_ext
             out_file = "out_boundaries.wav"
-            logging.info("Sonifying boundaries in %s" % out_file)
+            logging.info("Sonifying boundaries in %s..." % out_file)
             fs = 44100
             audio_hq = featextract.read_audio(in_path, fs)
             utils.write_audio_boundaries(audio_hq, np.delete(est_times, 1),
                                          out_file, fs)
+
+        if plot:
+            plotting.plot_one_track(in_path, est_times, est_labels,
+                                    boundaries_id, labels_id)
 
         return est_times
     else:
@@ -238,6 +245,11 @@ def main():
                         dest="out_audio",
                         help="Output estimated boundaries with audio",
                         default=False)
+    parser.add_argument("-p",
+                        action="store_true",
+                        dest="plot",
+                        help="Plots the current boundaries",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -249,7 +261,7 @@ def main():
     process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
             ds_name=args.ds_name, framesync=args.framesync,
             boundaries_id=args.boundaries_id, labels_id=args.labels_id,
-            n_jobs=args.n_jobs, out_audio=args.out_audio)
+            n_jobs=args.n_jobs, out_audio=args.out_audio, plot=args.plot)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
