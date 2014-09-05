@@ -60,7 +60,7 @@ By default the number of processors is 4, this can be explicitly set by typing:
 
     ./run.py my_collection -f hpcp -bid foote -j 4
 
-Additionally, we can only a subset of the collection.
+Additionally, we can run only a specific subset of the collection.
 For example, if you want to run on the Isophonics set, you can do:
 
     ./run.py my_collection -f hpcp -bid foote -d Isophonics
@@ -104,9 +104,13 @@ The output contains the following evaluation metrics:
 | So           | Normalized Entropy Scores Precision |
 | Su           | Normalized Entropy Scores Recall |
 
+Analogously as in `run.py`, you can evaluate only a subset of the collection, by adding the `-d` flag:
+
+    ./eval.py my_collection -f hpcp -bid foote -d Isophonics
+
 Please, note that before you can run the `eval.py` script on a specific feature and set of algorithms, you **must** have run the `run,py` script first.
 
-For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
+For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation). Finally, you can always add the `-h` flag in `eval.py` for more options.
 
 ###As a Python module###
 
