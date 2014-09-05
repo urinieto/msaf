@@ -265,11 +265,6 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
-    # Read references
-    annotation_path = os.path.join(ds_path, msaf.Dataset.references_dir,
-        os.path.basename(audio_path)[:-4] + msaf.Dataset.references_ext)
-    jam = jams2.load(annotation_path)
-
     # Read Estimations
     features_path = os.path.join(ds_path, msaf.Dataset.features_dir,
         os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
@@ -282,6 +277,17 @@ def get_features(audio_path, annot_beats=False, framesync=False):
         beats = None
     else:
         if annot_beats:
+            # Read references
+            try:
+                annotation_path = os.path.join(
+                    ds_path, msaf.Dataset.references_dir,
+                    os.path.basename(audio_path)[:-4] +
+                    msaf.Dataset.references_ext)
+                jam = jams2.load(annotation_path)
+            except:
+                raise RuntimeError("No references found in file %s" %
+                                   annotation_path)
+
             feat_str = "ann_beatsync"
             beats = []
             beat_data = jam.beats[0].data
@@ -299,7 +305,11 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     analysis = feats["analysis"]
 
     # Duration
-    dur = jam.metadata.duration
+    # TODO: Essentia fix!
+    feat_frames = np.asarray(feats["framesync"]["hpcp"])
+    dur = feat_frames.shape[0] * analysis["hop_size"] / \
+        float(analysis["sample_rate"])
+    #dur = jam.metadata.duration
 
     return C, M, T, beats, dur, analysis
 

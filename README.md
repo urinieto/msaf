@@ -26,7 +26,7 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 
 ###Single File Mode###
 
-Run audio file:
+In single file mode the features will be computed Run audio file:
 
 Run audio file and output boundaries:
 
@@ -36,7 +36,8 @@ Run audio file and plot:
 ###Collection Mode###
 
 You can run MSAF on a collection of files by inputting the correctly formatted folder to the dataset.
-After running the collection, you can also evaluate it using the standard music segmentation evaluation metrics.
+In this mode, MSAF will precompute the features during the first run and put them in a specific folder in order to speed up the process in further runnings.
+After running the collection, you can also evaluate it using the standard music segmentation evaluation metrics (as long as you have reference annotations for it).
 
 ####Running Collection####
 
@@ -108,7 +109,7 @@ Analogously as in `run.py`, you can evaluate only a subset of the collection, by
 
     ./eval.py my_collection -f hpcp -bid foote -d Isophonics
 
-Please, note that before you can run the `eval.py` script on a specific feature and set of algorithms, you **must** have run the `run,py` script first.
+Please, note that before you can run the `eval.py` script on a specific feature and set of algorithms, you **must** have run the `run.py` script first.
 
 For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation). Finally, you can always add the `-h` flag in `eval.py` for more options.
 
