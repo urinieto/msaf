@@ -29,11 +29,17 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 In single file mode the features will be computed on the fly (so it always takes some extra time).
 To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features:
 
-    ./run.py audio_file.mp3 
+    ./run.py audio_file.mp3 -bid cnmf3 -lid fmc2d -f hpcp
 
-Run audio file and output boundaries:
+The input file can be of type `mp3`, `wav` or `aif`.
 
-Run audio file and plot:
+If you want to *sonify* the boundaries, add the `-a` flag.
+
+If you want to plot the boundaries against the ground truth, add the `-p` (only if ground truth references are available).
+
+For more info, type:
+
+    ./run.py -h
 
 
 ###Collection Mode###
