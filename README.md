@@ -33,7 +33,7 @@ To run an audio file with the Convex NMF method for boundaries and 2D-FMC for la
 
 The input file can be of type `mp3`, `wav` or `aif`.
 
-If you want to *sonify* the boundaries, add the `-a` flag.
+If you want to *sonify* the boundaries, add the `-a` flag, and a file called `out_boundaries.wav` will be created in your current folder.
 
 If you want to plot the boundaries against the ground truth, add the `-p` (only if ground truth references are available).
 
