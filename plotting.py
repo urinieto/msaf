@@ -204,8 +204,9 @@ def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
 
     # Format plot
     bid_lid = boundaries_id
+    algo_ids = [bid_lid]
     if labels_id is not None:
         bid_lid += " + " + labels_id
-    algo_ids = ["GT"] + [bid_lid]
+        algo_ids = ["GT"] + [bid_lid]
     _plot_formatting(title, in_path, algo_ids, all_boundaries[0][-1], N,
                      None)
