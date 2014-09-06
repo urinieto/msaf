@@ -229,28 +229,28 @@ def main():
                         dest="labels_id",
                         default=None,
                         choices= io.get_all_label_algorithms(algorithms))
-    parser.add_argument("-d",
-                        action="store",
-                        dest="ds_name",
-                        default="*",
-                        help="The prefix of the dataset to use "
-                        "(e.g. Isophonics, SALAMI)")
+    parser.add_argument("-a",
+                        action="store_true",
+                        dest="out_audio",
+                        help="Output estimated boundaries with audio",
+                        default=False)
     parser.add_argument("-j",
                         action="store",
                         dest="n_jobs",
                         default=4,
                         type=int,
                         help="The number of threads to use")
-    parser.add_argument("-a",
-                        action="store_true",
-                        dest="out_audio",
-                        help="Output estimated boundaries with audio",
-                        default=False)
     parser.add_argument("-p",
                         action="store_true",
                         dest="plot",
                         help="Plots the current boundaries",
                         default=False)
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI)")
     args = parser.parse_args()
     start_time = time.time()
 
