@@ -206,16 +206,6 @@ def main():
                         type=str,
                         help="Type of features",
                         choices=["hpcp", "tonnetz", "mfcc"])
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
-    parser.add_argument("-fs",
-                        action="store_true",
-                        dest="framesync",
-                        help="Use frame-synchronous features",
-                        default=False)
     parser.add_argument("-bid",
                         action="store",
                         help="Boundary algorithm identifier",
@@ -233,6 +223,16 @@ def main():
                         action="store_true",
                         dest="out_audio",
                         help="Output estimated boundaries with audio",
+                        default=False)
+    parser.add_argument("-b",
+                        action="store_true",
+                        dest="annot_beats",
+                        help="Use annotated beats",
+                        default=False)
+    parser.add_argument("-fs",
+                        action="store_true",
+                        dest="framesync",
+                        help="Use frame-synchronous features",
                         default=False)
     parser.add_argument("-j",
                         action="store",
