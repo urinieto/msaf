@@ -125,11 +125,14 @@ For more information about the metrics read the segmentation metrics in the [MIR
 ###As a Python module###
 
 Place the ```msaf``` module in your Python Path ($PYTHONPATH).
+The main function is `process`, which takes basically the same parameters as the command line, and it returns the estimated boundary times and labels.
 
 ```python
 import msaf
-msaf.run
+est_times, est_labels = msaf.process("path/to/audio_file.mp3", feature="hpcp", boundaries_id="cnmf3", labels_id="cnmf3")
 ```
+
+For more parameters, please read the function's docstring.
 
 
 ## Requirements ##

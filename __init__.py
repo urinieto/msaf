@@ -7,6 +7,7 @@ import input_output as io
 import plotting
 import utils
 import algorithms
+from run import process
 
 __version__ = '0.0.1'
 
