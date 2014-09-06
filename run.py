@@ -179,7 +179,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             plotting.plot_one_track(in_path, est_times, est_labels,
                                     boundaries_id, labels_id)
 
-        return est_times
+        return est_times, est_labels
     else:
         # Collection mode
         file_structs = io.get_dataset_files(in_path, ds_name)

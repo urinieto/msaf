@@ -124,7 +124,7 @@ For more information about the metrics read the segmentation metrics in the [MIR
 
 ###As a Python module###
 
-Place the ```msaf``` module in your Python Path ($PYTHONPATH).
+Place the ```msaf``` module in your Python Path ($PYTHONPATH), so that you can import it from anywhere.
 The main function is `process`, which takes basically the same parameters as the command line, and it returns the estimated boundary times and labels.
 
 ```python
