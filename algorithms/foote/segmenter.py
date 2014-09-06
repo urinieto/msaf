@@ -81,12 +81,12 @@ def pick_peaks(nc, L=16):
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
-    import pylab as plt
-    plt.plot(nc)
-    plt.plot(th)
-    for peak in peaks:
-        plt.axvline(peak)
-    plt.show()
+    #import pylab as plt
+    #plt.plot(nc)
+    #plt.plot(th)
+    #for peak in peaks:
+        #plt.axvline(peak)
+    #plt.show()
 
     return peaks
 
