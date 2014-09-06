@@ -2,7 +2,7 @@
 
 # C-NMF Params
 config = {
-    "M_gaussian"    : 24,
+    "M_gaussian"    : 8,
     "m_median"      : 1,
     "L_peaks"       : 24
 }

@@ -71,7 +71,7 @@ def pick_peaks(nc, L=16):
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
 
-    nc = filters.gaussian_filter1d(nc, sigma=2)  # Hack for Musichackathon
+    nc = filters.gaussian_filter1d(nc, sigma=2.1)  # Hack for Musichackathon
     th = np.zeros(len(nc))  # Hack continues
 
     peaks = []
@@ -81,12 +81,12 @@ def pick_peaks(nc, L=16):
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
-    #import pylab as plt
-    #plt.plot(nc)
-    #plt.plot(th)
-    #for peak in peaks:
-        #plt.axvline(peak)
-    #plt.show()
+    import pylab as plt
+    plt.plot(nc)
+    plt.plot(th)
+    for peak in peaks:
+        plt.axvline(peak)
+    plt.show()
 
     return peaks
 

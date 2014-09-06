@@ -172,7 +172,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             logging.info("Sonifying boundaries in %s..." % out_file)
             fs = 44100
             audio_hq = featextract.read_audio(in_path, fs)
-            utils.write_audio_boundaries(audio_hq, np.delete(est_times, 1),
+            utils.write_audio_boundaries(audio_hq, np.delete(est_times, [1, len(est_times) - 2]),
                                          out_file, fs)
 
         if plot:
@@ -193,7 +193,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
-        "Runs the speficied algorithm(s) on the MSAF formatted dataset.",
+        "Runs the speficied algorithm(s) on the input file or MSAF formatted "
+        "dataset.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
