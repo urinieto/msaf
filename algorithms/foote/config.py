@@ -1,8 +1,8 @@
 """Config for the Foote algorithm."""
 
-# C-NMF Params
+# Foote Params
 config = {
-    "M_gaussian"    : 8,
+    "M_gaussian"    : 24,
     "m_median"      : 1,
     "L_peaks"       : 24
 }
