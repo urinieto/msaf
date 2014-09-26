@@ -576,6 +576,11 @@ def get_dataset_files(in_path, ds_name="*"):
         audio_files += glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
                                               ("%s_*" + ext) % prefix))
 
+    # Make sure directories exist
+    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.features_dir))
+    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.estimations_dir))
+    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.references_dir))
+
     # Get the file structs
     file_structs = []
     for audio_file in audio_files:
