@@ -180,8 +180,6 @@ def read_references(audio_path):
                             os.path.basename(audio_path)[:-4] +
                             msaf.Dataset.references_ext)
     ds_prefix = os.path.basename(audio_path).split("_")[0]
-    ref_inters, ref_labels = jams2.converters.load_jams_range(
-        jam_path, "sections", context=msaf.prefix_dict[ds_prefix])
     try:
         ref_inters, ref_labels = jams2.converters.load_jams_range(
             jam_path, "sections", context=msaf.prefix_dict[ds_prefix])
