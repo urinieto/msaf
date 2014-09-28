@@ -23,10 +23,12 @@ from msaf import jams2
 translate_ids = {
     "2dfmc" : "2D-FMC",
     "cnmf3" : "C-NMF",
-    "foote" : "Foote",
+    "foote" : "Ckboard",
     "levy"  : "CC",
+    "cc"    : "CC",
     "olda"  : "OLDA",
     "serra" : "SF",
+    "sf"    : "SF",
     "siplca": "SI-PLCA"
 }
 
