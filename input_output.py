@@ -347,6 +347,7 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
     assert len(boundaries) == len(labels), "Number of boundary intervals " \
         "(%d) and labels (%d) do not match" % (len(boundaries), len(labels))
 
+    print boundaries, labels
     curr_estimation = None
     curr_i = -1
 
