@@ -70,17 +70,17 @@ class SegmenterInterface:
         # Read features
         if self.features is None:
             # Features stored in a json file
-            hpcp, mfcc, tonnetz, beats, dur, anal = io.get_features(
-                self.audio_file, annot_beats=self.annot_beats,
-                framesync=self.framesync)
+            self.hpcp, self.mfcc, self.tonnetz, beats, dur, anal = \
+                io.get_features(self.audio_file, annot_beats=self.annot_beats,
+                                framesync=self.framesync)
         else:
             # Features passed as parameters
             feat_prefix = ""
             if not self.framesync:
                 feat_prefix = "bs_"
-            hpcp = self.features["%shpcp" % feat_prefix]
-            mfcc = self.features["%smfcc" % feat_prefix]
-            tonnetz = self.features["%stonnetz" % feat_prefix]
+            self.hpcp = self.features["%shpcp" % feat_prefix]
+            self.mfcc = self.features["%smfcc" % feat_prefix]
+            self.tonnetz = self.features["%stonnetz" % feat_prefix]
             beats = self.features["beats"]
             dur = self.features["anal"]["dur"]
             anal = self.features["anal"]
@@ -106,7 +106,7 @@ class SegmenterInterface:
                                (self.feature_str, __name__, valid_features))
         else:
             try:
-                F = eval(self.feature_str)
+                F = eval("self." + self.feature_str)
             except:
                 raise RuntimeError("Feature %s in not supported by MSAF" %
                                    (self.feature_str))
