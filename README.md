@@ -170,6 +170,8 @@ Levy, M., & Sandler, M. (2008). Structural Segmentation of Musical Audio by Cons
 
 McFee, B., & Ellis, D. P. W. (2014). Learnign to Segment Songs With Ordinal Linear Discriminant Analysis. In Proc. of the 39th IEEE International Conference on Acoustics Speech and Signal Processing (pp. 5197–5201). Florence, Italy.
 
+Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with Spectral Clustering. In Proc. of the 15th International Society for Music Information Retrieval Conference (pp. 405–410). Taipei, Taiwan.
+
 Nieto, O., & Bello, J. P. (2014). Music Segment Similarity Using 2D-Fourier Magnitude Coefficients. In Proc. of the 39th IEEE International Conference on Acoustics Speech and Signal Processing (pp. 664–668). Florence, Italy.
 
 Nieto, O., & Jehan, T. (2013). Convex Non-Negative Matrix Factorization For Automatic Music Structure Identification. In Proc. of the 38th IEEE International Conference on Acoustics Speech and Signal Processing (pp. 236–240). Vancouver, Canada.
