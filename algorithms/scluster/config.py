@@ -3,6 +3,7 @@
 # Spectral Clustering Params
 config = {
     "verbose"    : False,
+    "median"     : False,
     "num_types"  : None
 }
 
