@@ -355,6 +355,54 @@ def fixed_partition(Lf, n_types):
 
     return boundaries, labels
 
+def median_partition(Lf, k_min, k_max, beats):
+    best_score      = -np.inf
+    best_boundaries = [0, Lf.shape[1]]
+    best_n_types    = 1
+    Y_best          = Lf[:1].T
+
+    label_dict = {}
+
+    # The trivial solution
+    label_dict[1]   = np.zeros(Lf.shape[1])
+
+    for n_types in range(2, 1+len(Lf)):
+        Y = librosa.util.normalize(Lf[:n_types].T, norm=2, axis=1)
+
+        # Try to label the data with n_types
+        C = sklearn.cluster.KMeans(n_clusters=n_types, n_init=100)
+        labels = C.fit_predict(Y)
+        label_dict[n_types] = labels
+
+        # Find the label change-points
+        boundaries = 1 + np.asarray(np.where(labels[:-1] != labels[1:])).reshape((-1,))
+
+        boundaries = np.unique(np.concatenate([[0], boundaries, [len(labels)]]))
+
+        # boundaries now include start and end markers; n-1 is the number of segments
+        feasible = (len(boundaries) > k_min)
+        durations = np.diff([beats[x] for x in boundaries])
+        med_diff = np.median(durations)
+
+        score = -np.mean(np.abs(np.log(durations) - np.log(med_diff)))
+
+        if score > best_score and feasible:
+            best_boundaries = boundaries
+            best_n_types    = n_types
+            best_score      = score
+            Y_best          = Y
+
+    # Did we fail to find anything with enough boundaries?
+    # Take the last one then
+    if best_boundaries is None:
+        best_boundaries = boundaries
+        best_n_types    = n_types
+        Y_best          = librosa.util.normalize(Lf[:best_n_types].T, norm=2, axis=1)
+
+    intervals, best_labels = label_rep_sections(Y_best.T, best_boundaries, best_n_types)
+
+    return best_boundaries, best_labels
+
 def segment_speed(Y):
     return np.mean(np.sum(np.abs(np.diff(Y, axis=1))**2, axis=0))
 
@@ -493,6 +541,8 @@ def do_segmentation(X, beats, parameters):
 
     if parameters['num_types']:
         boundaries, labels = fixed_partition(Lf, parameters['num_types'])
+    elif parameters['median']:
+        boundaries, labels = median_partition(Lf, k_min, k_max, beats)
     else:
         boundaries, labels = label_clusterer(Lf, k_min, k_max)
 
