@@ -143,19 +143,20 @@ class Segmenter(SegmenterInterface):
         # Preprocess to obtain features, times, and input boundary indeces
         F, frame_times, dur, bound_idxs = self._preprocess()
 
-        # Emedding the feature space (i.e. shingle)
-        E = embedded_space(F, m)
-        # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
-
-        # Recurrence matrix
-        R = librosa.segment.recurrence_matrix(E.T,
-                                            k=k * int(F.shape[0]),
-                                            width=0,  # zeros from the diagonal
-                                            metric="seuclidean",
-                                            sym=True).astype(np.float32)
-
         # Check size in case the track is too short
-        if R.shape[0] > 0:
+        if F.shape[0] > 20:
+
+            # Emedding the feature space (i.e. shingle)
+            E = embedded_space(F, m)
+            # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
+
+            # Recurrence matrix
+            R = librosa.segment.recurrence_matrix(E.T,
+                                                k=k * int(F.shape[0]),
+                                                width=0,  # zeros from the diagonal
+                                                metric="seuclidean",
+                                                sym=True).astype(np.float32)
+
             # Circular shift
             L = circular_shift(R)
             #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
