@@ -97,7 +97,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         ann_inter, est_inter, trim=True)
 
     ### Labels ###
-    if est_labels != []:
+    if est_labels is not None and est_labels != []:
         try:
             # Align labels with intervals
             ann_labels = list(ann_labels)
