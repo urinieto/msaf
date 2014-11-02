@@ -171,7 +171,20 @@ def get_algo_ids(est_file):
 
 
 def read_references(audio_path):
-    """Reads the boundary times and the labels."""
+    """Reads the boundary times and the labels.
+
+    Parameters
+    ----------
+    audio_path : str
+        Path to the audio file
+
+    Returns
+    -------
+    ref_times : list
+        List of boundary times
+    ref_labels : list
+        List of labels
+    """
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
