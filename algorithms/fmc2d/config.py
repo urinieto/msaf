@@ -2,6 +2,7 @@
 
 # 2D-FMC Params
 config = {
+    "dirichlet" :   True,
     "xmeans"    :   False,
     "k"         :   6
 }

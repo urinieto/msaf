@@ -20,6 +20,7 @@ import numpy as np
 import pylab as plt
 
 import scipy.cluster.vq as vq
+from sklearn import mixture
 
 # Local stuff
 import utils_2dfmc as utils2d
@@ -85,7 +86,7 @@ def compute_labels_kmeans(fmcs, k=6):
     return labels
 
 
-def compute_similarity(PCP, bound_idxs, xmeans=False, k=5):
+def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
     """Main function to compute the segment similarity of file file_struct."""
 
     # Get PCP segments
@@ -97,10 +98,21 @@ def compute_similarity(PCP, bound_idxs, xmeans=False, k=5):
         return np.arange(len(bound_idxs) - 1)
 
     # Compute the labels using kmeans
+    if dirichlet:
+        k_init = np.min([fmcs.shape[0], k])
+        dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
+        #dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
+        dpgmm.fit(fmcs)
+        k = len(dpgmm.means_)
+        labels_est = dpgmm.predict(fmcs)
+        #print "Estimated with Dirichlet Process:", k
     if xmeans:
         xm = XMeans(fmcs, plot=False)
         k = xm.estimate_K_knee(th=0.01, maxK=8)
-    labels_est = compute_labels_kmeans(fmcs, k=k)
+        labels_est = compute_labels_kmeans(fmcs, k=k)
+        #print "Estimated with Xmeans:", k
+    else:
+        labels_est = compute_labels_kmeans(fmcs, k=k)
 
     # Plot results
     #plot_pcp_wgt(PCP, bound_idxs)
@@ -124,6 +136,7 @@ class Segmenter(SegmenterInterface):
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, bound_idxs,
+                                        dirichlet=self.config["dirichlet"],
                                         xmeans=self.config["xmeans"],
                                         k=self.config["k"])
 
