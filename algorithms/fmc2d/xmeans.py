@@ -56,7 +56,7 @@ class XMeans:
                 diff_bic = np.abs(norm_bic1 - norm_bic2)
 
                 # Split!
-                print "diff_bic", diff_bic
+                #print "diff_bic", diff_bic
                 if diff_bic > th:
                     final_means.append(half_means[0] * stdD)
                     final_means.append(half_means[1] * stdD)
@@ -68,7 +68,7 @@ class XMeans:
 
             final_means = np.asarray(final_means)
 
-            print "Estimated K: ", curr_K
+            #print "Estimated K: ", curr_K
             if self.plot:
                 plt.scatter(self.X[:, 0], self.X[:, 1])
                 plt.scatter(final_means[:, 0], final_means[:, 1], color="y")
