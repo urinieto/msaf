@@ -22,11 +22,7 @@ import librosa
 
 import msaf
 
-N_FFT = 2048
 HOP_LENGTH = 512
-HOP_BEATS = 64
-N_MELS = 128
-FMAX = 8000
 
 REP_WIDTH = 3
 REP_FILTER = 7
@@ -34,10 +30,6 @@ REP_FILTER = 7
 N_MFCC = 32
 N_CHROMA = 12
 N_REP = 32
-
-NOTE_MIN = librosa.midi_to_hz(24)  # 32Hz
-NOTE_NUM = 84
-NOTE_RES = 2                     # CQT filter resolution
 
 # mfcc, chroma, repetitions for each, and 4 time features
 __DIMENSION = N_MFCC + N_CHROMA + 2 * N_REP + 4
@@ -62,7 +54,7 @@ def features(audio_path, annot_beats=False):
 
         - beat_times -- array
             mapping of beat index => timestamp
-            includes start and end markers (0, duration)
+            includes start and end markers (0, dur)
 
     '''
     def compress_data(X, k):
@@ -105,16 +97,9 @@ def features(audio_path, annot_beats=False):
 
         return compress_data(P, N_REP)
 
-    def ensure_size(X, size):
-        if X.shape[0] != size:
-            XX = np.zeros((size, size))
-            XX[:X.shape[0], :X.shape[1]] = X
-            X = XX
-        return X
-
     #########
     print '\t[1/5] loading annotations and features of ', audio_path
-    chroma, mfcc, beats, duration = msaf.io.get_features(audio_path, annot_beats)
+    chroma, mfcc, tonnetz, beats, dur, anal = msaf.io.get_features(audio_path, annot_beats)
 
     # Sampling Rate
     sr = 11025
@@ -123,14 +108,8 @@ def features(audio_path, annot_beats=False):
     print '\t[2/5] reading beats'
     B = beats
 
-    #B = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_BEATS)
-
-    #beat_frames2, uidx = np.unique(librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH), return_index=True)
     beat_frames = librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH)
     #print beat_frames, len(beat_frames), uidx
-
-    # Stash beat times aligned to the longer hop lengths
-    #B = librosa.frames_to_time(beat_frames, sr=sr, hop_length=HOP_LENGTH)
 
     #########
     print '\t[3/5] generating MFCC'
@@ -154,8 +133,8 @@ def features(audio_path, annot_beats=False):
     # Beat-synchronous repetition features
     print '\t[5/5] generating structure features'
 
-    R_timbre = repetition(librosa.segment.stack_memory(M))
-    R_chroma = repetition(librosa.segment.stack_memory(C))
+    R_timbre = repetition(librosa.feature.stack_memory(M))
+    R_chroma = repetition(librosa.feature.stack_memory(C))
 
     R_timbre += R_timbre.min()
     R_timbre /= R_timbre.max()
@@ -165,12 +144,12 @@ def features(audio_path, annot_beats=False):
 
     # Stack it all up
     #print M.shape, C.shape, len(B), len(N)
-    X = np.vstack([M, C, R_timbre, R_chroma, B, B / duration, N, N / len(beat_frames)])
+    X = np.vstack([M, C, R_timbre, R_chroma, B, B / dur, N, N / len(beat_frames)])
 
     #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
 
     # Add on the end-of-track timestamp
-    B = np.concatenate([B, [duration]])
+    B = np.concatenate([B, [dur]])
 
     return X, B
 
