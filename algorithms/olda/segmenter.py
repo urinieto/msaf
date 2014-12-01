@@ -293,14 +293,7 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        # TODO: This is a bit innefficient
-        F, frame_times, dur, bound_idxs = self._preprocess()
         F, frame_times, dur = features(self.audio_file, self.annot_beats)
-
-        if self.annot_beats:
-            self.config["transform"] = "AnnotBeats.npy"
-        else:
-            self.config["transform"] = "EstBeats.npy"
 
         try:
             # Load and apply transform
