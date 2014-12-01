@@ -9,7 +9,6 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
-import sys
 import glob
 import os
 import argparse
@@ -24,9 +23,7 @@ import pylab as plt
 
 import segmenter as S
 
-import sys
-sys.path.append( "../../../" )
-import msaf_io as MSAF
+import msaf
 
 VERSION = "1.0"
 
@@ -35,9 +32,9 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
     """Main process."""
     W = S.load_transform(t_path)
 
-    jam_files = glob.glob(os.path.join(in_path, "annotations", 
+    jam_files = glob.glob(os.path.join(in_path, "annotations",
                             "%s_*.jams" % ds_prefix))
-    audio_files = glob.glob(os.path.join(in_path, "audio", 
+    audio_files = glob.glob(os.path.join(in_path, "audio",
                             "%s_*.[wm][ap][v3]" % ds_prefix))
 
     for jam_file, audio_file in zip(jam_files, audio_files):
@@ -50,7 +47,7 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
             if jam.beats == []:
                 continue
             if jam.beats[0].data == []:
-                continue   
+                continue
 
         logging.info("Segmenting %s" % audio_file)
 
@@ -73,9 +70,9 @@ def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
         }
 
         # Save segments
-        out_file = os.path.join(in_path, "estimations", 
+        out_file = os.path.join(in_path, "estimations",
             os.path.basename(jam_file).replace(".jams", ".json"))
-        MSAF.save_estimations(out_file, times, annot_beats, "olda", 
+        MSAF.save_estimations(out_file, times, annot_beats, "olda",
             version="1.0", **params)
 
 
@@ -89,29 +86,29 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
-    parser.add_argument("t_path", 
-                        action="store", 
+    parser.add_argument("t_path",
+                        action="store",
                         help="Path to the transform file")
-    parser.add_argument("-p", 
+    parser.add_argument("-p",
                         action="store",
                         dest="ds_prefix",
                         help="Prefix to the dataset to be computed "\
                             "(e.g. SALAMI, Isophonics)",
                         default="*")
-    parser.add_argument("-b", 
-                        action="store_true", 
+    parser.add_argument("-b",
+                        action="store_true",
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
     args = parser.parse_args()
     start_time = time.time()
-    
+
     # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
     # Run the algorithm
-    process(args.in_path, args.t_path, ds_prefix=args.ds_prefix, 
+    process(args.in_path, args.t_path, ds_prefix=args.ds_prefix,
             annot_beats=args.annot_beats)
 
     # Done!

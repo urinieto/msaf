@@ -17,16 +17,12 @@ import numpy as np
 import scipy.signal
 import scipy.linalg
 
-# Requires librosa-develop 0.3 branch
 import librosa
-
 import msaf
 
 HOP_LENGTH = 512
-
 REP_WIDTH = 3
 REP_FILTER = 7
-
 N_MFCC = 32
 N_CHROMA = 12
 N_REP = 32
@@ -98,27 +94,23 @@ def features(audio_path, annot_beats=False):
         return compress_data(P, N_REP)
 
     #########
-    print '\t[1/5] loading annotations and features of ', audio_path
+    print '\tloading annotations and features of ', audio_path
     chroma, mfcc, tonnetz, beats, dur, anal = msaf.io.get_features(audio_path, annot_beats)
 
     # Sampling Rate
     sr = 11025
 
     ##########
-    print '\t[2/5] reading beats'
+    print '\treading beats'
     B = beats
-
     beat_frames = librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH)
     #print beat_frames, len(beat_frames), uidx
 
     #########
-    print '\t[3/5] generating MFCC'
-    # Get the beat-sync MFCCs
     M = mfcc.T
     #plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
 
     #########
-    print '\t[4/5] generating chroma'
     # Get the beat-sync chroma
     C = chroma.T
     C += C.min() + 0.1
@@ -131,7 +123,7 @@ def features(audio_path, annot_beats=False):
 
     #########
     # Beat-synchronous repetition features
-    print '\t[5/5] generating structure features'
+    print '\tgenerating structure features'
 
     R_timbre = repetition(librosa.feature.stack_memory(M))
     R_chroma = repetition(librosa.feature.stack_memory(C))
@@ -275,7 +267,6 @@ if __name__ == '__main__':
     # Load the transformation
     W = load_transform(parameters['transform'])
 
-    print W.shape
     print '\tapplying transformation...'
     X = W.dot(X)
 
