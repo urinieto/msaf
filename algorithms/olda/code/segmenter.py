@@ -9,9 +9,10 @@ If run as a program, usage is:
 '''
 
 
-import sys
-import os
 import argparse
+import logging
+import os
+import sys
 
 import numpy as np
 import scipy.signal
@@ -19,6 +20,8 @@ import scipy.linalg
 
 import librosa
 import msaf
+
+from msaf.algorithms.interface import SegmenterInterface
 
 HOP_LENGTH = 512
 REP_WIDTH = 3
@@ -143,7 +146,7 @@ def features(audio_path, annot_beats=False):
     # Add on the end-of-track timestamp
     B = np.concatenate([B, [dur]])
 
-    return X, B
+    return X, B, dur
 
 
 def gaussian_cost(X):
@@ -253,28 +256,74 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
     return kmin, kmax
 
+#if __name__ == '__main__':
+    #parameters = process_arguments()
 
-if __name__ == '__main__':
-    parameters = process_arguments()
+    ## Load the features
+    #print '- ', os.path.basename(parameters['input_song'])
 
-    # Load the features
-    print '- ', os.path.basename(parameters['input_song'])
+    #X, beats = features(parameters['input_song'])
 
-    X, beats = features(parameters['input_song'])
+    ##plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
+    ##sys.exit()
+    ## Load the transformation
+    #W = load_transform(parameters['transform'])
 
-    #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
-    #sys.exit()
-    # Load the transformation
-    W = load_transform(parameters['transform'])
+    #print '\tapplying transformation...'
+    #X = W.dot(X)
 
-    print '\tapplying transformation...'
-    X = W.dot(X)
+    ## Find the segment boundaries
+    #print '\tpredicting segments...'
+    #kmin, kmax = get_num_segs(beats[-1])
+    #S = get_segments(X, kmin=kmin, kmax=kmax)
 
-    # Find the segment boundaries
-    print '\tpredicting segments...'
-    kmin, kmax = get_num_segs(beats[-1])
-    S = get_segments(X, kmin=kmin, kmax=kmax)
+    ## Output lab file
+    #print '\tsaving output to ', parameters['output_file']
+    #save_segments(parameters['output_file'], S, beats)
 
-    # Output lab file
-    print '\tsaving output to ', parameters['output_file']
-    save_segments(parameters['output_file'], S, beats)
+
+class Segmenter(SegmenterInterface):
+    def process(self):
+        """Main process.
+        Returns
+        -------
+        est_times : np.array(N)
+            Estimated times for the segment boundaries in seconds.
+        est_labels : np.array(N-1)
+            Estimated labels for the segments.
+        """
+        # Preprocess to obtain features, times, and input boundary indeces
+        # TODO: This is a bit innefficient
+        F, frame_times, dur, bound_idxs = self._preprocess()
+        F, frame_times, dur = features(self.audio_file, self.annot_beats)
+
+        if self.annot_beats:
+            self.config["transform"] = "AnnotBeats.npy"
+        else:
+            self.config["transform"] = "EstBeats.npy"
+
+        try:
+            # Load and apply transform
+            W = load_transform(self.config["transform"])
+            F = W.dot(F)
+
+            # Get Segments
+            kmin, kmax = get_num_segs(frame_times[-1])
+            segments = get_segments(F, kmin=kmin, kmax=kmax)
+            est_times = frame_times[segments]
+        except:
+            # The audio file is too short, only beginning and end
+            logging.warning("Audio file too short! "
+                            "Only start and end boundaries.")
+            est_times = [0, dur]
+
+        # Empty labels
+        est_labels = np.ones(len(est_times) - 1) * -1
+
+        # Post process estimations
+        est_times, est_labels = self._postprocess(est_times, est_labels)
+
+        # Concatenate last boundary
+        logging.info("Estimated times: %s" % est_times)
+
+        return est_times, est_labels

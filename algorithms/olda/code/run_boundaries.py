@@ -30,8 +30,6 @@ VERSION = "1.0"
 
 def process(in_path, t_path, ds_prefix="SALAMI", annot_beats=False):
     """Main process."""
-    W = S.load_transform(t_path)
-
     jam_files = glob.glob(os.path.join(in_path, "annotations",
                             "%s_*.jams" % ds_prefix))
     audio_files = glob.glob(os.path.join(in_path, "audio",
