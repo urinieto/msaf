@@ -1,8 +1,10 @@
 """Config for the OLDA algorithm."""
+import os
 
-# Levy params
+# OLDA params
 config = {
-    "transform": "Unset"
+    "transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              "EstBeats.npy")
 }
 
 algo_id = "olda"
