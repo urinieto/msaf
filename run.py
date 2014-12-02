@@ -18,6 +18,7 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
+import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
@@ -29,7 +30,9 @@ import msaf.algorithms as algorithms
 def get_boundaries_module(boundaries_id):
     if boundaries_id == "gt":
         return None
+    print boundaries_id
     module = eval(algorithms.__name__ + "." + boundaries_id)
+    print module
     if not module.is_boundary_type:
         raise RuntimeError("Algorithm %s can not identify boundaries!" %
                            boundaries_id)
