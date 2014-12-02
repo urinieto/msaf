@@ -16,7 +16,7 @@ import librosa
 from segmenter import features
 
 
-def align_segmentation(filename, beat_times,  song):
+def align_segmentation(filename, beat_times, song):
     '''Load a ground-truth segmentation, and align times to the nearest detected beats
 
     Arguments:
@@ -35,17 +35,10 @@ def align_segmentation(filename, beat_times,  song):
             list of segment labels
     '''
 
-    context_dict = {
-        "Isophonics": "function",
-        "SALAMI": "small_case",
-        "Cerulean": "large_case",
-        "Epiphyte": "function"
-    }
-
-    #segment_times, segment_labels = mir_eval.io.load_jams_range(filename,
-                    #"sections", annotator=0, converter=None,
-                    #label_prefix='__', context="function")
-    segment_times, segment_labels = msaf.io.read_references(song)
+    try:
+        segment_times, segment_labels = msaf.io.read_references(song)
+    except:
+        return None, None, None
     segment_times = np.asarray(segment_times)
 
     # Map to intervals
@@ -55,15 +48,8 @@ def align_segmentation(filename, beat_times,  song):
     beat_intervals = np.asarray(zip(beat_times[:-1], beat_times[1:]))
 
     # Map beats to segments
-    #segment_times = np.concatenate((np.asarray(segment_times).flatten()[::2],
-                                    #[segment_times[-1, 1]]))
-    #res = []
-    #for segment_interval in segment_intervals:
-        #res.append(segment_interval[0])
-    #res.append(segment_intervals[-1, -1])
-    #segment_intervals = np.asarray(res)
-
-    beat_segment_ids = librosa.util.match_intervals(beat_intervals, segment_intervals)
+    beat_segment_ids = librosa.util.match_intervals(beat_intervals,
+                                                    segment_intervals)
 
     segment_beats = []
     segment_times_out = []
@@ -114,6 +100,9 @@ def import_data(song, rootpath, output_path, annot_beats):
 
         Y, T, L = align_segmentation(get_annotation(song, rootpath), B, song)
 
+        if Y is None:
+            return Y
+
         Data = {'features': X,
                 'beats': B,
                 'filename': song,
@@ -133,13 +122,14 @@ def import_data(song, rootpath, output_path, annot_beats):
 
 
 def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
-                 annot_beats=False):
+                 annot_beats=False, ds_name="*"):
 
-    # We don't care about prefix, only those which have annot beats
-    audio_files = glob.glob('%s/audio/Epiphyte_*.[wm][ap][v3]' % (rootpath))
+    audio_files = glob.glob(os.path.join(rootpath,
+                                         msaf.Dataset.audio_dir,
+                                         ds_name + "_*.[wm][ap][v3]"))
 
     if n is None:
-        n = np.min([len(audio_files), 400])
+        n = len(audio_files)
 
     data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song,
             rootpath, output_path, annot_beats)
@@ -148,8 +138,6 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
     X, Y, B, T, F, L = [], [], [], [], [], []
     for d in data:
         if d is None:
-            continue
-        if d['features'].shape[0] != 94:
             continue
         X.append(d['features'])
         Y.append(d['segments'])
@@ -189,19 +177,26 @@ if __name__ == '__main__':
                         dest="annot_beats",
                         help="Use annotated beats",
                         default=False)
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI)")
     args = parser.parse_args()
     start_time = time.time()
     salami_path = sys.argv[1]
     output_path = sys.argv[2]
     X, Y, B, T, F, L = make_dataset(n=args.n,
-                            n_jobs=args.n_jobs,
-                            rootpath=args.ds_path,
-                            output_path=args.output_path,
-                            annot_beats=args.annot_beats)
+                                    n_jobs=args.n_jobs,
+                                    rootpath=args.ds_path,
+                                    output_path=args.output_path,
+                                    annot_beats=args.annot_beats,
+                                    ds_name=args.ds_name)
 
     if args.annot_beats:
-        out_path = '%s/AnnotBeats_data.pickle' % (output_path)
+        out_path = '%s/AnnotBeats_%s_data.pickle' % (output_path, args.ds_name)
     else:
-        out_path = '%s/EstBeats_data.pickle' % (output_path)
+        out_path = '%s/EstBeats_%s_data.pickle' % (output_path, args.ds_name)
     with open(out_path, 'w') as f:
         pickle.dump((X, Y, B, T, F, L), f)
