@@ -82,14 +82,14 @@ def score_model(model, x, b, t):
 
     truth_intervals = mir_eval.util.boundaries_to_intervals(t)[0]
     pred_intervals = mir_eval.util.boundaries_to_intervals(boundary_times)[0]
-    score = mir_eval.segment.boundary_detection(truth_intervals, pred_intervals)[-1]
+    score = mir_eval.segment.detection(truth_intervals, pred_intervals)[-1]
 
     return score
 
 
 def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
 
-    SIGMA = 10 ** np.arange(-2, 20)
+    SIGMA = 10 ** np.arange(-2, 18)
 
     best_score = -np.inf
     best_sigma = None
@@ -100,7 +100,7 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("%s/annotations/Epiphyte_*.jams" % ds_path)[:40]
+        files = glob.glob("%s/references/Epiphyte_*.jams" % ds_path)[:40]
         for f, z in zip(files, zip(X, B, T)):
             if annot_beats:
                 jam = jams2.load(f)
@@ -128,8 +128,6 @@ if __name__ == '__main__':
 
     print "Loading data from %s ..." % parameters["input_file"]
     X, Y, B, T = load_data(parameters['input_file'])[:4]
-
-    print len(X), len(Y), len(B), len(T)
 
     print "Fitting model..."
     model = fit_model(X, Y, B, T, parameters['num_jobs'],
