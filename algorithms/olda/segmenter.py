@@ -55,6 +55,9 @@ def features(audio_path, annot_beats=False):
             mapping of beat index => timestamp
             includes start and end markers (0, dur)
 
+        - dur -- float
+            duration of the track in seconds
+
     '''
     def compress_data(X, k):
         e_vals, e_vecs = scipy.linalg.eig(X.dot(X.T))
@@ -295,20 +298,20 @@ class Segmenter(SegmenterInterface):
         # Preprocess to obtain features, times, and input boundary indeces
         F, frame_times, dur = features(self.audio_file, self.annot_beats)
 
-        try:
-            # Load and apply transform
-            W = load_transform(self.config["transform"])
-            F = W.dot(F)
+        #try:
+        # Load and apply transform
+        W = load_transform(self.config["transform"])
+        F = W.dot(F)
 
-            # Get Segments
-            kmin, kmax = get_num_segs(frame_times[-1])
-            segments = get_segments(F, kmin=kmin, kmax=kmax)
-            est_times = frame_times[segments]
-        except:
-            # The audio file is too short, only beginning and end
-            logging.warning("Audio file too short! "
-                            "Only start and end boundaries.")
-            est_times = [0, dur]
+        # Get Segments
+        kmin, kmax = get_num_segs(frame_times[-1])
+        segments = get_segments(F, kmin=kmin, kmax=kmax)
+        est_times = frame_times[segments]
+        #except:
+            ## The audio file is too short, only beginning and end
+            #logging.warning("Audio file too short! "
+                            #"Only start and end boundaries.")
+            #est_times = [0, dur]
 
         # Empty labels
         est_labels = np.ones(len(est_times) - 1) * -1
