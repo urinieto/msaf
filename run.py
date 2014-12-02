@@ -18,7 +18,6 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
-import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils

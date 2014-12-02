@@ -11,7 +11,6 @@ If run as a program, usage is:
 
 import argparse
 import logging
-import os
 import sys
 
 import numpy as np
@@ -60,7 +59,10 @@ def features(audio_path, annot_beats=False):
 
     '''
     def compress_data(X, k):
-        e_vals, e_vecs = scipy.linalg.eig(X.dot(X.T))
+        Xtemp = X.dot(X.T)
+        if len(Xtemp) == 0:
+            return None
+        e_vals, e_vecs = np.linalg.eig(Xtemp)
 
         e_vals = np.maximum(0.0, np.real(e_vals))
         e_vecs = np.real(e_vecs)
@@ -133,6 +135,8 @@ def features(audio_path, annot_beats=False):
 
     R_timbre = repetition(librosa.feature.stack_memory(M))
     R_chroma = repetition(librosa.feature.stack_memory(C))
+    if R_timbre is None or R_chroma is None:
+        return None, None, None
 
     R_timbre += R_timbre.min()
     R_timbre /= R_timbre.max()

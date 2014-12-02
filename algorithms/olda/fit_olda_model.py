@@ -44,7 +44,12 @@ def process_arguments():
                         dest = "annot_beats",
                         help = "Use annotated beats",
                         default = False)
-
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI)")
     return vars(parser.parse_args(sys.argv[1:]))
 
 
@@ -95,12 +100,14 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
     best_sigma = None
     model = None
 
+    print len(X)
+
     for sig in SIGMA:
         O = OLDA.OLDA(sigma=sig)
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("%s/references/Epiphyte_*.jams" % ds_path)[:40]
+        files = glob.glob("%s/references/Epiphyte_*.jams" % ds_path)[:900]
         for f, z in zip(files, zip(X, B, T)):
             if annot_beats:
                 jam = jams2.load(f)
