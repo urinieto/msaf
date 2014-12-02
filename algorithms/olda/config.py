@@ -3,8 +3,10 @@ import os
 
 # OLDA params
 config = {
+    #"transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              #"EstBeats.npy")
     "transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              "EstBeats.npy")
+                              "caca_path", "EstBeats_data.pickle")
 }
 
 algo_id = "olda"

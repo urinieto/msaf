@@ -4,7 +4,6 @@ import sys
 import argparse
 import numpy as np
 import glob
-import os
 
 import mir_eval
 import cPickle as pickle
@@ -13,7 +12,9 @@ from joblib import Parallel, delayed
 
 import OLDA
 import segmenter
-import jams
+
+from msaf import jams2
+
 
 def process_arguments():
     parser = argparse.ArgumentParser(description='OLDA fit for music segmentation')
@@ -22,29 +23,30 @@ def process_arguments():
                         action="store",
                         help="Input dataset")
 
-    parser.add_argument(    'input_file',
-                            action  =   'store',
-                            help    =   'path to training data (from make_*_train.py)')
+    parser.add_argument('input_file',
+                        action = 'store',
+                        help = 'path to training data (from make_*_train.py)')
 
-    parser.add_argument(    'output_file',
-                            action  =   'store',
-                            help    =   'path to save model file')
+    parser.add_argument('output_file',
+                        action = 'store',
+                        help = 'path to save model file')
 
-    parser.add_argument(    '-j',
-                            '--num-jobs',
-                            dest    =   'num_jobs',
-                            action  =   'store',
-                            type    =   int,
-                            required=   False,
-                            default =   '4',
-                            help    =   'Number of parallel jobs')
-    parser.add_argument(    "-b", 
-                            action  =   "store_true", 
-                            dest    =   "annot_beats",
-                            help    =   "Use annotated beats",
-                            default =   False)
+    parser.add_argument('-j',
+                        '--num-jobs',
+                        dest = 'num_jobs',
+                        action = 'store',
+                        type = int,
+                        required = False,
+                        default = '4',
+                        help = 'Number of parallel jobs')
+    parser.add_argument("-b",
+                        action = "store_true",
+                        dest = "annot_beats",
+                        help = "Use annotated beats",
+                        default = False)
 
     return vars(parser.parse_args(sys.argv[1:]))
+
 
 def load_data(input_file):
 
@@ -55,9 +57,10 @@ def load_data(input_file):
         #   T = true segment boundaries (seconds)
         #   F = filename
 
-        X, Y, B, T  = pickle.load(f)[:4]
+        X, Y, B, T = pickle.load(f)[:4]
 
     return X, Y, B, T
+
 
 def score_model(model, x, b, t):
 
@@ -83,28 +86,29 @@ def score_model(model, x, b, t):
 
     return score
 
+
 def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
 
-    SIGMA = 10**np.arange(-2, 20)
+    SIGMA = 10 ** np.arange(-2, 20)
 
-    best_score  = -np.inf
-    best_sigma  = None
-    model       = None
+    best_score = -np.inf
+    best_sigma = None
+    model = None
 
     for sig in SIGMA:
         O = OLDA.OLDA(sigma=sig)
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("%s/annotations/Epiphyte_*.jams" % ds_path)[:400]
+        files = glob.glob("%s/annotations/Epiphyte_*.jams" % ds_path)[:40]
         for f, z in zip(files, zip(X, B, T)):
             if annot_beats:
-                jam = jams.load(f)
+                jam = jams2.load(f)
                 if jam.beats == []:
                     continue
                 if jam.beats[0].data == []:
-                    continue   
-            print "\t\tProcessing ", f 
+                    continue
+            print "\t\tProcessing ", f
             scores.append(score_model(O.components_, *z))
         #scores = Parallel(n_jobs=n_jobs)( delayed(score_model)(O.components_, *z) for z in zip(X, B, T))
 
@@ -112,9 +116,9 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
         print 'Sigma=%.2e, score=%.3f' % (sig, mean_score)
 
         if mean_score > best_score:
-            best_score  = mean_score
-            best_sigma  = sig
-            model       = O.components_
+            best_score = mean_score
+            best_sigma = sig
+            model = O.components_
 
     print 'Best sigma: %.2e' % best_sigma
     return model
@@ -128,7 +132,7 @@ if __name__ == '__main__':
     print len(X), len(Y), len(B), len(T)
 
     print "Fitting model..."
-    model = fit_model(X, Y, B, T, parameters['num_jobs'], 
+    model = fit_model(X, Y, B, T, parameters['num_jobs'],
                 parameters['annot_beats'], parameters["ds_path"])
 
     np.save(parameters['output_file'], model)
