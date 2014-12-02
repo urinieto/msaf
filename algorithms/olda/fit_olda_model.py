@@ -142,6 +142,7 @@ if __name__ == '__main__':
 
     print "Fitting model..."
     model = fit_model(X, Y, B, T, parameters['num_jobs'],
-                parameters['annot_beats'], parameters["ds_path"])
+                      parameters['annot_beats'], parameters['ds_path'],
+                      parameters['ds_name'])
 
     np.save(parameters['output_file'], model)
