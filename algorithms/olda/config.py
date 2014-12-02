@@ -6,7 +6,7 @@ config = {
     #"transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               #"EstBeats.npy")
     "transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              "caca_path", "EstBeats_data.pickle")
+                              "test.npy")
 }
 
 algo_id = "olda"

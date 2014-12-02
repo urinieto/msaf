@@ -259,31 +259,6 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
     return kmin, kmax
 
-#if __name__ == '__main__':
-    #parameters = process_arguments()
-
-    ## Load the features
-    #print '- ', os.path.basename(parameters['input_song'])
-
-    #X, beats = features(parameters['input_song'])
-
-    ##plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
-    ##sys.exit()
-    ## Load the transformation
-    #W = load_transform(parameters['transform'])
-
-    #print '\tapplying transformation...'
-    #X = W.dot(X)
-
-    ## Find the segment boundaries
-    #print '\tpredicting segments...'
-    #kmin, kmax = get_num_segs(beats[-1])
-    #S = get_segments(X, kmin=kmin, kmax=kmax)
-
-    ## Output lab file
-    #print '\tsaving output to ', parameters['output_file']
-    #save_segments(parameters['output_file'], S, beats)
-
 
 class Segmenter(SegmenterInterface):
     def process(self):
@@ -298,20 +273,20 @@ class Segmenter(SegmenterInterface):
         # Preprocess to obtain features, times, and input boundary indeces
         F, frame_times, dur = features(self.audio_file, self.annot_beats)
 
-        #try:
-        # Load and apply transform
-        W = load_transform(self.config["transform"])
-        F = W.dot(F)
+        try:
+            # Load and apply transform
+            W = load_transform(self.config["transform"])
+            F = W.dot(F)
 
-        # Get Segments
-        kmin, kmax = get_num_segs(frame_times[-1])
-        segments = get_segments(F, kmin=kmin, kmax=kmax)
-        est_times = frame_times[segments]
-        #except:
-            ## The audio file is too short, only beginning and end
-            #logging.warning("Audio file too short! "
-                            #"Only start and end boundaries.")
-            #est_times = [0, dur]
+            # Get Segments
+            kmin, kmax = get_num_segs(frame_times[-1])
+            segments = get_segments(F, kmin=kmin, kmax=kmax)
+            est_times = frame_times[segments]
+        except:
+            # The audio file is too short, only beginning and end
+            logging.warning("Audio file too short! "
+                            "Only start and end boundaries.")
+            est_times = [0, dur]
 
         # Empty labels
         est_labels = np.ones(len(est_times) - 1) * -1
