@@ -73,7 +73,10 @@ def score_model(model, x, b, t):
 
     # First, transform the data
     if model is not None:
-        xt = model.dot(x)
+        try:
+            xt = model.dot(x)
+        except:
+            return 0.0
     else:
         xt = x
 
