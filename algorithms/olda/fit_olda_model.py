@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import sys
 import argparse
 import numpy as np
@@ -13,6 +14,7 @@ from joblib import Parallel, delayed
 import OLDA
 import segmenter
 
+import msaf
 from msaf import jams2
 
 
@@ -92,7 +94,7 @@ def score_model(model, x, b, t):
     return score
 
 
-def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
+def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path, ds_name):
 
     SIGMA = 10 ** np.arange(-2, 18)
 
@@ -107,7 +109,9 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob("%s/references/Epiphyte_*.jams" % ds_path)[:900]
+        files = glob.glob(os.path.join(ds_path,
+                                       msaf.Dataset.references_dir,
+                                       ds_name + "_*.jams"))[:]
         for f, z in zip(files, zip(X, B, T)):
             if annot_beats:
                 jam = jams2.load(f)
