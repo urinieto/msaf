@@ -136,7 +136,7 @@ def features(audio_path, annot_beats=False):
     R_timbre = repetition(librosa.feature.stack_memory(M))
     R_chroma = repetition(librosa.feature.stack_memory(C))
     if R_timbre is None or R_chroma is None:
-        return None, None, None
+        return None, None, dur
 
     R_timbre += R_timbre.min()
     R_timbre /= R_timbre.max()
