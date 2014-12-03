@@ -5,8 +5,10 @@ import os
 config = {
     #"transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               #"EstBeats.npy")
+    #"transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              #"models", "EstBeats_Epiphyte.npy")
     "transform": os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              "models", "EstBeats_Epiphyte.npy")
+                              "models", "EstBeats_SALAMI.npy")
 }
 
 algo_id = "olda"
