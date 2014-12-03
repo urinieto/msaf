@@ -153,7 +153,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
                                                 labels_id, **config)
 
-    if est_inter == [] or len(est_inter) == 0:
+    if len(est_inter) == 0:
         logging.warning("No estimations for file: %s" % est_file)
         return {}
 
