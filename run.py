@@ -64,7 +64,11 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
             est_times, est_labels = S.process()
         else:
-            est_times, est_labels = io.read_references(audio_file)
+            try:
+                est_times, est_labels = io.read_references(audio_file)
+            except:
+                logging.warning("No references found for file: %s" % audio_file)
+                return [], []
 
         # Label segments
         if labels_module is not None:
@@ -187,7 +191,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config)
-            for file_struct in file_structs[:])
+            for file_struct in file_structs[1410:])
 
 
 def main():
