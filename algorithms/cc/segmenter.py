@@ -59,16 +59,20 @@ class Segmenter(SegmenterInterface):
             if in_bound_idxs is None:
                 in_bound_idxs = []
 
-            bound_idxs, est_labels = cc_segmenter.segment(
-                is_harmonic, self.config["nHMMStates"],
-                self.config["nclusters"], self.config["neighbourhoodLimit"],
-                self.anal["sample_rate"], F, in_bound_idxs)
+            if len(in_bound_idxs) > 2:
+                bound_idxs, est_labels = cc_segmenter.segment(
+                    is_harmonic, self.config["nHMMStates"],
+                    self.config["nclusters"], self.config["neighbourhoodLimit"],
+                    self.anal["sample_rate"], F, in_bound_idxs)
+            else:
+                bound_idxs = in_bound_idxs
+                est_labels = [0]
 
             # Add first and last boundaries
             est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
             silencelabel = np.max(est_labels) + 1
             est_labels = np.concatenate(([silencelabel], est_labels,
-                                         [silencelabel]))
+                                        [silencelabel]))
         else:
             # The track is too short. We will only output the first and last
             # time stamps
