@@ -102,7 +102,7 @@ def segment_song(seq, rank=4, win=32, seed=None,
     seq : array, shape (F, T)
         Feature sequence to segment.
     rank : int
-        Number of patterns (unique segments) to search for.        
+        Number of patterns (unique segments) to search for.
     win : int
         Length of patterns in frames.
     seed : int
@@ -171,7 +171,7 @@ def segment_song(seq, rank=4, win=32, seed=None,
 
     logger.info('Using random seed %s.', seed)
     np.random.seed(seed)
-    
+
     if 'alphaWcutoff' in kwargs and 'alphaWslope' in kwargs:
         kwargs['alphaW'] = create_sparse_W_prior((seq.shape[0], win),
                                                  kwargs['alphaWcutoff'],
@@ -184,7 +184,7 @@ def segment_song(seq, rank=4, win=32, seed=None,
         kwargs['initW'] = np.ones((F, rank, win)) / (F*win)
     if uninformativeHinit:
         kwargs['initH'] = np.ones((rank, T)) / T
-        
+
     outputs = []
     for n in xrange(nrep):
         outputs.append(plca.SIPLCA.analyze(seq, rank=rank, win=win, **kwargs))
@@ -234,7 +234,7 @@ def create_sparse_W_prior(shape, cutoff, slope):
     alphaW = np.zeros((shape[0], 1, shape[-1]))
     alphaW[:,:] = prior
     return alphaW
-    
+
 def nmf_analysis_to_segmentation(seq, win, W, Z, H, min_segment_length=32,
                                  use_Z_for_segmentation=True, **ignored_kwargs):
     if not use_Z_for_segmentation:
@@ -243,7 +243,7 @@ def nmf_analysis_to_segmentation(seq, win, W, Z, H, min_segment_length=32,
     segfun = []
     for n, (w,z,h) in enumerate(zip(np.transpose(W, (1, 0, 2)), Z, H)):
         reconz = plca.SIPLCA.reconstruct(w, z, h)
-        score = np.sum(reconz, 0) 
+        score = np.sum(reconz, 0)
 
         # Smooth it out
         score = np.convolve(score, np.ones(min_segment_length), 'same')
@@ -284,7 +284,7 @@ def nmf_analysis_to_segmentation_using_viterbi_path(seq, win, W, Z, H,
     loglikelihood = np.log(likelihood)
     logtransmat = np.log(transmat)
     lattice = np.zeros(loglikelihood.shape)
-    traceback = np.zeros(loglikelihood.shape, dtype=np.int) 
+    traceback = np.zeros(loglikelihood.shape, dtype=np.int)
     lattice[0] = loglikelihood[0]
     for n in xrange(1, T):
         pr = logtransmat.T + lattice[:,n-1]
@@ -338,7 +338,7 @@ def compute_effective_pattern_length(w):
 def convert_labels_to_segments(labels, frametimes, songlen=None):
     """Covert frame-wise segmentation labels to a list of segments in HTK
     format"""
-    
+
     # Nonzero points in diff(labels) correspond to the final frame of
     # a segment (so just index into labels to find the segment label)
     boundaryidx = np.concatenate(([0], np.nonzero(np.diff(labels))[0],
@@ -392,7 +392,8 @@ def use_in_bounds(audio_file, in_bound_times, beats, feats, config):
     bound_idxs = io.align_times(in_bound_times, beats)
 
     # Remove first and last boundaries (silent labels)
-    bound_idxs = bound_idxs[1:-1]
+    if len(bound_idxs) >= 4:
+        bound_idxs = bound_idxs[1:-1]
 
     n_segments = len(bound_idxs) - 1
     max_beats_segment = np.max(np.diff(bound_idxs))
