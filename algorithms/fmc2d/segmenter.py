@@ -100,12 +100,16 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
     # Compute the labels using kmeans
     if dirichlet:
         k_init = np.min([fmcs.shape[0], k])
-        dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
-        #dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
-        dpgmm.fit(fmcs)
-        k = len(dpgmm.means_)
-        labels_est = dpgmm.predict(fmcs)
-        #print "Estimated with Dirichlet Process:", k
+        # Only compute the dirichlet method if the fmc shape is small enough
+        if fmcs.shape[1] > 2200:
+            labels_est = compute_labels_kmeans(fmcs, k=k)
+        else:
+            dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
+            #dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
+            dpgmm.fit(fmcs)
+            k = len(dpgmm.means_)
+            labels_est = dpgmm.predict(fmcs)
+            #print "Estimated with Dirichlet Process:", k
     if xmeans:
         xm = XMeans(fmcs, plot=False)
         k = xm.estimate_K_knee(th=0.01, maxK=8)
