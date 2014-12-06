@@ -101,7 +101,7 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
     if dirichlet:
         k_init = np.min([fmcs.shape[0], k])
         # Only compute the dirichlet method if the fmc shape is small enough
-        if fmcs.shape[1] > 1700:
+        if fmcs.shape[1] > 1000:
             labels_est = compute_labels_kmeans(fmcs, k=k)
         else:
             dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
