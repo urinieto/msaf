@@ -191,7 +191,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config)
-            for file_struct in file_structs[1441:])
+            for file_struct in file_structs[1444:])
 
 
 def main():
