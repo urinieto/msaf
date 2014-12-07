@@ -209,7 +209,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
     sorted_keys = sorted(config.keys(),
                          cmp=lambda x, y: cmp(x.lower(), y.lower()))
     for key in sorted_keys:
-        file_name += "_%sE%s" % (key, str(config[key]))
+        file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
     return file_name + msaf.results_ext
 
 
