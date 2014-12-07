@@ -203,6 +203,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
     results."""
     if ds_name == "*":
         ds_name = "All"
+    utils.ensure_dir(msaf.results_dir)
     file_name = os.path.join(msaf.results_dir, "results_%s" % ds_name)
     file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
     sorted_keys = sorted(config.keys(),
@@ -250,6 +251,13 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
 
+    # If out_file already exists, do not compute new results
+    if os.path.exists(out_file):
+        logging.info("Results already exists, reading from file %s" % out_file)
+        results = pd.read_csv(out_file)
+        print_results(results)
+        return results
+
     # Get files
     file_structs = io.get_dataset_files(in_path, ds_name)
 
@@ -275,7 +283,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     # Save all results
     if save:
         logging.info("Writing average results in %s" % out_file)
-        results.mean().to_csv(out_file)
+        results.to_csv(out_file)
 
     return results
 
