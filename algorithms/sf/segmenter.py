@@ -153,7 +153,7 @@ class Segmenter(SegmenterInterface):
             # Recurrence matrix
             R = librosa.segment.recurrence_matrix(E.T,
                                                 k=k * int(F.shape[0]),
-                                                width=0,  # zeros from the diagonal
+                                                width=1,  # zeros from the diagonal
                                                 metric="seuclidean",
                                                 sym=True).astype(np.float32)
 
