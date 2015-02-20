@@ -9,7 +9,7 @@ setup(
         url='https://github.com/urinieto/msaf',
         download_url='https://github.com/urinieto/msaf/releases',
         packages=['msaf'],
-        package_data={'': ['ds_example/*']},
+        #package_data={'': ['ds_example/*']},
         long_description="""A python module to segment audio into all its """
         """different large-scale sections and label them based on their """
         """acoustic similarity""",
@@ -33,7 +33,6 @@ setup(
 'joblib',
 'decorator',
 'cvxopt',
-'pymf',
 'joblib',
 'librosa',
 'mir_eval',
