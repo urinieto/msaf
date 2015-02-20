@@ -143,6 +143,7 @@ For more parameters, please read the function's docstring.
 * Numpy
 * Scipy
 * PyMF (for C-NMF algorithms only)
+* cvxopt (for C-NMF algorithms only)
 * Pandas (for evaluation only)
 * joblib
 * [Essentia](https://github.com/MTG/essentia)
