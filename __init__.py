@@ -1,9 +1,9 @@
 """Top-level module for MSAF."""
 
 # Import all submodules (for each task)
-import eval
 import featextract
 import input_output as io
+import eval
 import plotting
 import utils
 import algorithms
