@@ -1,15 +1,17 @@
 """Top-level module for MSAF."""
 
 # Import all submodules (for each task)
-import featextract
-import input_output as io
-import eval
-import plotting
-import utils
-import algorithms
+from msaf import jams2
+from . import featextract
+from . import input_output as io
+from . import eval
+from . import plotting
+from . import utils
+from . import algorithms
+from . import run
 from run import process
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 # Global Config
 prefix_dict = {
