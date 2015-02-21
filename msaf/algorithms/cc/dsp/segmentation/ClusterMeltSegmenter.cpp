@@ -15,6 +15,7 @@
 
 #include <cfloat>
 #include <cmath>
+#include <algorithm>
 
 #include "ClusterMeltSegmenter.h"
 #include "cluster_segmenter.h"
