@@ -21,7 +21,7 @@ import numpy as np
 # Local stuff
 from msaf.algorithms.interface import SegmenterInterface
 try:
-    import cc_segmenter
+    from msaf.algorithms.cc import cc_segmenter
 except:
     logging.warning("You must compile the Constrained Clustering method (cc) "
                     "before you can use it. To do so, go to msaf/algorithms/cc "
