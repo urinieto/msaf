@@ -149,6 +149,8 @@ For more parameters, please read the function's docstring.
 * [Essentia](https://github.com/MTG/essentia)
 * [mir\_eval](https://github.com/craffel/mir_eval)
 * [librosa](https://github.com/bmcfee/librosa/)
+* [libjson](http://sourceforge.net/projects/libjson/)
+* BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
 
 
 ## Note on Parallel Processes for OSX Users ##
