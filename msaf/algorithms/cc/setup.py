@@ -1,4 +1,4 @@
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import sys
 import numpy.distutils.misc_util
 
@@ -53,7 +53,7 @@ cc_segmenter = Extension("cc_segmenter",
                                     "stdc++"],
                          extra_compile_args=[extra_compile_flags],
                          extra_link_args=[extra_linker_flags],
-                         language=["c++"])
+                         language="c++")
 
 setup(ext_modules=[cc_segmenter],
       include_dirs=numpy.distutils.misc_util.get_numpy_include_dirs())
