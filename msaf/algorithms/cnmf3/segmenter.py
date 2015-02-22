@@ -14,15 +14,9 @@ __email__ = "oriol@nyu.edu"
 import logging
 import numpy as np
 from scipy.ndimage import filters
-import sys
 
 from msaf.algorithms.interface import SegmenterInterface
-
-try:
-    import pymf
-except:
-    logging.error("PyMF module not found, C-NMF won't work")
-    sys.exit()
+from msaf import pymf
 
 
 def median_filter(X, M=8):
