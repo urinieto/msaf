@@ -69,8 +69,8 @@ setup(
     packages=find_packages(),
     #package_data={'': ['ds_example/*']},
     long_description="""A python module to segment audio into all its """
-        """different large-scale sections and label them based on their """
-        """acoustic similarity""",
+    """different large-scale sections and label them based on their """
+    """acoustic similarity""",
     classifiers=[
         "License :: OSI Approved :: GPL 3",
         "Programming Language :: Python",
@@ -79,7 +79,7 @@ setup(
         "Topic :: Multimedia :: Sound/Audio :: Analysis",
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7"
-        ],
+    ],
     keywords='audio music sound',
     license='GPL',
     install_requires=[
