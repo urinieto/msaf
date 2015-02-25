@@ -1,5 +1,11 @@
 """Top-level module for MSAF."""
 
+__author__      = "Oriol Nieto"
+__copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
+__license__     = "GPL"
+__version__     = "0.0.2"
+__email__       = "oriol@nyu.edu"
+
 # Import all submodules (for each task)
 from . import featextract
 from . import input_output as io
@@ -8,8 +14,6 @@ from . import plotting
 from . import utils
 from . import algorithms
 from .run import process
-
-__version__ = '0.0.2'
 
 # Global Config
 prefix_dict = {
@@ -30,6 +34,7 @@ class Anal():
     frame_size = 2048
     hop_size = 1024
     mfcc_coeff = 14
+    n_mels = 128
     window_type = "blackmanharris62"
 
 

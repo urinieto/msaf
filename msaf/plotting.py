@@ -2,12 +2,6 @@
 of MSAF.
 """
 
-__author__      = "Oriol Nieto"
-__copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__     = "GPL"
-__version__     = "1.0"
-__email__       = "oriol@nyu.edu"
-
 import logging
 import mir_eval
 import numpy as np

@@ -1,5 +1,7 @@
+#!/usr/bin/env python
 """
-MSAF module to extract the audio features using librosa.
+This script uses Essentia in order to extract a set of features to be used
+as input for the segmentation algorithms.
 
 Features to be computed:
 
@@ -10,7 +12,9 @@ Features to be computed:
 
 import argparse
 import datetime
-import librosa
+import essentia
+import essentia.standard as ES
+from essentia.standard import YamlOutput
 from joblib import Parallel, delayed
 import logging
 import numpy as np
@@ -65,51 +69,51 @@ class STFTFeature:
         return features
 
 
-def compute_beats(y_percussive):
-    """Computes the beats using librosa.
-
-    Parameters
-    ----------
-    y_percussive: np.array
-        Percussive part of the audio signal in samples.
-
-    Returns
-    -------
-    beats_idx: np.array
-        Indeces in frames of the estimated beats.
-    beats_times: np.array
-        Time of the estimated beats.
-    """
-    logging.info("Estimating Beats...")
-    tempo, beats_idx = librosa.beat.beat_track(y=y_percussive,
-                                               sr=msaf.Anal.sample_rate,
-                                               hop_length=msaf.Anal.hop_size)
-    return beats_idx, librosa.frames_to_time(beats_idx,
-                                             sr=msaf.Anal.sample_rate,
-                                             hop_length=msaf.Anal.hop_size)
+def double_beats(beats):
+    """Double the beats."""
+    new_beats = []
+    for i, beat in enumerate(beats[:-1]):
+        new_beats.append(beat)
+        new_beats.append((beat + beats[i + 1]) / 2.0)
+    return essentia.array(new_beats)
 
 
-def compute_features(audio, y_harmonic):
-    """Computes the HPCP and MFCC features."""
-    logging.info("Computing Spectrogram...")
-    S = librosa.feature.melspectrogram(audio,
-                                       sr=msaf.Anal.sample_rate,
-                                       n_fft=msaf.Anal.frame_size,
-                                       hop_length=msaf.Anal.hop_size,
-                                       n_mels=msaf.Anal.n_mels)
+def compute_beats(audio):
+    """Computes the beats using Essentia."""
+    logging.info("Computing Beats...")
+    conf = 1.0
+    beats, conf = ES.BeatTrackerMultiFeature()(audio)
+    # beats = ES.BeatTrackerDegara()(audio)
+    beats *= 44100 / msaf.Anal.sample_rate  # Essentia requires 44100 input
 
-    logging.info("Computing MFCCs...")
-    log_S = librosa.logamplitude(S, ref_power=np.max)
-    mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=msaf.Anal.mfcc_coeff).T
+    # Double the beats if found beats are too little
+    th = 0.9  # 1 would equal to at least 1 beat per second
+    while beats.shape[0] / (audio.shape[0] / float(msaf.Anal.sample_rate)) < th \
+            and beats.shape[0] > 2:
+        beats = double_beats(beats)
+    return beats, conf
 
-    logging.info("Computing HPCPs...")
-    hpcp = librosa.feature.chromagram(y=y_harmonic,
-                                      sr=msaf.Anal.sample_rate,
-                                      n_fft=msaf.Anal.frame_size,
-                                      hop_length=msaf.Anal.hop_size).T
 
+def compute_features(audio, beats=None):
+    """Computes the HPCP and MFCC beat-synchronous features given a set
+        of beats (beats)."""
+    beatsync_str = ""
+    if beats is not None:
+        beatsync_str = "Beat-synchronous "
+
+    MFCC = STFTFeature(msaf.Anal.frame_size, msaf.Anal.hop_size,
+                       msaf.Anal.window_type,
+                       ES.MFCC(numberCoefficients=msaf.Anal.mfcc_coeff),
+                       msaf.Anal.sample_rate, beats)
+    HPCP = STFTFeature(msaf.Anal.frame_size, msaf.Anal.hop_size,
+                       msaf.Anal.window_type, ES.HPCP(), msaf.Anal.sample_rate,
+                       beats)
+    logging.info("Computing %sMFCCs..." % beatsync_str)
+    mfcc = MFCC.compute_features(audio)
+    logging.info("Computing %sHPCPs..." % beatsync_str)
+    hpcp = HPCP.compute_features(audio)
     #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
-    logging.info("Computing Tonnetz...")
+    logging.info("Computing %sTonnetz..." % beatsync_str)
     tonnetz = utils.chroma_to_tonnetz(hpcp)
     return mfcc, hpcp, tonnetz
 
@@ -124,45 +128,31 @@ def save_features(key, pool, mfcc, hpcp, tonnetz):
         for tonnetz_coeff in tonnetz]
 
 
-def compute_features_for_audio_file(audio_file):
-    """
-    Parameters
-    ----------
-    audio_file: str
-        Path to the audio file.
+def read_audio(audio_file, sample_rate):
+    """Reads the audio file using Essentia."""
+    audio = ES.MonoLoader(filename=audio_file,
+                          sampleRate=sample_rate)()
+    return audio
 
-    Returns
-    -------
-    audio: np.array
-        Audio samples.
-    features: dict
-        Dictionary of audio features.
-    """
+
+def compute_features_for_audio_file(audio_file):
     # Load Audio
     logging.info("Loading audio file %s" % os.path.basename(audio_file))
-    audio, sr = librosa.load(audio_file, sr=msaf.Anal.sample_rate)
-
-    # Compute harmonic-percussive source separation
-    logging.info("Computing Harmonic Percussive source separation...")
-    y_harmonic, y_percussive = librosa.effects.hpss(audio)
+    audio = read_audio(audio_file, msaf.Anal.sample_rate)
 
     # Output features dict
     features = {}
 
     # Compute framesync features
     features["mfcc"], features["hpcp"], features["tonnetz"] = \
-        compute_features(audio, y_harmonic)
+        compute_features(audio)
 
     # Estimate Beats
-    features["beats_idx"], features["beats"] = compute_beats(y_percussive)
+    features["beats"], features["beats_conf"] = compute_beats(audio)
 
     # Compute Beat-sync features
-    features["bs_mfcc"] = librosa.feature.sync(features["mfcc"].T,
-                                               features["beats_idx"]).T
-    features["bs_hpcp"] = librosa.feature.sync(features["hpcp"].T,
-                                               features["beats_idx"]).T
-    features["bs_tonnetz"] = librosa.feature.sync(features["tonnetz"].T,
-                                               features["beats_idx"]).T
+    features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"] = \
+        compute_features(audio, features["beats"])
 
     # Analysis parameters
     features["anal"] = {}
@@ -171,7 +161,6 @@ def compute_features_for_audio_file(audio_file):
     features["anal"]["mfcc_coeff"] = msaf.Anal.mfcc_coeff
     features["anal"]["sample_rate"] = msaf.Anal.sample_rate
     features["anal"]["window_type"] = msaf.Anal.window_type
-    features["anal"]["n_mels"] = msaf.Anal.n_mels
     features["anal"]["dur"] = audio.shape[0] / float(msaf.Anal.sample_rate)
 
     return audio, features
@@ -193,8 +182,12 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
 
     # Save output as audio file
     if audio_beats:
-        logging.info("Sonifying beats... (TODO)")
-        #TODO
+        logging.info("Saving Beats as an audio file")
+        marker = ES.AudioOnsetsMarker(onsets=features["beats"], type='beep',
+                                      sampleRate=msaf.Anal.sample_rate)
+        marked_audio = marker(audio)
+        ES.MonoWriter(filename='beats.wav',
+                      sampleRate=msaf.Anal.sample_rate)(marked_audio)
 
     # Read annotations if they exist in path/references_dir/file.jams
     if os.path.isfile(file_struct.ref_file):
