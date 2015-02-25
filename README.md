@@ -2,7 +2,7 @@
 
 ## Description ##
 
-This framework contains a set of algorithms to segment a given music audio signal. It uses [Essentia](http://mtg.upf.edu/technologies/essentia) to extract the necessary features, and is compatible with the [JAMS](https://github.com/urinieto/jams) format and [mir_eval](https://github.com/craffel/mir_eval).
+This framework contains a set of algorithms to segment a given music audio signal. It uses [librosa](https://github.com/bmcfee/librosa/) to extract the necessary features, and is compatible with the [JAMS](https://github.com/urinieto/jams) format and [mir_eval](https://github.com/craffel/mir_eval).
 
 ## Boundary Algorithms ##
 
@@ -146,7 +146,6 @@ For more parameters, please read the function's docstring.
 * cvxopt (for C-NMF algorithms only)
 * Pandas (for evaluation only)
 * joblib
-* [Essentia](https://github.com/MTG/essentia)
 * [mir\_eval](https://github.com/craffel/mir_eval)
 * [librosa](https://github.com/bmcfee/librosa/)
 * BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
