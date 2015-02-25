@@ -23,6 +23,7 @@ import msaf
 from msaf import jams2
 from msaf import utils
 from msaf import input_output as io
+from msaf.input_output import FileStruct
 
 
 def compute_beats(y_percussive):
@@ -204,24 +205,27 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
             annot_beats = []
             for data in annot.data:
                 annot_beats.append(data.time.value)
-            annot_beats = np.unique(annot_beats).tolist()
+            annot_beats = np.unique(annot_beats)
             annot_beats_idx = librosa.time_to_frames(annot_beats,
                                                      sr=msaf.Anal.sample_rate,
                                                      hop_length=msaf.Anal.hop_size)
-            features["annot_mfcc"], features["annot_hpcp"], \
-                features["annot_tonnetz"] = \
+            features["ann_mfcc"], features["ann_hpcp"], \
+                features["ann_tonnetz"] = \
                 compute_beat_sync_features(features, annot_beats_idx)
 
     # Save output as json file
     save_features(out_file, features)
 
 
-def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
+def process(in_path, audio_beats=False, n_jobs=1, overwrite=False,
+            out_file="out.json"):
     """Main process."""
 
     # If in_path it's a file, we only compute one file
     if os.path.isfile(in_path):
-        compute_all_features(in_path, audio_beats, overwrite)
+        file_struct = FileStruct(in_path)
+        file_struct.features_file = out_file
+        compute_all_features(file_struct, audio_beats, overwrite)
 
     elif os.path.isdir(in_path):
         # Check that in_path exists
