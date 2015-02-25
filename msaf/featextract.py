@@ -16,53 +16,13 @@ import logging
 import numpy as np
 import os
 import time
+import json
 
 # Local stuff
 import msaf
 from msaf import jams2
 from msaf import utils
 from msaf import input_output as io
-
-
-class STFTFeature:
-    """Class to easily compute the features that require a frame based
-        spectrum process (or STFT)."""
-    def __init__(self, frame_size, hop_size, window_type, feature, sample_rate,
-                 beats=None):
-        """STFTFeature constructor."""
-        self.frame_size = frame_size
-        self.hop_size = hop_size
-        self.window_type = window_type
-        self.w = ES.Windowing(type=window_type)
-        self.spectrum = ES.Spectrum()
-        self.feature = feature  # Essentia feature object
-        self.beats = beats
-        self.sample_rate = sample_rate
-
-    def compute_features(self, audio):
-        """Computes the specified Essentia features from the audio array."""
-        features = []
-
-        for frame in ES.FrameGenerator(audio,
-                frameSize=self.frame_size, hopSize=self.hop_size):
-            if self.feature.name() == "MFCC":
-                bands, coeffs = self.feature(self.spectrum(self.w(frame)))
-            elif self.feature.name() == "HPCP":
-                spectral_peaks = ES.SpectralPeaks()
-                freqs, mags = spectral_peaks(self.spectrum(self.w(frame)))
-                coeffs = self.feature(freqs, mags)
-            features.append(coeffs)
-
-        # Convert to Essentia Numpy array
-        features = essentia.array(features)
-
-        # Make beat-synchronous if we have the beats
-        if self.beats is not None and self.beats != []:
-            framerate = self.sample_rate / float(self.hop_size)
-            tframes = np.arange(features.shape[0]) / float(framerate)
-            features = utils.resample_mx(features.T, tframes, self.beats).T
-
-        return features
 
 
 def compute_beats(y_percussive):
@@ -114,14 +74,55 @@ def compute_features(audio, y_harmonic):
     return mfcc, hpcp, tonnetz
 
 
-def save_features(key, pool, mfcc, hpcp, tonnetz):
-    """Saves the features into the specified pool under the given key."""
-    [pool.add(key + ".mfcc", essentia.array(mfcc_coeff))
-        for mfcc_coeff in mfcc]
-    [pool.add(key + ".hpcp", essentia.array(hpcp_coeff))
-        for hpcp_coeff in hpcp]
-    [pool.add(key + ".tonnetz", essentia.array(tonnetz_coeff))
-        for tonnetz_coeff in tonnetz]
+def save_features(out_file, features):
+    """Saves the features into the specified file using the JSON format."""
+    logging.info("Saving the JSON file in %s" % out_file)
+    out_json = {"metadata": {"version": {"librosa": librosa.__version__}}}
+    out_json["analysis"] = {
+        "dur": features["anal"]["dur"],
+        "frame_rate": msaf.Anal.frame_size,
+        "hop_size": msaf.Anal.hop_size,
+        "mfcc_coeff": msaf.Anal.mfcc_coeff,
+        "n_mels": msaf.Anal.n_mels,
+        "sample_rate": msaf.Anal.sample_rate,
+        "window_type": msaf.Anal.window_type
+    }
+    out_json["beats"] = {
+        "times": features["beats"].tolist()
+    }
+    out_json["timestamp"] = \
+        datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
+    out_json["framesync"] = {
+        "mfcc": features["mfcc"].tolist(),
+        "hpcp": features["hpcp"].tolist(),
+        "tonnetz": features["tonnetz"].tolist()
+    }
+    out_json["est_beatsync"] = {
+        "mfcc": features["bs_mfcc"].tolist(),
+        "hpcp": features["bs_hpcp"].tolist(),
+        "tonnetz": features["bs_tonnetz"].tolist()
+    }
+    try:
+        out_json["ann_beatsync"] = {
+            "mfcc": features["ann_mfcc"].tolist(),
+            "hpcp": features["ann_hpcp"].tolist(),
+            "tonnetz": features["ann_tonnetz"].tolist()
+        }
+    except:
+        logging.warning("No annotated beats for %s" % out_file)
+
+    # Actual save
+    with open(out_file, "w") as f:
+        json.dump(out_json, f, indent=2)
+
+
+def compute_beat_sync_features(features, beats_idx):
+    """Given a dictionary of features, and the estimated index frames,
+    calculate beat-synchronous features."""
+    bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx).T
+    bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx).T
+    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx).T
+    return bs_mfcc, bs_hpcp, bs_tonnetz
 
 
 def compute_features_for_audio_file(audio_file):
@@ -157,12 +158,8 @@ def compute_features_for_audio_file(audio_file):
     features["beats_idx"], features["beats"] = compute_beats(y_percussive)
 
     # Compute Beat-sync features
-    features["bs_mfcc"] = librosa.feature.sync(features["mfcc"].T,
-                                               features["beats_idx"]).T
-    features["bs_hpcp"] = librosa.feature.sync(features["hpcp"].T,
-                                               features["beats_idx"]).T
-    features["bs_tonnetz"] = librosa.feature.sync(features["tonnetz"].T,
-                                               features["beats_idx"]).T
+    features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"] = \
+        compute_beat_sync_features(features, features["beats_idx"])
 
     # Analysis parameters
     features["anal"] = {}
@@ -207,31 +204,16 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
             annot_beats = []
             for data in annot.data:
                 annot_beats.append(data.time.value)
-            annot_beats = essentia.array(np.unique(annot_beats).tolist())
-            annot_mfcc, annot_hpcp, annot_tonnetz = compute_features(
-                audio, annot_beats)
+            annot_beats = np.unique(annot_beats).tolist()
+            annot_beats_idx = librosa.time_to_frames(annot_beats,
+                                                     sr=msaf.Anal.sample_rate,
+                                                     hop_length=msaf.Anal.hop_size)
+            features["annot_mfcc"], features["annot_hpcp"], \
+                features["annot_tonnetz"] = \
+                compute_beat_sync_features(features, annot_beats_idx)
 
     # Save output as json file
-    logging.info("Saving the JSON file in %s" % out_file)
-    yaml = YamlOutput(filename=out_file, format='json')
-    pool = essentia.Pool()
-    pool.add("beats.times", features["beats"])
-    pool.add("beats.confidence", features["beats_conf"])
-    pool.set("analysis.sample_rate", msaf.Anal.sample_rate)
-    pool.set("analysis.frame_rate", msaf.Anal.frame_size)
-    pool.set("analysis.hop_size", msaf.Anal.hop_size)
-    pool.set("analysis.window_type", msaf.Anal.window_type)
-    pool.set("analysis.mfcc_coeff", msaf.Anal.mfcc_coeff)
-    pool.set("timestamp",
-             datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S"))
-    save_features("framesync", pool, features["mfcc"], features["hpcp"],
-                  features["tonnetz"])
-    save_features("est_beatsync", pool, features["bs_mfcc"],
-                  features["bs_hpcp"], features["bs_tonnetz"])
-    if os.path.isfile(file_struct.ref_file) and jam.beats != []:
-        save_features("ann_beatsync", pool, annot_mfcc, annot_hpcp,
-                      annot_tonnetz)
-    yaml(pool)
+    save_features(out_file, features)
 
 
 def process(in_path, audio_beats=False, n_jobs=1, overwrite=False):
