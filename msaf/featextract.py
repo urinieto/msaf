@@ -195,7 +195,7 @@ def compute_features_for_audio_file(audio_file):
     return features
 
 
-def compute_all_features(file_struct, audio_beats=False, overwrite=False):
+def compute_all_features(file_struct, sonify_beats=False, overwrite=False):
     """Computes all the features for a specific audio file and its respective
         human annotations. It creates an audio file with the estimated
         beats if needed."""
@@ -210,7 +210,7 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
     features = compute_features_for_audio_file(file_struct.audio_file)
 
     # Save output as audio file
-    if audio_beats:
+    if sonify_beats:
         logging.info("Sonifying beats... (TODO)")
         #TODO
 
@@ -237,15 +237,30 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
     save_features(out_file, features)
 
 
-def process(in_path, audio_beats=False, n_jobs=1, overwrite=False,
+def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
             out_file="out.json"):
-    """Main process."""
+    """Main process to compute features.
+
+    Parameters
+    ----------
+    in_path: str
+        Path to the file or dataset to compute the features.
+    sonify_beats: bool
+        Whether to sonify the beats on top of the audio file
+        (single file mode only).
+    n_jobs: int
+        Number of threads (collection mode only).
+    overwrite: bool
+        Whether to overwrite the previously computed features.
+    out_file: str
+        Path to the output json file (single file mode only).
+    """
 
     # If in_path it's a file, we only compute one file
     if os.path.isfile(in_path):
         file_struct = FileStruct(in_path)
         file_struct.features_file = out_file
-        compute_all_features(file_struct, audio_beats, overwrite)
+        compute_all_features(file_struct, sonify_beats, overwrite)
 
     elif os.path.isdir(in_path):
         # Check that in_path exists
@@ -256,5 +271,5 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False,
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
-            file_struct, audio_beats, overwrite)
+            file_struct, sonify_beats, overwrite)
             for file_struct in file_structs)
