@@ -51,7 +51,24 @@ def compute_beats(y_percussive):
 
 
 def compute_features(audio, y_harmonic):
-    """Computes the HPCP and MFCC features."""
+    """Computes the HPCP and MFCC features.
+
+    Parameters
+    ----------
+    audio: np.array(N)
+        Audio samples of the given input.
+    y_harmonic: np.array(N)
+        Harmonic part of the audio signal, in samples.
+
+    Returns
+    -------
+    mfcc: np.array(N, msaf.Anal.mfcc_coeff)
+        Mel-frequency Cepstral Coefficients.
+    hpcp: np.array(N, 12)
+        Pitch Class Profiles.
+    tonnetz: np.array(N, 6)
+        Tonal Centroid features.
+    """
     logging.info("Computing Spectrogram...")
     S = librosa.feature.melspectrogram(audio,
                                        sr=msaf.Anal.sample_rate,
@@ -64,9 +81,8 @@ def compute_features(audio, y_harmonic):
     mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=msaf.Anal.mfcc_coeff).T
 
     logging.info("Computing HPCPs...")
-    hpcp = librosa.feature.chromagram(y=y_harmonic,
+    hpcp = librosa.feature.chroma_cqt(y=y_harmonic,
                                       sr=msaf.Anal.sample_rate,
-                                      n_fft=msaf.Anal.frame_size,
                                       hop_length=msaf.Anal.hop_size).T
 
     #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
@@ -76,7 +92,15 @@ def compute_features(audio, y_harmonic):
 
 
 def save_features(out_file, features):
-    """Saves the features into the specified file using the JSON format."""
+    """Saves the features into the specified file using the JSON format.
+
+    Parameters
+    ----------
+    out_file: str
+        Path to the output file to be saved.
+    features: dict
+        Dictionary containing the features.
+    """
     logging.info("Saving the JSON file in %s" % out_file)
     out_json = {"metadata": {"version": {"librosa": librosa.__version__}}}
     out_json["analysis"] = {
@@ -135,8 +159,6 @@ def compute_features_for_audio_file(audio_file):
 
     Returns
     -------
-    audio: np.array
-        Audio samples.
     features: dict
         Dictionary of audio features.
     """
@@ -172,7 +194,7 @@ def compute_features_for_audio_file(audio_file):
     features["anal"]["n_mels"] = msaf.Anal.n_mels
     features["anal"]["dur"] = audio.shape[0] / float(msaf.Anal.sample_rate)
 
-    return audio, features
+    return features
 
 
 def compute_all_features(file_struct, audio_beats=False, overwrite=False):
@@ -187,7 +209,7 @@ def compute_all_features(file_struct, audio_beats=False, overwrite=False):
         return  # Do nothing, file already exist and we are not overwriting it
 
     # Compute the features for the given audio file
-    audio, features = compute_features_for_audio_file(file_struct.audio_file)
+    features = compute_features_for_audio_file(file_struct.audio_file)
 
     # Save output as audio file
     if audio_beats:
