@@ -1,17 +1,8 @@
-#!/usr/bin/env python
 """
 Runs one boundary algorithm and a label algorithm on a specified audio file or
 dataset.
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
-import argparse
-import time
 import logging
 import os
 import numpy as np
@@ -176,8 +167,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             logging.info("Sonifying boundaries in %s..." % out_file)
             fs = 44100
             audio_hq = featextract.read_audio(in_path, fs)
-            utils.write_audio_boundaries(audio_hq, np.delete(est_times, [1, len(est_times) - 2]),
-                                         out_file, fs)
+            utils.write_audio_boundaries(
+                audio_hq, np.delete(est_times, [1, len(est_times) - 2]),
+                out_file, fs)
 
         if plot:
             plotting.plot_one_track(in_path, est_times, est_labels,
@@ -192,85 +184,3 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config)
             for file_struct in file_structs[:])
-
-
-def main():
-    """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(description=
-        "Runs the speficied algorithm(s) on the input file or MSAF formatted "
-        "dataset.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("in_path",
-                        action="store",
-                        help="Input audio file or dataset")
-    parser.add_argument("-f",
-                        action="store",
-                        dest="feature",
-                        default="hpcp",
-                        type=str,
-                        help="Type of features",
-                        choices=["hpcp", "tonnetz", "mfcc"])
-    parser.add_argument("-bid",
-                        action="store",
-                        help="Boundary algorithm identifier",
-                        dest="boundaries_id",
-                        default="gt",
-                        choices=["gt"] +
-                        io.get_all_boundary_algorithms(algorithms))
-    parser.add_argument("-lid",
-                        action="store",
-                        help="Label algorithm identifier",
-                        dest="labels_id",
-                        default=None,
-                        choices= io.get_all_label_algorithms(algorithms))
-    parser.add_argument("-a",
-                        action="store_true",
-                        dest="out_audio",
-                        help="Output estimated boundaries with audio",
-                        default=False)
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
-    parser.add_argument("-fs",
-                        action="store_true",
-                        dest="framesync",
-                        help="Use frame-synchronous features",
-                        default=False)
-    parser.add_argument("-j",
-                        action="store",
-                        dest="n_jobs",
-                        default=4,
-                        type=int,
-                        help="The number of threads to use")
-    parser.add_argument("-p",
-                        action="store_true",
-                        dest="plot",
-                        help="Plots the current boundaries",
-                        default=False)
-    parser.add_argument("-d",
-                        action="store",
-                        dest="ds_name",
-                        default="*",
-                        help="The prefix of the dataset to use "
-                        "(e.g. Isophonics, SALAMI)")
-    args = parser.parse_args()
-    start_time = time.time()
-
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
-
-    # Run the algorithm(s)
-    process(args.in_path, annot_beats=args.annot_beats, feature=args.feature,
-            ds_name=args.ds_name, framesync=args.framesync,
-            boundaries_id=args.boundaries_id, labels_id=args.labels_id,
-            n_jobs=args.n_jobs, out_audio=args.out_audio, plot=args.plot)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-
-if __name__ == '__main__':
-    main()
