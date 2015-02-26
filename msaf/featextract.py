@@ -8,14 +8,12 @@ Features to be computed:
 - Beats
 """
 
-import argparse
 import datetime
 import librosa
 from joblib import Parallel, delayed
 import logging
 import numpy as np
 import os
-import time
 import json
 
 # Local stuff
@@ -260,46 +258,3 @@ def process(in_path, audio_beats=False, n_jobs=1, overwrite=False,
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
             file_struct, audio_beats, overwrite)
             for file_struct in file_structs)
-
-
-def main():
-    """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(description=
-        "Extracts a set of features from the Segmentation dataset or a given "
-        "audio file and saves them into the 'features' folder of the dataset",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("in_path",
-                        action="store",
-                        help="Input dataset dir or audio file")
-    parser.add_argument("-a",
-                        action="store_true",
-                        dest="audio_beats",
-                        help="Output audio file with estimated beats",
-                        default=False)
-    parser.add_argument("-j",
-                        action="store",
-                        dest="n_jobs",
-                        type=int,
-                        help="Number of jobs (threads)",
-                        default=4)
-    parser.add_argument("-ow",
-                        action="store_true",
-                        dest="overwrite",
-                        help="Overwrite the previously computed features",
-                        default=False)
-    args = parser.parse_args()
-    start_time = time.time()
-
-    # Setup the logger
-    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-        level=logging.INFO)
-
-    # Run the algorithm
-    process(args.in_path, args.audio_beats, n_jobs=args.n_jobs,
-            overwrite=args.overwrite)
-
-    # Done!
-    logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-if __name__ == '__main__':
-    main()
