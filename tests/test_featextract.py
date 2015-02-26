@@ -17,3 +17,4 @@ def test_save_features():
     audio_file = os.path.join("data", "chirp.mp3")
     features = msaf.featextract.compute_features_for_audio_file(audio_file)
     msaf.featextract.save_features(tmp_file, features)
+    os.remove(tmp_file)

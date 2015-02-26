@@ -149,6 +149,7 @@ For more parameters, please read the function's docstring.
 * [mir\_eval](https://github.com/craffel/mir_eval)
 * [librosa](https://github.com/bmcfee/librosa/)
 * BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
+* ffmpeg (to read mp3 files only)
 
 
 ## Note on Parallel Processes for OSX Users ##
