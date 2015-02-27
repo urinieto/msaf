@@ -309,7 +309,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
             beats = np.unique(beats)
         else:
             feat_str = "est_beatsync"
-            beats = np.asarray(feats["beats"]["times"])[0]
+            beats = np.asarray(feats["beats"]["times"])
     C = np.asarray(feats[feat_str]["hpcp"])
     M = np.asarray(feats[feat_str]["mfcc"])
     T = np.asarray(feats[feat_str]["tonnetz"])

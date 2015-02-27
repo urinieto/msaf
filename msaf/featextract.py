@@ -211,8 +211,11 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False):
 
     # Save output as audio file
     if sonify_beats:
-        logging.info("Sonifying beats... (TODO)")
-        #TODO
+        logging.info("Sonifying beats...")
+        fs = 44100
+        audio, sr = librosa.load(file_struct.audio_file, sr=fs)
+        msaf.utils.write_audio_boundaries(audio, features["beats"],
+                                          "out_beats.wav", fs, offset=0.0)
 
     # Read annotations if they exist in path/references_dir/file.jams
     if os.path.isfile(file_struct.ref_file):
