@@ -175,8 +175,10 @@ def remove_empty_segments(times, labels):
     return intervals_to_times(np.asarray(new_inters)), new_labels
 
 
-def write_audio_boundaries(audio, est_times, out_file, fs):
+def write_audio_boundaries(audio, est_times, out_file, fs, offset=0):
     """Writes the estimated boundary times into the output file."""
-    audio_bounds = mir_eval.sonify.clicks(est_times, fs)
-    audio_bounds[:len(audio)] += audio
-    scipy.io.wavfile.write(out_file, fs, audio_bounds)
+    audio_bounds = mir_eval.sonify.clicks(est_times + offset, fs)
+    audio_bounds = audio_bounds[:min(len(audio_bounds), len(audio))]
+    audio = audio[:min(len(audio_bounds), len(audio))]
+    audio[:len(audio_bounds)] += audio_bounds
+    scipy.io.wavfile.write(out_file, fs, audio)

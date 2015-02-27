@@ -5,6 +5,7 @@ dataset.
 
 import logging
 import os
+import librosa
 import numpy as np
 
 from joblib import Parallel, delayed
@@ -153,7 +154,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
     if os.path.isfile(in_path):
         # Single file mode
-        audio, features = featextract.compute_features_for_audio_file(in_path)
+        features = featextract.compute_features_for_audio_file(in_path)
         config["features"] = features
 
         # And run the algorithms
@@ -166,10 +167,11 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             out_file = "out_boundaries.wav"
             logging.info("Sonifying boundaries in %s..." % out_file)
             fs = 44100
-            audio_hq = featextract.read_audio(in_path, fs)
-            utils.write_audio_boundaries(
-                audio_hq, np.delete(est_times, [1, len(est_times) - 2]),
-                out_file, fs)
+            audio_hq, sr = librosa.load(in_path, sr=fs)
+            #utils.write_audio_boundaries(
+                #audio_hq, np.delete(est_times, [1, len(est_times) - 2]),
+                #out_file, fs)
+            utils.write_audio_boundaries(audio_hq, est_times, out_file, fs)
 
         if plot:
             plotting.plot_one_track(in_path, est_times, est_labels,
