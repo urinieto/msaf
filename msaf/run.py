@@ -168,9 +168,6 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             logging.info("Sonifying boundaries in %s..." % out_file)
             fs = 44100
             audio_hq, sr = librosa.load(in_path, sr=fs)
-            #utils.write_audio_boundaries(
-                #audio_hq, np.delete(est_times, [1, len(est_times) - 2]),
-                #out_file, fs)
             utils.write_audio_boundaries(audio_hq, est_times, out_file, fs)
 
         if plot:

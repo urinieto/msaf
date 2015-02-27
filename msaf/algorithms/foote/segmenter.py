@@ -20,6 +20,7 @@ import numpy as np
 from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
+import pylab as plt
 
 from msaf.algorithms.interface import SegmenterInterface
 
@@ -81,7 +82,6 @@ def pick_peaks(nc, L=16):
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
-    #import pylab as plt
     #plt.plot(nc)
     #plt.plot(th)
     #for peak in peaks:
@@ -113,7 +113,7 @@ class Segmenter(SegmenterInterface):
 
         # Compute gaussian kernel
         G = compute_gaussian_krnl(self.config["M_gaussian"])
-        #plt.imshow(G, interpolation="nearest", aspect="auto"); plt.show()
+        #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
         # Compute the novelty curve
         nc = compute_nc(S, G)
