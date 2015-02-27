@@ -32,7 +32,7 @@ out_boundaries_ext = "-bounds.wav"
 class Anal():
     sample_rate = 11025
     frame_size = 2048
-    hop_size = 1024
+    hop_size = 128
     mfcc_coeff = 14
     n_mels = 128
     window_type = "blackmanharris62"
