@@ -2,9 +2,9 @@
 
 # Foote Params
 config = {
-    "M_gaussian"    : 24,
-    "m_median"      : 1,
-    "L_peaks"       : 24
+    "M_gaussian"    : 96,
+    "m_median"      : 8,
+    "L_peaks"       : 64
 }
 
 algo_id = "foote"
