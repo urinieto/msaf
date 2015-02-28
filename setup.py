@@ -4,6 +4,7 @@ import numpy.distutils.misc_util
 from distutils import sysconfig
 
 print sysconfig.get_config_var('LDSHARED')
+print sysconfig.get_config_var('CC')
 print sys.platform
 
 # Compile the CC algorithm
