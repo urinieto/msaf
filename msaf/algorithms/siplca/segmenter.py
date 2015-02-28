@@ -342,7 +342,8 @@ def convert_labels_to_segments(labels, frametimes, songlen=None):
     # Nonzero points in diff(labels) correspond to the final frame of
     # a segment (so just index into labels to find the segment label)
     boundaryidx = np.concatenate(([0], np.nonzero(np.diff(labels))[0],
-                                  [len(labels) - 1]))
+                                  [min(len(labels), len(frametimes)) - 1]))
+    print len(frametimes)
     boundarytimes = frametimes[boundaryidx]
 
     segstarttimes = boundarytimes[:-1]
