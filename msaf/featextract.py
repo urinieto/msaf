@@ -24,13 +24,15 @@ from msaf import input_output as io
 from msaf.input_output import FileStruct
 
 
-def compute_beats(y_percussive):
+def compute_beats(y_percussive, sr=22050):
     """Computes the beats using librosa.
 
     Parameters
     ----------
     y_percussive: np.array
         Percussive part of the audio signal in samples.
+    sr: int
+        Sample rate.
 
     Returns
     -------
@@ -40,11 +42,9 @@ def compute_beats(y_percussive):
         Time of the estimated beats.
     """
     logging.info("Estimating Beats...")
-    tempo, beats_idx = librosa.beat.beat_track(y=y_percussive,
-                                               sr=msaf.Anal.sample_rate,
+    tempo, beats_idx = librosa.beat.beat_track(y=y_percussive, sr=sr,
                                                hop_length=msaf.Anal.hop_size)
-    return beats_idx, librosa.frames_to_time(beats_idx,
-                                             sr=msaf.Anal.sample_rate,
+    return beats_idx, librosa.frames_to_time(beats_idx, sr=sr,
                                              hop_length=msaf.Anal.hop_size)
 
 
@@ -176,7 +176,8 @@ def compute_features_for_audio_file(audio_file):
         compute_features(audio, y_harmonic)
 
     # Estimate Beats
-    features["beats_idx"], features["beats"] = compute_beats(y_percussive)
+    features["beats_idx"], features["beats"] = compute_beats(
+        y_percussive, sr=msaf.Anal.sample_rate)
 
     # Compute Beat-sync features
     features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"] = \
