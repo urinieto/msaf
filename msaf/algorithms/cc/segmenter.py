@@ -56,7 +56,7 @@ class Segmenter(SegmenterInterface):
                 in_bound_idxs = []
 
             print "hola", len(in_bound_idxs)
-            if len(in_bound_idxs) > 2:
+            if len(frame_times) > 2:
                 bound_idxs, est_labels = cc_segmenter.segment(
                     is_harmonic, self.config["nHMMStates"],
                     self.config["nclusters"], self.config["neighbourhoodLimit"],
@@ -66,6 +66,7 @@ class Segmenter(SegmenterInterface):
                 est_labels = [0]
 
             # Add first and last boundaries
+            bound_idxs[-1] = min(len(frame_times) - 1, bound_idxs[-1])
             est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
             silencelabel = np.max(est_labels) + 1
             est_labels = np.concatenate(([silencelabel], est_labels,

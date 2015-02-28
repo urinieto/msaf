@@ -25,7 +25,7 @@ install:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
     - sudo apt-get install liblapack-dev
-    - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
+    - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels cvxopt
     # Coverage packages are on my binstar channel
     - conda install --yes -c dan_blanchard python-coveralls nose-cov 
     - python setup.py install
