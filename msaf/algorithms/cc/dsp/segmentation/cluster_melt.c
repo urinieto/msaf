@@ -221,5 +221,3 @@ void cluster_melt(double *h, int m, int n, double *Bsched, int t, int k, int l, 
 	free(lp);
 	free(oldc);	
 }
-
-

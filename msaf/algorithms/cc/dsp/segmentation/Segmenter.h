@@ -47,8 +47,6 @@ public:
 	virtual ~Segmenter() {}
 	virtual void initialise(int samplerate) = 0;	// must be called before any other methods
 	virtual int getWindowsize() = 0;				// required window size for calls to extractFeatures()
-	virtual int getHopsize() = 0;					// required hop size for calls to extractFeatures()
-	virtual void extractFeatures(const double* samples, int nsamples) = 0;
 	virtual void segment() = 0;						// call once all the features have been extracted
 	virtual void segment(int m) = 0;				// specify desired number of segment-types
 	virtual void clear() { features.clear(); }
