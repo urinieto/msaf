@@ -34,6 +34,7 @@ install:
     - git clone https://github.com/bmcfee/librosa.git
     - cd librosa
     - git checkout develop
+    - sudo easy_install scikits.samplerate
     - python setup.py install
     - cd ..
     - python setup.py install

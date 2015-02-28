@@ -16,7 +16,7 @@ import msaf.featextract
 
 # Global vars
 audio_file = os.path.join("data", "chirp.mp3")
-sr = 44100
+sr = msaf.Anal.sample_rate
 audio, fs = librosa.load(audio_file, sr=sr)
 y_harmonic, y_percussive = librosa.effects.hpss(audio)
 
@@ -45,7 +45,8 @@ def test_save_features():
     # Check that the json file is actually readable
     with open(tmp_file, "r") as f:
         features = json.load(f)
-    npt.assert_almost_equal(features["analysis"]["dur"], 10, decimal=1)
+    npt.assert_almost_equal(features["analysis"]["dur"], len(audio) / float(sr),
+                            decimal=1)
 
     # Clean up
     os.remove(tmp_file)
@@ -56,12 +57,13 @@ def test_compute_beat_sync_features():
     features = msaf.featextract.compute_features_for_audio_file(audio_file)
 
     # Beat track
-    beats_idx, beats_times = msaf.featextract.compute_beats(y_percussive)
+    beats_idx, beats_times = msaf.featextract.compute_beats(y_percussive,
+                                                            sr=sr)
 
     # Compute beat sync feats
     bs_mfcc, bs_hpcp, bs_tonnetz = \
         msaf.featextract.compute_beat_sync_features(features, beats_idx)
-    assert_equals(bs_mfcc.shape[0],  len(beats_idx) - 1)
+    assert_equals(bs_mfcc.shape[0],  len(beats_idx) + 1)
     assert_equals(bs_mfcc.shape[0], bs_hpcp.shape[0])
     assert_equals(bs_hpcp.shape[0], bs_tonnetz.shape[0])
 
