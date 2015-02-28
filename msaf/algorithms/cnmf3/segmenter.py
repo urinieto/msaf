@@ -210,6 +210,8 @@ class Segmenter(SegmenterInterface):
 
         # Add first and last boundaries
         bound_idxs = np.asarray(bound_idxs, dtype=int)
+        bound_idxs = np.unique(bound_idxs)
+        bound_idxs[-1] = min(len(frame_times) - 1, bound_idxs[-1])
         est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
         silencelabel = np.max(est_labels) + 1
         est_labels = np.concatenate(([silencelabel], est_labels,
