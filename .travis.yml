@@ -3,7 +3,9 @@ python:
   - "2.7"
 notifications:
     email: false 
-script: nosetests
+script: 
+    - cd tests
+    - nosetests test_featextract.py -v -s
 
 before_install:
     - sudo apt-get update -qq
