@@ -66,8 +66,6 @@ public:
     virtual ~ClusterMeltSegmenter();
     virtual void initialise(int samplerate);
     virtual int getWindowsize();
-    virtual int getHopsize();
-    virtual void extractFeatures(const double* samples, int nsamples);
     void setFeatures(const vector<vector<double> >& f);		// provide the features yourself
     void setAnnotBounds(const vector<int>& bounds);		// provide the annotated boundaries
     virtual void segment();		// segment into default number of segment-types
