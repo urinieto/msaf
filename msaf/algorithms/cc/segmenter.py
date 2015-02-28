@@ -9,12 +9,6 @@ Constrained Clustering. IEEE Transactions on Audio, Speech, and Language
 Processing, 16(2), 318–326. doi:10.1109/TASL.2007.910781
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 import logging
 import numpy as np
 
