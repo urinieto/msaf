@@ -196,10 +196,23 @@ def compute_features_for_audio_file(audio_file):
     return features
 
 
-def compute_all_features(file_struct, sonify_beats=False, overwrite=False):
+def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
+                         out_beats="out_beats.wav"):
     """Computes all the features for a specific audio file and its respective
-        human annotations. It creates an audio file with the estimated
-        beats if needed."""
+        human annotations. It creates an audio file with the sonified estimated
+        beats if needed.
+
+    Parameters
+    ----------
+    file_struct: FileStruct
+        Object containing all the set of file paths of the input file.
+    sonify_beats: bool
+        Whether to sonify the beats.
+    overwrite: bool
+        Whether to overwrite previous features JSON file.
+    out_beats: str
+        Path to the new file containing the sonified beats.
+    """
 
     # Output file
     out_file = file_struct.features_file
@@ -215,14 +228,14 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False):
         logging.info("Sonifying beats...")
         fs = 44100
         audio, sr = librosa.load(file_struct.audio_file, sr=fs)
-        msaf.utils.write_audio_boundaries(audio, features["beats"],
-                                          "out_beats.wav", fs, offset=0.0)
+        msaf.utils.sonify_clicks(audio, features["beats"], out_beats, fs,
+                                 offset=0.0)
 
     # Read annotations if they exist in path/references_dir/file.jams
     if os.path.isfile(file_struct.ref_file):
         jam = jams2.load(file_struct.ref_file)
 
-        # If beat annotations exist, compute also annotated beatsyn features
+        # If beat annotations exist, compute also annotated beatsync features
         if jam.beats != []:
             logging.info("Reading beat annotations from JAMS")
             annot = jam.beats[0]
@@ -230,9 +243,9 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False):
             for data in annot.data:
                 annot_beats.append(data.time.value)
             annot_beats = np.unique(annot_beats)
-            annot_beats_idx = librosa.time_to_frames(annot_beats,
-                                                     sr=msaf.Anal.sample_rate,
-                                                     hop_length=msaf.Anal.hop_size)
+            annot_beats_idx = librosa.time_to_frames(
+                annot_beats, sr=msaf.Anal.sample_rate,
+                hop_length=msaf.Anal.hop_size)
             features["ann_mfcc"], features["ann_hpcp"], \
                 features["ann_tonnetz"] = \
                 compute_beat_sync_features(features, annot_beats_idx)
@@ -242,7 +255,7 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False):
 
 
 def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
-            out_file="out.json"):
+            out_file="out.json", out_beats="out_beats.wav"):
     """Main process to compute features.
 
     Parameters
@@ -258,13 +271,15 @@ def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
         Whether to overwrite the previously computed features.
     out_file: str
         Path to the output json file (single file mode only).
+    out_beats: str
+        Path to the new file containing the sonified beats.
     """
 
     # If in_path it's a file, we only compute one file
     if os.path.isfile(in_path):
         file_struct = FileStruct(in_path)
         file_struct.features_file = out_file
-        compute_all_features(file_struct, sonify_beats, overwrite)
+        compute_all_features(file_struct, sonify_beats, overwrite, out_beats)
 
     elif os.path.isdir(in_path):
         # Check that in_path exists
@@ -275,5 +290,5 @@ def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
-            file_struct, sonify_beats, overwrite)
+            file_struct, sonify_beats, overwrite, out_beats)
             for file_struct in file_structs)

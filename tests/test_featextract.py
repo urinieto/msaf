@@ -13,6 +13,7 @@ import os
 
 # Msaf imports
 import msaf.featextract
+from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("data", "chirp.mp3")
@@ -41,6 +42,9 @@ def test_save_features():
     tmp_file = "temp.json"
     features = msaf.featextract.compute_features_for_audio_file(audio_file)
     msaf.featextract.save_features(tmp_file, features)
+
+    # Check that new file exists
+    assert os.path.isfile(tmp_file)
 
     # Check that the json file is actually readable
     with open(tmp_file, "r") as f:
@@ -78,3 +82,43 @@ def test_compute_features_for_audio_file():
         assert key in features.keys()
     for anal_key in anal_keys:
         assert anal_key in features["anal"].keys()
+
+
+def test_compute_all_features():
+    # Create file struct
+    file_struct = FileStruct(audio_file)
+
+    # Set output file
+    feat_file = "tmp.json"
+    beats_file = "beats.wav"
+    file_struct.features_file = feat_file
+
+    # Remove previously computed outputs if exist
+    if os.path.isfile(feat_file):
+        os.remove(feat_file)
+    if os.path.isfile(beats_file):
+        os.remove(beats_file)
+
+    # Call main function
+    msaf.featextract.compute_all_features(file_struct, sonify_beats=False,
+                                          overwrite=False)
+    assert os.path.isfile(feat_file)
+
+    # Call again main function (should do nothing, since feat_file exists)
+    msaf.featextract.compute_all_features(file_struct, sonify_beats=False,
+                                          overwrite=False)
+    assert os.path.isfile(feat_file)
+
+    # Overwrite
+    msaf.featextract.compute_all_features(file_struct, sonify_beats=False,
+                                          overwrite=True)
+    assert os.path.isfile(feat_file)
+
+    # Sonify
+    msaf.featextract.compute_all_features(file_struct, sonify_beats=True,
+                                          overwrite=True, out_beats=beats_file)
+    assert os.path.isfile(feat_file) and os.path.isfile(beats_file)
+
+    # Clean up
+    os.remove(feat_file)
+    os.remove(beats_file)

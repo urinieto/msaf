@@ -138,10 +138,31 @@ def remove_empty_segments(times, labels):
     return intervals_to_times(np.asarray(new_inters)), new_labels
 
 
-def write_audio_boundaries(audio, est_times, out_file, fs, offset=0):
-    """Writes the estimated boundary times into the output file."""
-    audio_bounds = mir_eval.sonify.clicks(est_times + offset, fs)
-    audio_bounds = audio_bounds[:min(len(audio_bounds), len(audio))]
-    audio = audio[:min(len(audio_bounds), len(audio))]
-    audio[:len(audio_bounds)] += audio_bounds
-    scipy.io.wavfile.write(out_file, fs, audio)
+def sonify_clicks(audio, clicks, out_file, fs, offset=0):
+    """Sonifies the estimated times into the output file.
+
+    Parameters
+    ----------
+    audio: np.array
+        Audio samples of the input track.
+    clicks: np.array
+        Click positions in seconds.
+    out_file: str
+        Path to the output file.
+    fs: int
+        Sample rate.
+    offset: float
+        Offset of the clicks with respect to the audio.
+    """
+    # Generate clicks
+    audio_bounds = mir_eval.sonify.clicks(clicks + offset, fs)
+
+    # Create array to store the audio plus the clicks
+    out_audio = np.zeros(max(len(audio), len(audio_bounds)))
+
+    # Assign the audio and the clicks
+    out_audio[:len(audio)] = audio
+    out_audio[:len(audio_bounds)] += audio_bounds
+
+    # Write to file
+    scipy.io.wavfile.write(out_file, fs, out_audio)
