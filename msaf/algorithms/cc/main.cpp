@@ -62,13 +62,16 @@ static PyObject* segment(PyObject *self, PyObject *args) {
     int sample_rate;
 
     if (!PyArg_ParseTuple(args, "iiiiiOO", &is_harmonic, &nHMMStates, &nclusters,
-                &neighbourhoodLimit, &sample_rate, &features_obj, &in_bounds_obj))
+                &neighbourhoodLimit, &sample_rate, &features_obj, &in_bounds_obj)) {
+        printf("Empty, 0\n");
         return NULL;
+    }
 
     // Get numpy arrays
     PyObject *features_array = PyArray_FROM_OTF(features_obj, NPY_DOUBLE, NPY_IN_ARRAY);
     PyObject *in_bounds_array = PyArray_FROM_OTF(in_bounds_obj, NPY_DOUBLE, NPY_IN_ARRAY);
     if (features_array == NULL || in_bounds_array == NULL) {
+        printf("Empty, 1\n");
         Py_XDECREF(features_array);
         Py_XDECREF(in_bounds_array);
         return NULL;
@@ -80,12 +83,12 @@ static PyObject* segment(PyObject *self, PyObject *args) {
     int M = (int)shape_features[1];
     int in_bounds_N = (int)PyArray_DIM(in_bounds_array, 0);
 
-    //printf("Features Size N: %d, M: %d\n", N, M);
-    //printf("sample rate: %d\n", sample_rate);
-    //printf("nHMMStates: %d\n", nHMMStates);
-    //printf("nclusters: %d\n", nclusters);
-    //printf("neighbourhoodLimit: %d\n", neighbourhoodLimit);
-    //printf("is_harmonic: %d\n", is_harmonic);
+    printf("Features Size N: %d, M: %d\n", N, M);
+    printf("sample rate: %d\n", sample_rate);
+    printf("nHMMStates: %d\n", nHMMStates);
+    printf("nclusters: %d\n", nclusters);
+    printf("neighbourhoodLimit: %d\n", neighbourhoodLimit);
+    printf("is_harmonic: %d\n", is_harmonic);
 
     // Numpy Arrays to vectors
     double *features_data = (double*)PyArray_DATA(features_array);
