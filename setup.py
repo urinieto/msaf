@@ -1,6 +1,9 @@
 from setuptools import setup, Extension, find_packages
 import sys
 import numpy.distutils.misc_util
+from distutils import sysconfig
+
+print sysconfig.get_config_var('LDSHARED')
 
 # Compile the CC algorithm
 extra_compile_flags = ""
