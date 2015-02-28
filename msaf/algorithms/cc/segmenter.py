@@ -50,9 +50,12 @@ class Segmenter(SegmenterInterface):
                 raise RuntimeError("Feature type %s is not valid" %
                                    self.feature_str)
 
+            print "hola", in_bound_idxs
             if in_bound_idxs is None:
+                print "is none"
                 in_bound_idxs = []
 
+            print "hola", len(in_bound_idxs)
             if len(in_bound_idxs) > 2:
                 bound_idxs, est_labels = cc_segmenter.segment(
                     is_harmonic, self.config["nHMMStates"],

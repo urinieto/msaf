@@ -3,16 +3,9 @@ import sys
 import numpy.distutils.misc_util
 from distutils import sysconfig
 
-#print sysconfig.get_config_var('LDSHARED')
-#print sysconfig.get_config_var('CC')
-#print sys.platform
-
 # Compile the CC algorithm
 extra_compile_flags = ""
 extra_linker_flags = ""
-#if sysconfig.get_config_var('LDSHARED').split(" ")[0] == "gcc":
-    #extra_compile_flags = "-DUSE_PTHREADS"
-    #extra_linker_flags = "-llapack -lblas -lm"
 if "linux" in sys.platform:
     extra_compile_flags = "-std=c++11 -DUSE_PTHREADS"
     extra_linker_flags = "-llapack -lblas -lm"
