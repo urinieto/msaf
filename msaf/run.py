@@ -20,6 +20,19 @@ import msaf.algorithms as algorithms
 
 
 def get_boundaries_module(boundaries_id):
+    """Obtains the boundaries module given a boundary algorithm identificator.
+
+    Parameters
+    ----------
+    boundaries_id: str
+        Boundary algorithm identificator (e.g., foote, sf).
+
+    Returns
+    -------
+    module: object
+        Object containing the selected boundary module.
+        None for "ground truth".
+    """
     if boundaries_id == "gt":
         return None
     module = eval(algorithms.__name__ + "." + boundaries_id)
@@ -30,6 +43,19 @@ def get_boundaries_module(boundaries_id):
 
 
 def get_labels_module(labels_id):
+    """Obtains the label module given a label algorithm identificator.
+
+    Parameters
+    ----------
+    labels_id: str
+        Label algorithm identificator (e.g., fmc2d, cnmf3).
+
+    Returns
+    -------
+    module: object
+        Object containing the selected label module.
+        None for not computing the labeling part of music segmentation.
+    """
     if labels_id is None:
         return None
     module = eval(algorithms.__name__ + "." + labels_id)
@@ -40,7 +66,26 @@ def get_labels_module(labels_id):
 
 
 def run_algorithms(audio_file, boundaries_id, labels_id, config):
-    """Runs the algorithms with the specified identifiers on the audio_file."""
+    """Runs the algorithms with the specified identifiers on the audio_file.
+
+    Parameters
+    ----------
+    audio_file: str
+        Path to the audio file to segment.
+    boundaries_id: str
+        Identifier of the boundaries algorithm to use ("gt" for ground truth).
+    labels_id: str
+        Identifier of the labels algorithm to use (None for not labeling).
+    config: dict
+        Dictionary containing the custom parameters of the algorithms to use.
+
+    Returns
+    -------
+    est_times: np.array
+        List of estimated times for the segment boundaries.
+    est_labels: np.array
+        List of all the labels associated segments.
+    """
     # Get the corresponding modules
     bounds_module = get_boundaries_module(boundaries_id)
     labels_module = get_labels_module(labels_id)
@@ -72,6 +117,27 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
 
 
 def process_track(file_struct, boundaries_id, labels_id, config):
+    """Prepares the parameters, runs the algorithms, and saves results.
+
+    Parameters
+    ----------
+    file_struct: Object
+        FileStruct containing the paths of the input files (audio file,
+        features file, reference file, output estimation file).
+    boundaries_id: str
+        Identifier of the boundaries algorithm to use ("gt" for ground truth).
+    labels_id: str
+        Identifier of the labels algorithm to use (None for not labeling).
+    config: dict
+        Dictionary containing the custom parameters of the algorithms to use.
+
+    Returns
+    -------
+    est_times: np.array
+        List of estimated times for the segment boundaries.
+    est_labels: np.array
+        List of all the labels associated segments.
+    """
     # Only analize files with annotated beats
     if config["annot_beats"]:
         jam = jams2.load(file_struct.ref_file)
@@ -103,7 +169,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             framesync=False, boundaries_id="gt", labels_id=None,
-            out_audio=False, plot=False, n_jobs=4, config=None):
+            sonify_bounds=False, plot=False, n_jobs=4, config=None,
+            out_bounds="out_bounds.wav"):
     """Main process to segment a file or a collection of files.
 
     Parameters
@@ -124,7 +191,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         Identifier of the boundaries algorithm (use "gt" for groundtruth)
     labels_id: str
         Identifier of the labels algorithm (use None to not compute labels)
-    out_audio: bool
+    sonify_bounds: bool
         Whether to write an output audio file with the annotated boundaries
         or not (only available in Single File Mode).
     plot: bool
@@ -135,6 +202,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     config: dict
         Dictionary containing custom configuration parameters for the
         algorithms.  If None, the default parameters are used.
+    out_bounds: str
+        Path to the output for the sonified boundaries (only in single file
+        mode, when sonify_bounds is True.
 
     Returns
     -------
@@ -143,7 +213,6 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         boundary times and estimated labels.
         If labels_id is None, est_labels will be a list of -1.
     """
-
     # Seed random to reproduce results
     np.random.seed(123)
 
@@ -161,14 +230,11 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         est_times, est_labels = run_algorithms(in_path, boundaries_id,
                                                labels_id, config)
 
-        if out_audio:
-            # TODO: Set a nicer output file name?
-            #out_file = in_path[:-4] + msaf.out_boundaries_ext
-            out_file = "out_boundaries.wav"
-            logging.info("Sonifying boundaries in %s..." % out_file)
+        if sonify_bounds:
+            logging.info("Sonifying boundaries in %s..." % out_bounds)
             fs = 44100
             audio_hq, sr = librosa.load(in_path, sr=fs)
-            utils.write_audio_boundaries(audio_hq, est_times, out_file, fs)
+            utils.sonify_clicks(audio_hq, est_times, out_bounds, fs)
 
         if plot:
             plotting.plot_one_track(in_path, est_times, est_labels,
