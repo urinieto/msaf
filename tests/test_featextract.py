@@ -122,3 +122,36 @@ def test_compute_all_features():
     # Clean up
     os.remove(feat_file)
     os.remove(beats_file)
+
+
+def test_process():
+    # Set output file
+    feat_file = "tmp.json"
+    beats_file = "beats.wav"
+
+    # Remove previously computed outputs if exist
+    if os.path.isfile(feat_file):
+        os.remove(feat_file)
+    if os.path.isfile(beats_file):
+        os.remove(beats_file)
+
+    # Call main function
+    msaf.featextract.process(audio_file, out_file=feat_file)
+    assert os.path.isfile(feat_file)
+
+    # Call again main function (should do nothing, since feat_file exists)
+    msaf.featextract.process(audio_file, out_file=feat_file)
+    assert os.path.isfile(feat_file)
+
+    # Overwrite
+    msaf.featextract.process(audio_file, out_file=feat_file, overwrite=True)
+    assert os.path.isfile(feat_file)
+
+    # Sonify
+    msaf.featextract.process(audio_file, out_file=feat_file, overwrite=True,
+                             sonify_beats=True, out_beats=beats_file)
+    assert os.path.isfile(feat_file) and os.path.isfile(beats_file)
+
+    # Clean up
+    os.remove(feat_file)
+    os.remove(beats_file)
