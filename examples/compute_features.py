@@ -34,10 +34,10 @@ def main():
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset dir or audio file")
-    parser.add_argument("-a",
+    parser.add_argument("-s",
                         action="store_true",
-                        dest="audio_beats",
-                        help="Output audio file with estimated beats",
+                        dest="sonify_beats",
+                        help="Sonifies the estimated beats",
                         default=False)
     parser.add_argument("-j",
                         action="store",
@@ -64,8 +64,9 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm
-    msaf.featextract.process(args.in_path, args.audio_beats, n_jobs=args.n_jobs,
-                             overwrite=args.overwrite, out_file=args.out_file)
+    msaf.featextract.process(args.in_path, sonify_beats=args.sonify_beats,
+                             n_jobs=args.n_jobs, overwrite=args.overwrite,
+                             out_file=args.out_file)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
