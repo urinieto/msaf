@@ -60,7 +60,7 @@ def main():
     parser.add_argument("-j",
                         action="store",
                         dest="n_jobs",
-                        default=4,
+                        default=1,
                         type=int,
                         help="The number of threads to use")
     parser.add_argument("-p",
