@@ -42,11 +42,11 @@ def main():
                         default=None,
                         choices= \
                         msaf.io.get_all_label_algorithms(msaf.algorithms))
-    parser.add_argument("-a",
+    parser.add_argument("-s",
                         action="store_true",
-                        dest="out_audio",
-                        help="Output estimated boundaries with audio",
-                        default=False)
+                        dest="sonify_audio",
+                        help="Sonifies the estimated boundaries on top of the "
+                        "audio file", default=False)
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
@@ -86,7 +86,7 @@ def main():
                      feature=args.feature, ds_name=args.ds_name,
                      framesync=args.framesync, boundaries_id=args.boundaries_id,
                      labels_id=args.labels_id, n_jobs=args.n_jobs,
-                     out_audio=args.out_audio, plot=args.plot)
+                     sonify_bounds=args.sonify_bounds, plot=args.plot)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
