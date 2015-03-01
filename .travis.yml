@@ -5,7 +5,7 @@ notifications:
     email: false 
 script: 
     - cd tests
-    - nosetests test_featextract.py -v -s
+    - nosetests test_featextract.py test_run -v -s
 
 before_install:
     - sudo apt-get update -qq
