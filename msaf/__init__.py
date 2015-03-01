@@ -13,6 +13,7 @@ from . import eval
 from . import plotting
 from . import utils
 from . import algorithms
+from . import run
 from .run import process
 
 # Global Config

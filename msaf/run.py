@@ -35,7 +35,11 @@ def get_boundaries_module(boundaries_id):
     """
     if boundaries_id == "gt":
         return None
-    module = eval(algorithms.__name__ + "." + boundaries_id)
+    try:
+        module = eval(algorithms.__name__ + "." + boundaries_id)
+    except AttributeError:
+        raise RuntimeError("Algorithm %s can not be found in msaf!" %
+                           boundaries_id)
     if not module.is_boundary_type:
         raise RuntimeError("Algorithm %s can not identify boundaries!" %
                            boundaries_id)
@@ -58,7 +62,11 @@ def get_labels_module(labels_id):
     """
     if labels_id is None:
         return None
-    module = eval(algorithms.__name__ + "." + labels_id)
+    try:
+        module = eval(algorithms.__name__ + "." + labels_id)
+    except AttributeError:
+        raise RuntimeError("Algorithm %s can not be found in msaf!" %
+                           labels_id)
     if not module.is_label_type:
         raise RuntimeError("Algorithm %s can not label segments!" %
                            labels_id)
