@@ -44,7 +44,7 @@ def main():
                         msaf.io.get_all_label_algorithms(msaf.algorithms))
     parser.add_argument("-s",
                         action="store_true",
-                        dest="sonify_audio",
+                        dest="sonify_bounds",
                         help="Sonifies the estimated boundaries on top of the "
                         "audio file", default=False)
     parser.add_argument("-b",

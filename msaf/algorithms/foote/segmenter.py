@@ -15,6 +15,7 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
+import librosa
 import logging
 import numpy as np
 from scipy.spatial import distance
@@ -22,6 +23,7 @@ from scipy import signal
 from scipy.ndimage import filters
 import pylab as plt
 
+import msaf
 from msaf.algorithms.interface import SegmenterInterface
 
 
