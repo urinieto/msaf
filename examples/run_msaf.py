@@ -82,11 +82,19 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm(s)
-    msaf.run.process(args.in_path, annot_beats=args.annot_beats,
-                     feature=args.feature, ds_name=args.ds_name,
-                     framesync=args.framesync, boundaries_id=args.boundaries_id,
-                     labels_id=args.labels_id, n_jobs=args.n_jobs,
-                     sonify_bounds=args.sonify_bounds, plot=args.plot)
+    est_times, est_labels = msaf.run.process(args.in_path,
+                                             annot_beats=args.annot_beats,
+                                             feature=args.feature,
+                                             ds_name=args.ds_name,
+                                             framesync=args.framesync,
+                                             boundaries_id=args.boundaries_id,
+                                             labels_id=args.labels_id,
+                                             n_jobs=args.n_jobs,
+                                             sonify_bounds=args.sonify_bounds,
+                                             plot=args.plot)
+
+    logging.info("Estimated times: %s" % est_times)
+    logging.info("Estimated labels: %s" % est_labels)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
