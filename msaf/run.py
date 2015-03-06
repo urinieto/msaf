@@ -10,7 +10,6 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
-import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
@@ -99,10 +98,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     labels_module = get_labels_module(labels_id)
 
     # Segment using the specified boundaries and labels
+    # Case when boundaries and labels algorithms are the same
     if bounds_module is not None and labels_module is not None and \
             bounds_module.__name__ == labels_module.__name__:
         S = bounds_module.Segmenter(audio_file, **config)
         est_times, est_labels = S.process()
+    # Different boundary and label algorithms
     else:
         # Identify segment boundaries
         if bounds_module is not None:
