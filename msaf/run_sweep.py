@@ -22,7 +22,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
     if labels_id == "cnmf3" or boundaries_id == "cnmf3":
         config = io.get_configuration(feature, annot_beats, framesync,
-                                      boundaries_id, labels_id, algorithms)
+                                      boundaries_id, labels_id)
 
         hh = range(8, 16)
         RR = range(8, 16)

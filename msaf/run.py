@@ -1,6 +1,5 @@
 """
-Runs one boundary algorithm and a label algorithm on a specified audio file or
-dataset.
+This module contains multiple functions in order to run MSAF algorithms.
 """
 
 import logging
@@ -10,6 +9,7 @@ import numpy as np
 
 from joblib import Parallel, delayed
 
+import msaf
 from msaf import jams2
 from msaf import input_output as io
 from msaf import utils
@@ -228,7 +228,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
-                                      boundaries_id, labels_id, algorithms)
+                                      boundaries_id, labels_id)
 
     if os.path.isfile(in_path):
         # Single file mode
