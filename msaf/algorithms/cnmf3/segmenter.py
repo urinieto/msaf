@@ -202,16 +202,19 @@ class Segmenter(SegmenterInterface):
                 F.T, self.config["rank"], self.config["R"],
                 self.config["rank_labels"], self.config["R_labels"],
                 niter=niter, bound_idxs=bound_idxs, in_labels=self.in_labels)
+
+            bound_idxs = np.unique(np.asarray(bound_idxs, dtype=int))
+            bound_idxs[-1] = min(len(frame_times) - 1, bound_idxs[-1])
         else:
             # The track is too short. We will only output the first and last
             # time stamps
-            bound_idxs = np.empty(0)
-            est_labels = [1]
+            if bound_idxs is None:
+                bound_idxs = np.empty(0, dtype=int)
+                est_labels = [1]
+            else:
+                est_labels = [1] * (len(bound_idxs) + 1)
 
         # Add first and last boundaries
-        bound_idxs = np.asarray(bound_idxs, dtype=int)
-        bound_idxs = np.unique(bound_idxs)
-        bound_idxs[-1] = min(len(frame_times) - 1, bound_idxs[-1])
         est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
         silencelabel = np.max(est_labels) + 1
         est_labels = np.concatenate(([silencelabel], est_labels,
@@ -221,7 +224,7 @@ class Segmenter(SegmenterInterface):
         # Post process estimations
         est_times, est_labels = self._postprocess(est_times, est_labels)
 
-        logging.info("Estimated times: %s" % est_times)
-        logging.info("Estimated labels: %s" % est_labels)
+        #logging.info("Estimated times: %s" % est_times)
+        #logging.info("Estimated labels: %s" % est_labels)
 
         return est_times, est_labels

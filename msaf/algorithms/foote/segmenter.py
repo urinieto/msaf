@@ -137,8 +137,7 @@ class Segmenter(SegmenterInterface):
         # Post process estimations
         est_times, est_labels = self._postprocess(est_times, est_labels)
 
-        # Concatenate last boundary
-        logging.info("Estimated times: %s" % est_times)
+        #logging.info("Estimated times: %s" % est_times)
 
         return est_times, est_labels
         # plt.figure(1)
