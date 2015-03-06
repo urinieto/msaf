@@ -147,10 +147,12 @@ class Segmenter(SegmenterInterface):
         # Add first and last boundaries
         bound_idxs = np.asarray(bound_idxs, dtype=int)
         est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
-        silencelabel = np.max(est_labels) + 1
+        try:
+            silencelabel = np.max(est_labels) + 1
+        except:
+            silencelabel = 0
         est_labels = np.concatenate(([silencelabel], est_labels,
                                      [silencelabel]))
-        #print est_times, est_labels, len(est_times), len(est_labels)
 
         # Post process estimations
         est_times, est_labels = self._postprocess(est_times, est_labels)

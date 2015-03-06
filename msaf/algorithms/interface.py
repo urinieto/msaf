@@ -96,6 +96,7 @@ class SegmenterInterface:
         # Read input bounds if necessary
         bound_idxs = None
         if self.in_bound_times is not None:
+            print self.in_bound_times, frame_times
             bound_idxs = io.align_times(self.in_bound_times, frame_times)
             bound_idxs = np.unique(bound_idxs)
 
