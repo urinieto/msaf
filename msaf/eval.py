@@ -237,7 +237,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
-                                      boundaries_id, labels_id, algorithms)
+                                      boundaries_id, labels_id)
 
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
