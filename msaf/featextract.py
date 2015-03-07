@@ -132,7 +132,7 @@ def save_features(out_file, features):
             "tonnetz": features["ann_tonnetz"].tolist()
         }
     except:
-        logging.warning("No annotated beats for %s" % out_file)
+        logging.warning("No annotated beats")
 
     # Actual save
     with open(out_file, "w") as f:
