@@ -93,6 +93,9 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     est_labels: np.array
         List of all the labels associated segments.
     """
+
+    # At this point, features should have already been computed
+
     # Get the corresponding modules
     bounds_module = get_boundaries_module(boundaries_id)
     labels_module = get_labels_module(labels_id)
