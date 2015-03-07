@@ -314,13 +314,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     M = np.asarray(feats[feat_str]["mfcc"])
     T = np.asarray(feats[feat_str]["tonnetz"])
     analysis = feats["analysis"]
-
-    # Duration
-    # TODO: Essentia fix!
-    feat_frames = np.asarray(feats["framesync"]["hpcp"])
-    dur = feat_frames.shape[0] * analysis["hop_size"] / \
-        float(analysis["sample_rate"])
-    #dur = jam.metadata.duration
+    dur = analysis["dur"]
 
     return C, M, T, beats, dur, analysis
 
@@ -591,6 +585,13 @@ def get_dataset_files(in_path, ds_name="*"):
     for ext in msaf.Dataset.audio_exts:
         audio_files += glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
                                               ("%s_*" + ext) % prefix))
+
+    # Check for datasets with different prefix
+    if len(audio_files) == 0:
+        for ext in msaf.Dataset.audio_exts:
+            audio_files += glob.glob(os.path.join(in_path,
+                                                  msaf.Dataset.audio_dir,
+                                                  "*" + ext))
 
     # Make sure directories exist
     utils.ensure_dir(os.path.join(in_path, msaf.Dataset.features_dir))

@@ -51,7 +51,7 @@ class Dataset():
     estimations_ext = ".jams"
     features_ext = ".json"
     references_ext = ".jams"
-    audio_exts = [".wav", "mp3", ".aif"]
+    audio_exts = [".wav", ".mp3", ".aif"]
 
 
 feat_dict = {
