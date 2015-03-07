@@ -78,9 +78,9 @@ def test_run_algorithms():
     framesync = False
     features = msaf.featextract.compute_features_for_audio_file(audio_file)
 
+    # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
         for label_id in label_ids:
-            print bound_id, label_id
             config = msaf.io.get_configuration(feature, annot_beats,
                                             framesync, bound_id, label_id)
             config["features"] = features
@@ -88,7 +88,7 @@ def test_run_algorithms():
                                                             bound_id,
                                                             label_id,
                                                             config)
-
-    print bound_ids
-    print label_ids
-    #msaf.run.run_algorithms(audio_files
+            assert len(est_times) == 2
+            assert len(est_labels) == 1
+            assert est_times[0] == 0
+            assert est_times[1] == features["anal"]["dur"]

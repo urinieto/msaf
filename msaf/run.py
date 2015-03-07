@@ -96,25 +96,13 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
 
     # At this point, features should have already been computed
     # Check that there are too few frames
-    # Read features
-    if config["features"] is None:
-        # Features stored in a json file
-        hpcp, mfcc, tonnetz, beats, dur, anal =  \
-            io.get_features(audio_file,
-                            config["annot_beats"],
-                            config["annot_beats"],
-                            config["framesync"])
-    else:
-        # Features passed as parameters
-        feat_prefix = ""
-        if not self.framesync:
-            feat_prefix = "bs_"
-        self.hpcp = self.features["%shpcp" % feat_prefix]
-        self.mfcc = self.features["%smfcc" % feat_prefix]
-        self.tonnetz = self.features["%stonnetz" % feat_prefix]
-        beats = self.features["beats"]
-        dur = self.features["anal"]["dur"]
-        anal = self.features["anal"]
+    hpcp, mfcc, tonnetz, beats, dur, anal =  \
+            io.get_features(audio_file, config["annot_beats"],
+                            config["framesync"], config["features"])
+    if hpcp.shape[0] <= msaf.minimum__frames:
+        logging.warning("Audio file too short, or too many beats estimated. "
+                        "Returning empty estimations.")
+        return np.asarray([0, dur]), np.asarray([0], dtype=int)
 
     # Get the corresponding modules
     bounds_module = get_boundaries_module(boundaries_id)
