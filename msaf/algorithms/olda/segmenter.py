@@ -22,7 +22,6 @@ import msaf
 
 from msaf.algorithms.interface import SegmenterInterface
 
-HOP_LENGTH = 512
 REP_WIDTH = 3
 REP_FILTER = 7
 N_MFCC = 32
@@ -33,7 +32,7 @@ N_REP = 32
 __DIMENSION = N_MFCC + N_CHROMA + 2 * N_REP + 4
 
 
-def features(audio_path, annot_beats=False):
+def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     '''Feature-extraction for audio segmentation
     Arguments:
         audio_path -- str
@@ -102,16 +101,28 @@ def features(audio_path, annot_beats=False):
         return compress_data(P, N_REP)
 
     #########
-    print '\tloading annotations and features of ', audio_path
-    chroma, mfcc, tonnetz, beats, dur, anal = msaf.io.get_features(audio_path, annot_beats)
+    #print '\tloading annotations and features of ', audio_path
+    if pre_features is None:
+        chroma, mfcc, tonnetz, beats, dur, anal = msaf.io.get_features(audio_path, annot_beats)
+    else:
+        feat_prefix = ""
+        if not framesync:
+            feat_prefix = "bs_"
+        chroma = pre_features["%shpcp" % feat_prefix]
+        mfcc = pre_features["%smfcc" % feat_prefix]
+        tonnetz = pre_features["%stonnetz" % feat_prefix]
+        beats = pre_features["beats"]
+        dur = pre_features["anal"]["dur"]
+        anal = pre_features["anal"]
 
     # Sampling Rate
-    sr = 11025
+    sr = msaf.Anal.sample_rate
 
     ##########
-    print '\treading beats'
+    #print '\treading beats'
     B = beats
-    beat_frames = librosa.time_to_frames(B, sr=sr, hop_length=HOP_LENGTH)
+    beat_frames = librosa.time_to_frames(B, sr=sr,
+                                         hop_length=msaf.Anal.hop_size)
     #print beat_frames, len(beat_frames), uidx
 
     #########
@@ -130,11 +141,14 @@ def features(audio_path, annot_beats=False):
     N = np.arange(float(len(beat_frames)))
 
     #########
-    # Beat-synchronous repetition features
-    print '\tgenerating structure features'
+    #print '\tgenerating structure features'
 
-    R_timbre = repetition(librosa.feature.stack_memory(M))
-    R_chroma = repetition(librosa.feature.stack_memory(C))
+    try:
+        # This might fail if audio file (or number of beats) is too small
+        R_timbre = repetition(librosa.feature.stack_memory(M))
+        R_chroma = repetition(librosa.feature.stack_memory(C))
+    except:
+        return None, None, dur
     if R_timbre is None or R_chroma is None:
         return None, None, dur
 
@@ -275,7 +289,8 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur = features(self.audio_file, self.annot_beats)
+        F, frame_times, dur = features(self.audio_file, self.annot_beats,
+                                       self.features, self.framesync)
 
         try:
             # Load and apply transform
