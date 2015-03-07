@@ -47,7 +47,8 @@ class Segmenter(SegmenterInterface):
 
         # Do actual segmentation
         bound_idxs, est_labels = main.do_segmentation(F, frame_times,
-                                                      self.config)
+                                                      self.config,
+                                                      bound_idxs)
 
         # Add first and last boundaries (silence)
         bound_idxs = np.asarray(bound_idxs, dtype=int)

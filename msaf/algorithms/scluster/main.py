@@ -493,7 +493,14 @@ def local_similarity(X):
     A = np.diag(rbf, k=1) + np.diag(rbf, k=-1)
     return A
 
-def do_segmentation(X, beats, parameters):
+def do_segmentation(X, beats, parameters, bound_idxs):
+
+    # If number of frames is too small, assign empty labels and quit:
+    if X[0].shape[1] <= REP_WIDTH:
+        if bound_idxs is not None:
+            return  bound_idxs, [0] * len(bound_idxs)
+        else:
+            return [], []
 
     X_rep, X_loc = X
     # Find the segment boundaries
