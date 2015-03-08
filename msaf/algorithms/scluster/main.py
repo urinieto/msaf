@@ -555,9 +555,11 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     else:
         boundaries, labels = label_clusterer(Lf, k_min, k_max)
 
-    #print "boundaries", boundaries, bound_idxs, labels, X[0].shape[1]
-    msaf.utils.synchronize_labels(bound_idxs, boundaries, labels, X[0].shape[1])
-
+    # Synchronize with previously found boundaries
+    if bound_idxs is not None:
+        labels = msaf.utils.synchronize_labels(bound_idxs, boundaries, labels,
+                                               X[0].shape[1])
+        boundaries = bound_idxs
 
     return boundaries, labels
 

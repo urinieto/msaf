@@ -283,17 +283,19 @@ class PLCA(object):
         for n in xrange(niter):
             logprob, WZH = params.do_estep(W, Z, H)
             if n % printiter == 0:
-                logger.debug('Iteration %d: logprob = %f', n, logprob)
+                pass
+                #logger.debug('Iteration %d: logprob = %f', n, logprob)
             if plotiter and n % plotiter == 0:
                 params.plot(V, W, Z, H, n)
                 if not plotfilename is None:
                     plt.savefig('%s_%04d.png' % (plotfilename, n))
             if logprob < oldlogprob:
-                logger.debug('Warning: logprob decreased from %f to %f at '
-                             'iteration %d!', oldlogprob, logprob, n)
+                pass
+                #logger.debug('Warning: logprob decreased from %f to %f at '
+                             #'iteration %d!', oldlogprob, logprob, n)
                 #import pdb; pdb.set_trace()
             elif n > 0 and logprob - oldlogprob < convergence_thresh:
-                logger.debug('Converged at iteration %d', n)
+                #logger.debug('Converged at iteration %d', n)
                 break
             oldlogprob = logprob
 
@@ -311,7 +313,7 @@ class PLCA(object):
             params.plot(V, W, Z, H, n)
             if not plotfilename is None:
                 plt.savefig('%s_%04d.png' % (plotfilename, n))
-        logger.debug('Iteration %d: final logprob = %f', n, logprob)
+        #logger.debug('Iteration %d: final logprob = %f', n, logprob)
         recon = norm * WZH
         return W, Z, H, norm, recon, logprob
 
@@ -400,8 +402,8 @@ class PLCA(object):
         threshold = 10 * EPS
         zidx = np.argwhere(Z > threshold).flatten()
         if len(zidx) < self.rank and curriter >= self.minpruneiter:
-            logger.debug('Rank decreased from %d to %d during iteration %d',
-                        self.rank, len(zidx), curriter)
+            #logger.debug('Rank decreased from %d to %d during iteration %d',
+                        #self.rank, len(zidx), curriter)
             self.rank = len(zidx)
             Z = Z[zidx]
             W = W[:,zidx]
