@@ -53,7 +53,8 @@ class Segmenter(SegmenterInterface):
             if in_bound_idxs is None:
                 in_bound_idxs = []
 
-            if len(frame_times) > 2:
+            if len(frame_times) > 2 and \
+                    (len(in_bound_idxs) > 2 or len(in_bound_idxs) == 0):
                 bound_idxs, est_labels = cc_segmenter.segment(
                     is_harmonic, self.config["nHMMStates"],
                     self.config["nclusters"], self.config["neighbourhoodLimit"],
