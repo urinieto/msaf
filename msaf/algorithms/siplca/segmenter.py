@@ -169,7 +169,7 @@ def segment_song(seq, rank=4, win=32, seed=None,
     if normalize_frames:
         seq /= seq.max(0) + np.finfo(float).eps
 
-    logger.info('Using random seed %s.', seed)
+    logger.debug('Using random seed %s.', seed)
     np.random.seed(seed)
 
     if 'alphaWcutoff' in kwargs and 'alphaWslope' in kwargs:
@@ -201,7 +201,7 @@ def segment_song(seq, rank=4, win=32, seed=None,
     nretries = maxretries
     while (len(Z) < minsegments or nlowen_recon > maxlowen) and nretries > 0:
         nretries -= 1
-        logger.info('Redoing SIPLCA analysis (len(Z) = %d, number of '
+        logger.debug('Redoing SIPLCA analysis (len(Z) = %d, number of '
                     'low energy frames = %d).', len(Z), nlowen_recon)
         outputs = []
         for n in xrange(nrep):
@@ -308,7 +308,7 @@ def remove_short_segments(labels, min_segment_length):
     segment_borders = np.nonzero(np.diff(labels))[0]
     short_segments_idx = np.nonzero(np.diff(segment_borders)
                                     < min_segment_length)[0]
-    logger.info('Removing %d segments shorter than %d frames',
+    logger.debug('Removing %d segments shorter than %d frames',
                 len(short_segments_idx), min_segment_length)
     # Remove all adjacent short_segments.
     segment_borders[short_segments_idx]

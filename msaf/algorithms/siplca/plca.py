@@ -53,7 +53,7 @@ import scipy as sp
 import scipy.signal
 
 import matplotlib.pyplot as plt
-import plottools 
+import plottools
 
 logger = logging.getLogger('plca')
 EPS = np.finfo(np.float).eps
@@ -154,7 +154,7 @@ class PLCA(object):
     INFO:plca:Iteration 0: logprob = 8.784769
     INFO:plca:Iteration 50: logprob = 8.450114
     INFO:plca:Iteration 99: final logprob = 8.449504
-    
+
     Plot the parameters:
     >>> plt.figure(1)
     >>> plca.PLCA.plot(V, W, Z, H)
@@ -264,23 +264,23 @@ class PLCA(object):
         """
         norm = V.sum()
         V /= norm
-    
+
         params = cls(V, rank, **kwargs)
         iW, iZ, iH = params.initialize()
-    
+
         W = iW if initW is None else initW.copy()
         Z = iZ if initZ is None else initZ.copy()
         H = iH if initH is None else initH.copy()
-    
+
         params.W = W
         params.Z = Z
         params.H = H
-    
+
         oldlogprob = -np.inf
         for n in xrange(niter):
             logprob, WZH = params.do_estep(W, Z, H)
             if n % printiter == 0:
-                logger.info('Iteration %d: logprob = %f', n, logprob)
+                logger.debug('Iteration %d: logprob = %f', n, logprob)
             if plotiter and n % plotiter == 0:
                 params.plot(V, W, Z, H, n)
                 if not plotfilename is None:
@@ -290,16 +290,16 @@ class PLCA(object):
                              'iteration %d!', oldlogprob, logprob, n)
                 #import pdb; pdb.set_trace()
             elif n > 0 and logprob - oldlogprob < convergence_thresh:
-                logger.info('Converged at iteration %d', n)
+                logger.debug('Converged at iteration %d', n)
                 break
             oldlogprob = logprob
-    
+
             nW, nZ, nH = params.do_mstep(n)
-    
+
             if updateW:  W = nW
             if updateZ:  Z = nZ
             if updateH:  H = nH
-    
+
             params.W = W
             params.Z = Z
             params.H = H
@@ -308,7 +308,7 @@ class PLCA(object):
             params.plot(V, W, Z, H, n)
             if not plotfilename is None:
                 plt.savefig('%s_%04d.png' % (plotfilename, n))
-        logger.info('Iteration %d: final logprob = %f', n, logprob)
+        logger.debug('Iteration %d: final logprob = %f', n, logprob)
         recon = norm * WZH
         return W, Z, H, norm, recon, logprob
 
@@ -350,7 +350,7 @@ class PLCA(object):
 
     def do_estep(self, W, Z, H):
         """Performs the E-step of the EM parameter estimation algorithm.
-        
+
         Computes the posterior distribution over the hidden variables.
         """
         WZH = self.reconstruct(W, Z, H)
@@ -361,7 +361,7 @@ class PLCA(object):
             tmp = np.outer(W[:,z] * Z[z], H[z,:]) * VdivWZH
             self.VRW[:,z] = tmp.sum(1)
             self.VRH[:,z] = tmp.sum(0)
-        
+
         return logprob, WZH
 
     def do_mstep(self, curriter):
@@ -384,7 +384,7 @@ class PLCA(object):
         initialH = normalize(Hevidence, axis=1)
         H = self._apply_entropic_prior_and_normalize(
             initialH, Hevidence, self.betaH, nu=self.nu, axis=1)
-        
+
         return self._prune_undeeded_bases(W, Z, H, curriter)
 
     @staticmethod
@@ -397,7 +397,7 @@ class PLCA(object):
         threshold = 10 * EPS
         zidx = np.argwhere(Z > threshold).flatten()
         if len(zidx) < self.rank and curriter >= self.minpruneiter:
-            logger.info('Rank decreased from %d to %d during iteration %d',
+            logger.debug('Rank decreased from %d to %d during iteration %d',
                         self.rank, len(zidx), curriter)
             self.rank = len(zidx)
             Z = Z[zidx]
@@ -418,7 +418,7 @@ class PLCA(object):
             param = normalize(evidence + beta * nu * alpha, axis)
             #param = normalize(evidence + beta * nu * param**(nu / (nu - 1.0)), 1)
             if np.mean(np.abs(param - lastparam)) < convergence_thresh:
-                logger.log(logging.DEBUG-1, 'M-step finished after iteration '
+                logger.debug('M-step finished after iteration '
                            '%d (beta=%f)', i, beta)
                 break
         return param
@@ -476,7 +476,7 @@ class SIPLCA(PLCA):
             H = H[np.newaxis,:]
         F, rank, win = W.shape
         rank, T = H.shape
-    
+
         WZH = np.zeros((F, T))
         for tau in xrange(win):
             WZH += np.dot(W[:,:,tau] * Z, shift(H, tau, 1, circular))
@@ -488,7 +488,7 @@ class SIPLCA(PLCA):
         WZH = self.reconstruct(W, Z, H, circular=self.circular)
         plottools.plotall([V, WZH] + [self.reconstruct(W[:,z,:], Z[z], H[z,:],
                                                        circular=self.circular)
-                                      for z in xrange(len(Z))], 
+                                      for z in xrange(len(Z))],
                           title=['V (Iteration %d)' % curriter,
                                  'Reconstruction'] +
                           ['Basis %d reconstruction' % x
@@ -505,10 +505,10 @@ class SIPLCA(PLCA):
         wxticks = [[]] * (3*nrows + rank + 1) + [range(0, W.shape[2], 10)]
         plots.extend(W.transpose((1, 0, 2)))
         plottools.plotall(plots, subplot=(nrows, 6), clf=False, order='c',
-                          align='xy', cmap=plt.cm.hot, colorbar=False, 
+                          align='xy', cmap=plt.cm.hot, colorbar=False,
                           ylabel=r'$\parallel$', grid=False,
                           title=titles, yticks=[[]], xticks=wxticks)
-        
+
         plots = [None] * (2*nrows + 2)
         titles=plots + ['H%d' % x for x in range(rank)]
         if np.squeeze(H).ndim < 4:
@@ -568,7 +568,7 @@ class SIPLCA(PLCA):
 
 class SIPLCA2(SIPLCA):
     """Sparse 2D Shift-Invariant Probabilistic Latent Component Analysis
- 
+
     Shift invariance is over both rows and columns of `V`.  Unlike
     PLCA and SIPLCA, the activations for each basis `H_k` describes
     when the k-th basis is active in time *and* at what vertical
@@ -617,7 +617,7 @@ class SIPLCA2(SIPLCA):
         except:
             self.winF = self.winT = win
         # Needed for compatibility with SIPLCA.
-        self.win = self.winT  
+        self.win = self.winT
 
         try:
             self.circularF, self.circularT = circular
@@ -639,16 +639,16 @@ class SIPLCA2(SIPLCA):
             H = H[np.newaxis,:,:]
         F, rank, winT = W.shape
         rank, winF, T = H.shape
-    
+
         try:
             circularF, circularT = circular
         except:
             circularF = circularT = circular
-    
+
         recon = 0
         for z in xrange(rank):
             recon += sp.signal.fftconvolve(W[:,z,:] * Z[z], H[z,:,:])
-    
+
         WZH = recon[:F,:T]
         if circularF:
             WZH[:winF-1,:] += recon[F:,:T]
@@ -656,7 +656,7 @@ class SIPLCA2(SIPLCA):
             WZH[:,:winT-1] += recon[:F,T:]
         if circularF and circularT:
             WZH[:winF-1,:winT-1] += recon[F:,T:]
-    
+
         return norm * WZH
 
     def initialize(self):
@@ -686,7 +686,7 @@ class SIPLCA2(SIPLCA):
                        * VdivWZH)
                 self.VRW[:,:,tau] += shift(tmp.sum(1), -r, 0, self.circularF)
                 self.VRH[:,:,r] += shift(tmp.sum(0), -tau, 0, self.circularT)
-                    
+
         return logprob, WZH
 
     def do_mstep(self, curriter):
@@ -793,7 +793,7 @@ class DiscreteWSIPLCA2(FactoredSIPLCA2):
     --------
     PLCA : Probabilistic Latent Component Analysis
     SIPLCA2 : 2D SIPLCA
-    """ 
+    """
     def __init__(self, V, rank, warpfactors=[1], **kwargs):
         FactoredSIPLCA2.__init__(self, V, rank, **kwargs)
 
@@ -870,7 +870,7 @@ class DiscreteWSIPLCA2(FactoredSIPLCA2):
                                                self.circularF)
                     self.VRH[:,:,r,n] += shift(tmp.sum(0), -delay, 0,
                                                self.circularT)
-                    
+
         return logprob, WZH
 
     def do_mstep(self, curriter):
