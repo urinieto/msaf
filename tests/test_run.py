@@ -18,6 +18,8 @@ from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("data", "chirp.mp3")
+long_audio_file = os.path.join("..", "examples", "Sargon", "audio",
+                               "01-Sargon-Mindless.mp3")
 fake_module_name = "fake_caca_name_module"
 
 def test_get_boundaries_module():
@@ -81,8 +83,8 @@ def test_run_algorithms():
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
         for label_id in label_ids:
-            config = msaf.io.get_configuration(feature, annot_beats,
-                                            framesync, bound_id, label_id)
+            config = msaf.io.get_configuration(feature, annot_beats, framesync,
+                                               bound_id, label_id)
             config["features"] = features
             est_times, est_labels = msaf.run.run_algorithms(audio_file,
                                                             bound_id,
@@ -90,5 +92,25 @@ def test_run_algorithms():
                                                             config)
             assert len(est_times) == 2
             assert len(est_labels) == 1
-            assert est_times[0] == 0
-            assert est_times[1] == features["anal"]["dur"]
+            npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
+            npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
+                                    decimal=2)
+
+    features = msaf.featextract.compute_features_for_audio_file(long_audio_file)
+
+    # Running all algorithms on a file that is too short
+    for bound_id in bound_ids:
+        for label_id in label_ids:
+            print bound_id, label_id
+            config = msaf.io.get_configuration(feature, annot_beats, framesync,
+                                               bound_id, label_id)
+            config["features"] = features
+            est_times, est_labels = msaf.run.run_algorithms(long_audio_file,
+                                                            bound_id,
+                                                            label_id,
+                                                            config)
+            print "CACA", est_times, est_labels, features["anal"]["dur"]
+            npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
+            assert len(est_times) - 1 == len(est_labels)
+            npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
+                                    decimal=2)
