@@ -21,6 +21,8 @@ import scipy.linalg
 
 import sklearn.cluster
 
+import msaf
+
 # Requires librosa-develop 0.3 branch
 import librosa
 
@@ -83,16 +85,16 @@ def get_beats(y, sr, hop_length):
     return bpm, beats
 
 def features(filename):
-    print '\t[1/5] loading audio'
+    #print '\t[1/5] loading audio'
     y, sr = librosa.load(filename, sr=SR)
 
-    print '\t[2/5] Separating harmonic and percussive signals'
+    #print '\t[2/5] Separating harmonic and percussive signals'
     y_perc, y_harm = hp_sep(y)
 
-    print '\t[3/5] detecting beats'
+    #print '\t[3/5] detecting beats'
     bpm, beats = get_beats(y=y_perc, sr=sr, hop_length=HOP_LENGTH)
 
-    print '\t[4/5] generating CQT'
+    #print '\t[4/5] generating CQT'
     M1 = np.abs(librosa.cqt(y=y_harm,
                             sr=sr,
                             hop_length=HOP_LENGTH,
@@ -102,7 +104,7 @@ def features(filename):
 
     M1 = librosa.logamplitude(M1**2.0, ref_power=np.max)
 
-    print '\t[5/5] generating MFCC'
+    #print '\t[5/5] generating MFCC'
     S = librosa.feature.melspectrogram(y=y, sr=sr, hop_length=HOP_LENGTH, n_mels=N_MELS)
     M2 = librosa.feature.mfcc(S=librosa.logamplitude(S), n_mfcc=N_MFCC)
 
@@ -504,7 +506,7 @@ def do_segmentation(X, beats, parameters, bound_idxs):
 
     X_rep, X_loc = X
     # Find the segment boundaries
-    print '\tpredicting segments...'
+    #print '\tpredicting segments...'
     k_min, k_max  = get_num_segs(beats[-1])
 
     # Get the raw recurrence plot
@@ -552,6 +554,10 @@ def do_segmentation(X, beats, parameters, bound_idxs):
         boundaries, labels = median_partition(Lf, k_min, k_max, beats)
     else:
         boundaries, labels = label_clusterer(Lf, k_min, k_max)
+
+    #print "boundaries", boundaries, bound_idxs, labels, X[0].shape[1]
+    msaf.utils.synchronize_labels(bound_idxs, boundaries, labels, X[0].shape[1])
+
 
     return boundaries, labels
 

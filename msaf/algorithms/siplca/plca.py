@@ -55,6 +55,9 @@ import scipy.signal
 import matplotlib.pyplot as plt
 import plottools
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(levelname)s %(name)s %(asctime)s '
+                    '%(filename)s:%(lineno)d  %(message)s')
 logger = logging.getLogger('plca')
 EPS = np.finfo(np.float).eps
 #EPS = 1e-100
@@ -418,8 +421,8 @@ class PLCA(object):
             param = normalize(evidence + beta * nu * alpha, axis)
             #param = normalize(evidence + beta * nu * param**(nu / (nu - 1.0)), 1)
             if np.mean(np.abs(param - lastparam)) < convergence_thresh:
-                logger.debug('M-step finished after iteration '
-                           '%d (beta=%f)', i, beta)
+                #logger.debug('M-step finished after iteration '
+                           #'%d (beta=%f)', i, beta)
                 break
         return param
 

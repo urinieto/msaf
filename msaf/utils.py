@@ -154,8 +154,7 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     offset: float
         Offset of the clicks with respect to the audio.
     """
-    # Generate clicks
-    audio_bounds = mir_eval.sonify.clicks(clicks + offset, fs)
+    # Generate clicks audio_bounds = mir_eval.sonify.clicks(clicks + offset, fs)
 
     # Create array to store the audio plus the clicks
     out_audio = np.zeros(max(len(audio), len(audio_bounds)))
@@ -166,3 +165,38 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
 
     # Write to file
     scipy.io.wavfile.write(out_file, fs, out_audio)
+
+
+def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
+    """Synchronizes the labels from the old_bound_idxs to the new_bound_idxs.
+
+    Parameters
+    ----------
+    new_bound_idxs: np.array
+        New indeces to synchronize with.
+    old_bound_idxs: np.array
+        Old indeces, same shape as labels + 1.
+    old_labels: np.array
+        Labels associated to the old_bound_idxs.
+    N: int
+        Total number of frames.
+
+    Returns
+    -------
+    new_labels: np.array
+        New labels, synchronized to the new boundary indeces.
+    """
+    assert len(old_bound_idxs) - 1 == len(old_labels)
+
+    # Construct unfolded labels array
+    unfold_labels = np.zeros(N)
+    for i, (bound_idx, label) in \
+            enumerate(zip(old_bound_idxs[:-1], old_labels)):
+        unfold_labels[bound_idx:old_bound_idxs[i+1]] = label
+
+    # Constuct new labels
+    new_labels = np.zeros(len(new_bound_idxs) - 1)
+    for i, bound_idx in enumerate(new_bound_idxs[:-1]):
+        new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i+1]])
+
+    return new_labels
