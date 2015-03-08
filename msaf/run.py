@@ -129,9 +129,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
 
         # Label segments
         if labels_module is not None:
-            S = labels_module.Segmenter(audio_file, in_bound_times=est_times,
-                                        **config)
-            est_labels = S.process()[1]
+            if len(est_times) == 2:
+                est_labels = np.array([0])
+            else:
+                S = labels_module.Segmenter(audio_file, in_bound_times=est_times,
+                                            **config)
+                est_labels = S.process()[1]
 
     return est_times, est_labels
 

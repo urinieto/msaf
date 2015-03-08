@@ -78,6 +78,7 @@ LICENSE: This module is licensed under the GNU GPL. See COPYING for details.
 import logging
 import numpy as np
 
+import msaf
 import msaf.input_output as io
 from msaf.algorithms.interface import SegmenterInterface
 
@@ -438,6 +439,8 @@ class Segmenter(SegmenterInterface):
 
         # Update parameters if using additional boundaries
         if self.in_bound_times is not None:
+            if len(self.in_bound_times) == 2:
+                return self.in_bound_times, np.array([0])
             self.config, bound_idxs = use_in_bounds(self.audio_file,
                                                     self.in_bound_times,
                                                     frame_times,
@@ -478,10 +481,18 @@ class Segmenter(SegmenterInterface):
                 labels.append(label)
                 start = end
 
+            #bound_idxs = io.align_times(self.in_bound_times, frame_times)
+            #bound_idxs = np.unique(bound_idxs)
+            #labels = msaf.utils.synchronize_labels(bound_idxs,
+                                                   #idxs,
+                                                   #labels,
+                                                   #F.shape[0])
+
             # First and last boundaries (silence labels)
             times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
             silencelabel = np.max(labels) + 1
             labels = np.concatenate(([silencelabel], labels, [silencelabel]))
+            print times, labels, bound_idxs
 
         # Remove paramaters that we don't want to store
         self.config.pop("initW", None)
