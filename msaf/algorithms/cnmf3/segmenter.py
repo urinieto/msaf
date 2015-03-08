@@ -141,6 +141,7 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     #plt.show()
 
     # Find non filtered boundaries
+    compute_bounds = True if bound_idxs is None else False
     while True:
         if bound_idxs is None:
             try:
@@ -154,7 +155,7 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
                 bound_idxs = np.where(np.diff(G) != 0)[0] + 1
 
         # Increase rank if we found too few boundaries
-        if len(np.unique(bound_idxs)) <= 2:
+        if compute_bounds and len(np.unique(bound_idxs)) <= 2:
             rank += 1
             bound_idxs = None
         else:

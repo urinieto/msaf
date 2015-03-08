@@ -68,25 +68,10 @@ class SegmenterInterface:
         """This method obtains the actual features, their frame times,
         and the boundary indeces in these features if needed."""
         # Read features
-        if self.features is None:
-            # Features stored in a json file
-            self.hpcp, self.mfcc, self.tonnetz, beats, dur, anal = \
-                io.get_features(self.audio_file, annot_beats=self.annot_beats,
-                                framesync=self.framesync)
-        else:
-            # Features passed as parameters
-            feat_prefix = ""
-            if not self.framesync:
-                feat_prefix = "bs_"
-            self.hpcp = self.features["%shpcp" % feat_prefix]
-            self.mfcc = self.features["%smfcc" % feat_prefix]
-            self.tonnetz = self.features["%stonnetz" % feat_prefix]
-            beats = self.features["beats"]
-            dur = self.features["anal"]["dur"]
-            anal = self.features["anal"]
-
-        # Store analysis parameters
-        self.anal = anal
+        self.hpcp, self.mfcc, self.tonnetz, beats, dur, self.anal = \
+            io.get_features(self.audio_file, annot_beats=self.annot_beats,
+                            framesync=self.framesync,
+                            pre_features=self.features)
 
         # Use correct frames to find times
         frame_times = beats
