@@ -82,7 +82,6 @@ class SegmenterInterface:
         bound_idxs = None
         if self.in_bound_times is not None:
             bound_idxs = io.align_times(self.in_bound_times, frame_times)
-            print "pre_process:", bound_idxs
             bound_idxs = np.unique(bound_idxs)
 
         # Use specific feature
