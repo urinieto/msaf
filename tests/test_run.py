@@ -117,6 +117,8 @@ def test_run_algorithms():
                                 #decimal=2)
 
     for bound_id in bound_ids:
+        if bound_id == "gt":
+            continue
         for label_id in label_ids:
             print bound_id, label_id
             config = msaf.io.get_configuration(feature, annot_beats, framesync,
