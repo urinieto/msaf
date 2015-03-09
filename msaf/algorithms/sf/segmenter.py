@@ -141,7 +141,7 @@ class Segmenter(SegmenterInterface):
                                           # recurrence plot
 
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess()
+        F = self._preprocess()
 
         # Check size in case the track is too short
         if F.shape[0] > 20:
