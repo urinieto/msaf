@@ -46,7 +46,7 @@ class Segmenter(SegmenterInterface):
                                  pre_features=self.features)
         frame_times = beats
         if self.framesync:
-            frame_times = utils.get_time_frames(dur, self.anal)
+            frame_times = msaf.utils.get_time_frames(dur, self.anal)
 
         # Brian wants HPCP and MFCC
         # (transosed, because he's that kind of person)

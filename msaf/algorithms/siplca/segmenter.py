@@ -336,32 +336,17 @@ def compute_effective_pattern_length(w):
     winlen = nonzero_idx[-1] - nonzero_idx[0] + 1
     return winlen
 
-def convert_labels_to_segments(labels, frametimes, songlen=None):
+def convert_labels_to_segments(labels, num_frames):
     """Covert frame-wise segmentation labels to a list of segments in HTK
     format"""
 
     # Nonzero points in diff(labels) correspond to the final frame of
     # a segment (so just index into labels to find the segment label)
     boundaryidx = np.concatenate(([0], np.nonzero(np.diff(labels))[0],
-                                  [min(len(labels), len(frametimes)) - 1]))
-    print len(frametimes)
-    boundarytimes = frametimes[boundaryidx]
-
-    segstarttimes = boundarytimes[:-1]
-    segendtimes = boundarytimes[1:]
+                                  [num_frames-1]))
     seglabels = labels[boundaryidx[1:]]
 
-    labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    segments = ['%.4f\t%.4f\t%s' % (start, end, labels[label])
-                for start,end,label in zip(segstarttimes,segendtimes,seglabels)]
-
-    # Add silence before first beat and after last beat.
-    silencelabel = labels[seglabels.max() + 1]
-    segments = ['0.0\t%.4f\t%s' % (segstarttimes[0], silencelabel)] + segments
-    if songlen:
-        segments += ['%.4f\t%.4f\t%s' % (segendtimes[-1], songlen, silencelabel)]
-
-    return '\n'.join(segments + [''])
+    return boundaryidx, seglabels
 
 def _compute_summary_correlation(A, B):
     return sum(np.correlate(A[x], B[x], 'full') for x in xrange(A.shape[0]))
@@ -377,7 +362,7 @@ def shift_key_to_zero(W, Z, H):
     return newW, Z, newH
 
 
-def segment_wavfile(features, beattimes, songlen, **kwargs):
+def segment_wavfile(features, **kwargs):
     """Convenience function to compute segmentation.
 
     Keyword arguments are passed into segment_song.
@@ -385,28 +370,23 @@ def segment_wavfile(features, beattimes, songlen, **kwargs):
     Returns a string containing list of segments in HTK label format.
     """
     labels, W, Z, H, segfun, norm = segment_song(features, **kwargs)
-    segments = convert_labels_to_segments(labels, beattimes, songlen)
-    return segments, beattimes, labels
+    est_idxs, est_labels = convert_labels_to_segments(labels,
+                                                      features.shape[1])
+    return est_idxs, est_labels
 
 
-def use_in_bounds(audio_file, in_bound_times, beats, feats, config):
+def use_in_bounds(audio_file, in_bound_idxs, feats, config):
     """We update the initial matrices using the annotated bounds."""
-    bound_idxs = io.align_times(in_bound_times, beats)
-
-    # Remove first and last boundaries (silent labels)
-    if len(bound_idxs) >= 4:
-        bound_idxs = bound_idxs[1:-1]
-
-    n_segments = len(bound_idxs) - 1
-    max_beats_segment = np.max(np.diff(bound_idxs))
+    n_segments = len(in_bound_idxs) - 1
+    max_beats_segment = np.max(np.diff(in_bound_idxs))
 
     # Inititalize the W and H matrices using the previously found bounds
     initW = np.zeros((feats.shape[1], n_segments, max_beats_segment))
     initH = np.zeros((n_segments, feats.shape[0]))
     for i in xrange(n_segments):
-        dur = bound_idxs[i+1] - bound_idxs[i]
-        initW[:, i, :dur] = feats[bound_idxs[i]:bound_idxs[i+1]].T
-        initH[i, bound_idxs[i]] = 1
+        dur = in_bound_idxs[i+1] - in_bound_idxs[i]
+        initW[:, i, :dur] = feats[in_bound_idxs[i]:in_bound_idxs[i+1]].T
+        initH[i, in_bound_idxs[i]] = 1
 
     # Update parameters
     config["win"] = max_beats_segment
@@ -414,7 +394,7 @@ def use_in_bounds(audio_file, in_bound_times, beats, feats, config):
     config["initW"] = initW
     config["initH"] = initH
 
-    return config, bound_idxs
+    return config, in_bound_idxs
 
 
 class Segmenter(SegmenterInterface):
@@ -423,14 +403,22 @@ class Segmenter(SegmenterInterface):
 
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idxs : np.array(N)
+            Estimated times for the segment boundaries in frame times.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess(
-            valid_features=["hpcp", "tonnetz"])
+        # Preprocess to obtain features
+        F = self._preprocess(valid_features=["hpcp", "tonnetz"])
+
+        # Read frame times
+        self.hpcp, self.mfcc, self.tonnetz, beats, dur, self.anal = \
+            msaf.io.get_features(self.audio_file, annot_beats=self.annot_beats,
+                                 framesync=self.framesync,
+                                 pre_features=self.features)
+        frame_times = beats
+        if self.framesync:
+            frame_times = msaf.utils.get_time_frames(dur, self.anal)
 
         # Additional SI-PLCA params
         self.config["plotiter"] = None
@@ -438,59 +426,24 @@ class Segmenter(SegmenterInterface):
         self.config["rank"] = 15
 
         # Update parameters if using additional boundaries
-        if self.in_bound_times is not None:
+        if self.in_bound_idxs is not None:
             self.config, bound_idxs = use_in_bounds(self.audio_file,
-                                                    self.in_bound_times,
-                                                    frame_times,
+                                                    self.in_bound_idxs,
                                                     F,
                                                     self.config)
 
         # Make segmentation
-        segments, beattimes, frame_labels = segment_wavfile(
-            F.T, frame_times.flatten(), dur, **self.config)
+        est_idxs, est_labels = segment_wavfile(F.T, **self.config)
 
-        # Convert segments to times
-        lines = segments.split("\n")[:-1]
-        times = []
-        labels = []
-        for line in lines:
-            time = float(line.strip("\n").split("\t")[0])
-            times.append(time)
-            label = line.strip("\n").split("\t")[2]
-            labels.append(ord(label))
-
-        # Add last one and reomve empty segments
-        times, idxs = np.unique(times, return_index=True)
-        labels = np.asarray(labels)[idxs]
-        times = np.concatenate((times,
-                                [float(lines[-1].strip("\n").split("\t")[1])]))
-        times = np.unique(times)
+        assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
 
         # Align with annotated boundaries if needed
-        if self.in_bound_times is not None:
-            labels = []
-            start = bound_idxs[0]
-            for end in bound_idxs[1:]:
-                segment_labels = frame_labels[start:end]
-                try:
-                    label = np.argmax(np.bincount(segment_labels))
-                except:
-                    label = frame_labels[start]
-                labels.append(label)
-                start = end
-
-            #bound_idxs = io.align_times(self.in_bound_times, frame_times)
-            #bound_idxs = np.unique(bound_idxs)
-            #labels = msaf.utils.synchronize_labels(bound_idxs,
-                                                   #idxs,
-                                                   #labels,
-                                                   #F.shape[0])
-
-            # First and last boundaries (silence labels)
-            times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
-            silencelabel = np.max(labels) + 1
-            labels = np.concatenate(([silencelabel], labels, [silencelabel]))
-            print times, labels, bound_idxs
+        if self.in_bound_idxs is not None:
+            est_labels = msaf.utils.synchronize_labels(self.in_bound_idxs,
+                                                   est_idxs,
+                                                   est_labels,
+                                                   F.shape[0])
+            est_idxs = self.in_bound_idxs
 
         # Remove paramaters that we don't want to store
         self.config.pop("initW", None)
@@ -500,6 +453,6 @@ class Segmenter(SegmenterInterface):
         self.config.pop("rank", None)
 
         # Postprocess the estimations
-        est_times, est_labels = self._postprocess(times, labels)
+        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
 
-        return est_times, est_labels
+        return est_idxs, est_labels
