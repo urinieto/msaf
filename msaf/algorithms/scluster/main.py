@@ -287,8 +287,9 @@ def label_rep_sections(X, boundaries, n_types):
     C = sklearn.cluster.KMeans(n_clusters=n_types, tol=1e-8)
 
     labels = C.fit_predict(Xs.T)
+    intervals = zip(boundaries[:-1], boundaries[1:])
 
-    return zip(boundaries[:-1], boundaries[1:]), labels
+    return  intervals, labels[:len(intervals)]
 
 def cond_entropy(y_old, y_new):
     ''' Compute the conditional entropy of y_old given y_new'''
@@ -429,7 +430,7 @@ def label_clusterer(Lf, k_min, k_max):
     label_dict = {}
 
     # The trivial solution
-    label_dict[1]   = np.zeros(Lf.shape[1])
+    label_dict[1]   = np.zeros(Lf.shape[1]-1)
 
     for n_types in range(2, 1+len(Lf)):
         Y = librosa.util.normalize(Lf[:n_types].T, norm=2, axis=1)
