@@ -147,6 +147,8 @@ class Segmenter(SegmenterInterface):
         # Add first and last boundaries
         bound_idxs = np.asarray(bound_idxs, dtype=int)
         est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
+        est_times = np.unique(est_times)
+        print "fmc2d:", est_times, self.in_bound_times
         try:
             silencelabel = np.max(est_labels) + 1
         except:
@@ -157,7 +159,7 @@ class Segmenter(SegmenterInterface):
         # Post process estimations
         est_times, est_labels = self._postprocess(est_times, est_labels)
 
-        logging.info("Estimated times: %s" % est_times)
-        logging.info("Estimated labels: %s" % est_labels)
+        #logging.info("Estimated times: %s" % est_times)
+        #logging.info("Estimated labels: %s" % est_labels)
 
         return est_times, est_labels

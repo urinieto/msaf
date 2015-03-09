@@ -45,14 +45,11 @@ class Segmenter(SegmenterInterface):
         # Brian also wants the last duration
         frame_times = np.concatenate((frame_times, [dur]))
 
-        print "SCLUSTER: ", bound_idxs, self.in_bound_times
-
         # Do actual segmentation
         bound_idxs, est_labels = main.do_segmentation(F, frame_times,
                                                       self.config,
                                                       bound_idxs)
 
-        print "SCLUSTER: ", bound_idxs, est_labels
         # Add first and last boundaries (silence)
         bound_idxs = np.asarray(bound_idxs, dtype=int)
         silencelabel = np.max(est_labels) + 1
@@ -71,6 +68,5 @@ class Segmenter(SegmenterInterface):
 
         #logging.info("Estimated times: %s" % est_times)
         #logging.info("Estimated labels: %s" % est_labels)
-        print "SCLUSTER: ", est_times, est_labels
 
         return est_times, est_labels

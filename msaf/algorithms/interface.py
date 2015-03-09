@@ -45,12 +45,30 @@ class SegmenterInterface:
 
     In these cases, est_times or est_labels will be empty (None).
     """
-    def __init__(self, audio_file, in_bound_times=None, in_labels=None,
-                 feature="hpcp", annot_beats=False, framesync=False,
-                 features=None, **config):
-        """Inits the Segmenter."""
+    def __init__(self, audio_file, in_bound_idxs=None, feature="hpcp",
+                 annot_beats=False, framesync=False, features=None, **config):
+        """Inits the Segmenter.
+
+        Parameters
+        ----------
+        audio_file: str
+            Path to the audio file.
+        in_bound_idxs: np.array
+            Array containing the frame indeces of the previously find
+            boundaries. `None` for computing them.
+        feature: str
+            Identifier of the features (e.g., hpcp, mfcc)
+        annot_beats: boolean
+            Whether to use annotated beats or estimated ones.
+        framesync: boolean
+            Whether to use frame-synchronous or beat-synchronous features.
+        features: dict
+            Previously computed features. `None` for reading them.
+        config: dict
+            Configuration for the given algorithm (see module's __config.py__).
+        """
         self.audio_file = audio_file
-        self.in_bound_times = in_bound_times
+        self.in_bound_idxs = in_bound_idxs
         self.in_labels = in_labels
         self.feature_str = feature
         self.annot_beats = annot_beats
@@ -73,17 +91,6 @@ class SegmenterInterface:
                             framesync=self.framesync,
                             pre_features=self.features)
 
-        # Use correct frames to find times
-        frame_times = beats
-        if self.framesync:
-            frame_times = U.get_time_frames(dur, anal)
-
-        # Read input bounds if necessary
-        bound_idxs = None
-        if self.in_bound_times is not None:
-            bound_idxs = io.align_times(self.in_bound_times, frame_times)
-            bound_idxs = np.unique(bound_idxs)
-
         # Use specific feature
         if self.feature_str not in valid_features:
             raise RuntimeError("Feature %s in not valid for algorithm: %s "
@@ -100,19 +107,19 @@ class SegmenterInterface:
         if normalize:
             F = U.lognormalize_chroma(F)
 
-        return F, frame_times, dur, bound_idxs
+        return F, frame_times, dur
 
-    def _postprocess(self, est_times, est_labels):
+    def _postprocess(self, est_idxs, est_labels):
         """Post processes the estimations from the algorithm, removing empty
         segments and making sure the lenghts of the boundaries and labels
         match."""
         if self.in_labels is not None:
-            est_labels = np.ones(len(est_times) - 1) * -1
+            est_labels = np.ones(len(est_idxs) - 1) * -1
 
         # Remove empty segments if needed
-        est_times, est_labels = U.remove_empty_segments(est_times, est_labels)
+        est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)
 
-        assert len(est_times) - 1 == len(est_labels), "Number of boundaries " \
-            "(%d) and number of labels(%d) don't match" % (len(est_times),
+        assert len(est_idxs) - 1 == len(est_labels), "Number of boundaries " \
+            "(%d) and number of labels(%d) don't match" % (len(est_idxs),
                                                            len(est_labels))
-        return est_times, est_labels
+        return est_idxs, est_labels
