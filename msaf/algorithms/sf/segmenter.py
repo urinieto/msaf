@@ -182,9 +182,12 @@ class Segmenter(SegmenterInterface):
 
         # Add first and last frames
         est_idxs = np.concatenate(([0], est_bounds, [F.shape[0] - 1]))
+        est_idxs = np.unique(est_idxs)
+
+        assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
 
         # Empty labels
-        est_labels = np.ones(len(est_idxs) - 1) * -1
+        est_labels = np.ones(len(est_idxs) - 1) * - 1
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
