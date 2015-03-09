@@ -159,7 +159,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
 
     # Stack it all up
-    print M.shape, C.shape, R_timbre.shape, R_chroma.shape, len(B), len(N)
+    #print M.shape, C.shape, R_timbre.shape, R_chroma.shape, len(B), len(N)
     X = np.vstack([M, C, R_timbre, R_chroma, B, B / dur, N,
                    N / float(chroma.shape[0])])
 
@@ -204,7 +204,8 @@ def get_k_segments(X, k):
     # Step 1: run ward
     boundaries = librosa.segment.agglomerative(X, k)
 
-    boundaries = np.unique(np.concatenate(([0], boundaries, [X.shape[1]])))
+    # Add first and last boundary indeces
+    boundaries = np.unique(np.concatenate(([0], boundaries, [X.shape[1]-1])))
 
     # Step 2: compute cost
     cost = clustering_cost(X, boundaries)
@@ -287,17 +288,9 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F = features(self.audio_file, self.annot_beats,
+        F, frame_times, dur = features(self.audio_file, self.annot_beats,
                                        self.features, self.framesync)
 
-        # Load and apply transform
-        W = load_transform(self.config["transform"])
-        F = W.dot(F)
-
-        # Get Segments
-        #kmin, kmax = get_num_segs(frame_times[-1])
-        #segments = get_segments(F, kmin=kmin, kmax=kmax)
-        segments = get_segments(F)
         try:
             # Load and apply transform
             W = load_transform(self.config["transform"])
@@ -306,23 +299,20 @@ class Segmenter(SegmenterInterface):
             # Get Segments
             #kmin, kmax = get_num_segs(frame_times[-1])
             #segments = get_segments(F, kmin=kmin, kmax=kmax)
-            segments = get_segments(F)
+            est_idxs = get_segments(F)
         except:
             # The audio file is too short, only beginning and end
             logging.warning("Audio file too short! "
                             "Only start and end boundaries.")
-            est_idxs = [0, F.shape[0]-1]
+            est_idxs = [0, F.shape[1]-1]
 
         # Make sure that the first and last boundaries are included
-        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[0] - 1
+        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[1] - 1
 
         # Empty labels
-        est_labels = np.ones(len(est_times) - 1) * -1
+        est_labels = np.ones(len(est_idxs) - 1) * -1
 
         # Post process estimations
-        est_times, est_labels = self._postprocess(est_times, est_labels)
+        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
 
-        # Concatenate last boundary
-        logging.info("Estimated times: %s" % est_times)
-
-        return est_times, est_labels
+        return est_idxs, est_labels
