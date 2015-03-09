@@ -1,4 +1,5 @@
 from setuptools import setup, Extension, find_packages
+import glob
 import sys
 import numpy.distutils.misc_util
 from distutils import sysconfig
@@ -52,6 +53,7 @@ setup(
     url='https://github.com/urinieto/msaf',
     download_url='https://github.com/urinieto/msaf/releases',
     packages=find_packages(),
+    data_files=[('msaf/algorithms/olda/models', glob.glob('msaf/algorithms/olda/models/*.npy'))],
     #package_data={'': ['ds_example/*']},
     long_description="""A python module to segment audio into all its """
     """different large-scale sections and label them based on their """

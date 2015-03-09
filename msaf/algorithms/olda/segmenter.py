@@ -120,9 +120,9 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
 
     ##########
     #print '\treading beats'
-    B = beats
-    beat_frames = librosa.time_to_frames(B, sr=sr,
-                                         hop_length=msaf.Anal.hop_size)
+    B = beats[:chroma.shape[0]]
+    #beat_frames = librosa.time_to_frames(B, sr=sr,
+                                         #hop_length=msaf.Anal.hop_size)
     #print beat_frames, len(beat_frames), uidx
 
     #########
@@ -138,7 +138,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #plt.imshow(C, interpolation="nearest", aspect="auto"); plt.show()
 
     # Time-stamp features
-    N = np.arange(float(len(beat_frames)))
+    N = np.arange(float(chroma.shape[0]))
 
     #########
     #print '\tgenerating structure features'
@@ -159,13 +159,11 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
 
     # Stack it all up
-    #print M.shape, C.shape, len(B), len(N)
-    X = np.vstack([M, C, R_timbre, R_chroma, B, B / dur, N, N / len(beat_frames)])
+    print M.shape, C.shape, R_timbre.shape, R_chroma.shape, len(B), len(N)
+    X = np.vstack([M, C, R_timbre, R_chroma, B, B / dur, N,
+                   N / float(chroma.shape[0])])
 
     #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
-
-    # Add on the end-of-track timestamp
-    B = np.concatenate([B, [dur]])
 
     return X, B, dur
 
@@ -283,29 +281,40 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idxs : np.array(N)
+            Estimated times for the segment boundaries in frame indeces.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur = features(self.audio_file, self.annot_beats,
+        F = features(self.audio_file, self.annot_beats,
                                        self.features, self.framesync)
 
+        # Load and apply transform
+        W = load_transform(self.config["transform"])
+        F = W.dot(F)
+
+        # Get Segments
+        #kmin, kmax = get_num_segs(frame_times[-1])
+        #segments = get_segments(F, kmin=kmin, kmax=kmax)
+        segments = get_segments(F)
         try:
             # Load and apply transform
             W = load_transform(self.config["transform"])
             F = W.dot(F)
 
             # Get Segments
-            kmin, kmax = get_num_segs(frame_times[-1])
-            segments = get_segments(F, kmin=kmin, kmax=kmax)
-            est_times = frame_times[segments]
+            #kmin, kmax = get_num_segs(frame_times[-1])
+            #segments = get_segments(F, kmin=kmin, kmax=kmax)
+            segments = get_segments(F)
         except:
             # The audio file is too short, only beginning and end
             logging.warning("Audio file too short! "
                             "Only start and end boundaries.")
-            est_times = [0, dur]
+            est_idxs = [0, F.shape[0]-1]
+
+        # Make sure that the first and last boundaries are included
+        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[0] - 1
 
         # Empty labels
         est_labels = np.ones(len(est_times) - 1) * -1
