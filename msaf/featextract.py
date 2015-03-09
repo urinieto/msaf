@@ -142,9 +142,9 @@ def save_features(out_file, features):
 def compute_beat_sync_features(features, beats_idx):
     """Given a dictionary of features, and the estimated index frames,
     calculate beat-synchronous features."""
-    bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx).T
-    bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx).T
-    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx).T
+    bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx, pad=False).T
+    bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx, pad=False).T
+    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx, pad=False).T
     return bs_mfcc, bs_hpcp, bs_tonnetz
 
 

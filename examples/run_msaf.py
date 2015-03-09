@@ -5,8 +5,9 @@ dataset.
 """
 
 import argparse
-import time
 import logging
+import os
+import time
 
 # MSAF import
 import msaf
@@ -82,19 +83,24 @@ def main():
         level=logging.INFO)
 
     # Run the algorithm(s)
-    est_times, est_labels = msaf.run.process(args.in_path,
-                                             annot_beats=args.annot_beats,
-                                             feature=args.feature,
-                                             ds_name=args.ds_name,
-                                             framesync=args.framesync,
-                                             boundaries_id=args.boundaries_id,
-                                             labels_id=args.labels_id,
-                                             n_jobs=args.n_jobs,
-                                             sonify_bounds=args.sonify_bounds,
-                                             plot=args.plot)
+    res = msaf.run.process(args.in_path,
+                           annot_beats=args.annot_beats,
+                           feature=args.feature,
+                           ds_name=args.ds_name,
+                           framesync=args.framesync,
+                           boundaries_id=args.boundaries_id,
+                           labels_id=args.labels_id,
+                           n_jobs=args.n_jobs,
+                           sonify_bounds=args.sonify_bounds,
+                           plot=args.plot)
 
-    logging.info("Estimated times: %s" % est_times)
-    logging.info("Estimated labels: %s" % est_labels)
+    if os.path.isfile(args.in_path):
+        logging.info("Estimated times: %s" % res[0])
+        logging.info("Estimated labels: %s" % res[1])
+    else:
+        for result in res:
+            logging.info("Estimated times: %s" % result[0])
+            logging.info("Estimated labels: %s" % result[1])
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

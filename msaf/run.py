@@ -263,6 +263,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
+        config["features"] = None
 
     if os.path.isfile(in_path):
         # Single file mode

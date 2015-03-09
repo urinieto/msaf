@@ -69,7 +69,6 @@ class SegmenterInterface:
         """
         self.audio_file = audio_file
         self.in_bound_idxs = in_bound_idxs
-        self.in_labels = in_labels
         self.feature_str = feature
         self.annot_beats = annot_beats
         self.framesync = framesync
@@ -83,8 +82,7 @@ class SegmenterInterface:
 
     def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc"],
                     normalize=True):
-        """This method obtains the actual features, their frame times,
-        and the boundary indeces in these features if needed."""
+        """This method obtains the actual features."""
         # Read features
         self.hpcp, self.mfcc, self.tonnetz, beats, dur, self.anal = \
             io.get_features(self.audio_file, annot_beats=self.annot_beats,
@@ -107,15 +105,12 @@ class SegmenterInterface:
         if normalize:
             F = U.lognormalize_chroma(F)
 
-        return F, frame_times, dur
+        return F
 
     def _postprocess(self, est_idxs, est_labels):
         """Post processes the estimations from the algorithm, removing empty
         segments and making sure the lenghts of the boundaries and labels
         match."""
-        if self.in_labels is not None:
-            est_labels = np.ones(len(est_idxs) - 1) * -1
-
         # Remove empty segments if needed
         est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)
 
