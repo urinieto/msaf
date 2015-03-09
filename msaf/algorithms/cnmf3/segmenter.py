@@ -182,8 +182,8 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idxs : np.array(N)
+            Estimated indeces for the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -191,7 +191,7 @@ class Segmenter(SegmenterInterface):
         niter = 300     # Iterations for the matrix factorization and clustering
 
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess()
+        F = self._preprocess()
 
         if F.shape[0] >= self.config["h"]:
             # Median filter
@@ -199,33 +199,26 @@ class Segmenter(SegmenterInterface):
             #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Find the boundary indices and labels using matrix factorization
-            bound_idxs, est_labels = get_segmentation(
+            est_idxs, est_labels = get_segmentation(
                 F.T, self.config["rank"], self.config["R"],
                 self.config["rank_labels"], self.config["R_labels"],
-                niter=niter, bound_idxs=bound_idxs, in_labels=self.in_labels)
+                niter=niter, bound_idxs=self.in_bound_idxs, in_labels=None)
 
-            bound_idxs = np.unique(np.asarray(bound_idxs, dtype=int))
-            bound_idxs[-1] = min(len(frame_times) - 1, bound_idxs[-1])
+            est_idxs = np.unique(np.asarray(est_idxs, dtype=int))
         else:
             # The track is too short. We will only output the first and last
             # time stamps
-            if bound_idxs is None:
-                bound_idxs = np.empty(0, dtype=int)
+            if self.in_bound_idxs is None:
+                est_idxs = np.array([0, F.shape[0]-1])
                 est_labels = [1]
             else:
-                est_labels = [1] * (len(bound_idxs) + 1)
+                est_idxs = self.in_bound_idxs
+                est_labels = [1] * (len(est_idxs) + 1)
 
-        # Add first and last boundaries
-        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
-        silencelabel = np.max(est_labels) + 1
-        est_labels = np.concatenate(([silencelabel], est_labels,
-                                     [silencelabel]))
-        #print est_times, est_labels, len(est_times), len(est_labels)
+        # Make sure that the first and last boundaries are included
+        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[0] - 1
 
         # Post process estimations
-        est_times, est_labels = self._postprocess(est_times, est_labels)
+        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
 
-        #logging.info("Estimated times: %s" % est_times)
-        #logging.info("Estimated labels: %s" % est_labels)
-
-        return est_times, est_labels
+        return est_idxs, est_labels
