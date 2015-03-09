@@ -129,14 +129,13 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idx : np.array(N)
+            Estimated indeces for the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess(
-            valid_features=["hpcp"])
+        F = self._preprocess(valid_features=["hpcp"])
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, bound_idxs,
@@ -144,22 +143,8 @@ class Segmenter(SegmenterInterface):
                                         xmeans=self.config["xmeans"],
                                         k=self.config["k"])
 
-        # Add first and last boundaries
-        bound_idxs = np.asarray(bound_idxs, dtype=int)
-        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
-        est_times = np.unique(est_times)
-        print "fmc2d:", est_times, self.in_bound_times
-        try:
-            silencelabel = np.max(est_labels) + 1
-        except:
-            silencelabel = 0
-        est_labels = np.concatenate(([silencelabel], est_labels,
-                                     [silencelabel]))
-
         # Post process estimations
-        est_times, est_labels = self._postprocess(est_times, est_labels)
+        self.in_bound_idxs, est_labels = self._postprocess(self.in_bound_idxs,
+                                                           est_labels)
 
-        #logging.info("Estimated times: %s" % est_times)
-        #logging.info("Estimated labels: %s" % est_labels)
-
-        return est_times, est_labels
+        return self.in_bound_idxs, est_labels
