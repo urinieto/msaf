@@ -98,13 +98,13 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idxs : np.array(N)
+            Estimated indeces the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess()
+        F, frame_times, dur = self._preprocess()
 
         # Median filter
         F = median_filter(F, M=self.config["m_median"])
@@ -121,25 +121,18 @@ class Segmenter(SegmenterInterface):
         nc = compute_nc(S, G)
 
         # Find peaks in the novelty curve
-        bound_idxs = pick_peaks(nc, L=self.config["L_peaks"])
+        est_idxs = pick_peaks(nc, L=self.config["L_peaks"])
 
         # Add first and last frames
-        bound_idxs = np.concatenate(([0], bound_idxs,
-                                     [len(frame_times) - 1]))
-
-        # Add first and last boundaries (silence)
-        bound_idxs = np.asarray(bound_idxs, dtype=int)
-        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
+        est_idxs = np.concatenate(([0], est_idxs, [F.shape[0] - 1]))
 
         # Empty labels
         est_labels = np.ones(len(est_times) - 1) * -1
 
         # Post process estimations
-        est_times, est_labels = self._postprocess(est_times, est_labels)
+        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
 
-        #logging.info("Estimated times: %s" % est_times)
-
-        return est_times, est_labels
+        return est_idxs, est_labels
         # plt.figure(1)
         # plt.plot(nc);
         # [plt.axvline(p, color="m") for p in est_bounds]

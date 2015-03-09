@@ -439,8 +439,6 @@ class Segmenter(SegmenterInterface):
 
         # Update parameters if using additional boundaries
         if self.in_bound_times is not None:
-            if len(self.in_bound_times) == 2:
-                return self.in_bound_times, np.array([0])
             self.config, bound_idxs = use_in_bounds(self.audio_file,
                                                     self.in_bound_times,
                                                     frame_times,

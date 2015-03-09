@@ -136,6 +136,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
                                             **config)
                 est_labels = S.process()[1]
 
+    # TODO
+    # Use correct frames to find times
+    frame_times = beats
+    if self.framesync:
+        frame_times = U.get_time_frames(dur, anal)
+
     return est_times, est_labels
 
 
