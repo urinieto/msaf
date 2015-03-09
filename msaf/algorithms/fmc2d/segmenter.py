@@ -138,7 +138,7 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess(valid_features=["hpcp"])
 
         # Find the labels using 2D-FMCs
-        est_labels = compute_similarity(F, bound_idxs,
+        est_labels = compute_similarity(F, self.in_bound_idxs,
                                         dirichlet=self.config["dirichlet"],
                                         xmeans=self.config["xmeans"],
                                         k=self.config["k"])
