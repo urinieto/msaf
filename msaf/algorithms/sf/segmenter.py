@@ -124,8 +124,8 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idxs : np.array(N)
+            Estimated times for the segment boundaries in frame indeces.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -180,21 +180,13 @@ class Segmenter(SegmenterInterface):
             est_bounds = []
 
         # Add first and last frames
-        bound_idxs = np.concatenate(([0], est_bounds,
-                                     [len(frame_times) - 1]))
-
-        # Add first and last boundaries (silence) and convert to times
-        bound_idxs = np.asarray(bound_idxs, dtype=int)
-        est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
+        est_idxs = np.concatenate(([0], est_bounds, [F.shape[0] - 1]))
 
         # Empty labels
-        est_labels = np.ones(len(est_times) - 1) * -1
+        est_labels = np.ones(len(est_idxs) - 1) * -1
 
         # Post process estimations
-        est_times, est_labels = self._postprocess(est_times, est_labels)
-
-        # Concatenate last boundary
-        logging.info("Estimated times: %s" % est_times)
+        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
 
         # plt.figure(1)
         # plt.plot(nc);
@@ -203,4 +195,4 @@ class Segmenter(SegmenterInterface):
         # [plt.axvline(b, color="g", ymax=.3) for b in ann_bounds]
         # plt.show()
 
-        return est_times, est_labels
+        return est_idxs, est_labels
