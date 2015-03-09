@@ -100,8 +100,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             io.get_features(audio_file, config["annot_beats"],
                             config["framesync"], config["features"])
     if hpcp.shape[0] <= msaf.minimum__frames:
-        logging.warning("Audio file too short, or too many beats estimated. "
-                        "Returning empty estimations.")
+        logging.warning("Audio file too short, or too many few beats "
+                        "estimated. Returning empty estimations.")
         return np.asarray([0, dur]), np.asarray([0], dtype=int)
 
     # Get the corresponding modules
@@ -113,34 +113,48 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     if bounds_module is not None and labels_module is not None and \
             bounds_module.__name__ == labels_module.__name__:
         S = bounds_module.Segmenter(audio_file, **config)
-        est_times, est_labels = S.process()
+        est_idxs, est_labels = S.process()
     # Different boundary and label algorithms
     else:
         # Identify segment boundaries
         if bounds_module is not None:
             S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
-            est_times, est_labels = S.process()
+            est_idxs, est_labels = S.process()
         else:
             try:
-                est_times, est_labels = io.read_references(audio_file)
+                est_idxs, est_labels = io.read_references(audio_file)
             except:
                 logging.warning("No references found for file: %s" % audio_file)
                 return [], []
 
         # Label segments
         if labels_module is not None:
-            if len(est_times) == 2:
+            if len(est_idxs) == 2:
                 est_labels = np.array([0])
             else:
-                S = labels_module.Segmenter(audio_file, in_bound_times=est_times,
+                S = labels_module.Segmenter(audio_file, in_bound_times=est_idxs,
                                             **config)
                 est_labels = S.process()[1]
 
-    # TODO
-    # Use correct frames to find times
+    # Make sure that first and last frames are included in the est boundaries
+    assert est_idxs[0] == 0 and est_idxs[-1] == hpcp.shape[0] - 1
+
+    # Get the correct frame times
     frame_times = beats
-    if self.framesync:
-        frame_times = U.get_time_frames(dur, anal)
+    if config["framesync"]:
+        frame_times = utils.get_time_frames(dur, anal)
+
+    # Add silences, if needed
+    est_times = np.concatenate(([0], frame_times[est_idxs], [dur]))
+    silence_label = np.max(est_labels) + 1
+    est_labels = np.concatenate(([silence_label], est_labels, [silence_label]))
+
+    # Remove empty segments if needed
+    est_times, est_labels = utils.remove_empty_segments(est_times, est_labels)
+
+    # Make sure that the first and last times are 0 and duration, respectively
+    assert np.allclose([est_times[0]], [0]) and \
+        np.allclose([est_times[-1]], [dur])
 
     return est_times, est_labels
 
