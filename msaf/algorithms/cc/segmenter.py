@@ -32,16 +32,14 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        # CC params
-        min_dur = 15     # Minimum duration of the track in seconds
-
+        min_frames = 15
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur = self._preprocess(normalize=True)
+        F = self._preprocess(normalize=True)
         #import pylab as plt
         #plt.imshow(F.T, interpolation="nearest", aspect="auto")
         #plt.show()
 
-        if dur >= min_dur:
+        if F.shape[0] > min_frames:
             if self.feature_str == "hpcp" or self.feature_str == "tonnetz":
                 is_harmonic = True
             elif self.feature_str == "mfcc":
@@ -54,7 +52,7 @@ class Segmenter(SegmenterInterface):
             if self.in_bound_idxs is None:
                 in_bound_idxs = []
 
-            if len(frame_times) > 2 and \
+            if F.shape[0] > 2 and \
                     (len(in_bound_idxs) > 2 or len(in_bound_idxs) == 0):
                 est_idxs, est_labels = cc_segmenter.segment(
                     is_harmonic, self.config["nHMMStates"],
@@ -74,7 +72,7 @@ class Segmenter(SegmenterInterface):
         else:
             # The track is too short. We will only output the first and last
             # time stamps
-            est_times = np.array([0, dur])
+            est_idxs = np.array([0, F.shape[0] - 1])
             est_labels = [1]
 
         # Post process estimations
