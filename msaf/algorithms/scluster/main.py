@@ -351,7 +351,7 @@ def fixed_partition(Lf, n_types):
 
     boundaries = 1 + np.asarray(np.where(labels[:-1] != labels[1:])).reshape((-1,))
 
-    boundaries = np.unique(np.concatenate([[0], boundaries, [len(labels)]]))
+    boundaries = np.unique(np.concatenate([[0], boundaries, [Lf.shape[1] - 1]]))
 
     intervals, labels = label_rep_sections(Y.T, boundaries, n_types)
 
@@ -359,7 +359,7 @@ def fixed_partition(Lf, n_types):
 
 def median_partition(Lf, k_min, k_max, beats):
     best_score      = -np.inf
-    best_boundaries = [0, Lf.shape[1]]
+    best_boundaries = [0, Lf.shape[1]-1]
     best_n_types    = 1
     Y_best          = Lf[:1].T
 
@@ -379,7 +379,7 @@ def median_partition(Lf, k_min, k_max, beats):
         # Find the label change-points
         boundaries = 1 + np.asarray(np.where(labels[:-1] != labels[1:])).reshape((-1,))
 
-        boundaries = np.unique(np.concatenate([[0], boundaries, [len(labels)]]))
+        boundaries = np.unique(np.concatenate([[0], boundaries, [Lf.shape[1] - 1]]))
 
         # boundaries now include start and end markers; n-1 is the number of segments
         feasible = (len(boundaries) > k_min)
@@ -422,7 +422,7 @@ def label_entropy(labels):
 
 def label_clusterer(Lf, k_min, k_max):
     best_score      = -np.inf
-    best_boundaries = [0, Lf.shape[1]]
+    best_boundaries = [0, Lf.shape[1]-1]
     best_n_types    = 1
     Y_best          = Lf[:1].T
 
@@ -442,7 +442,8 @@ def label_clusterer(Lf, k_min, k_max):
         # Find the label change-points
         boundaries = 1 + np.asarray(np.where(labels[:-1] != labels[1:])).reshape((-1,))
 
-        boundaries = np.unique(np.concatenate([[0], boundaries, [len(labels)]]))
+        #boundaries = np.unique(np.concatenate([[0], boundaries, [len(labels)]]))
+        boundaries = np.unique(np.concatenate([[0], boundaries, [Lf.shape[1]-1]]))
 
         # boundaries now include start and end markers; n-1 is the number of segments
         feasible = (len(boundaries) > k_min)
@@ -502,23 +503,24 @@ def do_segmentation(X, beats, parameters, bound_idxs):
         if bound_idxs is not None:
             return  bound_idxs, [0] * len(bound_idxs)
         else:
-            return [], []
+            return np.array([0, X[0].shape[1] -1]), [0]
 
     X_rep, X_loc = X
     # Find the segment boundaries
     #print '\tpredicting segments...'
     k_min, k_max  = get_num_segs(beats[-1])
+    #k_min, k_max  = 8, 32
 
     # Get the raw recurrence plot
     Xpad = np.pad(X_rep, [(0,0), (N_STEPS, 0)], mode='edge')
     Xs = librosa.feature.stack_memory(Xpad, n_steps=N_STEPS)[:, N_STEPS:]
 
     k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
-    R = librosa.segment.recurrence_matrix(  Xs,
-                                            k=k_link,
-                                            width=REP_WIDTH,
-                                            metric=METRIC,
-                                            sym=True).astype(np.float32)
+    R = librosa.segment.recurrence_matrix(Xs,
+                                          k=k_link,
+                                          width=REP_WIDTH,
+                                          metric=METRIC,
+                                          sym=True).astype(np.float32)
     # Generate the repetition kernel
     A_rep = self_similarity(Xs, k=k_link)
 

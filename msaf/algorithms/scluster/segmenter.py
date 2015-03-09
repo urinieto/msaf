@@ -22,6 +22,7 @@ import logging
 import main
 import numpy as np
 
+import msaf
 from msaf.algorithms.interface import SegmenterInterface
 
 
@@ -30,43 +31,34 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_times : np.array(N)
-            Estimated times for the segment boundaries in seconds.
+        est_idxs : np.array(N)
+            Estimated times for the segment boundaries in frame indeces.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur, bound_idxs = self._preprocess()
+        F = self._preprocess()
+
+        # Read frame_times
+        self.hpcp, self.mfcc, self.tonnetz, beats, dur, self.anal = \
+            msaf.io.get_features(self.audio_file, annot_beats=self.annot_beats,
+                                 framesync=self.framesync,
+                                 pre_features=self.features)
+        frame_times = beats
+        if self.framesync:
+            frame_times = utils.get_time_frames(dur, self.anal)
 
         # Brian wants HPCP and MFCC
         # (transosed, because he's that kind of person)
         F = (self.hpcp.T, self.mfcc.T)
 
-        # Brian also wants the last duration
-        frame_times = np.concatenate((frame_times, [dur]))
-
         # Do actual segmentation
-        bound_idxs, est_labels = main.do_segmentation(F, frame_times,
+        est_idxs, est_labels = main.do_segmentation(F, frame_times,
                                                       self.config,
-                                                      bound_idxs)
-
-        # Add first and last boundaries (silence)
-        bound_idxs = np.asarray(bound_idxs, dtype=int)
-        silencelabel = np.max(est_labels) + 1
-        if self.in_bound_times is not None:
-            est_times = np.concatenate(([0], frame_times[bound_idxs], [dur]))
-            est_labels = np.concatenate(([silencelabel], est_labels,
-                                         [silencelabel]))
-        else:
-            est_times = np.concatenate(([0], frame_times[bound_idxs]))
-            est_labels = np.concatenate(([silencelabel], est_labels))
+                                                      self.in_bound_idxs)
+        assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
 
         # Post process estimations
-        est_times, est_labels = self._postprocess(est_times, est_labels)
-        est_times = np.asarray(est_times)
-        est_labels = np.asarray(est_labels, dtype=np.float)
+        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
 
-        #logging.info("Estimated times: %s" % est_times)
-        #logging.info("Estimated labels: %s" % est_labels)
-
-        return est_times, est_labels
+        return est_idxs, est_labels
