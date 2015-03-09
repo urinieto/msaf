@@ -103,8 +103,8 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur = self._preprocess()
+        # Preprocess to obtain features
+        F = self._preprocess()
 
         # Median filter
         F = median_filter(F, M=self.config["m_median"])
@@ -127,7 +127,7 @@ class Segmenter(SegmenterInterface):
         est_idxs = np.concatenate(([0], est_idxs, [F.shape[0] - 1]))
 
         # Empty labels
-        est_labels = np.ones(len(est_times) - 1) * -1
+        est_labels = np.ones(len(est_idxs) - 1) * -1
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
