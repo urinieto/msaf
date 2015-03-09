@@ -216,7 +216,13 @@ def segment_song(seq, rank=4, win=32, seed=None,
         segmentation_function = nmf_analysis_to_segmentation_using_viterbi_path
     else:
         segmentation_function = nmf_analysis_to_segmentation
-    labels, segfun = segmentation_function(seq, win, W, Z, H, **kwargs)
+    labels = None
+    while labels is None:
+        try:
+            labels, segfun = segmentation_function(seq, win, W, Z, H, **kwargs)
+        except:
+            logging.warning("SIPLCA: segmentation_function failed, repeating")
+            labels = None
 
     return labels, W, Z, H, segfun, norm
 

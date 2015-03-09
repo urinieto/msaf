@@ -12,6 +12,7 @@ If run as a program, usage is:
 import sys
 import os
 import argparse
+import logging
 import string
 
 import numpy as np
@@ -512,16 +513,18 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     k_min, k_max  = get_num_segs(beats[-1])
     #k_min, k_max  = 8, 32
 
+    L = np.nan
+    #while np.any(np.isnan(L)):
     # Get the raw recurrence plot
     Xpad = np.pad(X_rep, [(0,0), (N_STEPS, 0)], mode='edge')
     Xs = librosa.feature.stack_memory(Xpad, n_steps=N_STEPS)[:, N_STEPS:]
 
     k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
     R = librosa.segment.recurrence_matrix(Xs,
-                                          k=k_link,
-                                          width=REP_WIDTH,
-                                          metric=METRIC,
-                                          sym=True).astype(np.float32)
+                                        k=k_link,
+                                        width=REP_WIDTH,
+                                        metric=METRIC,
+                                        sym=True).astype(np.float32)
     # Generate the repetition kernel
     A_rep = self_similarity(Xs, k=k_link)
 
@@ -546,10 +549,20 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     # Call it the infinite jukebox matrix
     T = weighted_ridge(Rf * A_rep, (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
     # Get the graph laplacian
-    L = sym_laplacian(T)
+    try:
+        L = sym_laplacian(T)
 
-    # Get the bottom k eigenvectors of L
-    Lf = factorize(L, k=1+MAX_REP)[0]
+        # Get the bottom k eigenvectors of L
+        # TODO: Sometimes nans in L
+        Lf = factorize(L, k=1+MAX_REP)[0]
+    except:
+        logging.warning("Warning, nan numbers in scluster, returning only"
+                        " first and last boundary")
+        if bound_idxs is not None:
+            return bound_idxs, [0] * (len(bound_idxs) - 1)
+        else:
+            return np.array([0, X[0].shape[1]-1]), [0]
+
 
     if parameters['num_types']:
         boundaries, labels = fixed_partition(Lf, parameters['num_types'])
