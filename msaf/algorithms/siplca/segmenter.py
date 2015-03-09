@@ -440,9 +440,9 @@ class Segmenter(SegmenterInterface):
         # Align with annotated boundaries if needed
         if self.in_bound_idxs is not None:
             est_labels = msaf.utils.synchronize_labels(self.in_bound_idxs,
-                                                   est_idxs,
-                                                   est_labels,
-                                                   F.shape[0])
+                                                       est_idxs,
+                                                       est_labels,
+                                                       F.shape[0])
             est_idxs = self.in_bound_idxs
 
         # Remove paramaters that we don't want to store

@@ -132,7 +132,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             if len(est_idxs) == 2:
                 est_labels = np.array([0])
             else:
-                S = labels_module.Segmenter(audio_file, in_bound_times=est_idxs,
+                S = labels_module.Segmenter(audio_file, in_bound_idxs=est_idxs,
                                             **config)
                 est_labels = S.process()[1]
 
@@ -153,6 +153,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     est_times, est_labels = utils.remove_empty_segments(est_times, est_labels)
 
     # Make sure that the first and last times are 0 and duration, respectively
+    print est_times, dur
     assert np.allclose([est_times[0]], [0]) and \
         np.allclose([est_times[-1]], [dur])
 
