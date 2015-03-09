@@ -62,18 +62,14 @@ class Segmenter(SegmenterInterface):
                 est_idxs = in_bound_idxs
                 est_labels = [0]
 
-            # Add first and last boundaries
-            assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[0] - 1
-            #est_idxs[-1] = min(len(frame_times) - 1, est_idxs[-1])
-            #est_times = np.concatenate(([0], frame_times[est_idxs], [dur]))
-            #silencelabel = np.max(est_labels) + 1
-            #est_labels = np.concatenate(([silencelabel], est_labels,
-                                        #[silencelabel]))
         else:
             # The track is too short. We will only output the first and last
             # time stamps
             est_idxs = np.array([0, F.shape[0] - 1])
             est_labels = [1]
+
+        # Make sure that the first and last boundaries are included
+        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[0] - 1
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
