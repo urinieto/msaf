@@ -67,7 +67,7 @@ def test_compute_beat_sync_features():
     # Compute beat sync feats
     bs_mfcc, bs_hpcp, bs_tonnetz = \
         msaf.featextract.compute_beat_sync_features(features, beats_idx)
-    assert_equals(bs_mfcc.shape[0],  len(beats_idx) + 1)
+    assert_equals(bs_mfcc.shape[0],  len(beats_idx) - 1)
     assert_equals(bs_mfcc.shape[0], bs_hpcp.shape[0])
     assert_equals(bs_hpcp.shape[0], bs_tonnetz.shape[0])
 
