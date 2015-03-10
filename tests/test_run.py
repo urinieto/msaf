@@ -120,6 +120,10 @@ def test_run_algorithms():
         if bound_id == "gt":
             continue
         for label_id in label_ids:
+            #if bound_id != "sf":
+                #continue
+            #if label_id != "siplca":
+                #continue
             print bound_id, label_id
             config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                                bound_id, label_id)

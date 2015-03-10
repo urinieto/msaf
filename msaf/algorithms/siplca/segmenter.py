@@ -94,8 +94,7 @@ logger = logging.getLogger('segmenter')
 def segment_song(seq, rank=4, win=32, seed=None,
                  nrep=1, minsegments=3, maxlowen=10, maxretries=5,
                  uninformativeWinit=False, uninformativeHinit=True,
-                 normalize_frames=True, viterbi_segmenter=False,
-                 align_downbeats=False, **kwargs):
+                 viterbi_segmenter=False, align_downbeats=False, **kwargs):
     """Segment the given feature sequence using SI-PLCA
 
     Parameters
@@ -128,9 +127,6 @@ def segment_song(seq, rank=4, win=32, seed=None,
     uninformativeHinit : boolean
         If True, `H` is initialized to have a flat distribution.
         Defaults to True.
-    normalize_frames : boolean
-        If True, normalizes each frame of `seq` so that the maximum
-        value is 1.  Defaults to True.
     viterbi_segmenter : boolean
         If True uses uses the Viterbi algorithm to convert SIPLCA
         decomposition into segmentation, otherwises uses the process
@@ -167,8 +163,6 @@ def segment_song(seq, rank=4, win=32, seed=None,
 
     """
     seq = seq.copy()
-    if normalize_frames:
-        seq /= seq.max(0) + np.finfo(float).eps
 
     #logger.debug('Using random seed %s.', seed)
     np.random.seed(seed)
@@ -216,13 +210,8 @@ def segment_song(seq, rank=4, win=32, seed=None,
         segmentation_function = nmf_analysis_to_segmentation_using_viterbi_path
     else:
         segmentation_function = nmf_analysis_to_segmentation
-    labels = None
-    while labels is None:
-        try:
-            labels, segfun = segmentation_function(seq, win, W, Z, H, **kwargs)
-        except:
-            logging.warning("SIPLCA: segmentation_function failed, repeating")
-            labels = None
+
+    labels, segfun = segmentation_function(seq, win, W, Z, H, **kwargs)
 
     return labels, W, Z, H, segfun, norm
 
