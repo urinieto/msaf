@@ -117,4 +117,8 @@ class SegmenterInterface:
         assert len(est_idxs) - 1 == len(est_labels), "Number of boundaries " \
             "(%d) and number of labels(%d) don't match" % (len(est_idxs),
                                                            len(est_labels))
+
+        # Make sure the indeces are integers
+        est_idxs = np.asarray(est_idxs, dtype=int)
+
         return est_idxs, est_labels
