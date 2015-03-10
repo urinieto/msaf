@@ -53,7 +53,10 @@ setup(
     url='https://github.com/urinieto/msaf',
     download_url='https://github.com/urinieto/msaf/releases',
     packages=find_packages(),
-    data_files=[('msaf/algorithms/olda/models', glob.glob('msaf/algorithms/olda/models/*.npy'))],
+    #data_files=[('msaf/algorithms/olda/models', glob.glob('msaf/algorithms/olda/models/*.npy')),
+                #('msaf/algorithms/cc', ['co_segmenter.so'])],
+    data_files=[('msaf/algorithms/olda/models',
+                 glob.glob('msaf/algorithms/olda/models/*.npy'))],
     #package_data={'': ['ds_example/*']},
     long_description="""A python module to segment audio into all its """
     """different large-scale sections and label them based on their """
