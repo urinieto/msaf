@@ -98,7 +98,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     # Check that there are too few frames
     hpcp, mfcc, tonnetz, beats, dur, anal =  \
             io.get_features(audio_file, config["annot_beats"],
-                            config["framesync"], config["features"])
+                            config["framesync"],
+                            pre_features=config["features"])
     if hpcp.shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
