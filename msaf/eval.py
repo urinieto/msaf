@@ -132,10 +132,15 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     # Get the ds_prefix
     ds_prefix = os.path.basename(est_file).split("_")[0]
 
+    # Get context
+    if ds_prefix in msaf.prefix_dict.keys():
+        context = msaf.prefix_dict[ds_prefix]
+    else:
+        context = "function"
+
     try:
         ref_inter, ref_labels = jams2.converters.load_jams_range(
-            ref_file, "sections", annotator=0,
-            context=msaf.prefix_dict[ds_prefix])
+            ref_file, "sections", annotator=0, context=context)
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}
