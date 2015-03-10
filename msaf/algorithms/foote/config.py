@@ -3,7 +3,7 @@
 # Foote Params
 config = {
     "M_gaussian"    : 96,
-    "m_median"      : 8,
+    "m_median"      : 12,
     "L_peaks"       : 64
 }
 
