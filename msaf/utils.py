@@ -157,11 +157,11 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     # Generate clicks audio_bounds = mir_eval.sonify.clicks(clicks + offset, fs)
 
     # Create array to store the audio plus the clicks
-    out_audio = np.zeros(max(len(audio), len(audio_bounds)))
+    out_audio = np.zeros(max(len(audio), len(clicks)))
 
     # Assign the audio and the clicks
     out_audio[:len(audio)] = audio
-    out_audio[:len(audio_bounds)] += audio_bounds
+    out_audio[:len(clicks)] += clicks
 
     # Write to file
     scipy.io.wavfile.write(out_file, fs, out_audio)

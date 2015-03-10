@@ -36,4 +36,5 @@ install:
     #- sudo easy_install scikits.samplerate
     - python setup.py install
     - cd ..
+    - python setup.py build
     - python setup.py install
