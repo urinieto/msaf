@@ -17,6 +17,7 @@ import logging
 import os
 import time
 import pandas
+import glob
 
 
 def parse_annotation_level(annot, path, annotation_id, level):
@@ -119,10 +120,6 @@ def create_JAMS(in_dir, metadata, out_file):
     # Sanity check
     if not os.path.exists(path):
         logging.warning("Path not found %s", path)
-        return
-
-    # Do not parse Isophonics data
-    if metadata[1] == "Isophonics":
         return
 
     # New JAMS and annotation
