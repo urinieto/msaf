@@ -13,6 +13,7 @@ __email__ = "oriol@nyu.edu"
 
 import logging
 import numpy as np
+import pylab as plt
 from scipy.ndimage import filters
 
 from msaf.algorithms.interface import SegmenterInterface

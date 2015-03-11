@@ -39,6 +39,16 @@ class Segmenter(SegmenterInterface):
         #plt.imshow(F.T, interpolation="nearest", aspect="auto")
         #plt.show()
 
+        # Check if the cc module is compiled
+        try:
+            cc_segmenter
+        except:
+            logging.warning("CC not compiled, returning empty segmentation")
+            if self.in_bound_idxs is None:
+                return np.array([0, F.shape[0] - 1]), [0]
+            else:
+                return self.in_bound_idxs, [0] * (len(self.in_bound_idxs) - 1)
+
         if F.shape[0] > min_frames:
             if self.feature_str == "hpcp" or self.feature_str == "tonnetz":
                 is_harmonic = True
