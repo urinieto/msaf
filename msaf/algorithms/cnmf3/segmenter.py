@@ -144,6 +144,8 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     # Find non filtered boundaries
     compute_bounds = True if bound_idxs is None else False
     while True:
+        #import pdb; pdb.set_trace()  # XXX BREAKPOINT
+
         if bound_idxs is None:
             try:
                 F, G = cnmf(X, rank, niter=niter, hull=False)
@@ -166,11 +168,13 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1]-1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     if in_labels is None:
-        labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
+        #labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
+        #TODO
+        labels = np.ones(len(bound_idxs) - 1)
     else:
         labels = np.ones(len(bound_idxs) - 1)
 
-    #plt.imshow(G.T, interpolation="nearest", aspect="auto")
+    #plt.imshow(G[:, np.newaxis], interpolation="nearest", aspect="auto")
     #for b in bound_idxs:
         #plt.axvline(b, linewidth=2.0, color="k")
     #plt.show()

@@ -24,9 +24,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id, algorithms)
 
-        hh = range(8, 16)
-        RR = range(8, 16)
-        ranks = range(2, 4)
+        hh = range(8, 33)
+        RR = range(8, 65)
+        ranks = range(3, 6)
         RR_labels = range(11, 12)
         ranks_labels = range(6, 7)
         all_results = pd.DataFrame()
