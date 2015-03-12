@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 import argparse
-import eval
 import logging
 import time
 import pandas as pd
 import numpy as np
 
-import run
+import msaf
 from msaf import input_output as io
 import msaf.algorithms as algorithms
 
@@ -42,12 +41,12 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["R_labels"] = R_labels
 
                             # Run process
-                            run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
+                            msaf.run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
                                         boundaries_id=boundaries_id,
                                         labels_id=labels_id, config=config)
 
                             # Compute evaluations
-                            results = eval.process(in_path, boundaries_id, labels_id,
+                            results = msaf.eval.process(in_path, boundaries_id, labels_id,
                                                 ds_name, save=True, n_jobs=n_jobs,
                                                 config=config)
 
@@ -84,12 +83,12 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["offset_thres"] = ot
 
                             # Run process
-                            run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
+                            msaf.run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
                                         boundaries_id=boundaries_id,
                                         labels_id=labels_id, config=config)
 
                             # Compute evaluations
-                            results = eval.process(in_path, boundaries_id, labels_id,
+                            results = msaf.eval.process(in_path, boundaries_id, labels_id,
                                                 ds_name, save=True, n_jobs=n_jobs,
                                                 config=config)
 
