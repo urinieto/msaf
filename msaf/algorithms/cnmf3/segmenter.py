@@ -189,7 +189,7 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # C-NMF params
-        niter = 300     # Iterations for the matrix factorization and clustering
+        niter = 500     # Iterations for the matrix factorization and clustering
 
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
