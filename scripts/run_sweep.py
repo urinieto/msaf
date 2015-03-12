@@ -21,7 +21,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
     if labels_id == "cnmf3" or boundaries_id == "cnmf3":
         config = io.get_configuration(feature, annot_beats, framesync,
-                                      boundaries_id, labels_id, algorithms)
+                                      boundaries_id, labels_id)
 
         hh = range(8, 33)
         RR = range(8, 65)
@@ -39,6 +39,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["rank"] = rank
                             config["rank_labels"] = rank_labels
                             config["R_labels"] = R_labels
+                            config["features"] = None
 
                             # Run process
                             msaf.run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
@@ -63,7 +64,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
     elif labels_id is None and boundaries_id == "sf":
         config = io.get_configuration(feature, annot_beats, framesync,
-                                      boundaries_id, labels_id, algorithms)
+                                      boundaries_id, labels_id)
 
         MM = range(8, 24)
         mm = range(2, 4)
@@ -81,6 +82,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["k_nearest"] = k
                             config["Mp_adaptive"] = Mp
                             config["offset_thres"] = ot
+                            config["features"] = None
 
                             # Run process
                             msaf.run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
