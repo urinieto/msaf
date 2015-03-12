@@ -269,7 +269,22 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
     if os.path.isfile(in_path):
         # Single file mode
-        features = featextract.compute_features_for_audio_file(in_path)
+        # Get (if they exitst) or compute features
+        # TODO:Modularize!
+        file_struct = msaf.io.FileStruct(in_path)
+        if os.path.exists(file_struct.features_file):
+            feat_prefix = ""
+            if not framesync:
+                feat_prefix = "bs_"
+            features = {}
+            features["%shpcp" % feat_prefix], features["%smfcc" % feat_prefix], \
+                features["%stonnetz" % feat_prefix], features["beats"], dur, \
+                features["anal"] = msaf.io.get_features(in_path,
+                                                        annot_beats=annot_beats,
+                                                        framesync=framesync,
+                                                        pre_features=None)
+        else:
+            features = featextract.compute_features_for_audio_file(in_path)
         config["features"] = features
 
         # And run the algorithms
