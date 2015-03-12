@@ -75,6 +75,11 @@ def main():
                         default="*",
                         help="The prefix of the dataset to use "
                         "(e.g. Isophonics, SALAMI)")
+    parser.add_argument("-e",
+                        action="store_true",
+                        dest="evaluate",
+                        help="Evaluates the results", default=False)
+
     args = parser.parse_args()
     start_time = time.time()
 
@@ -82,25 +87,32 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
         level=logging.INFO)
 
-    # Run the algorithm(s)
-    res = msaf.run.process(args.in_path,
-                           annot_beats=args.annot_beats,
-                           feature=args.feature,
-                           ds_name=args.ds_name,
-                           framesync=args.framesync,
-                           boundaries_id=args.boundaries_id,
-                           labels_id=args.labels_id,
-                           n_jobs=args.n_jobs,
-                           sonify_bounds=args.sonify_bounds,
-                           plot=args.plot)
-
-    if os.path.isfile(args.in_path):
-        logging.info("Estimated times: %s" % res[0])
-        logging.info("Estimated labels: %s" % res[1])
+    # Run MSAF
+    params = {
+        "annot_beats": args.annot_beats,
+        "feature": args.feature,
+        "ds_name": args.ds_name,
+        "framesync": args.framesync,
+        "boundaries_id": args.boundaries_id,
+        "labels_id": args.labels_id,
+        "n_jobs": args.n_jobs
+    }
+    if args.evaluate:
+        func = msaf.eval
     else:
-        for result in res:
-            logging.info("Estimated times: %s" % result[0])
-            logging.info("Estimated labels: %s" % result[1])
+        func = msaf.run
+        params["sonify_bounds"] = args.sonify_bounds
+        params["plot"] = args.plot
+    res = func.process(args.in_path, **params)
+
+    if not args.evaluate:
+        if os.path.isfile(args.in_path):
+            logging.info("Estimated times: %s" % res[0])
+            logging.info("Estimated labels: %s" % res[1])
+        else:
+            for result in res:
+                logging.info("Estimated times: %s" % result[0])
+                logging.info("Estimated labels: %s" % result[1])
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
