@@ -201,3 +201,43 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
         new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i+1]])
 
     return new_labels
+
+
+def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
+    """Processes a level of segmentation, and converts it into times.
+
+    Parameters
+    ----------
+    est_idxs: np.array
+        Estimated boundaries in frame indeces.
+    est_labels: np.array
+        Estimated labels.
+    N: int
+        Number of frames in the whole track.
+    frame_times: np.array
+        Time stamp for each frame.
+    dur: float
+        Duration of the audio track.
+
+    Returns
+    -------
+    est_times: np.array
+        Estimated segment boundaries in seconds.
+    est_labels: np.array
+        Estimated labels for each segment.
+    """
+    assert est_idxs[0] == 0 and est_idxs[-1] == N - 1
+
+    # Add silences, if needed
+    est_times = np.concatenate(([0], frame_times[est_idxs], [dur]))
+    silence_label = np.max(est_labels) + 1
+    est_labels = np.concatenate(([silence_label], est_labels, [silence_label]))
+
+    # Remove empty segments if needed
+    est_times, est_labels = remove_empty_segments(est_times, est_labels)
+
+    # Make sure that the first and last times are 0 and duration, respectively
+    assert np.allclose([est_times[0]], [0]) and \
+        np.allclose([est_times[-1]], [dur])
+
+    return est_times, est_labels
