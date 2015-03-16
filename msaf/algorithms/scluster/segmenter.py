@@ -56,9 +56,17 @@ class Segmenter(SegmenterInterface):
         est_idxs, est_labels = main.do_segmentation(F, frame_times,
                                                       self.config,
                                                       self.in_bound_idxs)
-        assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
 
-        # Post process estimations
-        est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
+        if 'numpy' in str(type(est_idxs)):
+            # Flat output
+            assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
+            est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
+        else:
+            # Hierarchical output
+            for layer in range(len(est_idxs)):
+                assert est_idxs[layer][0] == 0 and \
+                    est_idxs[layer][-1] == F[0].shape[1] - 1
+                est_idxs[layer], est_labels[layer] = \
+                    self._postprocess(est_idxs[layer], est_labels[layer])
 
         return est_idxs, est_labels
