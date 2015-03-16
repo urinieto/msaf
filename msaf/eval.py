@@ -154,8 +154,15 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         return {}
 
     # Compute the results and return
-    return compute_results(ref_inter, est_inter, ref_labels, est_labels,
-                           bins, est_file)
+    if 'numpy' in str(type(est_inter)):
+        # Flat
+        return compute_results(ref_inter, est_inter, ref_labels, est_labels,
+                            bins, est_file)
+    else:
+        # Hierarchical
+        ref_tree = mir_eval.segment.tree.SegmentTree(ref_file)
+        print "Hier"
+
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
