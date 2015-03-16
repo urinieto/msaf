@@ -1,11 +1,5 @@
-#!/usr/bin/env python
 # CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
 '''Music segmentation using timbre, pitch, repetition and time.
-
-If run as a program, usage is:
-
-    ./segmenter.py AUDIO.mp3 OUTPUT.lab
-
 '''
 
 
@@ -498,6 +492,7 @@ def local_similarity(X):
     A = np.diag(rbf, k=1) + np.diag(rbf, k=-1)
     return A
 
+
 def do_segmentation(X, beats, parameters, bound_idxs):
 
     # If number of frames is too small, assign empty labels and quit:
@@ -578,45 +573,3 @@ def do_segmentation(X, beats, parameters, bound_idxs):
         boundaries = bound_idxs
 
     return boundaries, labels
-
-
-def process_arguments():
-    parser = argparse.ArgumentParser(description='Music segmentation')
-
-    parser.add_argument(    '-v', '--verbose',
-                            dest    =   'verbose',
-                            action  =   'store_true',
-                            default =   False,
-                            help    =   'verbose output')
-
-    parser.add_argument(    '-m', '--num-types',
-                            dest    =   'num_types',
-                            action  =   'store',
-                            type    =   int,
-                            default =   None,
-                            help    =   'Number of segment types.  Leave blank to auto-detect.')
-
-    parser.add_argument(    'input_song',
-                            action  =   'store',
-                            help    =   'path to input audio data')
-
-    parser.add_argument(    'output_file',
-                            action  =   'store',
-                            help    =   'path to output segment file')
-
-    return vars(parser.parse_args(sys.argv[1:]))
-
-if __name__ == '__main__':
-
-    parameters = process_arguments()
-
-    # Load the features
-    print '- ', os.path.basename(parameters['input_song'])
-    X, beats    = features(parameters['input_song'])
-
-    # Do actual segmentation
-    boundaries_idxs, labels = do_segmentation(X, beats, parameters)
-
-    # Output lab file
-    print '\tsaving output to ', parameters['output_file']
-    save_segments(parameters['output_file'], boundaries_idxs, beats, labels)

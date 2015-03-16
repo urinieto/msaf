@@ -4,7 +4,8 @@
 config = {
     "verbose"    : False,
     "median"     : False,
-    "num_types"  : None
+    "num_types"  : None,
+    "hier"       : True
 }
 
 algo_id = "scluster"
