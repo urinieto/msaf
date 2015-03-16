@@ -149,17 +149,32 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         logging.error("Could not find estimation in %s" % est_file)
         return np.array([]), np.array([])
 
-    # Retrieve data
-    boundaries = []
-    labels = []
+    # Retrieve unique levels of segmentation
+    levels = []
     for range in correct_est.data:
-        boundaries.append([range.start.value, range.end.value])
-        # TODO: Multiple contexts. Right now MSAF algorithms only estimate one
-        # single layer, so it is not really necessary yet.
-        if labels_id is not None:
-            labels.append(range.label.value)
+        levels.append(range.label.context)
+    levels = list(set(levels))
 
-    return np.asarray(boundaries), np.asarray(labels, dtype=int)
+    # Retrieve data
+    all_boundaries = []
+    all_labels = []
+    for level in levels:
+        boundaries = []
+        labels = []
+        for range in correct_est.data:
+            if level == range.label.context:
+                boundaries.append([range.start.value, range.end.value])
+                if labels_id is not None:
+                    labels.append(range.label.value)
+        all_boundaries.append(np.asarray(boundaries))
+        all_labels.append(np.asarray(labels, dtype=int))
+
+    # If there is only one level, return np.arrays instead of lists
+    if len(levels) == 1:
+        all_boundaries = all_boundaries[0]
+        all_labels = all_labels[0]
+
+    return all_boundaries, all_labels
 
 
 def get_algo_ids(est_file):
@@ -345,7 +360,7 @@ def safe_write(jam, out_file):
         f.close()
 
 
-def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
+def save_estimations(out_file, times, labels, boundaries_id, labels_id,
                      **params):
     """Saves the segment estimations in a JAMS file.close
 
@@ -353,8 +368,9 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
     ----------
     out_file : str
         Path to the output JAMS file in which to save the estimations.
-    boundaries : np.array((N, 2))
-        Estimated boundary intervals.
+    times : np.array or list
+        Estimated boundary times.
+        If `list`, estimated hierarchical boundaries.
     labels : np.array(N, 2)
         Estimated labels (None in case we are only storing boundary
         evaluations).
@@ -366,11 +382,24 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
         Dictionary with additional parameters for both algorithms.
     """
 
-    # Sanity Check
-    assert len(boundaries) == len(labels), "Number of boundary intervals " \
-        "(%d) and labels (%d) do not match" % (len(boundaries), len(labels))
 
-    print boundaries, labels
+    # Convert to intervals and sanity check
+    if 'numpy' in str(type(times)):
+        inters = utils.times_to_intervals(times)
+        assert len(inters) == len(labels), "Number of boundary intervals " \
+            "(%d) and labels (%d) do not match" % (len(inters), len(labels))
+        # Put into lists to simplify the writing process later
+        inters = [inters]
+        labels = [labels]
+    else:
+        inters = []
+        for level in range(len(times)):
+            est_inters = utils.times_to_intervals(times[level])
+            inters.append(est_inters)
+            assert len(inters[level]) == len(labels[level]), \
+            "Number of boundary intervals (%d) and labels (%d) do not match" % \
+                (len(inters[level]), len(labels[level]))
+
     curr_estimation = None
     curr_i = -1
 
@@ -405,17 +434,18 @@ def save_estimations(out_file, boundaries, labels, boundaries_id, labels_id,
 
     # Save actual data
     curr_estimation.data = []
-    if labels is None:
-        label = np.ones(len(boundaries)) * -1
-    for bound_inter, label in zip(boundaries, labels):
-        segment = curr_estimation.create_datapoint()
-        segment.start.value = float(bound_inter[0])
-        segment.start.confidence = 0.0
-        segment.end.value = float(bound_inter[1])
-        segment.end.confidence = 0.0
-        segment.label.value = label
-        segment.label.confidence = 0.0
-        segment.label.context = "msaf"      # TODO: Use multiple contex
+    for i, (level_inters, level_labels) in enumerate(zip(inters, labels)):
+        if level_labels is None:
+            label = np.ones(len(inters)) * -1
+        for bound_inter, label in zip(level_inters, level_labels):
+            segment = curr_estimation.create_datapoint()
+            segment.start.value = float(bound_inter[0])
+            segment.start.confidence = 0.0
+            segment.end.value = float(bound_inter[1])
+            segment.end.confidence = 0.0
+            segment.label.value = label
+            segment.label.confidence = 0.0
+            segment.label.context = "level_%d" % i
 
     # Place estimation in its place
     if curr_i != -1:

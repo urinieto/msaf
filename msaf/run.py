@@ -88,10 +88,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
 
     Returns
     -------
-    est_times: np.array
+    est_times: np.array or list
         List of estimated times for the segment boundaries.
-    est_labels: np.array
+        If `list`, it will be a list of np.arrays, sorted by segmentation layer.
+    est_labels: np.array or list
         List of all the labels associated segments.
+        If `list`, it will be a list of np.arrays, sorted by segmentation layer.
     """
 
     # At this point, features should have already been computed
@@ -137,26 +139,34 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
                                             **config)
                 est_labels = S.process()[1]
 
-    # Make sure that first and last frames are included in the est boundaries
-    assert est_idxs[0] == 0 and est_idxs[-1] == hpcp.shape[0] - 1
-
     # Get the correct frame times
     frame_times = beats
     if config["framesync"]:
         frame_times = utils.get_time_frames(dur, anal)
 
-    # Add silences, if needed
-    est_times = np.concatenate(([0], frame_times[est_idxs], [dur]))
-    silence_label = np.max(est_labels) + 1
-    est_labels = np.concatenate(([silence_label], est_labels, [silence_label]))
+    # Make sure that first and last frames are included in the est boundaries
+    if 'numpy' in str(type(est_idxs)):
+        # Flat output
+        est_times, est_labels = utils.process_segmentation_level(est_idxs,
+                                                                 est_labels,
+                                                                 hpcp.shape[0],
+                                                                 frame_times,
+                                                                 dur)
+    else:
+        # Hierarchical output
+        est_times = []
+        cleaned_est_labels = []
+        for level in range(len(est_idxs)):
+            est_level_times, est_level_labels = \
+                utils.process_segmentation_level(est_idxs[level],
+                                                 est_labels[level],
+                                                 hpcp.shape[0],
+                                                 frame_times,
+                                                 dur)
+            est_times.append(est_level_times)
+            cleaned_est_labels.append(est_level_labels)
+        est_labels = cleaned_est_labels
 
-    # Remove empty segments if needed
-    est_times, est_labels = utils.remove_empty_segments(est_times, est_labels)
-
-    # Make sure that the first and last times are 0 and duration, respectively
-    print est_times, dur
-    assert np.allclose([est_times[0]], [0]) and \
-        np.allclose([est_times[-1]], [dur])
 
     return est_times, est_labels
 
@@ -205,8 +215,7 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
     # Save
     logging.info("Writing results in: %s" % file_struct.est_file)
-    est_inters = utils.times_to_intervals(est_times)
-    io.save_estimations(file_struct.est_file, est_inters, est_labels,
+    io.save_estimations(file_struct.est_file, est_times, est_labels,
                         boundaries_id, labels_id, **config)
 
     return est_times, est_labels
