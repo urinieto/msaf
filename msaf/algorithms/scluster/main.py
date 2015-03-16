@@ -416,6 +416,7 @@ def label_entropy(labels):
 
     return scipy.stats.entropy(labels)
 
+
 def label_clusterer(Lf, k_min, k_max):
     best_score      = -np.inf
     best_boundaries = [0, Lf.shape[1]-1]
@@ -462,6 +463,7 @@ def label_clusterer(Lf, k_min, k_max):
     intervals, best_labels = label_rep_sections(Y_best.T, best_boundaries, best_n_types)
 
     return best_boundaries, best_labels
+
 
 def estimate_bandwidth(D, k):
     D_sort = np.sort(D, axis=1)
@@ -542,10 +544,15 @@ def do_segmentation(X, beats, parameters, bound_idxs):
 
     # We can jump to a random neighbor, or +- 1 step in time
     # Call it the infinite jukebox matrix
-    T = weighted_ridge(Rf * A_rep, (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+    T = weighted_ridge(Rf * A_rep,
+                       (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
     # Get the graph laplacian
     try:
         L = sym_laplacian(T)
+        #import pylab as plt
+        #import pdb; pdb.set_trace()  # XXX BREAKPOINT
+        #plt.imshow(L, interpolation="nearest")
+        #plt.show()
 
         # Get the bottom k eigenvectors of L
         # TODO: Sometimes nans in L
@@ -563,11 +570,19 @@ def do_segmentation(X, beats, parameters, bound_idxs):
         boundaries, labels = fixed_partition(Lf, parameters['num_types'])
     elif parameters['median']:
         boundaries, labels = median_partition(Lf, k_min, k_max, beats)
+    elif parameters['hier']:
+        boundaries = []
+        labels = []
+        for layer in range(parameters["start_layer"],
+                           parameters["start_layer"] + parameters["num_layers"]):
+            layer_bounds, layer_labels = fixed_partition(Lf, layer)
+            boundaries.append(layer_bounds)
+            labels.append(layer_labels)
     else:
         boundaries, labels = label_clusterer(Lf, k_min, k_max)
 
     # Synchronize with previously found boundaries
-    if bound_idxs is not None:
+    if bound_idxs is not None and not parameters["hier"]:
         labels = msaf.utils.synchronize_labels(bound_idxs, boundaries, labels,
                                                X[0].shape[1])
         boundaries = bound_idxs

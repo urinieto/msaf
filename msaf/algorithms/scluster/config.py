@@ -5,6 +5,8 @@ config = {
     "verbose"    : False,
     "median"     : False,
     "num_types"  : None,
+    "start_layer": 1,
+    "num_layers" : 10,
     "hier"       : True
 }
 
