@@ -145,6 +145,7 @@ def process(in_dir, out_dir):
 
     logging.info("Parsed %d files" % len(lab_files))
 
+
 def main():
     """Main function to convert the dataset into JAMS."""
     parser = argparse.ArgumentParser(description=
