@@ -715,7 +715,7 @@ def read_hier_references(jams_file, annotation_id=0):
         intervals, labels = jams2.converters.load_jams_range(jams_file,
                 "sections", annotator=annotation_id, context=level)
         times = utils.intervals_to_times(intervals)
-        return np.array(times), np.array(labels, dtype=np.int32)
+        return np.array(times), np.array(labels)
 
     # Get the levels of the annotations in the jams file
     hier_levels = get_levels()
