@@ -9,13 +9,14 @@ __license__ = "GPL"
 __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
+from collections import Counter
 import datetime
-import json
 import glob
+import json
 import logging
 import numpy as np
-from threading import Thread
 import os
+from threading import Thread
 
 # Local stuff
 import msaf
@@ -658,3 +659,76 @@ def get_dataset_files(in_path, ds_name="*"):
         file_structs = get_SALAMI_internet(file_structs)
 
     return file_structs
+
+
+def read_hier_references(jams_file, annotation_id=0):
+    """Reads hierarchical references from a jams file.
+
+    Parameters
+    ----------
+    jams_file : str
+        Path to the jams file.
+    annotation_id : int > 0
+        Identifier of the annotator to read from.
+
+    Returns
+    -------
+    hier_bounds : list
+        List of the segment boundary times in seconds for each level.
+    hier_labels : list
+        List of the segment labels for each level.
+    hier_levels : list
+        List of strings for the level identifiers.
+    """
+    def get_levels():
+        """Obtains the set of unique levels contained in the jams
+            sorted by the number of segments they contain.
+
+        Returns
+        -------
+        levels : np.array
+            Level identifiers for the entire hierarchy.
+        """
+        levels = []
+        jam = jams2.load(jams_file)
+        annotation = jam.sections[annotation_id]
+        [levels.append(segment.label.context)
+            for segment in annotation.data]
+        c = Counter(levels)     # Count frequency
+        return np.asarray(c.keys())[np.argsort(c.values())]     # Sort
+
+    def get_segments_in_level(level):
+        """Gets the segments of a specific level.
+
+        Paramters
+        ---------
+        level : str
+            Indentifier of the level within the jams file.
+
+        Returns
+        -------
+        times : np.array
+            Boundary times in seconds for the given level.
+        labels : np.array
+            Labels for the given level.
+        """
+        intervals, labels = jams2.converters.load_jams_range(jams_file,
+                "sections", annotator=annotation_id, context=level)
+        times = utils.intervals_to_times(intervals)
+        return np.array(times), np.array(labels, dtype=np.int32)
+
+    # Get the levels of the annotations in the jams file
+    hier_levels = get_levels()
+
+    # Get the boundaries and labels for each level
+    hier_bounds = []
+    hier_labels = []
+    for level in hier_levels:
+        bound_times, labels = get_segments_in_level(level)
+        hier_bounds.append(bound_times)
+        hier_labels.append(labels)
+
+    return hier_bounds, hier_labels, hier_levels
+
+
+

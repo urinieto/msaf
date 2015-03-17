@@ -12,7 +12,7 @@ import numpy.testing as npt
 import os
 
 # Msaf imports
-import msaf.featextract
+import msaf
 from msaf.input_output import FileStruct
 
 # Global vars
@@ -25,3 +25,10 @@ y_harmonic, y_percussive = librosa.effects.hpss(audio)
 def test_get_features():
     #TODO
     pass
+
+def test_read_hier_references():
+    # One level file
+    one_jams = os.path.join("..", "datasets", "Sargon", "references",
+                            "01-Sargon-Mindless.jams")
+    hier_bounds, hier_labels, hier_levels = \
+        msaf.io.read_hier_references(one_jams)
