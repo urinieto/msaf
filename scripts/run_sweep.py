@@ -87,7 +87,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["features"] = None
 
                             # Run process
-                            msaf.run.process(in_path, ds_name=run_name, n_jobs=n_jobs,
+                            msaf.run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
                                         boundaries_id=boundaries_id,
                                         labels_id=labels_id, config=config)
 
