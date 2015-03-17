@@ -4,8 +4,8 @@ config = {
     "h" : 16,
     "R" : 22,
     "rank" : 3,
-    "R_labels" : 11,
-    "rank_labels" : 6
+    "R_labels" : 22,
+    "rank_labels" : 5
 }
 
 algo_id = "cnmf3"

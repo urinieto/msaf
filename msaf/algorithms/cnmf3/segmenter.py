@@ -165,12 +165,10 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
             break
 
     # Add first and last boundary
-    bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1]-1]))
+    bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1] - 1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     if in_labels is None:
-        #labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
-        #TODO
-        labels = np.ones(len(bound_idxs) - 1)
+        labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
     else:
         labels = np.ones(len(bound_idxs) - 1)
 

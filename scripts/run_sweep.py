@@ -31,6 +31,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         all_results = pd.DataFrame()
         for rank in ranks:
             for h in hh:
+                if rank == 3 and h <= 10:
+                    continue
                 for R in RR:
                     for rank_labels in ranks_labels:
                         for R_labels in RR_labels:
