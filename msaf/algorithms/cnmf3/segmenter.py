@@ -168,7 +168,8 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1] - 1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     if in_labels is None:
-        labels = compute_labels(X, rank_labels, R_labels, bound_idxs)
+        labels = compute_labels(X, rank_labels, R_labels, bound_idxs,
+                                niter=niter)
     else:
         labels = np.ones(len(bound_idxs) - 1)
 

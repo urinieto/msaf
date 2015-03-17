@@ -86,7 +86,6 @@ def main():
     # Setup the logger
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         level=logging.INFO)
-    logging.info("merda")
 
     # Run MSAF
     params = {
