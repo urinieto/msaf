@@ -297,17 +297,17 @@ class Segmenter(SegmenterInterface):
             F = W.dot(F)
 
             # Get Segments
-            #kmin, kmax = get_num_segs(frame_times[-1])
-            #segments = get_segments(F, kmin=kmin, kmax=kmax)
-            est_idxs = get_segments(F)
+            kmin, kmax = get_num_segs(dur)
+            est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
+            #est_idxs = get_segments(F)
         except:
             # The audio file is too short, only beginning and end
             logging.warning("Audio file too short! "
                             "Only start and end boundaries.")
-            est_idxs = [0, F.shape[1]-1]
+            est_idxs = [0, F.shape[1] - 1]
 
         # Make sure that the first and last boundaries are included
-        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[1] - 1
+        assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[1] - 1
 
         # Empty labels
         est_labels = np.ones(len(est_idxs) - 1) * -1
