@@ -29,6 +29,7 @@ __email__ = "oriol@nyu.edu"
 
 import argparse
 import glob
+from joblib import Parallel, delayed
 import json
 import logging
 import os
@@ -37,10 +38,10 @@ import time
 from msaf import jams2
 
 
-def fill_global_metadata(jam, lab_file):
+def fill_global_metadata(jam, lab_file, dur):
     """Fills the global metada into the JAMS jam."""
     jam.metadata.artist = "The Beatles"
-    jam.metadata.duration = -1  # In seconds
+    jam.metadata.duration = dur  # In seconds
     jam.metadata.title = os.path.basename(lab_file).replace(".lab", "")
 
     # TODO: extra info
@@ -62,7 +63,7 @@ def fill_annotation_metadata(annot, attribute):
     #time = "TODO"
 
 
-def fill_section_annotation(lab_file, annot):
+def fill_section_annotation(lab_file, annot, dur):
     """Fills the JAMS annot annotation given a lab file."""
 
     # Annotation Metadata
@@ -102,6 +103,18 @@ def fill_section_annotation(lab_file, annot):
         section.label.confidence = 1.0
         section.label.context = "function"  # Only function level of annotation
 
+    # Add the last boundary if needed
+    if section.end.value < dur - 0.01:
+        end_time = section.end.value
+        section = annot.create_datapoint()
+        section.start.value = end_time
+        section.start.confidence = 1.0
+        section.end.value = dur
+        section.end.confidence = 1.0
+        section.label.value = "silence"
+        section.label.confidence = 1.0
+        section.label.context = "function"  # Only function level of annotation
+
     f.close()
 
 
@@ -111,21 +124,30 @@ def create_JAMS(lab_file, out_file, parse_beats=False):
     # New JAMS and annotation
     jam = jams2.Jams()
 
-    # Global file metadata
-    fill_global_metadata(jam, lab_file)
-
     logging.info("Parsing %s..." % lab_file)
+
+    try:
+        import librosa
+        audio_file = os.path.dirname(lab_file) + "/../../audio/" + os.path.basename(lab_file)[:-4] + ".wav"
+        print "AUDIO", audio_file
+        y, sr = librosa.load(audio_file)
+        dur = len(y) / float(sr)
+    except:
+        dur = -1  # In seconds
+
+    # Global file metadata
+    fill_global_metadata(jam, lab_file, dur)
 
     # Create Section annotations
     annot = jam.sections.create_annotation()
-    fill_section_annotation(lab_file, annot)
+    fill_section_annotation(lab_file, annot, dur)
 
     # Save JAMS
     with open(out_file, "w") as f:
         json.dump(jam, f, indent=2)
 
 
-def process(in_dir, out_dir):
+def process(in_dir, out_dir, n_jobs=1):
     """Converts the TUT Beatles files into the JAMS format, and saves
     them in the out_dir folder."""
 
@@ -136,12 +158,18 @@ def process(in_dir, out_dir):
     # Get all the lab files
     lab_files = glob.glob(os.path.join(in_dir, "*", "*.lab"))
 
-    for lab_file in lab_files:
-        #Create a JAMS file for this track
-        create_JAMS(lab_file,
-                    os.path.join(out_dir,
-                                 os.path.basename(lab_file).replace(".lab", "")
-                                 + ".jams"))
+    Parallel(n_jobs=n_jobs)(delayed(create_JAMS)(
+        lab_file,
+        os.path.join(out_dir,
+                     os.path.basename(lab_file).replace(".lab", "") + ".jams"))
+        for lab_file in lab_files)
+
+    #for lab_file in lab_files:
+        ##Create a JAMS file for this track
+        #create_JAMS(lab_file,
+                    #os.path.join(out_dir,
+                                 #os.path.basename(lab_file).replace(".lab", "")
+                                 #+ ".jams"))
 
     logging.info("Parsed %d files" % len(lab_files))
 
@@ -159,6 +187,12 @@ def main():
                         dest="out_dir",
                         default="outJAMS",
                         help="Output JAMS folder")
+    parser.add_argument("-j",
+                        action="store",
+                        dest="n_jobs",
+                        default=1,
+                        type=int,
+                        help="The number of threads to use")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -166,7 +200,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
 
     # Run the parser
-    process(args.in_dir, args.out_dir)
+    process(args.in_dir, args.out_dir, n_jobs=args.n_jobs)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
