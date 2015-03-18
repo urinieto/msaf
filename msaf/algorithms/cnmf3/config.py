@@ -1,8 +1,8 @@
 """Configuration for the C-NMF v3 algorithm."""
 
 config = {
-    "h" : 18,
-    "R" : 24,
+    "h" : 16,
+    "R" : 22,
     "rank" : 3,
     "R_labels" : 16,
     "rank_labels" : 4
