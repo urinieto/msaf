@@ -82,9 +82,10 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     offset = nc.mean() * float(offset_denom)
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    # plt.plot(nc)
-    # plt.plot(th)
-    # plt.show()
+    #import pylab as plt
+    #plt.plot(nc)
+    #plt.plot(th)
+    #plt.show()
     # th = np.ones(nc.shape[0]) * nc.mean() - 0.08
     peaks = []
     for i in xrange(1, nc.shape[0] - 1):
@@ -146,6 +147,10 @@ class Segmenter(SegmenterInterface):
         # Check size in case the track is too short
         if F.shape[0] > 20:
 
+            #import pdb; pdb.set_trace()  # XXX BREAKPOINT
+            red = 0.1
+            F_copy = np.copy(F)
+            F = librosa.feature.sync(F.T, np.linspace(0, F.shape[0], num=F.shape[0] * red), pad=False).T
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
             # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
@@ -177,6 +182,9 @@ class Segmenter(SegmenterInterface):
 
             # Re-align embedded space
             est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))
+
+            est_bounds /= red
+            F = F_copy
         else:
             est_bounds = []
 
