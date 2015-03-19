@@ -209,9 +209,16 @@ def read_references(audio_path):
                             os.path.basename(audio_path)[:-4] +
                             msaf.Dataset.references_ext)
     ds_prefix = os.path.basename(audio_path).split("_")[0]
+
+    # Get context
+    if ds_prefix in msaf.prefix_dict.keys():
+        context = msaf.prefix_dict[ds_prefix]
+    else:
+        context = "function"
+
     try:
         ref_inters, ref_labels = jams2.converters.load_jams_range(
-            jam_path, "sections", context=msaf.prefix_dict[ds_prefix])
+            jam_path, "sections", context=context)
     except:
         logging.warning("Reference not found in %s" % jam_path)
         return []
@@ -249,7 +256,7 @@ def align_times(times, frames):
     """Aligns the times to the closes frame times (e.g. beats)."""
     dist = np.minimum.outer(times, frames)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
-    return bound_frames
+    return np.unique(bound_frames)
 
 
 def read_ref_bound_frames(audio_path, beats):
