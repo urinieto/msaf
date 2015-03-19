@@ -68,17 +68,17 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
 
-        MM = range(8, 24)
+        MM = range(14, 32)
         mm = range(2, 4)
-        kk = np.arange(0.02, 0.1, 0.01)
-        Mpp = range(16, 24)
+        kk = np.arange(0.03, 0.1, 0.01)
+        Mpp = range(16, 32)
         ott = np.arange(0.02, 0.1, 0.01)
         all_results = pd.DataFrame()
-        for M in MM:
-            for m in mm:
-                for k in kk:
-                    for Mp in Mpp:
-                        for ot in ott:
+        for k in kk:
+            for ot in ott:
+                for m in mm:
+                    for M in MM:
+                        for Mp in Mpp:
                             config["M_gaussian"] = M
                             config["m_embedded"] = m
                             config["k_nearest"] = k
