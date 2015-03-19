@@ -147,10 +147,11 @@ class Segmenter(SegmenterInterface):
         # Check size in case the track is too short
         if F.shape[0] > 20:
 
-            #import pdb; pdb.set_trace()  # XXX BREAKPOINT
-            red = 0.1
-            F_copy = np.copy(F)
-            F = librosa.feature.sync(F.T, np.linspace(0, F.shape[0], num=F.shape[0] * red), pad=False).T
+            if self.framesync:
+                red = 0.1
+                F_copy = np.copy(F)
+                F = librosa.feature.sync(F.T, np.linspace(0, F.shape[0], num=F.shape[0] * red), pad=False).T
+
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
             # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
@@ -183,8 +184,9 @@ class Segmenter(SegmenterInterface):
             # Re-align embedded space
             est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))
 
-            est_bounds /= red
-            F = F_copy
+            if self.framesync:
+                est_bounds /= red
+                F = F_copy
         else:
             est_bounds = []
 
