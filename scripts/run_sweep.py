@@ -69,7 +69,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                                       boundaries_id, labels_id)
 
         MM = range(14, 32)
-        mm = range(2, 4)
+        mm = range(3, 4)
         kk = np.arange(0.03, 0.1, 0.01)
         Mpp = range(16, 32)
         ott = np.arange(0.02, 0.1, 0.01)
