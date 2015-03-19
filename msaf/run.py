@@ -111,6 +111,11 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     bounds_module = get_boundaries_module(boundaries_id)
     labels_module = get_labels_module(labels_id)
 
+    # Get the correct frame times
+    frame_times = beats
+    if config["framesync"]:
+        frame_times = utils.get_time_frames(dur, anal)
+
     # Segment using the specified boundaries and labels
     # Case when boundaries and labels algorithms are the same
     if bounds_module is not None and labels_module is not None and \
@@ -125,7 +130,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             est_idxs, est_labels = S.process()
         else:
             try:
-                est_idxs, est_labels = io.read_references(audio_file)
+                est_times, est_labels = io.read_references(audio_file)
+                est_idxs = io.align_times(est_times, frame_times[:-1])
             except:
                 logging.warning("No references found for file: %s" % audio_file)
                 return [], []
@@ -139,21 +145,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
                                             **config)
                 est_labels = S.process()[1]
 
-    # Get the correct frame times
-    frame_times = beats
-    if config["framesync"]:
-        frame_times = utils.get_time_frames(dur, anal)
-        #TODO: needed?
-        #frame_times = np.concatenate((frame_times, [frame_times[-1]]))
-
     # Make sure that first and last frames are included in the est boundaries
     if 'numpy' in str(type(est_idxs)):
         # Flat output
-        est_times, est_labels = utils.process_segmentation_level(est_idxs,
-                                                                 est_labels,
-                                                                 hpcp.shape[0],
-                                                                 frame_times,
-                                                                 dur)
+        #if bounds_module is not None:
+        est_times, est_labels = utils.process_segmentation_level(
+            est_idxs, est_labels, hpcp.shape[0], frame_times, dur)
     else:
         # Hierarchical output
         est_times = []
