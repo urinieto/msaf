@@ -144,7 +144,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     if config["framesync"]:
         frame_times = utils.get_time_frames(dur, anal)
         #TODO: needed?
-        frame_times = np.concatenate((frame_times, [frame_times[-1]]))
+        #frame_times = np.concatenate((frame_times, [frame_times[-1]]))
 
     # Make sure that first and last frames are included in the est boundaries
     if 'numpy' in str(type(est_idxs)):

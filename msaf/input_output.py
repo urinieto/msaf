@@ -337,6 +337,13 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         analysis = feats["analysis"]
         dur = analysis["dur"]
 
+        # Frame times might be shorter than the actual number of features.
+        if framesync:
+            frame_times = utils.get_time_frames(dur, analysis)
+            C = C[:len(frame_times)]
+            M = M[:len(frame_times)]
+            T = T[:len(frame_times)]
+
     else:
         feat_prefix = ""
         if not framesync:
