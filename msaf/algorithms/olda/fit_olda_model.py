@@ -92,7 +92,7 @@ def score_model(model, x, b, t):
 
     truth_intervals = mir_eval.util.boundaries_to_intervals(t)[0]
     pred_intervals = mir_eval.util.boundaries_to_intervals(boundary_times)[0]
-    score = mir_eval.segment.detection(truth_intervals, pred_intervals)[-1]
+    score = mir_eval.segment.detection(truth_intervals, pred_intervals, trim=True)[-1]
 
     return score
 
