@@ -112,10 +112,9 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path, ds_name):
         O.fit(X, Y)
 
         scores = []
-        files = glob.glob(os.path.join(ds_path,
-                                       msaf.Dataset.references_dir,
-                                       ds_name + "_*.jams"))[:]
+        files = msaf.io.get_dataset_files(ds_path, ds_name=ds_name)
         for f, z in zip(files, zip(X, B, T)):
+            f = f.ref_file
             if annot_beats:
                 jam = jams2.load(f)
                 if jam.beats == []:
