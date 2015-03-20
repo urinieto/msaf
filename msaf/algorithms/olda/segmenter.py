@@ -217,13 +217,16 @@ def get_segments(X, kmin=8, kmax=32):
 
     cost_min = np.inf
     S_best = []
+    best_k = -1
     for k in range(kmax, kmin, -1):
         S, cost = get_k_segments(X, k)
         if cost < cost_min:
             cost_min = cost
             S_best = S
+            best_k = k
         else:
             break
+    import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
     return S_best
 
