@@ -124,14 +124,12 @@ def import_data(song, rootpath, output_path, annot_beats):
 def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
                  annot_beats=False, ds_name="*"):
 
-    audio_files = glob.glob(os.path.join(rootpath,
-                                         msaf.Dataset.audio_dir,
-                                         ds_name + "_*.[wm][ap][v3]"))
+    audio_files = msaf.io.get_dataset_files(rootpath, ds_name=ds_name)
 
     if n is None:
         n = len(audio_files)
 
-    data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song,
+    data = Parallel(n_jobs=n_jobs)(delayed(import_data)(song.audio_file,
             rootpath, output_path, annot_beats)
             for song in audio_files[:n])
 
@@ -171,7 +169,7 @@ if __name__ == '__main__':
                         dest="n_jobs",
                         type=int,
                         help="Number of jobs (threads)",
-                        default=8)
+                        default=1)
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
@@ -185,8 +183,6 @@ if __name__ == '__main__':
                         "(e.g. Isophonics, SALAMI)")
     args = parser.parse_args()
     start_time = time.time()
-    salami_path = sys.argv[1]
-    output_path = sys.argv[2]
     X, Y, B, T, F, L = make_dataset(n=args.n,
                                     n_jobs=args.n_jobs,
                                     rootpath=args.ds_path,
@@ -195,8 +191,8 @@ if __name__ == '__main__':
                                     ds_name=args.ds_name)
 
     if args.annot_beats:
-        out_path = '%s/AnnotBeats_%s_data.pickle' % (output_path, args.ds_name)
+        out_path = '%s/AnnotBeats_%s_data.pickle' % (args.output_path, args.ds_name)
     else:
-        out_path = '%s/EstBeats_%s_data.pickle' % (output_path, args.ds_name)
+        out_path = '%s/EstBeats_%s_data.pickle' % (args.output_path, args.ds_name)
     with open(out_path, 'w') as f:
         pickle.dump((X, Y, B, T, F, L), f)
