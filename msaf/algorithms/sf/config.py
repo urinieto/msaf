@@ -2,11 +2,11 @@
 
 # Serra params
 config = {
-    "M_gaussian"    : 24,
+    "M_gaussian"    : 23,
     "m_embedded"    : 3,
-    "k_nearest"     : 0.06,
-    "Mp_adaptive"   : 24,
-    "offset_thres"  : 0.04
+    "k_nearest"     : 0.03,
+    "Mp_adaptive"   : 28,
+    "offset_thres"  : 0.05
 
     # For framesync features
     #"M_gaussian"    : 100,
