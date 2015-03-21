@@ -417,7 +417,6 @@ class Segmenter(SegmenterInterface):
 
         # Additional SI-PLCA params
         self.config["plotiter"] = None
-        self.config["win"] = 60
         self.config["rank"] = 15
 
         # Update parameters if using additional boundaries
