@@ -1,10 +1,10 @@
 """Config for the SI-PLCA."""
 
-# SI-PLCA Params (From MIREX)
+# SI-PLCA Params
 config = {
     "niter"             :   200,
-    "alphaZ"            :   -0.01,
-    "viterbi_segmenter" :   True,
+    "alphaZ"            :   0.00,
+    "viterbi_segmenter" :   False,
     "min_segment_length":   32
 }
 
