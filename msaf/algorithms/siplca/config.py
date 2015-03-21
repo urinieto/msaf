@@ -3,9 +3,10 @@
 # SI-PLCA Params
 config = {
     "niter"             :   200,
-    "alphaZ"            :   0.00,
+    "alphaZ"            :   0.01,
     "viterbi_segmenter" :   False,
-    "min_segment_length":   32
+    "min_segment_length":   16,
+    "win"               :   32
 }
 
 algo_id = "siplca"
