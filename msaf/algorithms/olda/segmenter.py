@@ -226,7 +226,6 @@ def get_segments(X, kmin=8, kmax=32):
             best_k = k
         else:
             break
-    import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
     return S_best
 
