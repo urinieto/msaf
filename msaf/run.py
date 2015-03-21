@@ -149,6 +149,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     if 'numpy' in str(type(est_idxs)):
         # Flat output
         #if bounds_module is not None:
+        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         est_times, est_labels = utils.process_segmentation_level(
             est_idxs, est_labels, hpcp.shape[0], frame_times, dur)
     else:

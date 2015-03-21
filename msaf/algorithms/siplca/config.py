@@ -3,7 +3,7 @@
 # SI-PLCA Params
 config = {
     "niter"             :   200,
-    "alphaZ"            :   0.01,
+    "alphaZ"            :   0.00,
     "viterbi_segmenter" :   False,
     "min_segment_length":   16,
     "win"               :   32,
