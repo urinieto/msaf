@@ -6,7 +6,8 @@ config = {
     "alphaZ"            :   0.01,
     "viterbi_segmenter" :   False,
     "min_segment_length":   16,
-    "win"               :   32
+    "win"               :   32,
+    "rank"              :   4
 }
 
 algo_id = "siplca"
