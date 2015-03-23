@@ -75,6 +75,10 @@ def main():
                         default="*",
                         help="The prefix of the dataset to use "
                         "(e.g. Isophonics, SALAMI)")
+    parser.add_argument("-hier",
+                        action="store_true",
+                        dest="hier",
+                        help="Compute hierarchical segmentation", default=False)
     parser.add_argument("-e",
                         action="store_true",
                         dest="evaluate",
@@ -95,7 +99,8 @@ def main():
         "framesync": args.framesync,
         "boundaries_id": args.boundaries_id,
         "labels_id": args.labels_id,
-        "n_jobs": args.n_jobs
+        "n_jobs": args.n_jobs,
+        "hier": args.hier
     }
     if args.evaluate:
         func = msaf.eval
