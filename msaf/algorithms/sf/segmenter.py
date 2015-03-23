@@ -121,7 +121,7 @@ def embedded_space(X, m, tau=1):
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
         Returns
         -------

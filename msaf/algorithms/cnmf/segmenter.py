@@ -179,7 +179,7 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
         Returns
         -------

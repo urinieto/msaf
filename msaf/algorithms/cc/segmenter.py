@@ -21,7 +21,7 @@ except:
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
         Returns
         -------

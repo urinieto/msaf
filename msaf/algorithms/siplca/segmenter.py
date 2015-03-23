@@ -393,7 +393,7 @@ def use_in_bounds(audio_file, in_bound_idxs, feats, config):
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
 
         Returns

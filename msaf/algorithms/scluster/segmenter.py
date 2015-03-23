@@ -31,10 +31,12 @@ class Segmenter(SegmenterInterface):
         """Main process.
         Returns
         -------
-        est_idxs : np.array(N)
+        est_idxs : np.array(N) or list
             Estimated times for the segment boundaries in frame indeces.
-        est_labels : np.array(N-1)
+            List if hierarchical segmentation.
+        est_labels : np.array(N-1) or list
             Estimated labels for the segments.
+            List if hierarchical segmentation.
         """
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
@@ -70,3 +72,27 @@ class Segmenter(SegmenterInterface):
                     self._postprocess(est_idxs[layer], est_labels[layer])
 
         return est_idxs, est_labels
+
+    def processFlat(self):
+        """Main process.for flat segmentation.
+        Returns
+        -------
+        est_idxs : np.array(N)
+            Estimated times for the segment boundaries in frame indeces.
+        est_labels : np.array(N-1)
+            Estimated labels for the segments.
+        """
+        return self.process()
+
+    def processHierarchical(self):
+        """Main process.for hierarchial segmentation.
+        Returns
+        -------
+        est_idxs : list
+            List with np.arrays for each layer of segmentation containing
+            the estimated indeces for the segment boundaries.
+        est_labels : list
+            List with np.arrays containing the labels for each layer of the
+            hierarchical segmentation.
+        """
+        return self.process()
