@@ -125,7 +125,7 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
         Returns
         -------

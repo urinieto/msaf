@@ -94,7 +94,7 @@ def pick_peaks(nc, L=16):
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
         Returns
         -------
