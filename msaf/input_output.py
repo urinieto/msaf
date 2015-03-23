@@ -2,13 +2,6 @@
 These set of functions help the algorithms of MSAF to read and write files
 of the Segmentation Dataset.
 """
-
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 from collections import Counter
 import datetime
 import glob
