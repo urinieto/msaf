@@ -280,7 +280,7 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
 
 class Segmenter(SegmenterInterface):
-    def process(self):
+    def processFlat(self):
         """Main process.
         Returns
         -------

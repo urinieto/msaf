@@ -97,11 +97,12 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     """
 
     # At this point, features should have already been computed
-    # Check that there are too few frames
     hpcp, mfcc, tonnetz, beats, dur, anal =  \
             io.get_features(audio_file, config["annot_beats"],
                             config["framesync"],
                             pre_features=config["features"])
+
+    # Check that there are enough audio frames
     if hpcp.shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
@@ -116,43 +117,20 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     if config["framesync"]:
         frame_times = utils.get_time_frames(dur, anal)
 
-    # Segment using the specified boundaries and labels
-    # Case when boundaries and labels algorithms are the same
-    if bounds_module is not None and labels_module is not None and \
-            bounds_module.__name__ == labels_module.__name__:
+    # Segment audio based on type of segmentation
+    if config["hier"]:
+        # Hierarchical segmentation
+        if bound_module is None:
+            raise RuntimeError("A boundary algorithm is needed when using "
+                               "hierarchical segmentation.")
+        if bound_module.__name__ != labels_module.__name__:
+            raise RuntimeError("The same algorithm for boundaries and labels is "
+                               "needed when using hierarchical segmentation.")
         S = bounds_module.Segmenter(audio_file, **config)
-        est_idxs, est_labels = S.process()
-    # Different boundary and label algorithms
-    else:
-        # Identify segment boundaries
-        if bounds_module is not None:
-            S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
-            est_idxs, est_labels = S.process()
-        else:
-            try:
-                est_times, est_labels = io.read_references(audio_file)
-                est_idxs = io.align_times(est_times, frame_times[:-1])
-            except:
-                logging.warning("No references found for file: %s" % audio_file)
-                return [], []
+        est_idxs, est_labels = S.processHierarchical()
 
-        # Label segments
-        if labels_module is not None:
-            if len(est_idxs) == 2:
-                est_labels = np.array([0])
-            else:
-                S = labels_module.Segmenter(audio_file, in_bound_idxs=est_idxs,
-                                            **config)
-                est_labels = S.process()[1]
-
-    # Make sure that first and last frames are included in the est boundaries
-    if 'numpy' in str(type(est_idxs)):
-        # Flat output
-        #if bounds_module is not None:
-        est_times, est_labels = utils.process_segmentation_level(
-            est_idxs, est_labels, hpcp.shape[0], frame_times, dur)
-    else:
-        # Hierarchical output
+        # Make sure the first and last boundaries are included for each
+        # level in the hierarchy
         est_times = []
         cleaned_est_labels = []
         for level in range(len(est_idxs)):
@@ -165,7 +143,42 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             est_times.append(est_level_times)
             cleaned_est_labels.append(est_level_labels)
         est_labels = cleaned_est_labels
+    else:
+        # Flat segmentation
+        # Segment using the specified boundaries and labels
+        # Case when boundaries and labels algorithms are the same
+        if bounds_module is not None and labels_module is not None and \
+                bounds_module.__name__ == labels_module.__name__:
+            S = bounds_module.Segmenter(audio_file, **config)
+            est_idxs, est_labels = S.processFlat()
+        # Different boundary and label algorithms
+        else:
+            # Identify segment boundaries
+            if bounds_module is not None:
+                S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
+                est_idxs, est_labels = S.processFlat()
+            else:
+                try:
+                    est_times, est_labels = io.read_references(audio_file)
+                    est_idxs = io.align_times(est_times, frame_times[:-1])
+                except:
+                    logging.warning("No references found for file: %s" %
+                                    audio_file)
+                    return [], []
 
+            # Label segments
+            if labels_module is not None:
+                if len(est_idxs) == 2:
+                    est_labels = np.array([0])
+                else:
+                    S = labels_module.Segmenter(audio_file,
+                                                in_bound_idxs=est_idxs,
+                                                **config)
+                    est_labels = S.processFlat()[1]
+
+        # Make sure the first and last boundaries are included
+        est_times, est_labels = utils.process_segmentation_level(
+            est_idxs, est_labels, hpcp.shape[0], frame_times, dur)
 
     return est_times, est_labels
 
@@ -221,7 +234,7 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
-            framesync=False, boundaries_id="gt", labels_id=None,
+            framesync=False, boundaries_id="gt", labels_id=None, hier=False,
             sonify_bounds=False, plot=False, n_jobs=4, config=None,
             out_bounds="out_bounds.wav"):
     """Main process to segment a file or a collection of files.
@@ -244,6 +257,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         Identifier of the boundaries algorithm (use "gt" for groundtruth)
     labels_id: str
         Identifier of the labels algorithm (use None to not compute labels)
+    hier : bool
+        Whether to compute a hierarchical or flat segmentation.
     sonify_bounds: bool
         Whether to write an output audio file with the annotated boundaries
         or not (only available in Single File Mode).
@@ -274,6 +289,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
         config["features"] = None
+        config["hier"] = hier
 
     if os.path.isfile(in_path):
         # Single file mode
@@ -294,6 +310,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         else:
             features = featextract.compute_features_for_audio_file(in_path)
         config["features"] = features
+        config["hier"] = hier
 
         # And run the algorithms
         est_times, est_labels = run_algorithms(in_path, boundaries_id,
