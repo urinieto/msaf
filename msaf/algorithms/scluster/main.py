@@ -462,7 +462,7 @@ def label_clusterer(Lf, k_min, k_max):
 
     intervals, best_labels = label_rep_sections(Y_best.T, best_boundaries, best_n_types)
 
-    return best_boundaries, best_labels
+    return np.array(best_boundaries), best_labels
 
 
 def estimate_bandwidth(D, k):
@@ -500,7 +500,7 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     # If number of frames is too small, assign empty labels and quit:
     if X[0].shape[1] <= REP_WIDTH:
         if bound_idxs is not None:
-            return  bound_idxs, [0] * len(bound_idxs)
+            return  np.array(bound_idxs), [0] * len(bound_idxs)
         else:
             return np.array([0, X[0].shape[1] -1]), [0]
 

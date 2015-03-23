@@ -3,17 +3,12 @@ import numpy as np
 import msaf.input_output as io
 import msaf.utils as U
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
-
 class SegmenterInterface:
     """This class is an interface for all the segmenter algorithms included
-    in MSAF. These segmenters must inherit from it and implement the
-    process() method.
+    in MSAF. These segmenters must inherit from it and implement one of the
+    following methods:
+            processFlat()
+            processHierarchical()
 
     Additionally, two private helper functions are provided:
         - preprocess
@@ -75,10 +70,16 @@ class SegmenterInterface:
         self.config = config
         self.features = features
 
-    def process(self):
-        """Main process. You must implement it yourself if you want to use
-        this interface."""
-        raise NotImplementedError("This method must be implemented")
+    def processFlat(self):
+        """Main process to obtain the flat segmentation of a given track."""
+        raise NotImplementedError("This method does not return flat "
+                                  "segmentations.")
+
+    def processHierarchical(self):
+        """Main process to obtian the hierarchical segmentation of a given
+        track."""
+        raise NotImplementedError("This method does not return hierarchical "
+                                  "segmentations.")
 
     def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc"],
                     normalize=True):

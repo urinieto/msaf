@@ -7,7 +7,7 @@ config = {
     "num_types"  : None,
     "start_layer": 1,
     "num_layers" : 10,
-    "hier"       : True
+    "hier"       : False
 }
 
 algo_id = "scluster"
