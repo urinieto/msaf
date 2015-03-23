@@ -217,8 +217,8 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
 
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
-            annot_beats=False, framesync=False, feature="hpcp", save=False,
-            n_jobs=4, config=None):
+            annot_beats=False, framesync=False, feature="hpcp", hier=False,
+            save=False, n_jobs=4, config=None):
     """Main process.
 
     Parameters
@@ -233,12 +233,20 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
         Name of the dataset to be evaluated (e.g. SALAMI). * stands for all.
     annot_beats : boolean
         Whether to use the annotated beats or not.
-    annot_bounds : boolean
-        Whether to use the annotated bounds or not.
+    framesync: str
+        Whether to use framesync features or not (default: False -> beatsync)
+    feature: str
+        String representing the feature to be used (e.g. hpcp, mfcc, tonnetz)
+    hier : bool
+        Whether to compute a hierarchical or flat segmentation.
     save: boolean
         Whether to save the results into the SQLite database.
-    params : dict
-        Additional parameters (e.g. features)
+    n_jobs: int
+        Number of processes to run in parallel. Only available in collection
+        mode.
+    config: dict
+        Dictionary containing custom configuration parameters for the
+        algorithms.  If None, the default parameters are used.
 
     Return
     ------
