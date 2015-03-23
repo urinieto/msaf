@@ -281,7 +281,7 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
 class Segmenter(SegmenterInterface):
     def processFlat(self):
-        """Main process.
+        """Main process for flat segmentation.
         Returns
         -------
         est_idxs : np.array(N)
@@ -301,7 +301,6 @@ class Segmenter(SegmenterInterface):
             # Get Segments
             kmin, kmax = get_num_segs(dur)
             est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
-            #est_idxs = get_segments(F)
         except:
             # The audio file is too short, only beginning and end
             logging.warning("Audio file too short! "
@@ -316,5 +315,54 @@ class Segmenter(SegmenterInterface):
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
+
+        return est_idxs, est_labels
+
+
+    def processHierarchical(self):
+        """Main process for hierarchical segmentation.
+        Returns
+        -------
+        est_idxs : list
+            List containing estimated times for each layer in the hierarchy
+            as np.arrays
+        est_labels : list
+            List containing estimated labels for each layer in the hierarchy
+            as np.arrays
+        """
+        # Preprocess to obtain features, times, and input boundary indeces
+        F, frame_times, dur = features(self.audio_file, self.annot_beats,
+                                       self.features, self.framesync)
+
+        try:
+            # Load and apply transform
+            W = load_transform(self.config["transform"])
+            F = W.dot(F)
+
+            # Get Segments
+            kmin, kmax = get_num_segs(dur)
+
+            # Run algorithm layer by layer
+            est_idxs = []
+            est_labels = []
+            for k in range(kmax, kmin, -1):
+                S, cost = get_k_segments(F, k)
+                est_idxs.append(S)
+                est_labels.append(np.ones(len(S) - 1) * -1)
+
+                # Make sure that the first and last boundaries are included
+                assert est_idxs[-1][0] == 0 and \
+                    est_idxs[-1][-1] == F.shape[1] - 1, "Layer %d does not " \
+                    "start or end in the right frame(s)." % k
+
+                # Post process layer
+                est_idxs[-1], est_labels[-1] = \
+                        self._postprocess(est_idxs[-1], est_labels[-1])
+        except:
+            # The audio file is too short, only beginning and end
+            logging.warning("Audio file too short! "
+                            "Only start and end boundaries.")
+            est_idxs = [np.array([0, F.shape[1] - 1])]
+            est_labels = [np.ones(1) * -1]
 
         return est_idxs, est_labels

@@ -120,10 +120,11 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     # Segment audio based on type of segmentation
     if config["hier"]:
         # Hierarchical segmentation
-        if bound_module is None:
+        if bounds_module is None:
             raise RuntimeError("A boundary algorithm is needed when using "
                                "hierarchical segmentation.")
-        if bound_module.__name__ != labels_module.__name__:
+        if labels_module is not None and \
+                bounds_module.__name__ != labels_module.__name__:
             raise RuntimeError("The same algorithm for boundaries and labels is "
                                "needed when using hierarchical segmentation.")
         S = bounds_module.Segmenter(audio_file, **config)
