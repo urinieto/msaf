@@ -51,7 +51,7 @@ def get_labels_module(labels_id):
     Parameters
     ----------
     labels_id: str
-        Label algorithm identificator (e.g., fmc2d, cnmf3).
+        Label algorithm identificator (e.g., fmc2d, cnmf).
 
     Returns
     -------
