@@ -1,10 +1,14 @@
-# Music Structure Analysis Framework #
-
 [![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
+
+# Music Structure Analysis Framework #
 
 ## Description ##
 
-This framework contains a set of algorithms to segment a given music audio signal. It uses [librosa](https://github.com/bmcfee/librosa/) to extract the necessary features, and is compatible with the [JAMS](https://github.com/urinieto/jams) format and [mir_eval](https://github.com/craffel/mir_eval).
+This framework contains a set of algorithms to segment a given music audio signal. It uses [librosa](https://github.com/bmcfee/librosa/) to extract the audio features, [JAMS](https://github.com/urinieto/jams) to read and write references and estimations respectively, and [mir_eval](https://github.com/craffel/mir_eval) to evaluate the estimations.
+
+Two types of algorithms are included in MSAF:
+* Boundary Algorithms: To identify the segment boundaries of a given audio signal
+* Labeling (or Structural) Algorithms: To cluster the different music segments based on their acoustic similarity.
 
 ## Boundary Algorithms ##
 
@@ -24,6 +28,14 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Spectral Clustering (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/laplacian_segmentation))
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
+## Installing MSAF #
+
+From the root folder, type:
+    
+    python setup.py install
+
+(Note: you may need to use `sudo` depending on your system configuration).
+
 ## Using MSAF ##
 
 MSAF can be run in two different modes: **single file** and **collection** modes.
@@ -33,7 +45,7 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 In single file mode the features will be computed on the fly (so it always takes some extra time).
 To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features:
 
-    ./run.py audio_file.mp3 -bid cnmf3 -lid fmc2d -f hpcp
+    ./run.py audio_file.mp3 -bid cnmf -lid fmc2d -f hpcp
 
 The input file can be of type `mp3`, `wav` or `aif`.
 
@@ -149,7 +161,7 @@ For more parameters, please read the function's docstring.
 * Pandas (for evaluation only)
 * joblib
 * [mir\_eval](https://github.com/craffel/mir_eval)
-* [librosa](https://github.com/bmcfee/librosa/)
+* [librosa](https://github.com/bmcfee/librosa/) (>=0.4.0rc1)
 * BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
 * ffmpeg (to read mp3 files only)
 
