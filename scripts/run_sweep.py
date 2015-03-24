@@ -23,16 +23,14 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
 
-        hh = range(8, 33)
-        RR = range(8, 65)
+        hh = range(15, 33)
+        RR = range(15, 40)
         ranks = range(3, 6)
         RR_labels = range(11, 12)
         ranks_labels = range(6, 7)
         all_results = pd.DataFrame()
         for rank in ranks:
             for h in hh:
-                if rank == 3 and h <= 10:
-                    continue
                 for R in RR:
                     for rank_labels in ranks_labels:
                         for R_labels in RR_labels:
