@@ -7,8 +7,8 @@
 This framework contains a set of algorithms to segment a given music audio signal. It uses [librosa](https://github.com/bmcfee/librosa/) to extract the audio features, [JAMS](https://github.com/urinieto/jams) to read and write references and estimations respectively, and [mir_eval](https://github.com/craffel/mir_eval) to evaluate the estimations.
 
 Two types of algorithms are included in MSAF:
-* Boundary Algorithms: To identify the segment boundaries of a given audio signal
-* Labeling (or Structural) Algorithms: To cluster the different music segments based on their acoustic similarity.
+* Boundary Algorithms: Aim to identify the segment boundaries of a given audio signal
+* Labeling (or Structural) Algorithms: Aim to cluster the different music segments based on their acoustic similarity.
 
 ## Boundary Algorithms ##
 
@@ -34,7 +34,7 @@ From the root folder, type:
     
     python setup.py install
 
-(Note: you may need to use `sudo` depending on your system configuration).
+(Note: you may need to prefix the previous line with `sudo`, depending on your system configuration).
 
 ## Using MSAF ##
 
