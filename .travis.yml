@@ -15,9 +15,18 @@ before_install:
     - ./miniconda.sh -b
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda update --yes conda
-    # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+      # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
     - sudo rm -rf /dev/shm
     - sudo ln -s /run/shm /dev/shm 
+      # Some Brian Magic to install libsamplerate
+    - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
+    - source activate test-environment
+    - apt-get source libsamplerate
+    - pushd libsamplerate-*
+    - ./configure --prefix=$HOME/miniconda/envs/test-environment
+    - make && make install
+    - popd
+
 install:
     # install gcc-4.8 with c++11 support: https://github.com/travis-ci-tester/travis-test-gcc-cxx-11
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -33,7 +42,6 @@ install:
     - git clone https://github.com/bmcfee/librosa.git
     - cd librosa
     - git checkout develop
-    #- sudo easy_install scikits.samplerate
     - python setup.py install
     - cd ..
     - python setup.py build
