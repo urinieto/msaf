@@ -82,7 +82,7 @@ setup(
         'decorator',
         'cvxopt',
         'joblib',
-        'librosa',
+        'librosa >= 0.4.0rc1',
         'mir_eval',
         'pandas'
     ],
