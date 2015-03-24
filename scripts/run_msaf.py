@@ -17,7 +17,7 @@ def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(description=
         "Runs the speficied algorithm(s) on the input file or MSAF formatted "
-        "dataset.",
+        "dataset and evaluates the results if annotations exist.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
@@ -41,7 +41,7 @@ def main():
                         help="Label algorithm identifier",
                         dest="labels_id",
                         default=None,
-                        choices= \
+                        choices=
                         msaf.io.get_all_label_algorithms(msaf.algorithms))
     parser.add_argument("-s",
                         action="store_true",
@@ -82,7 +82,7 @@ def main():
     parser.add_argument("-e",
                         action="store_true",
                         dest="evaluate",
-                        help="Evaluates the results", default=False)
+                        help="Evaluates the results exclusively", default=False)
 
     args = parser.parse_args()
     start_time = time.time()
@@ -112,12 +112,14 @@ def main():
 
     if not args.evaluate:
         if os.path.isfile(args.in_path):
+            # Print estimations for single file mode
             logging.info("Estimated times: %s" % res[0])
             logging.info("Estimated labels: %s" % res[1])
         else:
-            for result in res:
-                logging.info("Estimated times: %s" % result[0])
-                logging.info("Estimated labels: %s" % result[1])
+            # Evaluate results for collection mode
+            params.pop("sonify_bounds", None)
+            params.pop("plot", None)
+            msaf.eval.process(args.in_path, **params)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
