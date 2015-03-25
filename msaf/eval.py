@@ -6,6 +6,7 @@ ground truth (human annotated data).
 from joblib import Parallel, delayed
 import logging
 import mir_eval
+import numpy as np
 import os
 import pandas as pd
 import sys
@@ -139,8 +140,13 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         context = "function"
 
     try:
-        ref_inter, ref_labels = jams2.converters.load_jams_range(
-            ref_file, "sections", annotator=0, context=context)
+        # TODO: Read hierarchical annotations
+        if config["hier"]:
+            ref_times, ref_labels, ref_levels = \
+                msaf.io.read_hier_references(ref_file, annotation_id=0)
+        else:
+            ref_inter, ref_labels = jams2.converters.load_jams_range(
+                ref_file, "sections", annotator=0, context=context)
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}
@@ -159,8 +165,19 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         assert len(est_inter) == len(est_labels), "Same number of levels " \
             "are required in the boundaries and labels for the hierarchical " \
             "evaluation."
-        ref_tree = mir_eval.segment.tree.SegmentTree(ref_inter, ref_labels)
-        print "Hier"
+        est_times = []
+        est_labels = []
+        for inter in est_inter:
+            est_times.append(msaf.utils.intervals_to_times(inter))
+            # Add fake labels (hierarchical eval does not use labels --yet--)
+            est_labels.append(np.ones(len(est_times[-1]) - 1) * -1)
+        ref_tree = mir_eval.segment.tree.SegmentTree(ref_times, ref_labels,
+                                                     ref_levels)
+        est_tree = mir_eval.segment.tree.SegmentTree(est_times, est_labels)
+        res = {}
+        res["t_under"], res["t_over"], res["t_measure"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree)
+        return res
     else:
         # Flat
         return compute_results(ref_inter, est_inter, ref_labels, est_labels,
