@@ -38,24 +38,27 @@ From the root folder, type:
 
 ## Using MSAF ##
 
+A series of examples can be seen in the `scripts` folder.
+
 MSAF can be run in two different modes: **single file** and **collection** modes.
 
 ###Single File Mode###
 
-In single file mode the features will be computed on the fly (so it always takes some extra time).
 To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features:
 
-    ./run.py audio_file.mp3 -bid cnmf -lid fmc2d -f hpcp
+    ./run_msaf.py audio_file.mp3 -bid cnmf -lid fmc2d -f hpcp
+
+(`run_msaf.py` is found in the `scripts` folder).
 
 The input file can be of type `mp3`, `wav` or `aif`.
 
-If you want to *sonify* the boundaries, add the `-a` flag, and a file called `out_boundaries.wav` will be created in your current folder.
+If you want to *sonify* the boundaries, add the `-s` flag, and a file called `out_boundaries.wav` will be created in your current folder.
 
 If you want to plot the boundaries against the ground truth, add the `-p` (only if ground truth references are available).
 
 For more info, type:
 
-    ./run.py -h
+    ./run_msaf.py -h
 
 
 ###Collection Mode###
@@ -74,26 +77,22 @@ The MSAF datasets should have the following folder structure:
     ├──  features: Feature files for speeding up running time. Should be empty initially.
     └──  references: Human references for evaluation purposes.
 
-Using this toy dataset as an example, we could run MSAF using the Foote algorithm for boundaries and using hpcp features by simply:
+There are multiple examples of datasets in the `datasets` folder.
+Moreover, a complete dataset composed of 4 tracks is found in the `datasets/Sargon`.
+We will use it here as an example.
 
-    ./run.py my_collection -f hpcp -bid foote
+To run the Foote algorithm for boundaries on the Sargon dataset with mfcc as features, we can type:
 
-There is an example dataset included in the MSAF package, in the folder `ds_example`. 
-It includes the SALAMI and Isophonics datasets (not the audio though).
+    ./run_msaf.py ../datasets/Sargon -f mfcc -bid foote
 
 Furthermore, we can spread the work across multiple processors by using the `-j` flag.
-By default the number of processors is 4, this can be explicitly set by typing:
+By default the number of processors is 1, this can be explicitly set by typing:
 
-    ./run.py my_collection -f hpcp -bid foote -j 4
-
-Additionally, we can run only a specific subset of the collection.
-For example, if you want to run on the Isophonics set, you can do:
-
-    ./run.py my_collection -f hpcp -bid foote -d Isophonics
+    ./run_msaf.py ../datasets/Sargon -f mfcc -bid foote -j 8
 
 For more information, please type:
 
-    ./run.py -h
+    ./run_msaf.py -h
 
 ####Evaluating Collection####
 
