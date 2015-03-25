@@ -175,8 +175,10 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                                                      ref_levels)
         est_tree = mir_eval.segment.tree.SegmentTree(est_times, est_labels)
         res = {}
-        res["t_under"], res["t_over"], res["t_measure"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree)
+        res["t_under10"], res["t_over10"], res["t_measure10"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=10)
+        res["t_under30"], res["t_over30"], res["t_measure30"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=30)
         return res
     else:
         # Flat
