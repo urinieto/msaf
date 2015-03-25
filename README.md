@@ -96,10 +96,11 @@ For more information, please type:
 
 ####Evaluating Collection####
 
-Once you have run the desired algorithm on a specified collection, the next thing you might probably want to do is to evaluate its results.
-To do so, use the `eval.py` script, just like this (following the example above):
+When running a collection, the evaluation is automatically computed once the estimations are produced.
+However, you might want to evaluate a set of previously estimated results.
+To do so, simply add the flag `-e`.
 
-    ./eval.py my_collection -f hpcp -bid foote
+    ./run_msaf.py ../datasets/Sargon -f mfcc -bid foote
 
 The output contains the following evaluation metrics:
 
@@ -129,13 +130,10 @@ The output contains the following evaluation metrics:
 | So           | Normalized Entropy Scores Precision |
 | Su           | Normalized Entropy Scores Recall |
 
-Analogously as in `run.py`, you can evaluate only a subset of the collection, by adding the `-d` flag:
 
-    ./eval.py my_collection -f hpcp -bid foote -d Isophonics
+Please, note that before you can use the `-e` flag (i.e., evaluate some results) on a specific feature and set of algorithms, you **must** have run the `run_msaf.py` script first without this flag.
 
-Please, note that before you can run the `eval.py` script on a specific feature and set of algorithms, you **must** have run the `run.py` script first.
-
-For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation). Finally, you can always add the `-h` flag in `eval.py` for more options.
+For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
 
 ###As a Python module###
 
