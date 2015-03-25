@@ -154,14 +154,17 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         return {}
 
     # Compute the results and return
-    if 'numpy' in str(type(est_inter)):
+    if config["hier"]:
+        # Hierarchical
+        assert len(est_inter) == len(est_labels), "Same number of levels " \
+            "are required in the boundaries and labels for the hierarchical " \
+            "evaluation."
+        ref_tree = mir_eval.segment.tree.SegmentTree(ref_inter, ref_labels)
+        print "Hier"
+    else:
         # Flat
         return compute_results(ref_inter, est_inter, ref_labels, est_labels,
                             bins, est_file)
-    else:
-        # Hierarchical
-        ref_tree = mir_eval.segment.tree.SegmentTree(ref_file)
-        print "Hier"
 
 
 
@@ -258,6 +261,19 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
+
+    # Hierarchical segmentation
+    config["hier"] = hier
+
+    # Sanity check for hierarchical evaluation
+    if hier:
+        try:
+            from mir_eval.segment import tree
+        except:
+            logging.error("An experimental mir_eval version is needed to "
+                          "evaluate hierarchical segments. Please, download it"
+                          " from: https://github.com/urinieto/mir_eval")
+            return []
 
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
