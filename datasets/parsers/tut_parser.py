@@ -94,6 +94,10 @@ def fill_section_annotation(lab_file, annot, dur):
             logging.warning("Start time is after end time in file %s" %
                             lab_file)
             continue
+        if float(start_time) > dur:
+            continue
+        if float(end_time) > dur:
+            end_time = dur
         section = annot.create_datapoint()
         section.start.value = float(start_time)
         section.start.confidence = 1.0

@@ -171,9 +171,18 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             est_times.append(msaf.utils.intervals_to_times(inter))
             # Add fake labels (hierarchical eval does not use labels --yet--)
             est_labels.append(np.ones(len(est_times[-1]) - 1) * -1)
+
+        # Align the times
+        #if "What_Goes" in est_file:
+            #import pdb; pdb.set_trace()  # XXX BREAKPOINT
+        utils.align_end_hierarchies(est_times, ref_times)
+
+        # Build trees
         ref_tree = mir_eval.segment.tree.SegmentTree(ref_times, ref_labels,
                                                      ref_levels)
         est_tree = mir_eval.segment.tree.SegmentTree(est_times, est_labels)
+
+        # Compute evaluations
         res = {}
         res["t_under10"], res["t_over10"], res["t_measure10"] = \
             mir_eval.segment.hmeasure(ref_tree, est_tree, window=10)
