@@ -241,3 +241,34 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
         np.allclose([est_times[-1]], [dur])
 
     return est_times, est_labels
+
+
+def align_end_hierarchies(hier1, hier2, thres=0.05):
+    """Align the end of the hierarchies such that they end at the same exact
+    second as long they have the same duration within a certain threshold.
+
+    Parameters
+    ----------
+    hier1: list
+        List containing hierarchical segment boundaries.
+    hier2: list
+        List containing hierarchical segment boundaries.
+    thres: float > 0
+        Threshold to decide whether two values are the same.
+    """
+    # Make sure we have correctly formatted hierarchies
+    dur_h1 = hier1[0][-1]
+    for hier in hier1:
+        assert hier[-1] == dur_h1, "hier1 is not correctly formatted"
+    dur_h2 = hier2[0][-1]
+    for hier in hier2:
+        assert hier[-1] == dur_h2, "hier2 is not correctly formatted"
+
+    # If durations are different, do nothing
+    if abs(dur_h1 - dur_h2) > thres:
+        return
+
+    # Align h1 with h2
+    for hier in hier1:
+        hier[-1] = dur_h2
+
