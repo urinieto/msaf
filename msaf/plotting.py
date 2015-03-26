@@ -206,3 +206,58 @@ def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
         algo_ids = ["GT"] + [bid_lid]
     _plot_formatting(title, in_path, algo_ids, all_boundaries[0][-1], N,
                      None)
+
+
+def plot_tree(T, res=None, cmap_id="Pastel2"):
+    """Plots a given tree, containing hierarchical segmentation.
+
+    Parameters
+    ----------
+    T: mir_eval.segment.tree
+        A tree object containing the hierarchical segmentation.
+    res: float
+        Frame-rate resolution of the tree (None to use seconds).
+    cmap_id: str
+        Color Map ID
+    """
+    def round_time(t, res=0.1):
+        v = int(t / float(res)) * res
+        return v
+
+    # Get color map
+    cmap = plt.get_cmap(cmap_id)
+
+    # Get segments by level
+    level_bounds = []
+    for level in T.levels:
+        if level == "root":
+            continue
+        segments = T.get_segments_in_level(level)
+        level_bounds.append(segments)
+
+    # Plot axvspans for each segment
+    B = float(len(level_bounds))
+#     plt.figure(figsize=(7,4))
+    for i, segments in enumerate(level_bounds):
+        labels = utils.segment_labels_to_floats(segments)
+        for segment, label in zip(segments, labels):
+            if res is None:
+                start = segment.start
+                end = segment.end
+                xlabel = "Time (seconds)"
+            else:
+                start = int(round_time(segment.start, res=res) / res)
+                end = int(round_time(segment.end, res=res) / res)
+                xlabel = "Time (frames)"
+            plt.axvspan(start, end,
+                        ymax=(len(level_bounds) - i) / B,
+                        ymin=(len(level_bounds) - i - 1) / B,
+                        facecolor=cmap(label))
+
+    # Plot labels
+    L = float(len(T.levels) - 1)
+    plt.yticks(np.linspace(0, (L - 1) / L, num=L) + 1 / L / 2.,
+               T.levels[1:][::-1])
+    plt.xlabel(xlabel)
+    plt.title(os.path.basename(T.jams_file).split('.')[0])
+    plt.gca().set_xlim([0, end])
