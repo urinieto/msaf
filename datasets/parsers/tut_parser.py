@@ -168,13 +168,6 @@ def process(in_dir, out_dir, n_jobs=1):
                      os.path.basename(lab_file).replace(".lab", "") + ".jams"))
         for lab_file in lab_files)
 
-    #for lab_file in lab_files:
-        ##Create a JAMS file for this track
-        #create_JAMS(lab_file,
-                    #os.path.join(out_dir,
-                                 #os.path.basename(lab_file).replace(".lab", "")
-                                 #+ ".jams"))
-
     logging.info("Parsed %d files" % len(lab_files))
 
 
