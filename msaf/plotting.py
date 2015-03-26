@@ -208,7 +208,7 @@ def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
                      None)
 
 
-def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
+def plot_tree(T, res=None, title=None, cmap_id="Pastel2", figsize=(7, 4)):
     """Plots a given tree, containing hierarchical segmentation.
 
     Parameters
@@ -221,6 +221,8 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
         Title for the plot. `None` for no title.
     cmap_id: str
         Color Map ID
+    figsize: tuple
+        Size of the figure (width, length)
     """
     def round_time(t, res=0.1):
         v = int(t / float(res)) * res
@@ -239,7 +241,7 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
 
     # Plot axvspans for each segment
     B = float(len(level_bounds))
-#     plt.figure(figsize=(7,4))
+    plt.figure(figsize=figsize)
     for i, segments in enumerate(level_bounds):
         labels = utils.segment_labels_to_floats(segments)
         for segment, label in zip(segments, labels):
