@@ -208,7 +208,7 @@ def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
                      None)
 
 
-def plot_tree(T, res=None, cmap_id="Pastel2"):
+def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
     """Plots a given tree, containing hierarchical segmentation.
 
     Parameters
@@ -217,6 +217,8 @@ def plot_tree(T, res=None, cmap_id="Pastel2"):
         A tree object containing the hierarchical segmentation.
     res: float
         Frame-rate resolution of the tree (None to use seconds).
+    title: str
+        Title for the plot. `None` for no title.
     cmap_id: str
         Color Map ID
     """
@@ -259,5 +261,6 @@ def plot_tree(T, res=None, cmap_id="Pastel2"):
     plt.yticks(np.linspace(0, (L - 1) / L, num=L) + 1 / L / 2.,
                T.levels[1:][::-1])
     plt.xlabel(xlabel)
-    plt.title(os.path.basename(T.jams_file).split('.')[0])
+    if title is not None:
+        plt.title(title)
     plt.gca().set_xlim([0, end])
