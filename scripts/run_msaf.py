@@ -79,6 +79,10 @@ def main():
                         action="store_true",
                         dest="hier",
                         help="Compute hierarchical segmentation", default=False)
+    parser.add_argument("-save",
+                        action="store_true",
+                        dest="save",
+                        help="Save the evaluation results", default=False)
     parser.add_argument("-e",
                         action="store_true",
                         dest="evaluate",
@@ -119,6 +123,7 @@ def main():
             # Evaluate results for collection mode
             params.pop("sonify_bounds", None)
             params.pop("plot", None)
+            params["save"] = args.save
             msaf.eval.process(args.in_path, **params)
 
     # Done!
