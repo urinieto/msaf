@@ -2,12 +2,6 @@
 Useful functions that are common in MSAF
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 import copy
 import mir_eval
 import numpy as np
@@ -288,4 +282,21 @@ def segment_labels_to_floats(segments):
     unique_labels = set(labels)
     unique_labels = list(unique_labels)
 
-    return [unique_labels.index(label) / float(len(unique_labels)) for label in labels]
+    return [unique_labels.index(label) / float(len(unique_labels))
+            for label in labels]
+
+
+def seconds_to_frames(seconds):
+    """Converts seconds to frames based on MSAF parameters.
+
+    Parameters
+    ----------
+    seconds: float
+        Seconds to be converted to frames.
+
+    Returns
+    -------
+    frames: int
+        Seconds converted to frames
+    """
+    return int(seconds * msaf.Anal.sample_rate / msaf.Anal.hop_size)

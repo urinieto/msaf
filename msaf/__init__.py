@@ -6,6 +6,17 @@ __license__     = "MIT"
 __version__     = "0.0.2"
 __email__       = "oriol@nyu.edu"
 
+
+# Analysis Params
+class Anal():
+    sample_rate = 11025
+    frame_size = 4096
+    hop_size = 512
+    mfcc_coeff = 14
+    n_mels = 128
+    window_type = "blackmanharris62"
+
+
 # Import all submodules (for each task)
 from . import featextract
 from . import input_output as io
@@ -29,15 +40,6 @@ results_ext = ".csv"
 out_boundaries_ext = "-bounds.wav"
 minimum__frames = 10
 
-
-# Analysis Params
-class Anal():
-    sample_rate = 11025
-    frame_size = 2048
-    hop_size = 128
-    mfcc_coeff = 14
-    n_mels = 128
-    window_type = "blackmanharris62"
 
 
 class Dataset():

@@ -173,8 +173,6 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             est_labels.append(np.ones(len(est_times[-1]) - 1) * -1)
 
         # Align the times
-        #if "What_Goes" in est_file:
-            #import pdb; pdb.set_trace()  # XXX BREAKPOINT
         utils.align_end_hierarchies(est_times, ref_times)
 
         # Build trees
@@ -337,7 +335,7 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     # Save all results
     if save:
-        logging.info("Writing average results in %s" % out_file)
+        logging.info("Writing results in %s" % out_file)
         results.to_csv(out_file)
 
     return results

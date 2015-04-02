@@ -69,13 +69,12 @@ def compute_nc(X, G):
 
 def pick_peaks(nc, L=16):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
-    offset = nc.mean() / 2.
+    offset = nc.mean() / 20.
+
+    nc = filters.gaussian_filter1d(nc, sigma=4)  # Smooth out nc
 
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-
-    nc = filters.gaussian_filter1d(nc, sigma=2)  # Hack for Musichackathon
-    th = np.zeros(len(nc))  # Hack continues
 
     peaks = []
     for i in xrange(1, nc.shape[0] - 1):
@@ -105,6 +104,10 @@ class Segmenter(SegmenterInterface):
         """
         # Preprocess to obtain features
         F = self._preprocess()
+
+        # Make sure that the M_gaussian is even
+        if self.config["M_gaussian"] % 2 == 1:
+            self.config["M_gaussian"] += 1
 
         # Median filter
         F = median_filter(F, M=self.config["m_median"])
