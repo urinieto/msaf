@@ -4,7 +4,7 @@
 config = {
     "dirichlet" :   False,
     "xmeans"    :   False,
-    "k"         :   5
+    "k"         :   4
 }
 
 # Other params

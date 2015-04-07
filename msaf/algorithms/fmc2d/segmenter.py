@@ -8,16 +8,10 @@ Nieto, O., Bello, J.P., Music Segment Similarity Using 2D-Fourier Magnitude
     Speech, and Signal Processing (ICASSP). Florence, Italy, 2014.
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 import logging
 
 import numpy as np
-import pylab as plt
+#import pylab as plt
 
 import scipy.cluster.vq as vq
 from sklearn import mixture
@@ -94,7 +88,7 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
 
     # Get the 2d-FMCs segments
     fmcs = pcp_segments_to_2dfmc_max(pcp_segments)
-    if fmcs == []:
+    if len(fmcs) == 0:
         return np.arange(len(bound_idxs) - 1)
 
     # Compute the labels using kmeans
