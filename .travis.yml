@@ -32,7 +32,7 @@ install:
     # install gcc-4.8 with c++11 support: https://github.com/travis-ci-tester/travis-test-gcc-cxx-11
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     #- sudo add-apt-repository ppa:jon-severinsson/ffmpeg -y # This doesn't exist anymore
-    - sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next -y
+    #- sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next -y # This doesn't exist anymore either
     - sudo apt-get update
     - sudo apt-get install ffmpeg
     - sudo apt-get install g++-4.8
