@@ -1,8 +1,14 @@
+[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
+
 # Music Structure Analysis Framework #
 
 ## Description ##
 
-This framework contains a set of algorithms to segment a given music audio signal. It uses [Essentia](http://mtg.upf.edu/technologies/essentia) to extract the necessary features, and is compatible with the [JAMS](https://github.com/urinieto/jams) format and [mir_eval](https://github.com/craffel/mir_eval).
+This framework contains a set of algorithms to segment a given music audio signal. It uses [librosa](https://github.com/bmcfee/librosa/) to extract the audio features, [JAMS](https://github.com/urinieto/jams) to read and write references and estimations respectively, and [mir_eval](https://github.com/craffel/mir_eval) to evaluate the estimations.
+
+Two types of algorithms are included in MSAF:
+* Boundary Algorithms: Aim to identify the segment boundaries of a given audio signal
+* Labeling (or Structural) Algorithms: Aim to cluster the different music segments based on their acoustic similarity.
 
 ## Boundary Algorithms ##
 
@@ -22,26 +28,37 @@ This framework contains a set of algorithms to segment a given music audio signa
 * Spectral Clustering (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/laplacian_segmentation))
 * SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
+## Installing MSAF #
+
+From the root folder, type:
+    
+    python setup.py install
+
+(Note: you may need to prefix the previous line with `sudo`, depending on your system configuration).
+
 ## Using MSAF ##
+
+A series of examples can be seen in the `scripts` folder.
 
 MSAF can be run in two different modes: **single file** and **collection** modes.
 
 ###Single File Mode###
 
-In single file mode the features will be computed on the fly (so it always takes some extra time).
 To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features:
 
-    ./run.py audio_file.mp3 -bid cnmf3 -lid fmc2d -f hpcp
+    ./run_msaf.py audio_file.mp3 -bid cnmf -lid fmc2d -f hpcp
+
+(`run_msaf.py` is found in the `scripts` folder).
 
 The input file can be of type `mp3`, `wav` or `aif`.
 
-If you want to *sonify* the boundaries, add the `-a` flag, and a file called `out_boundaries.wav` will be created in your current folder.
+If you want to *sonify* the boundaries, add the `-s` flag, and a file called `out_boundaries.wav` will be created in your current folder.
 
 If you want to plot the boundaries against the ground truth, add the `-p` (only if ground truth references are available).
 
 For more info, type:
 
-    ./run.py -h
+    ./run_msaf.py -h
 
 
 ###Collection Mode###
@@ -60,33 +77,30 @@ The MSAF datasets should have the following folder structure:
     ├──  features: Feature files for speeding up running time. Should be empty initially.
     └──  references: Human references for evaluation purposes.
 
-Using this toy dataset as an example, we could run MSAF using the Foote algorithm for boundaries and using hpcp features by simply:
+There are multiple examples of datasets in the `datasets` folder.
+Moreover, a complete dataset composed of 4 tracks is found in the `datasets/Sargon`.
+We will use it here as an example.
 
-    ./run.py my_collection -f hpcp -bid foote
+To run the Foote algorithm for boundaries on the Sargon dataset with mfcc as features, we can type:
 
-There is an example dataset included in the MSAF package, in the folder `ds_example`. 
-It includes the SALAMI and Isophonics datasets (not the audio though).
+    ./run_msaf.py ../datasets/Sargon -f mfcc -bid foote
 
 Furthermore, we can spread the work across multiple processors by using the `-j` flag.
-By default the number of processors is 4, this can be explicitly set by typing:
+By default the number of processors is 1, this can be explicitly set by typing:
 
-    ./run.py my_collection -f hpcp -bid foote -j 4
-
-Additionally, we can run only a specific subset of the collection.
-For example, if you want to run on the Isophonics set, you can do:
-
-    ./run.py my_collection -f hpcp -bid foote -d Isophonics
+    ./run_msaf.py ../datasets/Sargon -f mfcc -bid foote -j 8
 
 For more information, please type:
 
-    ./run.py -h
+    ./run_msaf.py -h
 
 ####Evaluating Collection####
 
-Once you have run the desired algorithm on a specified collection, the next thing you might probably want to do is to evaluate its results.
-To do so, use the `eval.py` script, just like this (following the example above):
+When running a collection, the evaluation is automatically computed once the estimations are produced.
+However, you might want to evaluate a set of previously estimated results.
+To do so, simply add the flag `-e`.
 
-    ./eval.py my_collection -f hpcp -bid foote
+    ./run_msaf.py ../datasets/Sargon -f mfcc -bid foote
 
 The output contains the following evaluation metrics:
 
@@ -116,25 +130,26 @@ The output contains the following evaluation metrics:
 | So           | Normalized Entropy Scores Precision |
 | Su           | Normalized Entropy Scores Recall |
 
-Analogously as in `run.py`, you can evaluate only a subset of the collection, by adding the `-d` flag:
 
-    ./eval.py my_collection -f hpcp -bid foote -d Isophonics
+Please, note that before you can use the `-e` flag (i.e., evaluate some results) on a specific feature and set of algorithms, you **must** have run the `run_msaf.py` script first without this flag.
 
-Please, note that before you can run the `eval.py` script on a specific feature and set of algorithms, you **must** have run the `run.py` script first.
-
-For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation). Finally, you can always add the `-h` flag in `eval.py` for more options.
+For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
 
 ###As a Python module###
 
-Place the ```msaf``` module in your Python Path ($PYTHONPATH), so that you can import it from anywhere.
-The main function is `process`, which takes basically the same parameters as the command line, and it returns the estimated boundary times and labels.
+The main function is `process`, which takes basically the same parameters as the `run_msaf.py` script, and it returns the estimated boundary times and labels.
+
+As an example:
 
 ```python
 import msaf
-est_times, est_labels = msaf.process("path/to/audio_file.mp3", feature="hpcp", boundaries_id="cnmf3", labels_id="cnmf3")
+estimations = msaf.process("../datasets/Sargon/audio/01-Sargon-Mindless.mp3", feature="hpcp", boundaries_id="cnmf", labels_id="cnmf")
+est_boundary_times = estimations[0]
+est_labels = estimations[1]
 ```
 
 For more parameters, please read the function's docstring.
+For more examples, please explore the `scripts` folder.
 
 
 ## Requirements ##
@@ -146,9 +161,10 @@ For more parameters, please read the function's docstring.
 * cvxopt (for C-NMF algorithms only)
 * Pandas (for evaluation only)
 * joblib
-* [Essentia](https://github.com/MTG/essentia)
 * [mir\_eval](https://github.com/craffel/mir_eval)
-* [librosa](https://github.com/bmcfee/librosa/)
+* [librosa](https://github.com/bmcfee/librosa/) (>=0.4.0rc1)
+* BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
+* ffmpeg (to read mp3 files only)
 
 
 ## Note on Parallel Processes for OSX Users ##
