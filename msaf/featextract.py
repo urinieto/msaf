@@ -144,7 +144,8 @@ def compute_beat_sync_features(features, beats_idx):
     calculate beat-synchronous features."""
     bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx, pad=False).T
     bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx, pad=False).T
-    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx, pad=False).T
+    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx,
+                                      pad=False).T
     return bs_mfcc, bs_hpcp, bs_tonnetz
 
 
