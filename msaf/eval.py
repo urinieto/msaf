@@ -9,6 +9,7 @@ import mir_eval
 import numpy as np
 import os
 import pandas as pd
+import six
 import sys
 
 # Local stuff
@@ -193,7 +194,6 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                             bins, est_file)
 
 
-
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
     """Computes the information gain of the est_file from the annotated
     intervals and the estimated intervals."""
@@ -209,7 +209,27 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
 
 
 def process_track(file_struct, boundaries_id, labels_id, config):
-    """Processes a single track."""
+    """Processes a single track.
+
+    Parameters
+    ----------
+    file_struct : object (FileStruct) or str
+        File struct or full path of the audio file to be evaluated.
+    boundaries_id : str
+        Identifier of the boundaries algorithm.
+    labels_id : str
+        Identifier of the labels algorithm.
+    config : dict
+        Configuration of the algorithms to be evaluated.
+
+    Returns
+    -------
+    one_res : dict
+        Dictionary of the results (see function compute_results).
+    """
+    # Convert to file_struct if string is passed
+    if isinstance(file_struct, six.string_types):
+        file_struct = io.FileStruct(file_struct)
 
     est_file = file_struct.est_file
     ref_file = file_struct.ref_file
@@ -304,27 +324,33 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
 
-    # If out_file already exists, do not compute new results
-    if os.path.exists(out_file):
-        logging.info("Results already exists, reading from file %s" % out_file)
-        results = pd.read_csv(out_file)
-        print_results(results)
-        return results
-
-    # Get files
-    file_structs = io.get_dataset_files(in_path, ds_name)
-
-    logging.info("Evaluating %d tracks..." % len(file_structs))
-
     # All evaluations
     results = pd.DataFrame()
 
-    # Evaluate in parallel
-    evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        file_struct, boundaries_id, labels_id, config)
-        for file_struct in file_structs[:])
+    if os.path.isfile(in_path):
+        # Single File mode
+        evals = [process_track(in_path, boundaries_id, labels_id, config)]
+    else:
+        # Collection mode
+        # If out_file already exists, do not compute new results
+        if os.path.exists(out_file):
+            logging.info("Results already exists, reading from file %s" %
+                         out_file)
+            results = pd.read_csv(out_file)
+            print_results(results)
+            return results
 
-    # Aggregat evaluations in pandas format
+        # Get files
+        file_structs = io.get_dataset_files(in_path, ds_name)
+
+        logging.info("Evaluating %d tracks..." % len(file_structs))
+
+        # Evaluate in parallel
+        evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
+            file_struct, boundaries_id, labels_id, config)
+            for file_struct in file_structs[:])
+
+    # Aggregate evaluations in pandas format
     for e in evals:
         if e != []:
             results = results.append(e, ignore_index=True)
