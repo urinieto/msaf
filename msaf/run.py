@@ -328,8 +328,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             utils.sonify_clicks(audio_hq, est_times, out_bounds, fs)
 
         if plot:
-            plotting.plot_one_track(in_path, est_times, est_labels,
-                                    boundaries_id, labels_id)
+            plotting.plot_one_track(file_struct, est_times, est_labels,
+                                    boundaries_id, labels_id, ds_name)
 
         return est_times, est_labels
     else:
