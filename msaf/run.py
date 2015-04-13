@@ -309,7 +309,11 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                                                         framesync=framesync,
                                                         pre_features=None)
         else:
+            # Compute and save features
             features = featextract.compute_features_for_audio_file(in_path)
+            msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
+            msaf.featextract.save_features(file_struct.features_file, features)
+
         config["features"] = features
         config["hier"] = hier
 
