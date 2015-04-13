@@ -1,13 +1,6 @@
 """
 Initialisation file for all the algorithms contained in MSAF.
 """
-
-__author__      = "Oriol Nieto"
-__copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__     = "GPL"
-__version__     = "1.0"
-__email__       = "oriol@nyu.edu"
-
 import glob
 import os
 import interface

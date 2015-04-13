@@ -8,13 +8,6 @@ Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio
 Novelty. In Proc. of the IEEE International Conference of Multimedia and Expo
 (pp. 452–455). New York City, NY, USA.
 """
-
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 import librosa
 import logging
 import numpy as np
