@@ -3,13 +3,13 @@
 __author__      = "Oriol Nieto"
 __copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
 __license__     = "MIT"
-__version__     = "0.0.2"
+__version__     = "0.0.2-dtw"
 __email__       = "oriol@nyu.edu"
 
 
 # Analysis Params
 class Anal():
-    sample_rate = 11025
+    sample_rate = 22050
     frame_size = 4096
     hop_size = 512
     mfcc_coeff = 14

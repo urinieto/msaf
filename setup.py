@@ -46,7 +46,7 @@ cc_segmenter = Extension(cc_path + "cc_segmenter",
 # MSAF configuration
 setup(
     name='msaf',
-    version='0.0.2',
+    version='0.0.2-dtw',
     description='Python module to discover the structure of music files',
     author='Oriol Nieto',
     author_email='oriol@nyu.edu',
@@ -56,7 +56,9 @@ setup(
     #data_files=[('msaf/algorithms/olda/models', glob.glob('msaf/algorithms/olda/models/*.npy')),
                 #('msaf/algorithms/cc', ['co_segmenter.so'])],
     data_files=[('msaf/algorithms/olda/models',
-                 glob.glob('msaf/algorithms/olda/models/*.npy'))],
+                 glob.glob('msaf/algorithms/olda/models/*.npy')),
+                ('msaf/algorithms/sfdtw/models',
+                 glob.glob('msaf/algorithms/sfdtw/models/*.pickle'))],
     #package_data={'': ['ds_example/*']},
     long_description="""A python module to segment audio into all its """
     """different large-scale sections and label them based on their """
