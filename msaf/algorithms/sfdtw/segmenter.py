@@ -74,6 +74,57 @@ def compute_nc(X):
     return nc
 
 
+def pick_peaks_new(nc, L=16, ref_bounds=[]):
+    """Obtain peaks from a novelty curve using an adaptive threshold."""
+    offset = -nc.mean() / 20.
+
+    #nc = filters.gaussian_filter1d(nc, sigma=1)  # Smooth out nc
+
+    #th = filters.median_filter(nc, size=L) + offset
+    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    th = np.zeros(nc.shape)
+
+    peaks = []
+    for i in xrange(1, nc.shape[0] - 1):
+        # is it a peak?
+        if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
+            # is it above the threshold?
+            if nc[i] > th[i]:
+                peaks.append(i)
+    plt.plot(nc)
+    plt.plot(th)
+    #for peak in peaks:
+        #plt.axvline(peak, color="blue")
+    for bound in ref_bounds:
+        plt.axvline(bound, color="green", alpha=0.5, linewidth=3)
+    plt.show()
+
+    return peaks
+
+#def pick_peaks(nc, L=16):
+    #"""Obtain peaks from a novelty curve using an adaptive threshold."""
+    #offset = -nc.mean() / 20.
+
+    ##nc = filters.gaussian_filter1d(nc, sigma=1)  # Smooth out nc
+
+    #th = filters.median_filter(nc, size=L) + offset
+    ##th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+
+    #peaks = []
+    #for i in xrange(1, nc.shape[0] - 1):
+        ## is it a peak?
+        #if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
+            ## is it above the threshold?
+            #if nc[i] > th[i]:
+                #peaks.append(i)
+    ##plt.plot(nc)
+    ##plt.plot(th)
+    ##for peak in peaks:
+        ##plt.axvline(peak)
+    ##plt.show()
+
+    #return peaks
+
 def pick_peaks(nc, L=16, offset_denom=0.1):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
     offset = nc.mean() * float(offset_denom)
@@ -227,13 +278,45 @@ def compute_recurrence_plot(F, model):
 
     return [R_predict, R_proba, R_mask]
 
+
 def get_recplot_file(recplots_dir, audio_file):
     """Gets the recurrence plot file.
 
     Parameters
     ----------
+    recplots_dir : str
+        Directory where to store the recurrence plots.
+    audio_file : str
+        Path to the audio file.
+
+    Returns
+    -------
+    recplot_path : str
+        Path to the recplot pk file.
     """
     return os.path.join(recplots_dir, os.path.basename(audio_file) + ".pk")
+
+
+def times_to_bounds(in_times, subbeats_idxs):
+    """Converts the times to bounds of the given subbeats.
+
+    Paramters
+    ---------
+    in_times: np.array
+        The times to be converted.
+    subbeats_idxs: np.array
+        The subbeats indeces to where in_times map to.
+
+    Returns
+    -------
+    out_idxs: np.array
+        The new output indeces in the subbeats_idxs space.
+    """
+    frame_times = np.array(
+        [idx * msaf.Anal.hop_size / float(msaf.Anal.sample_rate)
+         for idx in subbeats_idxs])
+    out_idxs = np.abs(np.subtract.outer(in_times, frame_times)).argmin(axis=1)
+    return np.unique(out_idxs)
 
 
 class Segmenter(SegmenterInterface):
@@ -260,21 +343,24 @@ class Segmenter(SegmenterInterface):
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
         if self.config["model"] is not None:
+            F_dtw, subbeats_idxs = read_cqt_features(
+                self.audio_file, self.config["features_dir"])
+            ref_times, ref_labels = msaf.io.read_references(self.audio_file)
+            ref_bounds = times_to_bounds(ref_times, subbeats_idxs)
+
             recplot_file = get_recplot_file(self.config["recplots_dir"],
                                             self.audio_file)
             if os.path.isfile(recplot_file):
                 with open(recplot_file) as f:
                     R = pickle.load(f)[self.config["recplot_type"]]
             else:
-                F_dtw, subbeats_idxs = read_cqt_features(
-                    self.audio_file, self.config["features_dir"])
                 with open(self.config["model"]) as f:
                     model = pickle.load(f)["model"]
 
                 R = compute_recurrence_plot(F_dtw, model)
-                for i, r in enumerate(R):
-                    R[i] = scipy.misc.imresize(r, (len(self.frame_times),
-                                                   len(self.frame_times)))
+                #for i, r in enumerate(R):
+                    #R[i] = scipy.misc.imresize(r, (len(self.frame_times),
+                                                   #len(self.frame_times)))
                     #plt.imshow(r, interpolation="nearest", aspect="auto"); plt.show()
 
                 R_dict = {}
@@ -284,7 +370,11 @@ class Segmenter(SegmenterInterface):
                 with open(recplot_file, "w") as f:
                     pickle.dump(R_dict, f)
                 R = R_dict[self.config["recplot_type"]]
+                R = scipy.misc.imresize(R, (len(self.frame_times),
+                                            len(self.frame_times)))
         else:
+            ref_bounds = msaf.io.read_ref_bound_frames(self.audio_file,
+                                                       self.frame_times)
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
             #plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
@@ -296,20 +386,22 @@ class Segmenter(SegmenterInterface):
                 width=1,  # zeros from the diagonal
                 metric="seuclidean",
                 sym=True).astype(np.float32)
-            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
         # Check size in case the track is too short
         if F.shape[0] > 20:
 
             # Circular shift
             L = circular_shift(R)
-            #plt.imshow(R, interpolation="nearest", aspect="auto")
+            plt.imshow(R, interpolation="nearest", aspect="auto")
+            for bound in ref_bounds:
+                plt.axvline(bound)
+                plt.axhline(bound)
             #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
-            #plt.show()
+            plt.show()
 
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
-            #SF = gaussian_filter(L.T, M=1, axis=0)
+            SF = gaussian_filter(L.T, M=2, axis=0)
             #plt.imshow(SF.T, interpolation="nearest", aspect="auto")
             #plt.show()
 
@@ -317,7 +409,9 @@ class Segmenter(SegmenterInterface):
             nc = compute_nc(SF)
 
             # Find peaks in the novelty curve
-            est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
+            #est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
+            #est_bounds = pick_peaks(nc, L=Mp)
+            est_bounds = pick_peaks_new(nc, L=Mp, ref_bounds=ref_bounds)
 
             # Re-align embedded space
             est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))

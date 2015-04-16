@@ -3,19 +3,19 @@ import os
 
 # Serra params
 config = {
-    "M_gaussian"    : 20,
+    "M_gaussian"    : 32,
     "m_embedded"    : 1,
     "k_nearest"     : 0.03,
     "Mp_adaptive"   : 28,
-    "offset_thres"  : 0.09,
-    "recplot_type"  : "predict",
+    "offset_thres"  : 0.03,
+    "recplot_type"  : "predict",  # predict, proba, mask
     "recplots_dir"  : "/home/uri/Projects/similarity_classification/recplots",
     "features_dir"  : "/home/uri/Projects/similarity_classification/features",
-    "model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              "models", "similarity_model_isophonics.pickle")
+    #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              #"models", "similarity_model_isophonics.pickle")
     #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               #"models", "similarity_model_salami.pickle")
-    #"model"         : None
+    "model"         : None
 
     # For framesync features
     #"M_gaussian"    : 100,

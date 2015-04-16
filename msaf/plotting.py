@@ -154,7 +154,6 @@ def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
         ref_file = in_path.replace(msaf.Dataset.audio_dir,
                                 msaf.Dataset.references_dir)
         ref_file = ref_file[:-4] + msaf.Dataset.references_ext
-        print ref_file
 
         # Read file
         ref_inter, ref_labels = jams2.converters.load_jams_range(
