@@ -165,6 +165,24 @@ def map_indeces(in_idxs, subbeats_idxs, frame_times):
     return np.unique(out_idxs)
 
 
+def symstack(X, n_steps=5, delay=1, **kwargs):
+    '''Symmetric history stacking.
+
+    like librosa.feature.stack_memory, but IN THE FUTURE!!!
+    '''
+    rpad = n_steps * delay
+    Xpad = np.pad(X,
+                  [(0, 0), (0, rpad)],
+                  **kwargs)
+
+    Xstack = librosa.feature.stack_memory(Xpad,
+                                          n_steps=2 * n_steps + 1,
+                                          delay=delay,
+                                          **kwargs)
+
+    return Xstack[:, rpad:]
+
+
 def compute_recurrence_plot(F, model):
     """Computes the recurrence plot for the given features using the
     similarity model previously trained.
@@ -181,7 +199,15 @@ def compute_recurrence_plot(F, model):
     R : np.array
         The recurrence plot.
     """
-    pass
+    C = F.T
+    X = symstack(C, n_steps=5, mode='edge')
+    N = C.shape[1]
+    R = np.zeros((N, N))
+    for i in xrange(N):
+        for j in xrange(N):
+            Xt = np.abs(X[:, i] - X[:, j])[np.newaxis, :]
+            R[i, j] = model.predict(Xt)
+    return R
 
 
 class Segmenter(SegmenterInterface):
@@ -215,6 +241,7 @@ class Segmenter(SegmenterInterface):
                 model = pickle.load(f)["model"]
 
             R = compute_recurrence_plot(F, model)
+            plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
         else:
             # Emedding the feature space (i.e. shingle)
