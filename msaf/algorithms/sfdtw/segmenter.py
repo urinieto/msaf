@@ -13,11 +13,13 @@ import cPickle as pickle
 import logging
 import os
 import pylab as plt
+import numba
 import numpy as np
 import librosa
 from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
+import scipy.misc
 
 import msaf
 from msaf.algorithms.interface import SegmenterInterface
@@ -183,6 +185,7 @@ def symstack(X, n_steps=5, delay=1, **kwargs):
     return Xstack[:, rpad:]
 
 
+@numba.jit
 def compute_recurrence_plot(F, model):
     """Computes the recurrence plot for the given features using the
     similarity model previously trained.
@@ -201,12 +204,14 @@ def compute_recurrence_plot(F, model):
     """
     C = F.T
     X = symstack(C, n_steps=5, mode='edge')
-    N = C.shape[1]
-    R = np.zeros((N, N))
-    for i in xrange(N):
-        for j in xrange(N):
+    N = X.shape[1]
+    R = np.eye(N)
+    for i in range(N):
+        for j in range(i+1, N):
             Xt = np.abs(X[:, i] - X[:, j])[np.newaxis, :]
             R[i, j] = model.predict(Xt)
+            #R[i, j] = model.predict_proba(Xt)[0][1]
+            R[j, i] = R[i, j]
     return R
 
 
@@ -236,11 +241,12 @@ class Segmenter(SegmenterInterface):
         if self.config["model"] is not None:
             F_dtw, subbeats_idxs = read_cqt_features(self.audio_file,
                                                     self.config["features_dir"])
-            F = F_dtw
             with open(self.config["model"]) as f:
                 model = pickle.load(f)["model"]
 
-            R = compute_recurrence_plot(F, model)
+            R = compute_recurrence_plot(F_dtw, model)
+            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+            R = scipy.misc.imresize(R, (len(self.frame_times), len(self.frame_times)))
             #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
         else:
@@ -268,7 +274,7 @@ class Segmenter(SegmenterInterface):
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
             SF = gaussian_filter(L.T, M=1, axis=0)
-            # plt.imshow(SF.T, interpolation="nearest", aspect="auto")
+            plt.imshow(SF.T, interpolation="nearest", aspect="auto")
             #plt.show()
 
             # Compute the novelty curve
@@ -293,8 +299,8 @@ class Segmenter(SegmenterInterface):
         assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
 
         # Map times from CQT to current indeces
-        if self.config["model"] is not None:
-            est_idxs = map_indeces(est_idxs, subbeats_idxs, self.frame_times)
+        #if self.config["model"] is not None:
+            #est_idxs = map_indeces(est_idxs, subbeats_idxs, self.frame_times)
 
         # Empty labels
         est_labels = np.ones(len(est_idxs) - 1) * - 1
