@@ -241,7 +241,7 @@ class Segmenter(SegmenterInterface):
                 model = pickle.load(f)["model"]
 
             R = compute_recurrence_plot(F, model)
-            plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
         else:
             # Emedding the feature space (i.e. shingle)
