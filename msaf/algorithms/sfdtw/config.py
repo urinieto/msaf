@@ -3,11 +3,12 @@ import os
 
 # Serra params
 config = {
-    "M_gaussian"    : 23,
+    "M_gaussian"    : 20,
     "m_embedded"    : 1,
     "k_nearest"     : 0.03,
     "Mp_adaptive"   : 28,
-    "offset_thres"  : 0.05,
+    "offset_thres"  : 0.09,
+    "recplot_type"  : "predict",
     "recplots_dir"  : "/home/uri/Projects/similarity_classification/recplots",
     "features_dir"  : "/home/uri/Projects/similarity_classification/features",
     "model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),

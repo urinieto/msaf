@@ -143,6 +143,7 @@ def read_cqt_features(audio_file, features_dir):
     indeces = file_data["subseg"]
     return F, indeces
 
+
 def map_indeces(in_idxs, subbeats_idxs, frame_times):
     """Maps the in_index that index the subbeats_idxs into frame_times.
 
@@ -199,20 +200,32 @@ def compute_recurrence_plot(F, model):
 
     Returns
     -------
-    R : np.array
-        The recurrence plot.
+    R : list
+        R_predict : np.array
+            The recurrence plot using binary prediction.
+        R_proba : np.array
+            The recurrence plot using predicted probabilities.
+        R_mask : np.array
+            The recurrence plot using the binary predictions as a mask on the
+            predicted probabilities.
     """
     C = F.T
     X = symstack(C, n_steps=5, mode='edge')
     N = X.shape[1]
-    R = np.eye(N)
+    R_predict = np.eye(N)
+    R_proba = np.eye(N)
     for i in range(N):
         for j in range(i+1, N):
             Xt = np.abs(X[:, i] - X[:, j])[np.newaxis, :]
-            R[i, j] = model.predict(Xt)
-            #R[i, j] = model.predict_proba(Xt)[0][1]
-            R[j, i] = R[i, j]
-    return R
+            R_predict[i, j] = model.predict(Xt)
+            R_predict[j, i] = R_predict[i, j]
+            R_proba[i, j] = model.predict_proba(Xt)[0][1]
+            R_proba[j, i] = R_proba[i, j]
+
+    # Recurrence plot, mask type
+    R_mask = R_proba * R_predict
+
+    return [R_predict, R_proba, R_mask]
 
 def get_recplot_file(recplots_dir, audio_file):
     """Gets the recurrence plot file.
@@ -220,7 +233,7 @@ def get_recplot_file(recplots_dir, audio_file):
     Parameters
     ----------
     """
-    return os.path.join(recplots_dir, audio_file + ".pk")
+    return os.path.join(recplots_dir, os.path.basename(audio_file) + ".pk")
 
 
 class Segmenter(SegmenterInterface):
@@ -251,7 +264,7 @@ class Segmenter(SegmenterInterface):
                                             self.audio_file)
             if os.path.isfile(recplot_file):
                 with open(recplot_file) as f:
-                    R = pickle.load(f)
+                    R = pickle.load(f)[self.config["recplot_type"]]
             else:
                 F_dtw, subbeats_idxs = read_cqt_features(
                     self.audio_file, self.config["features_dir"])
@@ -259,12 +272,18 @@ class Segmenter(SegmenterInterface):
                     model = pickle.load(f)["model"]
 
                 R = compute_recurrence_plot(F_dtw, model)
-                #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
-                R = scipy.misc.imresize(R, (len(self.frame_times), len(self.frame_times)))
-                #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+                for i, r in enumerate(R):
+                    R[i] = scipy.misc.imresize(r, (len(self.frame_times),
+                                                   len(self.frame_times)))
+                    #plt.imshow(r, interpolation="nearest", aspect="auto"); plt.show()
 
+                R_dict = {}
+                R_dict["predict"] = R[0]
+                R_dict["proba"] = R[1]
+                R_dict["mask"] = R[2]
                 with open(recplot_file, "w") as f:
-                    pickle.dump(R, f)
+                    pickle.dump(R_dict, f)
+                R = R_dict[self.config["recplot_type"]]
         else:
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
@@ -290,9 +309,9 @@ class Segmenter(SegmenterInterface):
 
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
-            SF = gaussian_filter(L.T, M=1, axis=0)
-            plt.imshow(SF.T, interpolation="nearest", aspect="auto")
-            plt.show()
+            #SF = gaussian_filter(L.T, M=1, axis=0)
+            #plt.imshow(SF.T, interpolation="nearest", aspect="auto")
+            #plt.show()
 
             # Compute the novelty curve
             nc = compute_nc(SF)
