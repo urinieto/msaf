@@ -40,14 +40,17 @@ class SegmenterInterface:
 
     In these cases, est_times or est_labels will be empty (None).
     """
-    def __init__(self, audio_file, in_bound_idxs=None, feature="hpcp",
-                 annot_beats=False, framesync=False, features=None, **config):
+    def __init__(self, audio_file, frame_times, in_bound_idxs=None,
+                 feature="hpcp", annot_beats=False, framesync=False,
+                 features=None, **config):
         """Inits the Segmenter.
 
         Parameters
         ----------
         audio_file: str
             Path to the audio file.
+        frame_times : np.array
+            Time for each frame of the features.
         in_bound_idxs: np.array
             Array containing the frame indeces of the previously find
             boundaries. `None` for computing them.
@@ -63,6 +66,7 @@ class SegmenterInterface:
             Configuration for the given algorithm (see module's __config.py__).
         """
         self.audio_file = audio_file
+        self.frame_times = frame_times[:-1]
         self.in_bound_idxs = in_bound_idxs
         self.feature_str = feature
         self.annot_beats = annot_beats

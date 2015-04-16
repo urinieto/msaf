@@ -13,6 +13,7 @@ config = {
                               #"models", "similarity_model_isophonics.pickle")
     "model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               "models", "similarity_model_salami.pickle")
+    #"model"         : None
 
     # For framesync features
     #"M_gaussian"    : 100,

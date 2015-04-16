@@ -9,7 +9,9 @@ Detection of Music Boundaries by Time Series Structure Features.
 In Proc. of the 26th AAAI Conference on Artificial Intelligence
 (pp. 1613–1619). Toronto, Canada.
 """
+import cPickle as pickle
 import logging
+import os
 import pylab as plt
 import numpy as np
 import librosa
@@ -17,6 +19,7 @@ from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
 
+import msaf
 from msaf.algorithms.interface import SegmenterInterface
 
 
@@ -112,6 +115,75 @@ def embedded_space(X, m, tau=1):
     return Y
 
 
+def read_cqt_features(audio_file, features_dir):
+    """Reads the pre-computed cqt (from the dtw project).
+
+    Paramters
+    ---------
+    audio_file : str
+        Path to the original audio file.
+    features_dir : str
+        Path to the precomputed features folder.
+
+    Returns
+    -------
+    F : np.array
+        Pre-computed CQT log spectrogram.
+    indeces : np.array
+        Indeces for the frames for each F position (sub-beats).
+    """
+    features_file = os.path.join(features_dir, os.path.basename(audio_file) +
+                                 ".pk")
+    with open(features_file, "r") as f:
+        file_data = pickle.load(f)
+
+    F = file_data["cqgram"].T
+    indeces = file_data["subseg"]
+    return F, indeces
+
+def map_indeces(in_idxs, subbeats_idxs, frame_times):
+    """Maps the in_index that index the subbeats_idxs into frame_times.
+
+    Paramters
+    ---------
+    in_idxs: np.array
+        The indeces to be mapped.
+    subbeats_idxs: np.array
+        The subbeats indeces to where in_idxs map to.
+    frame_times: np.array
+        Times for each of the final frame times that in_idxs will be mapped to.
+
+    Returns
+    -------
+    out_idxs: np.array
+        The new output indeces in the frame_times space.
+    """
+    in_frames_idxs = subbeats_idxs[in_idxs]
+    in_times = np.array([idx * msaf.Anal.hop_size / float(msaf.Anal.sample_rate)
+                 for idx in in_frames_idxs])
+    out_idxs = np.abs(np.subtract.outer(in_times, frame_times)).argmin(axis=1)
+    return np.unique(out_idxs)
+
+
+def compute_recurrence_plot(F, model):
+    """Computes the recurrence plot for the given features using the
+    similarity model previously trained.
+
+    Parameters
+    ----------
+    F : np.array
+        Set of features: must be CQT features.
+    model : object
+        Scikits classifier.
+
+    Returns
+    -------
+    R : np.array
+        The recurrence plot.
+    """
+    pass
+
+
 class Segmenter(SegmenterInterface):
     def processFlat(self):
         """Main process.
@@ -135,14 +207,19 @@ class Segmenter(SegmenterInterface):
 
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
+        if self.config["model"] is not None:
+            F_dtw, subbeats_idxs = read_cqt_features(self.audio_file,
+                                                    self.config["features_dir"])
+            F = F_dtw
+            with open(self.config["model"]) as f:
+                model = pickle.load(f)["model"]
 
-        # Check size in case the track is too short
-        if F.shape[0] > 20:
+            R = compute_recurrence_plot(F, model)
 
-
+        else:
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
-            plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
+            #plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Recurrence matrix
             R = librosa.segment.recurrence_matrix(
@@ -151,6 +228,10 @@ class Segmenter(SegmenterInterface):
                 width=1,  # zeros from the diagonal
                 metric="seuclidean",
                 sym=True).astype(np.float32)
+            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+
+        # Check size in case the track is too short
+        if F.shape[0] > 20:
 
             # Circular shift
             L = circular_shift(R)
@@ -183,6 +264,10 @@ class Segmenter(SegmenterInterface):
         est_idxs = np.unique(est_idxs)
 
         assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
+
+        # Map times from CQT to current indeces
+        if self.config["model"] is not None:
+            est_idxs = map_indeces(est_idxs, subbeats_idxs, self.frame_times)
 
         # Empty labels
         est_labels = np.ones(len(est_idxs) - 1) * - 1

@@ -127,7 +127,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
                 bounds_module.__name__ != labels_module.__name__:
             raise RuntimeError("The same algorithm for boundaries and labels is "
                                "needed when using hierarchical segmentation.")
-        S = bounds_module.Segmenter(audio_file, **config)
+        S = bounds_module.Segmenter(audio_file, frame_times, **config)
         est_idxs, est_labels = S.processHierarchical()
 
         # Make sure the first and last boundaries are included for each
@@ -150,13 +150,14 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
         # Case when boundaries and labels algorithms are the same
         if bounds_module is not None and labels_module is not None and \
                 bounds_module.__name__ == labels_module.__name__:
-            S = bounds_module.Segmenter(audio_file, **config)
+            S = bounds_module.Segmenter(audio_file, frame_times, **config)
             est_idxs, est_labels = S.processFlat()
         # Different boundary and label algorithms
         else:
             # Identify segment boundaries
             if bounds_module is not None:
-                S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
+                S = bounds_module.Segmenter(audio_file, frame_times,
+                                            in_labels=[], **config)
                 est_idxs, est_labels = S.processFlat()
             else:
                 try:
