@@ -214,6 +214,14 @@ def compute_recurrence_plot(F, model):
             R[j, i] = R[i, j]
     return R
 
+def get_recplot_file(recplots_dir, audio_file):
+    """Gets the recurrence plot file.
+
+    Parameters
+    ----------
+    """
+    return os.path.join(recplots_dir, audio_file + ".pk")
+
 
 class Segmenter(SegmenterInterface):
     def processFlat(self):
@@ -239,16 +247,24 @@ class Segmenter(SegmenterInterface):
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
         if self.config["model"] is not None:
-            F_dtw, subbeats_idxs = read_cqt_features(self.audio_file,
-                                                    self.config["features_dir"])
-            with open(self.config["model"]) as f:
-                model = pickle.load(f)["model"]
+            recplot_file = get_recplot_file(self.config["recplots_dir"],
+                                            self.audio_file)
+            if os.path.isfile(recplot_file):
+                with open(recplot_file) as f:
+                    R = pickle.load(f)
+            else:
+                F_dtw, subbeats_idxs = read_cqt_features(
+                    self.audio_file, self.config["features_dir"])
+                with open(self.config["model"]) as f:
+                    model = pickle.load(f)["model"]
 
-            R = compute_recurrence_plot(F_dtw, model)
-            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
-            R = scipy.misc.imresize(R, (len(self.frame_times), len(self.frame_times)))
-            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+                R = compute_recurrence_plot(F_dtw, model)
+                #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
+                R = scipy.misc.imresize(R, (len(self.frame_times), len(self.frame_times)))
+                #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
+                with open(recplot_file, "w") as f:
+                    pickle.dump(R, f)
         else:
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
@@ -268,6 +284,7 @@ class Segmenter(SegmenterInterface):
 
             # Circular shift
             L = circular_shift(R)
+            #plt.imshow(R, interpolation="nearest", aspect="auto")
             #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
             #plt.show()
 
@@ -275,7 +292,7 @@ class Segmenter(SegmenterInterface):
             SF = gaussian_filter(L.T, M=M, axis=1)
             SF = gaussian_filter(L.T, M=1, axis=0)
             plt.imshow(SF.T, interpolation="nearest", aspect="auto")
-            #plt.show()
+            plt.show()
 
             # Compute the novelty curve
             nc = compute_nc(SF)
