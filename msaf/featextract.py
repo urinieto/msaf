@@ -44,6 +44,7 @@ def compute_beats(y_percussive, sr=22050):
     logging.info("Estimating Beats...")
     tempo, beats_idx = librosa.beat.beat_track(y=y_percussive, sr=sr,
                                                hop_length=msaf.Anal.hop_size)
+    import pdb; pdb.set_trace()  # XXX BREAKPOINT
     return beats_idx, librosa.frames_to_time(beats_idx, sr=sr,
                                              hop_length=msaf.Anal.hop_size)
 
@@ -255,7 +256,7 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
 
 
 def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
-            out_file="out.json", out_beats="out_beats.wav"):
+            out_file="out.json", out_beats="out_beats.wav", ds_name="*"):
     """Main process to compute features.
 
     Parameters
@@ -273,6 +274,8 @@ def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
         Path to the output json file (single file mode only).
     out_beats: str
         Path to the new file containing the sonified beats.
+    ds_name: str
+        Name of the subdataset (e.g., Beatles). * for all.
     """
 
     # If in_path it's a file, we only compute one file
@@ -286,7 +289,7 @@ def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
         utils.ensure_dir(in_path)
 
         # Get files
-        file_structs = io.get_dataset_files(in_path)
+        file_structs = io.get_dataset_files(in_path, ds_name=ds_name)
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(

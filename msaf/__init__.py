@@ -9,8 +9,8 @@ __email__       = "oriol@nyu.edu"
 
 # Analysis Params
 class Anal():
-    sample_rate = 22050
-    frame_size = 4096
+    sample_rate = 11025
+    frame_size = 2048
     hop_size = 512
     mfcc_coeff = 14
     n_mels = 128

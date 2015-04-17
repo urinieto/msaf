@@ -56,6 +56,12 @@ def main():
                         type=str,
                         help="Output file (only for single file mode)",
                         default="out.json")
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI)")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -66,7 +72,7 @@ def main():
     # Run the algorithm
     msaf.featextract.process(args.in_path, sonify_beats=args.sonify_beats,
                              n_jobs=args.n_jobs, overwrite=args.overwrite,
-                             out_file=args.out_file)
+                             out_file=args.out_file, ds_name=args.ds_name)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
