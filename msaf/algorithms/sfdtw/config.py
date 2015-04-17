@@ -1,6 +1,9 @@
 """Config for the Structural Features algorithm."""
 import os
 
+prefix_path = "/home/uri/Projects/"
+prefix_path = "/Users/uriadmin/NYU/Spring15/"
+
 # Serra params
 config = {
     "M_gaussian"    : 32,
@@ -8,14 +11,20 @@ config = {
     "k_nearest"     : 0.03,
     "Mp_adaptive"   : 28,
     "offset_thres"  : 0.03,
-    "recplot_type"  : "predict",  # predict, proba, mask
-    "recplots_dir"  : "/home/uri/Projects/similarity_classification/recplots",
-    "features_dir"  : "/home/uri/Projects/similarity_classification/features",
+    "recplot_type"  : "proba",  # predict, proba, mask
+    "recplots_dir"  : prefix_path + "similarity_classification/recplots_beats",
+    "features_dir"  : prefix_path + "similarity_classification/features_beats",
+    #"recplots_dir"  : prefix_path + "similarity_classification/recplots_subbeats",
+    #"features_dir"  : prefix_path + "similarity_classification/features_subbeats",
     #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               #"models", "similarity_model_isophonics.pickle")
     #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               #"models", "similarity_model_salami.pickle")
-    "model"         : None
+    "model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              "models", "similarity_model_isophonics_beat.pickle")
+    #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              #"models", "similarity_model_salami_beat.pickle")
+    #"model"         : None
 
     # For framesync features
     #"M_gaussian"    : 100,

@@ -12,7 +12,7 @@ In Proc. of the 26th AAAI Conference on Artificial Intelligence
 import cPickle as pickle
 import logging
 import os
-import pylab as plt
+import matplotlib.pyplot as plt
 import numba
 import numpy as np
 import librosa
@@ -20,6 +20,10 @@ from scipy.spatial import distance
 from scipy import signal
 from scipy.ndimage import filters
 import scipy.misc
+
+import seaborn as sns
+
+sns.set_style("dark")
 
 import msaf
 from msaf.algorithms.interface import SegmenterInterface
@@ -91,13 +95,13 @@ def pick_peaks_new(nc, L=16, ref_bounds=[]):
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
-    plt.plot(nc)
-    plt.plot(th)
-    #for peak in peaks:
-        #plt.axvline(peak, color="blue")
-    for bound in ref_bounds:
-        plt.axvline(bound, color="green", alpha=0.5, linewidth=3)
-    plt.show()
+    #plt.plot(nc)
+    #plt.plot(th)
+    ##for peak in peaks:
+        ##plt.axvline(peak, color="blue")
+    #for bound in ref_bounds:
+        #plt.axvline(bound, color="green", alpha=0.5, linewidth=3)
+    #plt.show()
 
     return peaks
 
@@ -261,12 +265,12 @@ def compute_recurrence_plot(F, model):
             predicted probabilities.
     """
     C = F.T
-    X = symstack(C, n_steps=5, mode='edge')
+    X = symstack(C, n_steps=2, mode='edge')
     N = X.shape[1]
     R_predict = np.eye(N)
     R_proba = np.eye(N)
     for i in range(N):
-        for j in range(i+1, N):
+        for j in range(i + 1, N):
             Xt = np.abs(X[:, i] - X[:, j])[np.newaxis, :]
             R_predict[i, j] = model.predict(Xt)
             R_predict[j, i] = R_predict[i, j]
@@ -358,10 +362,6 @@ class Segmenter(SegmenterInterface):
                     model = pickle.load(f)["model"]
 
                 R = compute_recurrence_plot(F_dtw, model)
-                #for i, r in enumerate(R):
-                    #R[i] = scipy.misc.imresize(r, (len(self.frame_times),
-                                                   #len(self.frame_times)))
-                    #plt.imshow(r, interpolation="nearest", aspect="auto"); plt.show()
 
                 R_dict = {}
                 R_dict["predict"] = R[0]
@@ -370,8 +370,8 @@ class Segmenter(SegmenterInterface):
                 with open(recplot_file, "w") as f:
                     pickle.dump(R_dict, f)
                 R = R_dict[self.config["recplot_type"]]
-                R = scipy.misc.imresize(R, (len(self.frame_times),
-                                            len(self.frame_times)))
+                #R = scipy.misc.imresize(R, (len(self.frame_times),
+                                            #len(self.frame_times)))
         else:
             ref_bounds = msaf.io.read_ref_bound_frames(self.audio_file,
                                                        self.frame_times)
@@ -392,12 +392,19 @@ class Segmenter(SegmenterInterface):
 
             # Circular shift
             L = circular_shift(R)
-            plt.imshow(R, interpolation="nearest", aspect="auto")
-            for bound in ref_bounds:
-                plt.axvline(bound)
-                plt.axhline(bound)
-            #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
+            SSM = compute_ssm(F)
+            np.fill_diagonal(R, 0.5)
+            plt.figure(figsize=(7, 15))
+            plt.subplot(2,1,1)
+            plt.imshow(R, interpolation="nearest")
+            plt.subplot(2,1,2)
+            plt.imshow(SSM, interpolation="nearest")
             plt.show()
+            #for bound in ref_bounds:
+                #plt.axvline(bound)
+                #plt.axhline(bound)
+            #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
+            #plt.show()
 
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
@@ -416,11 +423,12 @@ class Segmenter(SegmenterInterface):
             # Re-align embedded space
             est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))
 
-            if self.framesync:
-                est_bounds /= red
-                F = F_copy
         else:
             est_bounds = []
+
+        # Different audio files? Hack...
+        if est_bounds[-1] >= F.shape[0]:
+            est_bounds = est_bounds[:-1]
 
         # Add first and last frames
         est_idxs = np.concatenate(([0], est_bounds, [F.shape[0] - 1]))
