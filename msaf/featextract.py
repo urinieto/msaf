@@ -44,7 +44,6 @@ def compute_beats(y_percussive, sr=22050):
     logging.info("Estimating Beats...")
     tempo, beats_idx = librosa.beat.beat_track(y=y_percussive, sr=sr,
                                                hop_length=msaf.Anal.hop_size)
-    import pdb; pdb.set_trace()  # XXX BREAKPOINT
     return beats_idx, librosa.frames_to_time(beats_idx, sr=sr,
                                              hop_length=msaf.Anal.hop_size)
 
