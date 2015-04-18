@@ -13,6 +13,7 @@ import numpy as np
 import pylab as plt
 from scipy.ndimage import filters
 
+import msaf
 from msaf.algorithms.interface import SegmenterInterface
 from msaf import pymf
 

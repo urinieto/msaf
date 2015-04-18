@@ -5,7 +5,7 @@ config = {
     "R" : 16,
     "rank" : 3,
     "R_labels" : 16,
-    "rank_labels" : 4
+    "rank_labels" : 4,
 }
 
 algo_id = "cnmf"

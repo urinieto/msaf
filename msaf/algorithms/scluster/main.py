@@ -8,6 +8,7 @@ import os
 import argparse
 import logging
 import string
+import matplotlib.pyplot as plt
 
 import numpy as np
 import scipy.spatial
@@ -42,12 +43,6 @@ N_MFCC = 13
 # Which similarity metric to use?
 METRIC='sqeuclidean'
 
-# Sample rate for signal analysis
-SR=22050
-
-# Hop length for signal analysis
-HOP_LENGTH=512
-
 # Maximum number of structural components to consider
 MAX_REP=10
 
@@ -79,42 +74,6 @@ def get_beats(y, sr, hop_length):
 
     return bpm, beats
 
-def features(filename):
-    #print '\t[1/5] loading audio'
-    y, sr = librosa.load(filename, sr=SR)
-
-    #print '\t[2/5] Separating harmonic and percussive signals'
-    y_perc, y_harm = hp_sep(y)
-
-    #print '\t[3/5] detecting beats'
-    bpm, beats = get_beats(y=y_perc, sr=sr, hop_length=HOP_LENGTH)
-
-    #print '\t[4/5] generating CQT'
-    M1 = np.abs(librosa.cqt(y=y_harm,
-                            sr=sr,
-                            hop_length=HOP_LENGTH,
-                            bins_per_octave=12,
-                            fmin=librosa.midi_to_hz(24),
-                            n_bins=72))
-
-    M1 = librosa.logamplitude(M1**2.0, ref_power=np.max)
-
-    #print '\t[5/5] generating MFCC'
-    S = librosa.feature.melspectrogram(y=y, sr=sr, hop_length=HOP_LENGTH, n_mels=N_MELS)
-    M2 = librosa.feature.mfcc(S=librosa.logamplitude(S), n_mfcc=N_MFCC)
-
-    n = min(M1.shape[1], M2.shape[1])
-
-    beats = beats[beats < n]
-
-    beats = np.unique(np.concatenate([[0], beats]))
-
-    times = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_LENGTH)
-
-    times = np.concatenate([times, [float(len(y)) / sr]])
-    M1 = librosa.feature.sync(M1, beats, aggregate=np.median)
-    M2 = librosa.feature.sync(M2, beats, aggregate=np.mean)
-    return (M1, M2), times
 
 def save_segments(outfile, boundaries, beats, labels=None):
 
@@ -495,7 +454,18 @@ def local_similarity(X):
     return A
 
 
-def do_segmentation(X, beats, parameters, bound_idxs):
+def k_nearest(X, k):
+    rec = np.zeros(X.shape, dtype=bool)
+
+    # get the k nearest neighbors for each point
+    for i in range(X.shape[0]):
+        for j in np.argsort(X[i])[-k:]:
+            rec[i, j] = True
+
+    return rec
+
+
+def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
     # If number of frames is too small, assign empty labels and quit:
     if X[0].shape[1] <= REP_WIDTH:
@@ -510,42 +480,82 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     k_min, k_max  = get_num_segs(beats[-1])
     #k_min, k_max  = 8, 32
 
-    L = np.nan
-    #while np.any(np.isnan(L)):
-    # Get the raw recurrence plot
-    Xpad = np.pad(X_rep, [(0,0), (N_STEPS, 0)], mode='edge')
-    Xs = librosa.feature.stack_memory(Xpad, n_steps=N_STEPS)[:, N_STEPS:]
+    if parameters["beats"]:
+        features_dir = parameters["features_dir_beats"]
+        recplots_dir = parameters["recplots_dir_beats"]
+        model_sufix = "_beat"
+    else:
+        features_dir = parameters["features_dir_subbeats"]
+        recplots_dir = parameters["recplots_dir_subbeats"]
+        model_sufix = ""
 
-    k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
-    R = librosa.segment.recurrence_matrix(Xs,
-                                        k=k_link,
-                                        width=REP_WIDTH,
-                                        metric=METRIC,
-                                        sym=True).astype(np.float32)
-    # Generate the repetition kernel
-    A_rep = self_similarity(Xs, k=k_link)
+    # Preprocess to obtain features, times, and input boundary indeces
+    if parameters["model"] is not None:
+        if parameters["model_type"] == "iso":
+            recplots_dir += "_" + parameters["model_type"]
+            parameters["model"] = os.path.join(parameters["model"],
+                                                "similarity_model_isophonics" +
+                                                model_sufix + ".pickle")
+        elif parameters["model_type"] == "salami":
+            recplots_dir += "_" + parameters["model_type"]
+            parameters["model"] = os.path.join(parameters["model"],
+                                                "similarity_model_salami" +
+                                                model_sufix + ".pickle")
+        else:
+            raise RuntimeError("Wrong model type in parameters")
+        msaf.utils.ensure_dir(recplots_dir)
 
-    # And the local path kernel
-    A_loc = self_similarity(X_loc, k=k_link)
+        F_dtw, subbeats_idxs = msaf.utils.read_cqt_features(
+            audio_file, features_dir)
+        ref_times, ref_labels = msaf.io.read_references(audio_file)
+        ref_bounds = msaf.utils.times_to_bounds(ref_times, subbeats_idxs)
 
-    # Mask the self-similarity matrix by recurrence
-    S = librosa.segment.structure_feature(R)
+        recplot_file = msaf.utils.get_recplot_file(recplots_dir,
+                                                    audio_file)
+        T = msaf.utils.get_recurrence_plot(F_dtw, recplot_file, parameters)
+        #plt.imshow(T, interpolation="nearest"); plt.show()
+        T = k_nearest(T, int(T.shape[0] * 0.04))
+        #plt.imshow(T, interpolation="nearest"); plt.show()
 
-    Sf = clean_reps(S)
+    else:
+        L = np.nan
+        #while np.any(np.isnan(L)):
+        # Get the raw recurrence plot
+        Xpad = np.pad(X_rep, [(0,0), (N_STEPS, 0)], mode='edge')
+        Xs = librosa.feature.stack_memory(Xpad, n_steps=N_STEPS)[:, N_STEPS:]
 
-    # De-skew
-    Rf = librosa.segment.structure_feature(Sf, inverse=True)
+        k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
+        R = librosa.segment.recurrence_matrix(Xs,
+                                            k=k_link,
+                                            width=REP_WIDTH,
+                                            metric=METRIC,
+                                            sym=True).astype(np.float32)
+        # Generate the repetition kernel
+        A_rep = self_similarity(Xs, k=k_link)
 
-    # Symmetrize by force
-    Rf = np.maximum(Rf, Rf.T)
+        # And the local path kernel
+        A_loc = self_similarity(X_loc, k=k_link)
 
-    # Suppress the diagonal
-    Rf[np.diag_indices_from(Rf)] = 0
+        # Mask the self-similarity matrix by recurrence
+        S = librosa.segment.structure_feature(R)
 
-    # We can jump to a random neighbor, or +- 1 step in time
-    # Call it the infinite jukebox matrix
-    T = weighted_ridge(Rf * A_rep,
-                       (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+        Sf = clean_reps(S)
+
+        # De-skew
+        Rf = librosa.segment.structure_feature(Sf, inverse=True)
+
+        # Symmetrize by force
+        Rf = np.maximum(Rf, Rf.T)
+
+        # Suppress the diagonal
+        Rf[np.diag_indices_from(Rf)] = 0
+
+        # We can jump to a random neighbor, or +- 1 step in time
+        # Call it the infinite jukebox matrix
+        T = weighted_ridge(Rf * A_rep,
+                        (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+        #plt.imshow(T, interpolation="nearest"); plt.show()
+
     # Get the graph laplacian
     try:
         L = sym_laplacian(T)

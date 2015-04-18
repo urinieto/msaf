@@ -56,8 +56,9 @@ class Segmenter(SegmenterInterface):
 
         # Do actual segmentation
         est_idxs, est_labels = main.do_segmentation(F, frame_times,
-                                                      self.config,
-                                                      self.in_bound_idxs)
+                                                    self.config,
+                                                    self.in_bound_idxs,
+                                                    self.audio_file)
 
         if 'numpy' in str(type(est_idxs)):
             # Flat output
