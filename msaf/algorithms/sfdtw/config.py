@@ -11,11 +11,13 @@ config = {
     "k_nearest"     : 0.03,
     "Mp_adaptive"   : 28,
     "offset_thres"  : 0.03,
-    "recplot_type"  : "proba",  # predict, proba, mask
-    "recplots_dir"  : prefix_path + "similarity_classification/recplots_beats",
-    "features_dir"  : prefix_path + "similarity_classification/features_beats",
-    #"recplots_dir"  : prefix_path + "similarity_classification/recplots_subbeats",
-    #"features_dir"  : prefix_path + "similarity_classification/features_subbeats",
+    "w"             : 5,
+    "beats"         : True,
+    "recplot_type"  : "predict",  # predict, proba, mask
+    "recplots_dir_beats"  : prefix_path + "similarity_classification/recplots_beats",
+    "features_dir_beats"  : prefix_path + "similarity_classification/features_beats",
+    "recplots_dir_subbeats"  : prefix_path + "similarity_classification/recplots_subbeats",
+    "features_dir_subbeats"  : prefix_path + "similarity_classification/features_subbeats",
     #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
                               #"models", "similarity_model_isophonics.pickle")
     #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),

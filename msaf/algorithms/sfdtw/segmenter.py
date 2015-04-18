@@ -242,7 +242,7 @@ def symstack(X, n_steps=5, delay=1, **kwargs):
 
 
 @numba.jit
-def compute_recurrence_plot(F, model):
+def compute_recurrence_plot(F, model, w=5):
     """Computes the recurrence plot for the given features using the
     similarity model previously trained.
 
@@ -252,6 +252,8 @@ def compute_recurrence_plot(F, model):
         Set of features: must be CQT features.
     model : object
         Scikits classifier.
+    w : int
+        Number of frames in front / back.
 
     Returns
     -------
@@ -265,7 +267,7 @@ def compute_recurrence_plot(F, model):
             predicted probabilities.
     """
     C = F.T
-    X = symstack(C, n_steps=2, mode='edge')
+    X = symstack(C, n_steps=w, mode='edge')
     N = X.shape[1]
     R_predict = np.eye(N)
     R_proba = np.eye(N)
@@ -344,15 +346,21 @@ class Segmenter(SegmenterInterface):
         k = self.config["k_nearest"]      # k*N-nearest neighbors for the
                                           # recurrence plot
 
+        if self.config["beats"]:
+            features_dir = self.config["features_dir_beats"]
+            recplots_dir = self.config["recplots_dir_beats"]
+        else:
+            features_dir = self.config["features_dir_subbeats"]
+            recplots_dir = self.config["recplots_dir_subbeats"]
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
         if self.config["model"] is not None:
             F_dtw, subbeats_idxs = read_cqt_features(
-                self.audio_file, self.config["features_dir"])
+                self.audio_file, features_dir)
             ref_times, ref_labels = msaf.io.read_references(self.audio_file)
             ref_bounds = times_to_bounds(ref_times, subbeats_idxs)
 
-            recplot_file = get_recplot_file(self.config["recplots_dir"],
+            recplot_file = get_recplot_file(recplots_dir,
                                             self.audio_file)
             if os.path.isfile(recplot_file):
                 with open(recplot_file) as f:
@@ -361,7 +369,7 @@ class Segmenter(SegmenterInterface):
                 with open(self.config["model"]) as f:
                     model = pickle.load(f)["model"]
 
-                R = compute_recurrence_plot(F_dtw, model)
+                R = compute_recurrence_plot(F_dtw, model, self.config["w"])
 
                 R_dict = {}
                 R_dict["predict"] = R[0]
