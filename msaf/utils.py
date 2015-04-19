@@ -419,6 +419,51 @@ def compute_recurrence_plot(F, model, w=5):
     return [R_predict, R_proba, R_mask]
 
 
+@numba.jit
+def compute_local_plot(F, model, w=5):
+    """Computes the recurrence plot for the given features using the
+    similarity model previously trained.
+
+    Parameters
+    ----------
+    F : np.array
+        Set of features: must be CQT features.
+    model : object
+        Scikits classifier.
+    w : int
+        Number of frames in front / back.
+
+    Returns
+    -------
+    R : list
+        R_predict : np.array
+            The recurrence plot using binary prediction.
+        R_proba : np.array
+            The recurrence plot using predicted probabilities.
+        R_mask : np.array
+            The recurrence plot using the binary predictions as a mask on the
+            predicted probabilities.
+    """
+    C = F.T
+    X = symstack(C, n_steps=w, mode='edge')
+    N = X.shape[1]
+    R_predict = np.eye(N)
+    R_proba = np.eye(N)
+    for i in range(N):
+        jj = [max(i - 1, 0), min(i + 1, N - 1)]
+        for j in jj:
+            Xt = np.abs(X[:, i] - X[:, j])[np.newaxis, :]
+            R_predict[i, j] = model.predict(Xt)
+            R_predict[j, i] = R_predict[i, j]
+            R_proba[i, j] = model.predict_proba(Xt)[0][1]
+            R_proba[j, i] = R_proba[i, j]
+
+    # Recurrence plot, mask type
+    R_mask = R_proba * R_predict
+
+    return [R_predict, R_proba, R_mask]
+
+
 def get_recplot_file(recplots_dir, audio_file, local=""):
     """Gets the recurrence plot file.
 
@@ -505,7 +550,7 @@ def get_local_plot(F_dtw, recplot_file, config):
         with open(config["model_local"]) as f:
             model = pickle.load(f)["model"]
 
-        R = compute_recurrence_plot(F_dtw, model, config["w"])
+        R = compute_local_plot(F_dtw, model, config["w"])
 
         R_dict = {}
         R_dict["predict"] = R[0]

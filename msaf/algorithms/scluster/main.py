@@ -532,7 +532,8 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
         local_file = msaf.utils.get_recplot_file(recplots_dir, audio_file,
                                                  local="_local")
         A_loc = msaf.utils.get_local_plot(F_dtw, local_file, parameters)
-        A_loc = k_nearest(A_loc, k_link)
+        #A_loc = k_nearest(A_loc, k_link)
+        #plt.imshow(A_loc, interpolation="nearest"); plt.show()
 
         A_rep = 1  # Rf will already be smooth
 
@@ -558,7 +559,6 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
     # Mask the self-similarity matrix by recurrence
     S = librosa.segment.structure_feature(R)
-    #plt.imshow(S, interpolation="nearest"); plt.show()
 
     Sf = clean_reps(S)
 
@@ -570,6 +570,7 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
     # Suppress the diagonal
     Rf[np.diag_indices_from(Rf)] = 0
+    #plt.imshow(Rf, interpolation="nearest"); plt.show()
 
     # We can jump to a random neighbor, or +- 1 step in time
     # Call it the infinite jukebox matrix

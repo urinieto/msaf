@@ -20,7 +20,7 @@ config = {
     "w"             : 5,
     "beats"         : True,
     "recplot_type"  : "proba",  # predict, proba, mask
-    "model_type"    : "salami",
+    "model_type"    : "iso",
     "recplots_dir_beats"  : prefix_path + "similarity_classification/recplots_beats",
     "features_dir_beats"  : prefix_path + "similarity_classification/features_beats",
     "recplots_dir_subbeats"  : prefix_path + "similarity_classification/recplots_subbeats",
