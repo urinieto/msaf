@@ -7,22 +7,24 @@ prefix_path = "/home/uri/Projects/"
 
 # Spectral Clustering Params
 config = {
-    "verbose"    : False,
-    "median"     : False,
-    "num_types"  : None,
-    "start_layer": 1,
-    "num_layers" : 10,
-    "hier"       : False,
+    "verbose"       : False,
+    "median"        : False,
+    "num_types"     : None,
+    "start_layer"   : 1,
+    "num_layers"    : 10,
+    "hier"          : False,
     "w"             : 5,
     "beats"         : True,
     "recplot_type"  : "proba",  # predict, proba, mask
-    "model_type"    : "iso",
+    "model_type"    : "salami",
     "recplots_dir_beats"  : prefix_path + "similarity_classification/recplots_beats",
     "features_dir_beats"  : prefix_path + "similarity_classification/features_beats",
     "recplots_dir_subbeats"  : prefix_path + "similarity_classification/recplots_subbeats",
     "features_dir_subbeats"  : prefix_path + "similarity_classification/features_subbeats",
+    "model_local"   : os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                   "..", "sfdtw", "models"),
     "model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              "models")
+                                   "..", "sfdtw", "models")
     #"model"         : None
 }
 

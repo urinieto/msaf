@@ -496,10 +496,16 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
             parameters["model"] = os.path.join(parameters["model"],
                                                 "similarity_model_isophonics" +
                                                 model_sufix + ".pickle")
+            parameters["model_local"] = os.path.join(parameters["model_local"],
+                                                "similarity_model_isophonics_local" +
+                                                model_sufix + ".pickle")
         elif parameters["model_type"] == "salami":
             recplots_dir += "_" + parameters["model_type"]
             parameters["model"] = os.path.join(parameters["model"],
                                                 "similarity_model_salami" +
+                                                model_sufix + ".pickle")
+            parameters["model_local"] = os.path.join(parameters["model_local"],
+                                                "similarity_model_salami_local" +
                                                 model_sufix + ".pickle")
         else:
             raise RuntimeError("Wrong model type in parameters")
@@ -512,10 +518,23 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
         recplot_file = msaf.utils.get_recplot_file(recplots_dir,
                                                     audio_file)
-        T = msaf.utils.get_recurrence_plot(F_dtw, recplot_file, parameters)
-        #plt.imshow(T, interpolation="nearest"); plt.show()
-        T = k_nearest(T, int(T.shape[0] * 0.04))
-        #plt.imshow(T, interpolation="nearest"); plt.show()
+        R = msaf.utils.get_recurrence_plot(F_dtw, recplot_file, parameters)
+        #plt.imshow(R, interpolation="nearest"); plt.show()
+        #plt.imshow(R, interpolation="nearest"); plt.show()
+
+        k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
+
+        #R = k_nearest(R, int(R.shape[0] * 0.04))
+        R = k_nearest(R, k_link)
+        R = np.asarray(R, dtype=np.float)
+
+        # Local matrix
+        local_file = msaf.utils.get_recplot_file(recplots_dir, audio_file,
+                                                 local="_local")
+        A_loc = msaf.utils.get_local_plot(F_dtw, local_file, parameters)
+        A_loc = k_nearest(A_loc, k_link)
+
+        A_rep = 1  # Rf will already be smooth
 
     else:
         L = np.nan
@@ -535,26 +554,28 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
         # And the local path kernel
         A_loc = self_similarity(X_loc, k=k_link)
+        #plt.imshow(A_loc, interpolation="nearest"); plt.show()
 
-        # Mask the self-similarity matrix by recurrence
-        S = librosa.segment.structure_feature(R)
+    # Mask the self-similarity matrix by recurrence
+    S = librosa.segment.structure_feature(R)
+    #plt.imshow(S, interpolation="nearest"); plt.show()
 
-        Sf = clean_reps(S)
+    Sf = clean_reps(S)
 
-        # De-skew
-        Rf = librosa.segment.structure_feature(Sf, inverse=True)
+    # De-skew
+    Rf = librosa.segment.structure_feature(Sf, inverse=True)
 
-        # Symmetrize by force
-        Rf = np.maximum(Rf, Rf.T)
+    # Symmetrize by force
+    Rf = np.maximum(Rf, Rf.T)
 
-        # Suppress the diagonal
-        Rf[np.diag_indices_from(Rf)] = 0
+    # Suppress the diagonal
+    Rf[np.diag_indices_from(Rf)] = 0
 
-        # We can jump to a random neighbor, or +- 1 step in time
-        # Call it the infinite jukebox matrix
-        T = weighted_ridge(Rf * A_rep,
-                        (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
-        #plt.imshow(T, interpolation="nearest"); plt.show()
+    # We can jump to a random neighbor, or +- 1 step in time
+    # Call it the infinite jukebox matrix
+    T = weighted_ridge(Rf * A_rep,
+                    (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+    #plt.imshow(T, interpolation="nearest"); plt.show()
 
     # Get the graph laplacian
     try:

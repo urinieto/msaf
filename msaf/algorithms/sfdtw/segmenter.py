@@ -244,8 +244,8 @@ class Segmenter(SegmenterInterface):
             ref_bounds = msaf.io.read_ref_bound_frames(self.audio_file,
                                                        self.frame_times)
 
-            F, subbeats_idxs = msaf.utils.read_cqt_features(
-                self.audio_file, features_dir)
+            #F, subbeats_idxs = msaf.utils.read_cqt_features(
+                #self.audio_file, features_dir)
 
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
@@ -261,6 +261,11 @@ class Segmenter(SegmenterInterface):
 
         # Check size in case the track is too short
         if F.shape[0] > 20:
+
+            from scipy.ndimage import median_filter
+            diagonal_median = librosa.segment.timelag_filter(median_filter)
+            R = diagonal_median(R, size=(1, self.config["diag_filter"]), mode='mirror')
+            #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
             # Circular shift
             L = circular_shift(R)

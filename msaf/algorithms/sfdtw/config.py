@@ -11,17 +11,23 @@ config = {
     "k_nearest"     : 0.03,
     "Mp_adaptive"   : 28,
     "offset_thres"  : 0.05,
+    #"M_gaussian"    : 27,
+    #"m_embedded"    : 1,
+    #"k_nearest"     : 0.02,
+    #"Mp_adaptive"   : 28,
+    #"offset_thres"  : 0.04,
+    "diag_filter"   : 1,
     "w"             : 5,
     "beats"         : True,
     "recplot_type"  : "proba",  # predict, proba, mask
-    "model_type"    : "iso",
+    "model_type"    : "salami",
     "recplots_dir_beats"  : prefix_path + "similarity_classification/recplots_beats",
     "features_dir_beats"  : prefix_path + "similarity_classification/features_beats",
     "recplots_dir_subbeats"  : prefix_path + "similarity_classification/recplots_subbeats",
     "features_dir_subbeats"  : prefix_path + "similarity_classification/features_subbeats",
-    #"model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                              #"models")
-    "model"         : None
+    "model"         : os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                              "models")
+    #"model"         : None
 
     # For framesync features
     #"M_gaussian"    : 100,

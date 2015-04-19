@@ -17,6 +17,7 @@ __email__ = "oriol@nyu.edu"
 
 import librosa
 import logging
+import os
 import numpy as np
 from scipy.spatial import distance
 from scipy import signal
@@ -102,19 +103,55 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
+
+        if self.config["beats"]:
+            features_dir = self.config["features_dir_beats"]
+            recplots_dir = self.config["recplots_dir_beats"]
+            model_sufix = "_beat"
+        else:
+            features_dir = self.config["features_dir_subbeats"]
+            recplots_dir = self.config["recplots_dir_subbeats"]
+            model_sufix = ""
+
         # Preprocess to obtain features
         F = self._preprocess()
+        if self.config["model"] is not None:
+            if self.config["model_type"] == "iso":
+                recplots_dir += "_" + self.config["model_type"]
+                self.config["model"] = os.path.join(self.config["model"],
+                                                    "similarity_model_isophonics" +
+                                                    model_sufix + ".pickle")
+            elif self.config["model_type"] == "salami":
+                recplots_dir += "_" + self.config["model_type"]
+                self.config["model"] = os.path.join(self.config["model"],
+                                                    "similarity_model_salami" +
+                                                    model_sufix + ".pickle")
+            else:
+                raise RuntimeError("Wrong model type in config")
+            msaf.utils.ensure_dir(recplots_dir)
 
-        # Make sure that the M_gaussian is even
-        if self.config["M_gaussian"] % 2 == 1:
-            self.config["M_gaussian"] += 1
+            F_dtw, subbeats_idxs = msaf.utils.read_cqt_features(
+                self.audio_file, features_dir)
+            #ref_times, ref_labels = msaf.io.read_references(self.audio_file)
+            #ref_bounds = msaf.utils.times_to_bounds(ref_times, subbeats_idxs)
 
-        # Median filter
-        F = median_filter(F, M=self.config["m_median"])
-        #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+            recplot_file = msaf.utils.get_recplot_file(recplots_dir,
+                                                       self.audio_file)
+            S = msaf.utils.get_recurrence_plot(F_dtw, recplot_file, self.config)
+            #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
+            #R = k_nearest(R, int(R.shape[0] * k))
 
-        # Self similarity matrix
-        S = compute_ssm(F)
+        else:
+            # Make sure that the M_gaussian is even
+            if self.config["M_gaussian"] % 2 == 1:
+                self.config["M_gaussian"] += 1
+
+            # Median filter
+            F = median_filter(F, M=self.config["m_median"])
+            #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+
+            # Self similarity matrix
+            S = compute_ssm(F)
 
         # Compute gaussian kernel
         G = compute_gaussian_krnl(self.config["M_gaussian"])

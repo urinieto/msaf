@@ -11,6 +11,7 @@ import os
 import scipy.io.wavfile
 
 import msaf
+import librosa
 
 def lognormalize_chroma(C):
     """Log-normalizes chroma such that each vector is between -80 to 0."""
@@ -418,7 +419,7 @@ def compute_recurrence_plot(F, model, w=5):
     return [R_predict, R_proba, R_mask]
 
 
-def get_recplot_file(recplots_dir, audio_file):
+def get_recplot_file(recplots_dir, audio_file, local=""):
     """Gets the recurrence plot file.
 
     Parameters
@@ -427,13 +428,16 @@ def get_recplot_file(recplots_dir, audio_file):
         Directory where to store the recurrence plots.
     audio_file : str
         Path to the audio file.
+    local : str
+        Whether to have local plots.
 
     Returns
     -------
     recplot_path : str
         Path to the recplot pk file.
     """
-    return os.path.join(recplots_dir, os.path.basename(audio_file) + ".pk")
+    return os.path.join(recplots_dir, os.path.basename(audio_file) + local +
+                        ".pk")
 
 
 def times_to_bounds(in_times, subbeats_idxs):
@@ -473,7 +477,35 @@ def get_recurrence_plot(F_dtw, recplot_file, config):
         with open(config["model"]) as f:
             model = pickle.load(f)["model"]
 
-        R = msaf.utils.compute_recurrence_plot(F_dtw, model, config["w"])
+        R = compute_recurrence_plot(F_dtw, model, config["w"])
+
+        R_dict = {}
+        R_dict["predict"] = R[0]
+        R_dict["proba"] = R[1]
+        R_dict["mask"] = R[2]
+        with open(recplot_file, "w") as f:
+            pickle.dump(R_dict, f)
+        R = R_dict[config["recplot_type"]]
+
+    return R
+
+
+def get_local_plot(F_dtw, recplot_file, config):
+    """Either read or compute the local plot given some model params.
+
+    Returns
+    -------
+    R : np.array
+        The recurrence plot.
+    """
+    if os.path.isfile(recplot_file):
+        with open(recplot_file) as f:
+            R = pickle.load(f)[config["recplot_type"]]
+    else:
+        with open(config["model_local"]) as f:
+            model = pickle.load(f)["model"]
+
+        R = compute_recurrence_plot(F_dtw, model, config["w"])
 
         R_dict = {}
         R_dict["predict"] = R[0]
