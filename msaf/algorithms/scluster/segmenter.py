@@ -12,12 +12,6 @@ Original code by Brian McFee from:
     https://github.com/bmcfee/laplacian_segmentation
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 import logging
 import main
 import numpy as np
@@ -60,9 +54,11 @@ class Segmenter(SegmenterInterface):
                                                     self.in_bound_idxs,
                                                     self.audio_file)
 
+        if est_idxs[-1] >= len(frame_times):
+            est_idxs[-1] = len(frame_times) - 1
         if 'numpy' in str(type(est_idxs)):
             # Flat output
-            assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
+            #assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
             est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
         else:
             # Hierarchical output

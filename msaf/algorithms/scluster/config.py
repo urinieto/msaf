@@ -15,6 +15,7 @@ config = {
     "hier"          : False,
     "w"             : 5,
     "beats"         : True,
+    "bias"          : True,
     "recplot_type"  : "proba",  # predict, proba, mask
     "model_type"    : "salami",
     "recplots_dir_beats"  : prefix_path + "similarity_classification/recplots_beats",

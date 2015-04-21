@@ -212,6 +212,11 @@ class Segmenter(SegmenterInterface):
             recplots_dir = self.config["recplots_dir_subbeats"]
             model_sufix = ""
 
+        if self.config["bias"]:
+            bias_sufix = "_bias"
+        else:
+            bias_sufix = ""
+
 
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
@@ -236,7 +241,8 @@ class Segmenter(SegmenterInterface):
             ref_bounds = msaf.utils.times_to_bounds(ref_times, subbeats_idxs)
 
             recplot_file = msaf.utils.get_recplot_file(recplots_dir,
-                                                       self.audio_file)
+                                                       self.audio_file,
+                                                       bias=bias_sufix)
             R = msaf.utils.get_recurrence_plot(F_dtw, recplot_file, self.config)
             R = k_nearest(R, int(R.shape[0] * k))
 
@@ -264,7 +270,7 @@ class Segmenter(SegmenterInterface):
 
             from scipy.ndimage import median_filter
             diagonal_median = librosa.segment.timelag_filter(median_filter)
-            R = diagonal_median(R, size=(1, self.config["diag_filter"]), mode='mirror')
+            #R = diagonal_median(R, size=(1, self.config["diag_filter"]), mode='mirror')
             #plt.imshow(R, interpolation="nearest", aspect="auto"); plt.show()
 
             # Circular shift
@@ -304,18 +310,14 @@ class Segmenter(SegmenterInterface):
             est_bounds = []
 
         # Different audio files? Hack...
-        #if est_bounds[-1] >= F.shape[0]:
-            #est_bounds = est_bounds[:-1]
+        if len(est_bounds) > 0 and est_bounds[-1] >= F.shape[0]:
+            est_bounds = est_bounds[:-1]
 
         # Add first and last frames
-        est_idxs = np.concatenate(([0], est_bounds, [F.shape[0] - 1]))
+        est_idxs = np.concatenate(([0], est_bounds, [len(self.frame_times)]))
         est_idxs = np.unique(est_idxs)
 
-        assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
-
-        # Map times from CQT to current indeces
-        #if self.config["model"] is not None:
-            #est_idxs = map_indeces(est_idxs, subbeats_idxs, self.frame_times)
+        assert est_idxs[0] == 0 and est_idxs[-1] == len(self.frame_times)
 
         # Empty labels
         est_labels = np.ones(len(est_idxs) - 1) * - 1

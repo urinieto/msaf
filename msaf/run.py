@@ -162,7 +162,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
             else:
                 try:
                     est_times, est_labels = io.read_references(audio_file)
-                    est_idxs = io.align_times(est_times, frame_times[:-1])
+                    #est_idxs = io.align_times(est_times, frame_times[:-1])
+                    est_idxs = io.align_times(est_times, frame_times[:])
                 except:
                     logging.warning("No references found for file: %s" %
                                     audio_file)
@@ -174,13 +175,14 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
                     est_labels = np.array([0])
                 else:
                     S = labels_module.Segmenter(audio_file,
+                                                frame_times,
                                                 in_bound_idxs=est_idxs,
                                                 **config)
                     est_labels = S.processFlat()[1]
 
         # Make sure the first and last boundaries are included
         est_times, est_labels = utils.process_segmentation_level(
-            est_idxs, est_labels, hpcp.shape[0], frame_times, dur)
+            est_idxs, est_labels, frame_times.shape[0], frame_times, dur)
 
     return est_times, est_labels
 

@@ -455,15 +455,24 @@ def local_similarity(X):
 
 
 def k_nearest(X, k):
-    rec = np.zeros(X.shape, dtype=bool)
+    rec = np.zeros(X.shape)
 
     # get the k nearest neighbors for each point
     for i in range(X.shape[0]):
         for j in np.argsort(X[i])[-k:]:
-            rec[i, j] = True
+            rec[i, j] = X[i, j]
 
     return rec
 
+
+def gt_local_matrix(X, ref_bounds):
+    N = X.shape[0]
+    A = np.eye(N, k=-1) + np.eye(N, k=1)
+    for bound in ref_bounds:
+        next_bound = min(bound+1, N - 1)
+        A[bound, next_bound] = 0
+        A[next_bound, bound] = 0
+    return A
 
 def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
@@ -489,21 +498,31 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
         recplots_dir = parameters["recplots_dir_subbeats"]
         model_sufix = ""
 
+    if parameters["bias"]:
+        bias_sufix = "_bias"
+    else:
+        bias_sufix = ""
+
+    F_dtw, subbeats_idxs = msaf.utils.read_cqt_features(
+        audio_file, features_dir)
+    ref_times, ref_labels = msaf.io.read_references(audio_file)
+    ref_bounds = msaf.utils.times_to_bounds(ref_times, subbeats_idxs)
+
     # Preprocess to obtain features, times, and input boundary indeces
     if parameters["model"] is not None:
         if parameters["model_type"] == "iso":
             recplots_dir += "_" + parameters["model_type"]
             parameters["model"] = os.path.join(parameters["model"],
                                                 "similarity_model_isophonics" +
-                                                model_sufix + ".pickle")
+                                                model_sufix + bias_sufix + ".pickle")
             parameters["model_local"] = os.path.join(parameters["model_local"],
                                                 "similarity_model_isophonics_local" +
-                                                model_sufix + ".pickle")
+                                                model_sufix + bias_sufix + ".pickle")
         elif parameters["model_type"] == "salami":
             recplots_dir += "_" + parameters["model_type"]
             parameters["model"] = os.path.join(parameters["model"],
                                                 "similarity_model_salami" +
-                                                model_sufix + ".pickle")
+                                                model_sufix + bias_sufix + ".pickle")
             parameters["model_local"] = os.path.join(parameters["model_local"],
                                                 "similarity_model_salami_local" +
                                                 model_sufix + ".pickle")
@@ -511,29 +530,32 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
             raise RuntimeError("Wrong model type in parameters")
         msaf.utils.ensure_dir(recplots_dir)
 
-        F_dtw, subbeats_idxs = msaf.utils.read_cqt_features(
-            audio_file, features_dir)
-        ref_times, ref_labels = msaf.io.read_references(audio_file)
-        ref_bounds = msaf.utils.times_to_bounds(ref_times, subbeats_idxs)
-
         recplot_file = msaf.utils.get_recplot_file(recplots_dir,
-                                                    audio_file)
+                                                   audio_file, bias=bias_sufix)
         R = msaf.utils.get_recurrence_plot(F_dtw, recplot_file, parameters)
-        #plt.imshow(R, interpolation="nearest"); plt.show()
+        R[np.diag_indices_from(R)] = 0
         #plt.imshow(R, interpolation="nearest"); plt.show()
 
         k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
+        #plt.imshow(R, interpolation="nearest"); plt.show()
 
-        #R = k_nearest(R, int(R.shape[0] * 0.04))
-        R = k_nearest(R, k_link)
-        R = np.asarray(R, dtype=np.float)
+        #R = k_nearest(R, int(R.shape[0] * 0.006))
+        R = k_nearest(R, int(R.shape[0] * 0.015))
+        #R = k_nearest(R, k_link)
+        #plt.imshow(R, interpolation="nearest"); plt.show()
 
         # Local matrix
         local_file = msaf.utils.get_recplot_file(recplots_dir, audio_file,
                                                  local="_local")
         A_loc = msaf.utils.get_local_plot(F_dtw, local_file, parameters)
+        #A_loc = gt_local_matrix(R, ref_bounds)
+        #A_loc = msaf.utils.get_local_plot(F_dtw, local_file, parameters)
         #A_loc = k_nearest(A_loc, k_link)
-        #plt.imshow(A_loc, interpolation="nearest"); plt.show()
+        #plt.imshow(A_loc, interpolation="nearest")
+        #for bound in ref_bounds:
+            #plt.axvline(bound, alpha=0.2)
+            #plt.axhline(bound, alpha=0.2)
+        #plt.show()
 
         A_rep = 1  # Rf will already be smooth
 
@@ -557,6 +579,7 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
         A_loc = self_similarity(X_loc, k=k_link)
         #plt.imshow(A_loc, interpolation="nearest"); plt.show()
 
+
     # Mask the self-similarity matrix by recurrence
     S = librosa.segment.structure_feature(R)
 
@@ -570,12 +593,16 @@ def do_segmentation(X, beats, parameters, bound_idxs, audio_file):
 
     # Suppress the diagonal
     Rf[np.diag_indices_from(Rf)] = 0
-    #plt.imshow(Rf, interpolation="nearest"); plt.show()
+    #plt.imshow(Rf * A_rep, interpolation="nearest"); plt.show()
 
     # We can jump to a random neighbor, or +- 1 step in time
     # Call it the infinite jukebox matrix
     T = weighted_ridge(Rf * A_rep,
                     (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+    #if bound_idxs is not None and not parameters["hier"]:
+        #labels = msaf.utils.synchronize_labels(bound_idxs, boundaries, labels,
+                                               #X[0].shape[1])
+        #boundaries = bound_idxs
     #plt.imshow(T, interpolation="nearest"); plt.show()
 
     # Get the graph laplacian

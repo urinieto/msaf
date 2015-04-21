@@ -464,7 +464,7 @@ def compute_local_plot(F, model, w=5):
     return [R_predict, R_proba, R_mask]
 
 
-def get_recplot_file(recplots_dir, audio_file, local=""):
+def get_recplot_file(recplots_dir, audio_file, local="", bias=""):
     """Gets the recurrence plot file.
 
     Parameters
@@ -481,8 +481,7 @@ def get_recplot_file(recplots_dir, audio_file, local=""):
     recplot_path : str
         Path to the recplot pk file.
     """
-    return os.path.join(recplots_dir, os.path.basename(audio_file) + local +
-                        ".pk")
+    return os.path.join(recplots_dir, os.path.basename(audio_file) + bias + ".pk")
 
 
 def times_to_bounds(in_times, subbeats_idxs):
