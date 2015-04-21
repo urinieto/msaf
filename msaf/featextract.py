@@ -81,7 +81,9 @@ def compute_features(audio, y_harmonic):
     logging.info("Computing HPCPs...")
     hpcp = librosa.feature.chroma_cqt(y=y_harmonic,
                                       sr=msaf.Anal.sample_rate,
-                                      hop_length=msaf.Anal.hop_size).T
+                                      hop_length=msaf.Anal.hop_size,
+                                      n_octaves=4,
+                                      fmin=20).T
 
     #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
     logging.info("Computing Tonnetz...")
