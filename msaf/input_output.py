@@ -663,6 +663,10 @@ def get_dataset_files(in_path, ds_name="*"):
     if ds_name == "SALAMI-i":
         file_structs = get_SALAMI_internet(file_structs)
 
+    # Sort by audio file name
+    file_structs = sorted(file_structs,
+                          key=lambda file_struct: file_struct.audio_file)
+
     return file_structs
 
 

@@ -41,7 +41,6 @@ out_boundaries_ext = "-bounds.wav"
 minimum__frames = 10
 
 
-
 class Dataset():
     # Directories
     audio_dir = "audio"
