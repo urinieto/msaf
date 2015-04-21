@@ -108,6 +108,7 @@ def main():
     }
     if args.evaluate:
         func = msaf.eval
+        params["save"] = args.save
     else:
         func = msaf.run
         params["sonify_bounds"] = args.sonify_bounds

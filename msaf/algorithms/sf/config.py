@@ -4,7 +4,7 @@
 config = {
     "M_gaussian"    : 23,
     "m_embedded"    : 3,
-    "k_nearest"     : 0.03,
+    "k_nearest"     : 0.04,
     "Mp_adaptive"   : 28,
     "offset_thres"  : 0.05
 
