@@ -15,8 +15,9 @@ class Anal():
     mfcc_coeff = 14
     n_mels = 128
     window_type = "blackmanharris62"
-    n_octaves = 4
+    n_octaves = 6
     f_min = 27.5   # Minimum frequency for chroma
+    cqt_bins = 84
 
 
 # Import all submodules (for each task)
