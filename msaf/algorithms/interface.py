@@ -81,7 +81,7 @@ class SegmenterInterface:
         raise NotImplementedError("This method does not return hierarchical "
                                   "segmentations.")
 
-    def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc"],
+    def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc", "cqt"],
                     normalize=True):
         """This method obtains the actual features."""
         # Read features
