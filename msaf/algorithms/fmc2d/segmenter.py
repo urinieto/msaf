@@ -129,7 +129,8 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F = self._preprocess(valid_features=["hpcp"])
+        #F = self._preprocess(valid_features=["hpcp", "cqt"])
+        F = self._preprocess()
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, self.in_bound_idxs,
