@@ -48,7 +48,8 @@ class Segmenter(SegmenterInterface):
                 return self.in_bound_idxs, [0] * (len(self.in_bound_idxs) - 1)
 
         if F.shape[0] > min_frames:
-            if self.feature_str == "hpcp" or self.feature_str == "tonnetz":
+            if self.feature_str == "hpcp" or self.feature_str == "tonnetz" or \
+                    self.feature_str == "cqt":
                 is_harmonic = True
             elif self.feature_str == "mfcc":
                 is_harmonic = False

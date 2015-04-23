@@ -97,7 +97,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     """
 
     # At this point, features should have already been computed
-    hpcp, mfcc, tonnetz, beats, dur, anal =  \
+    hpcp, mfcc, tonnetz, cqt, beats, dur, anal =  \
             io.get_features(audio_file, config["annot_beats"],
                             config["framesync"],
                             pre_features=config["features"])
@@ -303,7 +303,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                 feat_prefix = "bs_"
             features = {}
             features["%shpcp" % feat_prefix], features["%smfcc" % feat_prefix], \
-                features["%stonnetz" % feat_prefix], features["beats"], dur, \
+                features["%stonnetz" % feat_prefix], \
+                features["%scqt" % feat_prefix], features["beats"], dur, \
                 features["anal"] = msaf.io.get_features(in_path,
                                                         annot_beats=annot_beats,
                                                         framesync=framesync,
