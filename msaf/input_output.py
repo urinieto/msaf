@@ -286,6 +286,8 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         (Beat-sync) MFCC
     T: np.array((N, 6))
         (Beat-sync) Tonnetz
+    cqt: np.array((N, msaf.Anal.cqt_bins))
+        (Beat-sync) Constant-Q transform
     beats: np.array(T)
         Beats in seconds
     dur: float
@@ -334,6 +336,7 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         C = np.asarray(feats[feat_str]["hpcp"])
         M = np.asarray(feats[feat_str]["mfcc"])
         T = np.asarray(feats[feat_str]["tonnetz"])
+        cqt = np.asarray(feats[feat_str]["cqt"])
         analysis = feats["analysis"]
         dur = analysis["dur"]
 
@@ -351,11 +354,12 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         C = pre_features["%shpcp" % feat_prefix]
         M = pre_features["%smfcc" % feat_prefix]
         T = pre_features["%stonnetz" % feat_prefix]
+        cqt = pre_features["%scqt" % feat_prefix]
         beats = pre_features["beats"]
         dur = pre_features["anal"]["dur"]
         analysis = pre_features["anal"]
 
-    return C, M, T, beats, dur, analysis
+    return C, M, T, cqt, beats, dur, analysis
 
 
 def safe_write(jam, out_file):

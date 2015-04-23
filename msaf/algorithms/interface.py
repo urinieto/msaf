@@ -85,7 +85,7 @@ class SegmenterInterface:
                     normalize=True):
         """This method obtains the actual features."""
         # Read features
-        self.hpcp, self.mfcc, self.tonnetz, beats, dur, self.anal = \
+        self.hpcp, self.mfcc, self.tonnetz, self.cqt, beats, dur, self.anal = \
             io.get_features(self.audio_file, annot_beats=self.annot_beats,
                             framesync=self.framesync,
                             pre_features=self.features)

@@ -46,7 +46,7 @@ def pcp_segments_to_2dfmc_max(pcp_segments):
     fmcs = []
     for pcp_segment in pcp_segments:
         # Zero pad if needed
-        X = np.zeros((max_len, 12))
+        X = np.zeros((max_len, pcp_segment.shape[1]))
         #X[:pcp_segment.shape[0],:] = pcp_segment
         if pcp_segment.shape[0] <= OFFSET:
             X[:pcp_segment.shape[0], :] = pcp_segment
