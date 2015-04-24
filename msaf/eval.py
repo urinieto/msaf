@@ -253,7 +253,8 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config, ds_name):
+def get_results_file_name(boundaries_id, labels_id, config, ds_name,
+                          annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
     if ds_name == "*":
@@ -261,6 +262,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
     utils.ensure_dir(msaf.results_dir)
     file_name = os.path.join(msaf.results_dir, "results_%s" % ds_name)
     file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
+    file_name += "_annotatorE%d" % (annotator_id)
     sorted_keys = sorted(config.keys(),
                          cmp=lambda x, y: cmp(x.lower(), y.lower()))
     for key in sorted_keys:
@@ -327,7 +329,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
             return []
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
+    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,
+                                     annotator_id)
 
     # All evaluations
     results = pd.DataFrame()
