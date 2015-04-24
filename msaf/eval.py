@@ -121,7 +121,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
 
 def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
-                       bins=251):
+                       bins=251, annotator_id=0):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
 
@@ -147,7 +147,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                 msaf.io.read_hier_references(ref_file, annotation_id=0)
         else:
             ref_inter, ref_labels = jams2.converters.load_jams_range(
-                ref_file, "sections", annotator=0, context=context)
+                ref_file, "sections", annotator=annotator_id, context=context)
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}
@@ -208,7 +208,7 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def process_track(file_struct, boundaries_id, labels_id, config):
+def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0):
     """Processes a single track.
 
     Parameters
@@ -221,6 +221,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
         Identifier of the labels algorithm.
     config : dict
         Configuration of the algorithms to be evaluated.
+    annotator_id : int
+        Number identifiying the annotator.
 
     Returns
     -------
@@ -241,7 +243,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
     try:
         one_res = compute_gt_results(est_file, ref_file, boundaries_id,
-                                     labels_id, config)
+                                     labels_id, config,
+                                     annotator_id=annotator_id)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
@@ -267,7 +270,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
             annot_beats=False, framesync=False, feature="hpcp", hier=False,
-            save=False, n_jobs=4, config=None):
+            save=False, n_jobs=4, annotator_id=0, config=None):
     """Main process.
 
     Parameters
@@ -293,6 +296,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
+    annotator_id : int
+        Number identifiying the annotator.
     config: dict
         Dictionary containing custom configuration parameters for the
         algorithms.  If None, the default parameters are used.
@@ -329,7 +334,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
     if os.path.isfile(in_path):
         # Single File mode
-        evals = [process_track(in_path, boundaries_id, labels_id, config)]
+        evals = [process_track(in_path, boundaries_id, labels_id, config,
+                               annotator_id=annotator_id)]
     else:
         # Collection mode
         # If out_file already exists, do not compute new results
@@ -347,8 +353,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
 
         # Evaluate in parallel
         evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-            file_struct, boundaries_id, labels_id, config)
-            for file_struct in file_structs[:])
+            file_struct, boundaries_id, labels_id, config,
+            annotator_id=annotator_id) for file_struct in file_structs[:])
 
     # Aggregate evaluations in pandas format
     for e in evals:

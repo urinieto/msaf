@@ -179,7 +179,7 @@ def get_algo_ids(est_file):
     return algo_ids
 
 
-def read_references(audio_path):
+def read_references(audio_path, annotator_id=0):
     """Reads the boundary times and the labels.
 
     Parameters
@@ -211,7 +211,7 @@ def read_references(audio_path):
 
     try:
         ref_inters, ref_labels = jams2.converters.load_jams_range(
-            jam_path, "sections", context=context)
+            jam_path, "sections", context=context, annotator=annotator_id)
     except:
         logging.warning("Reference not found in %s" % jam_path)
         return []
@@ -467,7 +467,8 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
     my_thread.join()
 
 
-def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
+def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
+                           annotator_id=0):
     """Gets all the estimated boundaries for all the algorithms.
 
     Parameters
@@ -492,8 +493,9 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
     jam_file = os.path.dirname(est_file) + "/../references/" + \
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
-    ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                        "sections", context=msaf.prefix_dict[ds_prefix])
+    ann_inter, ann_labels = jams2.converters.load_jams_range(
+        jam_file, "sections", context=msaf.prefix_dict[ds_prefix],
+        annotator=annotator_id)
     ann_times = utils.intervals_to_times(ann_inter)
     all_boundaries.append(ann_times)
 
@@ -511,7 +513,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
     return all_boundaries
 
 
-def get_all_est_labels(est_file, annot_beats, algo_ids=None):
+def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
     """Gets all the estimated boundaries for all the algorithms.
 
     Parameters
@@ -523,6 +525,8 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
     algo_ids : list
         List of algorithm ids to to read boundaries from.
         If None, all algorithm ids are read.
+    annotator_id : int
+        Identifier of the annotator.
 
     Returns
     -------
@@ -540,7 +544,8 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(
-        jam_file, "sections", context=msaf.prefix_dict[ds_prefix])
+        jam_file, "sections", context=msaf.prefix_dict[ds_prefix],
+        annotator=annotator_id)
     gt_times = utils.intervals_to_times(ann_inter)
     all_labels.append(ann_labels)
 
