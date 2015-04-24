@@ -42,7 +42,7 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Read frame_times
-        self.hpcp, self.mfcc, self.tonnetz, beats, dur, self.anal = \
+        self.hpcp, self.mfcc, self.tonnetz, self.cqt, beats, dur, self.anal = \
             msaf.io.get_features(self.audio_file, annot_beats=self.annot_beats,
                                  framesync=self.framesync,
                                  pre_features=self.features)
