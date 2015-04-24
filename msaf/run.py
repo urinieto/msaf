@@ -72,7 +72,8 @@ def get_labels_module(labels_id):
     return module
 
 
-def run_algorithms(audio_file, boundaries_id, labels_id, config):
+def run_algorithms(audio_file, boundaries_id, labels_id, config,
+                   annotator_id=0):
     """Runs the algorithms with the specified identifiers on the audio_file.
 
     Parameters
@@ -85,6 +86,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
         Identifier of the labels algorithm to use (None for not labeling).
     config: dict
         Dictionary containing the custom parameters of the algorithms to use.
+    annotator_id: int
+        Annotator identificator in the ground truth.
 
     Returns
     -------
@@ -160,8 +163,13 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
                 est_idxs, est_labels = S.processFlat()
             else:
                 try:
-                    est_times, est_labels = io.read_references(audio_file)
+                    est_times, est_labels = io.read_references(
+                        audio_file, annotator_id=annotator_id)
                     est_idxs = io.align_times(est_times, frame_times[:-1])
+                    if est_idxs[0] != 0:
+                        est_idxs = np.concatenate(([0], est_idxs))
+                    if est_idxs[-1] != hpcp.shape[0] - 1:
+                        est_idxs = np.concatenate((est_idxs, [hpcp.shape[0] - 1]))
                 except:
                     logging.warning("No references found for file: %s" %
                                     audio_file)
@@ -184,7 +192,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config):
     return est_times, est_labels
 
 
-def process_track(file_struct, boundaries_id, labels_id, config):
+def process_track(file_struct, boundaries_id, labels_id, config,
+                  annotator_id=0):
     """Prepares the parameters, runs the algorithms, and saves results.
 
     Parameters
@@ -198,6 +207,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
         Identifier of the labels algorithm to use (None for not labeling).
     config: dict
         Dictionary containing the custom parameters of the algorithms to use.
+    annotator_id: int
+        Annotator identificator in the ground truth.
 
     Returns
     -------
@@ -224,7 +235,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
     # Get estimations
     est_times, est_labels = run_algorithms(file_struct.audio_file,
-                                           boundaries_id, labels_id, config)
+                                           boundaries_id, labels_id, config,
+                                           annotator_id=annotator_id)
 
     # Save
     logging.info("Writing results in: %s" % file_struct.est_file)
@@ -236,8 +248,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
 def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
             framesync=False, boundaries_id="gt", labels_id=None, hier=False,
-            sonify_bounds=False, plot=False, n_jobs=4, config=None,
-            out_bounds="out_bounds.wav"):
+            sonify_bounds=False, plot=False, n_jobs=4, annotator_id=0,
+            config=None, out_bounds="out_bounds.wav"):
     """Main process to segment a file or a collection of files.
 
     Parameters
@@ -268,6 +280,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
+    annotator_id: int
+        Annotator identificator in the ground truth.
     config: dict
         Dictionary containing custom configuration parameters for the
         algorithms.  If None, the default parameters are used.
@@ -320,7 +334,8 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
         # And run the algorithms
         est_times, est_labels = run_algorithms(in_path, boundaries_id,
-                                               labels_id, config)
+                                               labels_id, config,
+                                               annotator_id=annotator_id)
 
         if sonify_bounds:
             logging.info("Sonifying boundaries in %s..." % out_bounds)
@@ -345,5 +360,5 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
-            file_struct, boundaries_id, labels_id, config)
-            for file_struct in file_structs[:])
+            file_struct, boundaries_id, labels_id, config,
+            annotator_id=annotator_id) for file_struct in file_structs[:])
