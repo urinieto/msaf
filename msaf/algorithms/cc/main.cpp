@@ -122,6 +122,7 @@ static PyObject* segment(PyObject *self, PyObject *args) {
     ClusterMeltSegmenter *segmenter = new ClusterMeltSegmenter(params);
 
     // Segment until we have a potentially good result
+    int tries = 0;
     do {
         // Initialize segmenter
         segmenter->initialise(sample_rate);
@@ -137,15 +138,17 @@ static PyObject* segment(PyObject *self, PyObject *args) {
         // Segment
         segmenter->segment();
         segmentation = segmenter->getSegmentation();
-    } while(segmentation.segments.size() < 2 && f.size() >= 90);
+        tries++;
+
+    } while(segmentation.segments.size() < 2 && f.size() >= 90 && tries < 10);
 
 
     //cout << segmentation.segments.size() << endl;
-    cout << "estimated labels: ";
-    for (auto b : segmentation.segments) {
-        cout << b.type << " ";
-    }
-    cout << endl;
+//    cout << "estimated labels: ";
+//    for (auto b : segmentation.segments) {
+//        cout << b.type << " ";
+//    }
+//    cout << endl;
 
     // Put segmentation times in a Python List
     int times_len = segmentation.segments.size() + 1;
