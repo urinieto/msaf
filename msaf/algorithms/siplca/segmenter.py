@@ -404,7 +404,8 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features
-        F = self._preprocess(valid_features=["hpcp", "tonnetz"])
+        #F = self._preprocess(valid_features=["hpcp", "tonnetz"])
+        F = self._preprocess()
 
         # Read frame times
         self.hpcp, self.mfcc, self.tonnetz, self.cqt, beats, dur, self.anal = \

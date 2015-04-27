@@ -267,6 +267,11 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name,
                          cmp=lambda x, y: cmp(x.lower(), y.lower()))
     for key in sorted_keys:
         file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
+
+    # Check for max file length
+    if len(file_name) > 255 - msaf.results_ext:
+        file_name = file_name[:255 - msaf.results_ext]
+
     return file_name + msaf.results_ext
 
 
