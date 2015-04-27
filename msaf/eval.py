@@ -269,8 +269,8 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name,
         file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
 
     # Check for max file length
-    if len(file_name) > 255 - msaf.results_ext:
-        file_name = file_name[:255 - msaf.results_ext]
+    if len(file_name) > 255 - len(msaf.results_ext):
+        file_name = file_name[:255 - len(msaf.results_ext)]
 
     return file_name + msaf.results_ext
 
