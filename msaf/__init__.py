@@ -35,7 +35,8 @@ prefix_dict = {
     "Cerulean"      : "large_scale",
     "Epiphyte"      : "function",
     "Isophonics"    : "function",
-    "SALAMI"        : "large_scale"
+    "SALAMI"        : "large_scale",
+    "SPAM"          : "large_scale"
 }
 
 results_dir = "results"
