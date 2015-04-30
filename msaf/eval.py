@@ -183,10 +183,14 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
 
         # Compute evaluations
         res = {}
-        res["t_under10"], res["t_over10"], res["t_measure10"] = \
+        res["t_recall10"], res["t_precision10"], res["t_measure10"] = \
             mir_eval.segment.hmeasure(ref_tree, est_tree, window=10)
-        res["t_under30"], res["t_over30"], res["t_measure30"] = \
+        res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=15)
+        res["t_recall30"], res["t_precision30"], res["t_measure30"] = \
             mir_eval.segment.hmeasure(ref_tree, est_tree, window=30)
+
+        res["track_id"] = os.path.basename(est_file)[:-5]
         return res
     else:
         # Flat
