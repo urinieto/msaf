@@ -144,7 +144,8 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         # TODO: Read hierarchical annotations
         if config["hier"]:
             ref_times, ref_labels, ref_levels = \
-                msaf.io.read_hier_references(ref_file, annotation_id=0)
+                msaf.io.read_hier_references(ref_file, annotation_id=0,
+                                             exclude_levels=["function"])
         else:
             ref_inter, ref_labels = jams2.converters.load_jams_range(
                 ref_file, "sections", annotator=annotator_id, context=context)
@@ -168,6 +169,10 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             "evaluation."
         est_times = []
         est_labels = []
+
+        # Sort based on how many segments per level
+        est_inter = sorted(est_inter, key=lambda level: len(level))
+
         for inter in est_inter:
             est_times.append(msaf.utils.intervals_to_times(inter))
             # Add fake labels (hierarchical eval does not use labels --yet--)
@@ -184,11 +189,11 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         # Compute evaluations
         res = {}
         res["t_recall10"], res["t_precision10"], res["t_measure10"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=10)
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=100)
         res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=15)
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=150)
         res["t_recall30"], res["t_precision30"], res["t_measure30"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=30)
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=300)
 
         res["track_id"] = os.path.basename(est_file)[:-5]
         return res

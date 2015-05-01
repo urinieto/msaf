@@ -240,6 +240,7 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
     for i, segments in enumerate(level_bounds):
         labels = utils.segment_labels_to_floats(segments)
         for segment, label in zip(segments, labels):
+            #print i, label, cmap(label)
             if res is None:
                 start = segment.start
                 end = segment.end
