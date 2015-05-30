@@ -16,23 +16,21 @@ Two types of algorithms are included in MSAF:
 * Boundary Algorithms: Aim to identify the segment boundaries of a given audio signal
 * Labeling (or Structural) Algorithms: Aim to cluster the different music segments based on their acoustic similarity.
 
+(**Note**: Additional algorithms can be found in the [msaf-gpl](https://github.com/urinieto/msaf-gpl) package.)
+
 ## Boundary Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
 * Checkerboard-like Kernel (Foote 2000)
-* Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * OLDA (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/olda))
 * Spectral Clustering (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/laplacian_segmentation))
 * Structural Features (Serrà et al. 2012)
-* SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
 ## Labeling Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
 * 2D Fourier Magnitude Coefficients (Nieto & Bello 2014)
-* Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * Spectral Clustering (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/laplacian_segmentation))
-* SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
 ## Installing MSAF #
 
