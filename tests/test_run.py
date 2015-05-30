@@ -18,7 +18,7 @@ import msaf
 from msaf.input_output import FileStruct
 
 # Global vars
-audio_file = os.path.join("data", "chirp.mp3")
+audio_file = os.path.join("fixtures", "chirp.mp3")
 long_audio_file = os.path.join("..", "datasets", "Sargon", "audio",
                                "01-Sargon-Mindless.mp3")
 fake_module_name = "fake_name_module"
