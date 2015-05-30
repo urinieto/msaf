@@ -15,7 +15,7 @@ import os
 import msaf
 
 # Global vars
-audio_file = os.path.join("data", "chirp.mp3")
+audio_file = os.path.join("fixtures", "chirp.mp3")
 sr = msaf.Anal.sample_rate
 audio, fs = librosa.load(audio_file, sr=sr)
 y_harmonic, y_percussive = librosa.effects.hpss(audio)
