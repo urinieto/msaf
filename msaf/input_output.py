@@ -679,7 +679,7 @@ def get_dataset_files(in_path, ds_name="*"):
     return file_structs
 
 
-def read_hier_references(jams_file, annotation_id=0):
+def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     """Reads hierarchical references from a jams file.
 
     Parameters
@@ -688,6 +688,8 @@ def read_hier_references(jams_file, annotation_id=0):
         Path to the jams file.
     annotation_id : int > 0
         Identifier of the annotator to read from.
+    exclude_levels: list
+        List of levels to exclude. Empty list to include all levels.
 
     Returns
     -------
@@ -710,8 +712,9 @@ def read_hier_references(jams_file, annotation_id=0):
         levels = []
         jam = jams2.load(jams_file)
         annotation = jam.sections[annotation_id]
-        [levels.append(segment.label.context)
-            for segment in annotation.data]
+        for segment in annotation.data:
+            if segment.label.context not in exclude_levels:
+                levels.append(segment.label.context)
         c = Counter(levels)     # Count frequency
         return np.asarray(c.keys())[np.argsort(c.values())]     # Sort
 
