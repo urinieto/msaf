@@ -247,8 +247,8 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
 
     try:
         one_res = compute_gt_results(est_file, ref_file, boundaries_id,
-                                     labels_id, config,
-                                     annotator_id=annotator_id)
+                                        labels_id, config,
+                                        annotator_id=annotator_id)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
