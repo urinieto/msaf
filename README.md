@@ -1,6 +1,12 @@
-[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
-
 # Music Structure Analysis Framework #
+
+Master branch:
+
+[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=master)](https://travis-ci.org/urinieto/msaf)
+
+Devel branch:
+
+[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
 
 ## Description ##
 
