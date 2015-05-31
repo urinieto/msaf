@@ -100,14 +100,10 @@ def test_run_algorithms():
 
     features = msaf.featextract.compute_features_for_audio_file(long_audio_file)
 
-    # Running all boundary algorithms on a relatively long file
-    for bound_id in bound_ids:
-        print "bounds:", bound_id
-        if bound_id == "gt":
-            continue
+    def _test_run_msaf(bound_id, label_id):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
-                                            bound_id, label_id)
-        config["features"] = features
+                                           bound_id, label_id)
+        config["features"] = copy.deepcopy(features)
         config["hier"] = False
         est_times, est_labels = msaf.run.run_algorithms(long_audio_file,
                                                         bound_id,
@@ -118,21 +114,15 @@ def test_run_algorithms():
         npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
                                 decimal=2)
 
+    # Running all boundary algorithms on a relatively long file
+    for bound_id in bound_ids:
+        if bound_id == "gt":
+            continue
+        yield (_test_run_msaf, bound_id, None)
+
     # Combining boundaries with labels
     for bound_id in bound_ids:
         if bound_id == "gt":
             continue
         for label_id in label_ids:
-            print bound_id, label_id
-            config = msaf.io.get_configuration(feature, annot_beats, framesync,
-                                               bound_id, label_id)
-            config["features"] = copy.deepcopy(features)
-            config["hier"] = False
-            est_times, est_labels = msaf.run.run_algorithms(long_audio_file,
-                                                            bound_id,
-                                                            label_id,
-                                                            config)
-            npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
-            assert len(est_times) - 1 == len(est_labels)
-            npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
-                                    decimal=2)
+            yield (_test_run_msaf, bound_id, label_id)
