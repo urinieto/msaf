@@ -102,7 +102,7 @@ def test_run_algorithms():
 
     # Running all boundary algorithms on a relatively long file
     for bound_id in bound_ids:
-        print bound_id
+        print "bounds:", bound_id
         if bound_id == "gt":
             continue
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
