@@ -3,7 +3,6 @@ Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
 """
 
-import functools
 from joblib import Parallel, delayed
 import logging
 import mir_eval
