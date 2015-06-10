@@ -2,8 +2,10 @@
 Initialisation file for all the algorithms contained in MSAF.
 """
 import glob
+import importlib
 import os
-import interface
+
+from . import interface
 
 # Get current path
 curr_path = os.path.dirname(os.path.realpath(__file__))
@@ -18,8 +20,7 @@ for file in files:
             module_names.append(__name__ + "." + os.path.basename(file))
 
 # Import all the algorithms in this folder
-[__import__(module_name, globals={}, locals={}, fromlist=[], level=-1)
- for module_name in module_names]
+[importlib.import_module(module_name) for module_name in module_names]
 
 # Also init the __all__ var in case they want to use "*" to import all
 __all__ = [module_name.split(".")[-1] for module_name in module_names]
@@ -31,4 +32,3 @@ del module_names
 del os
 del glob
 del file
-del module_name

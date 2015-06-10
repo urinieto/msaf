@@ -19,11 +19,11 @@ __version__ = "1.0"
 __email__ = "oriol@nyu.edu"
 
 import logging
-import main
 import numpy as np
 
 import msaf
 from msaf.algorithms.interface import SegmenterInterface
+from . import main
 
 
 class Segmenter(SegmenterInterface):

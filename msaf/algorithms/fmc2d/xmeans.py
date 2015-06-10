@@ -118,7 +118,7 @@ class XMeans:
                     finalK = K[i]
                     break
 
-        print "Estimated K: ", finalK
+        #print "Estimated K: ", finalK
         if self.plot:
             plt.subplot(2, 1, 1)
             plt.plot(K, bics, label="BIC")
@@ -212,8 +212,8 @@ def main(args):
     xmeans = XMeans(X, init_K=2, plot=args.plot)
     est_K = xmeans.estimate_K_xmeans()
     est_K_knee = xmeans.estimate_K_knee()
-    print "Estimated x-means K:", est_K
-    print "Estimated Knee Point Detection K:", est_K_knee
+    #print "Estimated x-means K:", est_K
+    #print "Estimated Knee Point Detection K:", est_K_knee
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
