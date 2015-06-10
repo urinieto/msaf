@@ -1,2 +1,2 @@
-from config import *
-from segmenter import *
+from .config import *
+from .segmenter import *

@@ -17,8 +17,8 @@ import scipy.cluster.vq as vq
 from sklearn import mixture
 
 # Local stuff
-import utils_2dfmc as utils2d
-from xmeans import XMeans
+from . import utils_2dfmc as utils2d
+from .xmeans import XMeans
 
 from msaf.algorithms.interface import SegmenterInterface
 
