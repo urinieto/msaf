@@ -22,17 +22,17 @@ from msaf.algorithms.interface import SegmenterInterface
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
-    for i in xrange(X.shape[1]):
+    for i in range(X.shape[1]):
         X[:, i] = filters.median_filter(X[:, i], size=M)
     return X
 
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Foote's paper."""
-    g = signal.gaussian(M, M / 3., sym=True)
+    g = signal.gaussian(M, M // 3., sym=True)
     G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
-    G[M / 2:, :M / 2] = -G[M / 2:, :M / 2]
-    G[:M / 2, M / 2:] = -G[:M / 2, M / 2:]
+    G[M // 2:, :M // 2] = -G[M // 2:, :M // 2]
+    G[:M // 2, M // 2:] = -G[:M // 2, M // 2:]
     return G
 
 
@@ -51,8 +51,8 @@ def compute_nc(X, G):
     M = G.shape[0]
     nc = np.zeros(N)
 
-    for i in xrange(M / 2, N - M / 2 + 1):
-        nc[i] = np.sum(X[i - M / 2:i + M / 2, i - M / 2:i + M / 2] * G)
+    for i in range(M // 2, N - M // 2 + 1):
+        nc[i] = np.sum(X[i - M // 2:i + M // 2, i - M // 2:i + M // 2] * G)
 
     # Normalize
     nc += nc.min()
@@ -70,7 +70,7 @@ def pick_peaks(nc, L=16):
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
 
     peaks = []
-    for i in xrange(1, nc.shape[0] - 1):
+    for i in range(1, nc.shape[0] - 1):
         # is it a peak?
         if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
             # is it above the threshold?

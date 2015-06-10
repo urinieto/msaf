@@ -88,7 +88,7 @@ def times_to_intervals(times):
     inters: np.array(N-1, 2)
         A set of intervals.
     """
-    return np.asarray(zip(times[:-1], times[1:]))
+    return np.asarray(list(zip(times[:-1], times[1:])))
 
 
 def intervals_to_times(inters):
