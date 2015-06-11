@@ -35,13 +35,13 @@ class NMF():
         the input data
     num_bases: int, optional
         Number of bases to compute (column rank of W and row rank of H).
-        4 (default)        
+        4 (default)
 
     Attributes
     ----------
     W : "data_dimension x num_bases" matrix of basis vectors
     H : "num bases x num_samples" matrix of coefficients
-    ferr : frobenius norm (after calling .factorize()) 
+    ferr : frobenius norm (after calling .factorize())
 
     Example
     -------
@@ -64,16 +64,16 @@ class NMF():
 
     The result is a set of coefficients nmf_mdl.H, s.t. data = W * nmf_mdl.H.
     """
-    
+
     # some small value
     _EPS = 10**-8
-    
+
     def __init__(self, data, num_bases=4):
-        
+
         def setup_logging():
-            # create logger       
+            # create logger
             self._logger = logging.getLogger("pymf")
-       
+
             # add ch to logger
             if len(self._logger.handlers) < 1:
                 # create console handler and set level to debug
@@ -81,21 +81,21 @@ class NMF():
                 ch.setLevel(logging.DEBUG)
                 # create formatter
                 formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-        
+
                 # add formatter to ch
                 ch.setFormatter(formatter)
 
                 self._logger.addHandler(ch)
 
         setup_logging()
-        
+
         # set variables
-        self.data = data       
-        self._num_bases = num_bases             
-      
+        self.data = data
+        self._num_bases = num_bases
+
         # initialize H and W to random values
         (self._data_dimension, self._num_samples) = self.data.shape
-        
+
 
     def frobenius_norm(self):
         """ Frobenius norm (||data - WH||) of a data matrix and a low rank
@@ -112,13 +112,13 @@ class NMF():
             err = -123456
 
         return err
-        
+
     def init_w(self):
-        self.W = np.random.random((self._data_dimension, self._num_bases)) 
-        
+        self.W = np.random.random((self._data_dimension, self._num_bases))
+
     def init_h(self):
-        self.H = np.random.random((self._num_bases, self._num_samples)) 
-        
+        self.H = np.random.random((self._num_bases, self._num_samples))
+
     def update_h(self):
             # pre init H1, and H2 (necessary for storing matrices on disk)
             H2 = np.dot(np.dot(self.W.T, self.W), self.H) + 10**-9
@@ -138,10 +138,10 @@ class NMF():
         else:
             return False
 
-    def factorize(self, niter=1, show_progress=False, 
+    def factorize(self, niter=1, show_progress=False,
                   compute_w=True, compute_h=True, compute_err=True):
         """ Factorize s.t. WH = data
-            
+
             Parameters
             ----------
             niter : int
@@ -155,44 +155,44 @@ class NMF():
             compute_err : bool
                     compute Frobenius norm |data-WH| after each update and store
                     it to .ferr[k].
-            
+
             Updated Values
             --------------
             .W : updated values for W.
             .H : updated values for H.
             .ferr : Frobenius norm |data-WH| for each iteration.
         """
-        
+
         if show_progress:
             self._logger.setLevel(logging.INFO)
         else:
-            self._logger.setLevel(logging.ERROR)        
-        
+            self._logger.setLevel(logging.ERROR)
+
         # create W and H if they don't already exist
         # -> any custom initialization to W,H should be done before
         if not hasattr(self,'W'):
                self.init_w()
-               
+
         if not hasattr(self,'H'):
-                self.init_h()                   
+                self.init_h()
 
         if compute_err:
             self.ferr = np.zeros(niter)
-             
-        for i in xrange(niter):
+
+        for i in range(niter):
             if compute_w:
                 self.update_w()
 
             if compute_h:
-                self.update_h()                                        
-         
-            if compute_err:                 
+                self.update_h()
+
+            if compute_err:
                 self.ferr[i] = self.frobenius_norm()
-                self._logger.info('Iteration ' + str(i+1) + '/' + str(niter) + 
+                self._logger.info('Iteration ' + str(i+1) + '/' + str(niter) +
                 ' FN:' + str(self.ferr[i]))
-            else:                
+            else:
                 self._logger.info('Iteration ' + str(i+1) + '/' + str(niter))
-           
+
 
             # check if the err is not changing anymore
             if i > 1 and compute_err:

@@ -28,7 +28,7 @@ MIN_LEN = 4
 def get_pcp_segments(PCP, bound_idxs):
     """Returns a set of segments defined by the bound_idxs."""
     pcp_segments = []
-    for i in xrange(len(bound_idxs) - 1):
+    for i in range(len(bound_idxs) - 1):
         pcp_segments.append(PCP[bound_idxs[i]:bound_idxs[i + 1], :])
     return pcp_segments
 
@@ -52,24 +52,24 @@ def pcp_segments_to_2dfmc_max(pcp_segments):
             X[:pcp_segment.shape[0], :] = pcp_segment
         else:
             X[:pcp_segment.shape[0]-OFFSET, :] = \
-                pcp_segment[OFFSET/2:-OFFSET/2, :]
+                pcp_segment[OFFSET // 2:-OFFSET // 2, :]
 
         # 2D-FMC
         try:
             fmcs.append(utils2d.compute_ffmc2d(X))
         except:
             logging.warning("Couldn't compute the 2D Fourier Transform")
-            fmcs.append(np.zeros((X.shape[0] * X.shape[1]) / 2 + 1))
+            fmcs.append(np.zeros((X.shape[0] * X.shape[1]) // 2 + 1))
 
         # Normalize
-        #fmcs[-1] = fmcs[-1] / fmcs[-1].max()
+        #fmcs[-1] = fmcs[-1] / float(fmcs[-1].max())
 
     return np.asarray(fmcs)
 
 
 def compute_labels_kmeans(fmcs, k=6):
     # Removing the higher frequencies seem to yield better results
-    fmcs = fmcs[:, fmcs.shape[1]/2:]
+    fmcs = fmcs[:, fmcs.shape[1] // 2:]
 
     fmcs = np.log1p(fmcs)
     wfmcs = vq.whiten(fmcs)

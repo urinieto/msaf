@@ -107,7 +107,7 @@ class AA(NMF):
         INQb = base.matrix(0.0, (self._num_bases,1))
         EQa = base.matrix(1.0, (1, self._num_bases))
 
-        for i in xrange(self._num_samples):
+        for i in range(self._num_samples):
             update_single_h(i)
 
     def update_w(self):
@@ -128,7 +128,7 @@ class AA(NMF):
         INQb = base.matrix(0.0, (self._num_samples, 1))
         EQa = base.matrix(1.0, (1, self._num_samples))
 
-        for i in xrange(self._num_bases):
+        for i in range(self._num_bases):
             update_single_w(i)
 
         self.W = np.dot(self.beta, self.data.T).T

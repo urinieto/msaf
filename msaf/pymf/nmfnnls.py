@@ -70,11 +70,11 @@ class NMFNNLS(NMF):
         def updatesingleH(i):
             self.H[:,i] = scipy.optimize.nnls(self.W, self.data[:,i])[0]
 
-        map(updatesingleH, xrange(self._num_samples))
+        map(updatesingleH, range(self._num_samples))
 
 
     def update_w(self):
         def updatesingleW(i):
             self.W[i,:] = scipy.optimize.nnls(self.H.T, self.data[i,:].T)[0]
 
-        map(updatesingleW, xrange(self._data_dimension))
+        map(updatesingleW, range(self._data_dimension))

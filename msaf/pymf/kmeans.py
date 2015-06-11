@@ -11,7 +11,7 @@ PyMF K-means clustering (unary-convex matrix factorization).
 import numpy as np
 import random
 
-import dist
+from . import dist
 from .nmf import NMF
 
 __all__ = ["Kmeans"]
@@ -66,7 +66,7 @@ class Kmeans(NMF):
 
     def init_w(self):
         # set W to some random data samples
-        sel = random.sample(xrange(self._num_samples), self._num_bases)
+        sel = random.sample(range(self._num_samples), self._num_bases)
 
         # sort indices, otherwise h5py won't work
         self.W = self.data[:, np.sort(sel)]
