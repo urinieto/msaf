@@ -45,7 +45,7 @@ install:
     - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
     - sudo apt-get install liblapack-dev
     - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels cvxopt scikit-learn
-    - conda install --yes -c dan_blanchard python-coveralls nose-cov 
+    #- conda install --yes -c dan_blanchard python-coveralls nose-cov 
     - pip install git+https://github.com/bmcfee/samplerate.git
     - git clone https://github.com/bmcfee/librosa.git
     - cd librosa
