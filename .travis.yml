@@ -19,9 +19,8 @@ before_install:
       else
         wget http://repo.continuum.io/miniconda/Miniconda3-3.8.3-Linux-x86_64.sh -O miniconda.sh;
       fi
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda/bin:$PATH
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
     - conda update --yes conda
       # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
     - sudo rm -rf /dev/shm
@@ -47,6 +46,7 @@ install:
     - sudo apt-get install liblapack-dev
     - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels cvxopt scikit-learn
     - conda install --yes -c dan_blanchard python-coveralls nose-cov 
+    - pip install git+https://github.com/bmcfee/samplerate.git
     - git clone https://github.com/bmcfee/librosa.git
     - cd librosa
     - git checkout develop
