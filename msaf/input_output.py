@@ -453,7 +453,7 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
             segment.start.confidence = 0.0
             segment.end.value = float(bound_inter[1])
             segment.end.confidence = 0.0
-            segment.label.value = label
+            segment.label.value = int(label)
             segment.label.confidence = 0.0
             segment.label.context = "level_%d" % i
 
