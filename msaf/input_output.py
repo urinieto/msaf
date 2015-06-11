@@ -716,7 +716,8 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
             if segment.label.context not in exclude_levels:
                 levels.append(segment.label.context)
         c = Counter(levels)     # Count frequency
-        return np.asarray(c.keys())[np.argsort(c.values())]     # Sort
+        # Sort
+        return np.asarray(list(dict(c).keys()))[np.argsort(list(c.values()))]
 
     def get_segments_in_level(level):
         """Gets the segments of a specific level.

@@ -39,7 +39,7 @@ def resample_mx(X, incolpos, outcolpos):
         if len(wts) > 1:
             wts[0] = wts[0] - (outcolpos[c] - incolpos[firstincol])
             wts[-1] = wts[-1] - (incolpos[lastincol+1] - outcolpos[c+1])
-        wts = wts * 1. /sum(wts)
+        wts = wts * 1. / float(sum(wts))
         Y[:,c] = np.dot(X[:,firstincol:lastincol+1], wts)
     # done
     return Y
@@ -127,4 +127,4 @@ def compute_ffmc2d(X):
     #plt.show()
 
     # Take out redundant components
-    return fftshift[:fftshift.shape[0]/2+1]
+    return fftshift[:fftshift.shape[0] // 2 + 1]

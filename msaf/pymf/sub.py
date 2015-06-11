@@ -157,7 +157,7 @@ class SUB(NMF):
 
 
     def randselect(self):
-        idx = random.sample(xrange(self._num_samples), self._nsub)
+        idx = random.sample(range(self._num_samples), self._nsub)
         return np.sort(np.int32(idx))
 
     def update_w(self):

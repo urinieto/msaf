@@ -154,7 +154,7 @@ class CNMF(NMF):
         self.ferr = np.zeros(niter)
         # iterate over W and H
 
-        for i in xrange(niter):
+        for i in range(niter):
             # update H
             XtX_neg_x_W = np.dot(XtX_neg, self.G)
             XtX_pos_x_W = np.dot(XtX_pos, self.G)
