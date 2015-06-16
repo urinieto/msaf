@@ -7,16 +7,8 @@ method:
 Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2012). Unsupervised
 Detection of Music Boundaries by Time Series Structure Features.
 In Proc. of the 26th AAAI Conference on Artificial Intelligence
-(pp. 1613–1619).
-
-Toronto, Canada.
+(pp. 1613–1619).Toronto, Canada.
 """
-
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
 
 import logging
 import numpy as np
@@ -30,14 +22,14 @@ from msaf.algorithms.interface import SegmenterInterface
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
-    for i in xrange(X.shape[1]):
+    for i in range(X.shape[1]):
         X[:, i] = filters.median_filter(X[:, i], size=M)
     return X
 
 
 def gaussian_filter(X, M=8, axis=0):
     """Gaussian filter along the first axis of the feature matrix X."""
-    for i in xrange(X.shape[axis]):
+    for i in range(X.shape[axis]):
         if axis == 1:
             X[:, i] = filters.gaussian_filter(X[:, i], sigma=M / 2.)
         elif axis == 0:
@@ -49,8 +41,8 @@ def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Serra's paper."""
     g = signal.gaussian(M, M / 3., sym=True)
     G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
-    G[M / 2:, :M / 2] = -G[M / 2:, :M / 2]
-    G[:M / 2, M / 1:] = -G[:M / 2, M / 1:]
+    G[M // 2:, :M // 2] = -G[M // 2:, :M // 2]
+    G[:M // 2, M // 1:] = -G[:M // 2, M // 1:]
     return G
 
 
@@ -58,7 +50,7 @@ def compute_ssm(X, metric="seuclidean"):
     """Computes the self-similarity matrix of X."""
     D = distance.pdist(X, metric=metric)
     D = distance.squareform(D)
-    D /= D.max()
+    D /= float(D.max())
     return 1 - D
 
 
@@ -68,12 +60,12 @@ def compute_nc(X):
     # nc = np.sum(np.diff(X, axis=0), axis=1) # Difference between SF's
 
     nc = np.zeros(N)
-    for i in xrange(N - 1):
+    for i in range(N - 1):
         nc[i] = distance.euclidean(X[i, :], X[i + 1, :])
 
     # Normalize
     nc += np.abs(nc.min())
-    nc /= nc.max()
+    nc /= float(nc.max())
     return nc
 
 
@@ -88,7 +80,7 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     #plt.show()
     # th = np.ones(nc.shape[0]) * nc.mean() - 0.08
     peaks = []
-    for i in xrange(1, nc.shape[0] - 1):
+    for i in range(1, nc.shape[0] - 1):
         # is it a peak?
         if nc[i - 1] < nc[i] and nc[i] > nc[i + 1]:
             # is it above the threshold?
@@ -102,8 +94,8 @@ def circular_shift(X):
         time-lag matrix."""
     N = X.shape[0]
     L = np.zeros(X.shape)
-    for i in xrange(N):
-        L[i, :] = np.asarray([X[(i + j) % N, j] for j in xrange(N)])
+    for i in range(N):
+        L[i, :] = np.asarray([X[(i + j) % N, j] for j in range(N)])
     return L
 
 
@@ -111,7 +103,7 @@ def embedded_space(X, m, tau=1):
     """Time-delay embedding with m dimensions and tau delays."""
     N = X.shape[0] - int(np.ceil(m))
     Y = np.zeros((N, int(np.ceil(X.shape[1] * m))))
-    for i in xrange(N):
+    for i in range(N):
         # print X[i:i+m,:].flatten().shape, w, X.shape
         # print Y[i,:].shape
         rem = int((m % 1) * X.shape[1])  # Reminder for float m

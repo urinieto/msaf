@@ -143,33 +143,35 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
                      output_file)
 
 
-def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
-                   title=None):
+def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
+                   ds_prefix, title=None):
     """Plots the results of one track, with ground truth if it exists."""
+    # Get context
+    if ds_prefix in msaf.prefix_dict.keys():
+        context = msaf.prefix_dict[ds_prefix]
+    else:
+        context = "function"
+
+    # Set up the boundaries id
+    bid_lid = boundaries_id
+    if labels_id is not None:
+        bid_lid += " + " + labels_id
     try:
-        # Get the ds_prefix
-        ds_prefix = os.path.basename(in_path).split("_")[0]
-
-        # Get reference file
-        ref_file = in_path.replace(msaf.Dataset.audio_dir,
-                                msaf.Dataset.references_dir)
-        ref_file = ref_file[:-4] + msaf.Dataset.references_ext
-        print ref_file
-
         # Read file
         ref_inter, ref_labels = jams2.converters.load_jams_range(
-            ref_file, "sections", annotator=0,
-            context=msaf.prefix_dict[ds_prefix])
+            file_struct.ref_file, "sections", annotator=0, context=context)
 
         # To times
         ref_times = utils.intervals_to_times(ref_inter)
         all_boundaries = [ref_times, est_times]
         all_labels = [ref_labels, est_labels]
+        algo_ids = ["GT", bid_lid]
     except:
         logging.warning("No references found in %s. Not plotting groundtruth"
-                        % ref_file)
+                        % file_struct.ref_file)
         all_boundaries = [est_times]
         all_labels = [est_labels]
+        algo_ids = [bid_lid]
 
     N = len(all_boundaries)
 
@@ -199,13 +201,8 @@ def plot_one_track(in_path, est_times, est_labels, boundaries_id, labels_id,
         plt.axhline(i / float(N), color="k", linewidth=1)
 
     # Format plot
-    bid_lid = boundaries_id
-    algo_ids = [bid_lid]
-    if labels_id is not None:
-        bid_lid += " + " + labels_id
-        algo_ids = ["GT"] + [bid_lid]
-    _plot_formatting(title, in_path, algo_ids, all_boundaries[0][-1], N,
-                     None)
+    _plot_formatting(title, os.path.basename(file_struct.audio_file), algo_ids,
+                     all_boundaries[0][-1], N, None)
 
 
 def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
@@ -243,6 +240,7 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
     for i, segments in enumerate(level_bounds):
         labels = utils.segment_labels_to_floats(segments)
         for segment, label in zip(segments, labels):
+            #print i, label, cmap(label)
             if res is None:
                 start = segment.start
                 end = segment.end

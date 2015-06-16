@@ -16,7 +16,7 @@ import msaf.featextract
 from msaf.input_output import FileStruct
 
 # Global vars
-audio_file = os.path.join("data", "chirp.mp3")
+audio_file = os.path.join("fixtures", "chirp.mp3")
 sr = msaf.Anal.sample_rate
 audio, fs = librosa.load(audio_file, sr=sr)
 y_harmonic, y_percussive = librosa.effects.hpss(audio)
@@ -29,7 +29,7 @@ def test_compute_beats():
 
 
 def test_compute_features():
-    mfcc, hpcp, tonnetz = msaf.featextract.compute_features(audio, y_harmonic)
+    mfcc, hpcp, tonnetz, cqt = msaf.featextract.compute_features(audio, y_harmonic)
     assert mfcc.shape[1] == msaf.Anal.mfcc_coeff
     assert hpcp.shape[1] == 12
     assert tonnetz.shape[1] == 6
@@ -65,7 +65,7 @@ def test_compute_beat_sync_features():
                                                             sr=sr)
 
     # Compute beat sync feats
-    bs_mfcc, bs_hpcp, bs_tonnetz = \
+    bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt = \
         msaf.featextract.compute_beat_sync_features(features, beats_idx)
     assert_equals(bs_mfcc.shape[0],  len(beats_idx) - 1)
     assert_equals(bs_mfcc.shape[0], bs_hpcp.shape[0])
@@ -74,8 +74,8 @@ def test_compute_beat_sync_features():
 
 def test_compute_features_for_audio_file():
     features = msaf.featextract.compute_features_for_audio_file(audio_file)
-    keys = ["mfcc", "hpcp", "tonnetz", "beats_idx", "beats", "bs_mfcc",
-            "bs_hpcp", "bs_tonnetz", "anal"]
+    keys = ["mfcc", "hpcp", "tonnetz", "cqt", "beats_idx", "beats", "bs_mfcc",
+            "bs_hpcp", "bs_tonnetz", "bs_cqt", "anal"]
     anal_keys = ["frame_rate", "hop_size", "mfcc_coeff", "sample_rate",
                  "window_type", "n_mels", "dur"]
     for key in keys:

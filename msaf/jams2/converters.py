@@ -6,7 +6,7 @@ import logging
 import numpy as np
 
 # Local stuff
-from fileio import load
+from .fileio import load
 
 
 def get_annotator_idx(jam, feature_name, annotator_name, filename):
@@ -69,15 +69,16 @@ def load_jams_range(filename, feature_name, annotator=0, annotator_name=None,
     try:
         jam = load(filename)
     except:
-        print "Error: could not open %s (JAMS module not installed?)" % \
-            filename
+        logging.error("Error: could not open %s (JAMS module not installed?)" %
+                      filename)
         return [], []
 
     times   = []
     labels  = []
     conf    = []
     if len(jam[feature_name]) == 0:
-        print "Warning: %s empty in file %s" % (feature_name, filename)
+        logging.warning("Warning: %s empty in file %s" %
+                        (feature_name, filename))
         return []
 
     for data in jam[feature_name][annotator].data:

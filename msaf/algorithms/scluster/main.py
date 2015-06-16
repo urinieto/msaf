@@ -123,7 +123,7 @@ def save_segments(outfile, boundaries, beats, labels=None):
 
     times = beats[boundaries]
     with open(outfile, 'w') as f:
-        for idx, (start, end, lab) in enumerate(zip(times[:-1], times[1:], labels), 1):
+        for idx, (start, end, lab) in enumerate(list(zip(times[:-1], times[1:], labels)), 1):
             f.write('%.3f\t%.3f\t%s\n' % (start, end, lab))
 
     pass
@@ -282,7 +282,7 @@ def label_rep_sections(X, boundaries, n_types):
     C = sklearn.cluster.KMeans(n_clusters=n_types, tol=1e-8)
 
     labels = C.fit_predict(Xs.T)
-    intervals = zip(boundaries[:-1], boundaries[1:])
+    intervals = list(zip(boundaries[:-1], boundaries[1:]))
 
     return  intervals, labels[:len(intervals)]
 

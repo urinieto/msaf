@@ -19,7 +19,7 @@ from msaf import pymf
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
-    for i in xrange(X.shape[1]):
+    for i in range(X.shape[1]):
         X[:, i] = filters.median_filter(X[:, i], size=M)
     return X
 
@@ -141,8 +141,6 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     # Find non filtered boundaries
     compute_bounds = True if bound_idxs is None else False
     while True:
-        #import pdb; pdb.set_trace()  # XXX BREAKPOINT
-
         if bound_idxs is None:
             try:
                 F, G = cnmf(X, rank, niter=niter, hull=False)

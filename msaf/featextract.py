@@ -66,6 +66,8 @@ def compute_features(audio, y_harmonic):
         Pitch Class Profiles.
     tonnetz: np.array(N, 6)
         Tonal Centroid features.
+    cqt: np.array(N, msaf.Anal.cqt_bins)
+        Constant-Q log-scale features.
     """
     logging.info("Computing Spectrogram...")
     S = librosa.feature.melspectrogram(audio,
@@ -74,6 +76,12 @@ def compute_features(audio, y_harmonic):
                                        hop_length=msaf.Anal.hop_size,
                                        n_mels=msaf.Anal.n_mels)
 
+    logging.info("Computing Constant-Q...")
+    cqt = librosa.logamplitude(librosa.cqt(audio, sr=msaf.Anal.sample_rate,
+                                           hop_length=msaf.Anal.hop_size,
+                                           n_bins=msaf.Anal.cqt_bins)**2,
+                               ref_power=np.max).T
+
     logging.info("Computing MFCCs...")
     log_S = librosa.logamplitude(S, ref_power=np.max)
     mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=msaf.Anal.mfcc_coeff).T
@@ -81,12 +89,14 @@ def compute_features(audio, y_harmonic):
     logging.info("Computing HPCPs...")
     hpcp = librosa.feature.chroma_cqt(y=y_harmonic,
                                       sr=msaf.Anal.sample_rate,
-                                      hop_length=msaf.Anal.hop_size).T
+                                      hop_length=msaf.Anal.hop_size,
+                                      n_octaves=msaf.Anal.n_octaves,
+                                      fmin=msaf.Anal.f_min).T
 
     #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
     logging.info("Computing Tonnetz...")
     tonnetz = utils.chroma_to_tonnetz(hpcp)
-    return mfcc, hpcp, tonnetz
+    return mfcc, hpcp, tonnetz, cqt
 
 
 def save_features(out_file, features):
@@ -118,18 +128,21 @@ def save_features(out_file, features):
     out_json["framesync"] = {
         "mfcc": features["mfcc"].tolist(),
         "hpcp": features["hpcp"].tolist(),
-        "tonnetz": features["tonnetz"].tolist()
+        "tonnetz": features["tonnetz"].tolist(),
+        "cqt": features["cqt"].tolist()
     }
     out_json["est_beatsync"] = {
         "mfcc": features["bs_mfcc"].tolist(),
         "hpcp": features["bs_hpcp"].tolist(),
-        "tonnetz": features["bs_tonnetz"].tolist()
+        "tonnetz": features["bs_tonnetz"].tolist(),
+        "cqt": features["bs_cqt"].tolist()
     }
     try:
         out_json["ann_beatsync"] = {
             "mfcc": features["ann_mfcc"].tolist(),
             "hpcp": features["ann_hpcp"].tolist(),
-            "tonnetz": features["ann_tonnetz"].tolist()
+            "tonnetz": features["ann_tonnetz"].tolist(),
+            "cqt": features["ann_cqt"].tolist()
         }
     except:
         logging.warning("No annotated beats")
@@ -144,8 +157,10 @@ def compute_beat_sync_features(features, beats_idx):
     calculate beat-synchronous features."""
     bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx, pad=False).T
     bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx, pad=False).T
-    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx, pad=False).T
-    return bs_mfcc, bs_hpcp, bs_tonnetz
+    bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx,
+                                      pad=False).T
+    bs_cqt = librosa.feature.sync(features["cqt"].T, beats_idx, pad=False).T
+    return bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt
 
 
 def compute_features_for_audio_file(audio_file):
@@ -172,16 +187,17 @@ def compute_features_for_audio_file(audio_file):
     features = {}
 
     # Compute framesync features
-    features["mfcc"], features["hpcp"], features["tonnetz"] = \
-        compute_features(audio, y_harmonic)
+    features["mfcc"], features["hpcp"], features["tonnetz"], \
+        features["cqt"] = compute_features(audio, y_harmonic)
 
     # Estimate Beats
     features["beats_idx"], features["beats"] = compute_beats(
         y_percussive, sr=msaf.Anal.sample_rate)
 
     # Compute Beat-sync features
-    features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"] = \
-        compute_beat_sync_features(features, features["beats_idx"])
+    features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"], \
+        features["bs_cqt"] = compute_beat_sync_features(features,
+                                                        features["beats_idx"])
 
     # Analysis parameters
     features["anal"] = {}
@@ -247,7 +263,7 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
                 annot_beats, sr=msaf.Anal.sample_rate,
                 hop_length=msaf.Anal.hop_size)
             features["ann_mfcc"], features["ann_hpcp"], \
-                features["ann_tonnetz"] = \
+                features["ann_tonnetz"], features["ann_cqt"] = \
                 compute_beat_sync_features(features, annot_beats_idx)
 
     # Save output as json file
@@ -255,7 +271,8 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
 
 
 def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
-            out_file="out.json", out_beats="out_beats.wav"):
+            out_file="out.json", out_beats="out_beats.wav",
+            ds_name="*"):
     """Main process to compute features.
 
     Parameters
@@ -273,6 +290,8 @@ def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
         Path to the output json file (single file mode only).
     out_beats: str
         Path to the new file containing the sonified beats.
+    ds_name: str
+        Name of the prefix of the dataset (e.g., Beatles)
     """
 
     # If in_path it's a file, we only compute one file
@@ -286,7 +305,7 @@ def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
         utils.ensure_dir(in_path)
 
         # Get files
-        file_structs = io.get_dataset_files(in_path)
+        file_structs = io.get_dataset_files(in_path, ds_name=ds_name)
 
         # Compute features using joblib
         Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(

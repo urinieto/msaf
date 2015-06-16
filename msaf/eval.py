@@ -9,6 +9,7 @@ import mir_eval
 import numpy as np
 import os
 import pandas as pd
+import six
 import sys
 
 # Local stuff
@@ -120,7 +121,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
 
 def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
-                       bins=251):
+                       bins=251, annotator_id=0):
     """Computes the results by using the ground truth dataset identified by
     the annotator parameter.
 
@@ -143,10 +144,11 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         # TODO: Read hierarchical annotations
         if config["hier"]:
             ref_times, ref_labels, ref_levels = \
-                msaf.io.read_hier_references(ref_file, annotation_id=0)
+                msaf.io.read_hier_references(ref_file, annotation_id=0,
+                                             exclude_levels=["function"])
         else:
             ref_inter, ref_labels = jams2.converters.load_jams_range(
-                ref_file, "sections", annotator=0, context=context)
+                ref_file, "sections", annotator=annotator_id, context=context)
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}
@@ -167,6 +169,10 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             "evaluation."
         est_times = []
         est_labels = []
+
+        # Sort based on how many segments per level
+        est_inter = sorted(est_inter, key=lambda level: len(level))
+
         for inter in est_inter:
             est_times.append(msaf.utils.intervals_to_times(inter))
             # Add fake labels (hierarchical eval does not use labels --yet--)
@@ -182,16 +188,19 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
 
         # Compute evaluations
         res = {}
-        res["t_under10"], res["t_over10"], res["t_measure10"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=10)
-        res["t_under30"], res["t_over30"], res["t_measure30"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=30)
+        res["t_recall10"], res["t_precision10"], res["t_measure10"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=100)
+        res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=150)
+        res["t_recall30"], res["t_precision30"], res["t_measure30"] = \
+            mir_eval.segment.hmeasure(ref_tree, est_tree, window=300)
+
+        res["track_id"] = os.path.basename(est_file)[:-5]
         return res
     else:
         # Flat
         return compute_results(ref_inter, est_inter, ref_labels, est_labels,
                             bins, est_file)
-
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
@@ -208,8 +217,30 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def process_track(file_struct, boundaries_id, labels_id, config):
-    """Processes a single track."""
+def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0):
+    """Processes a single track.
+
+    Parameters
+    ----------
+    file_struct : object (FileStruct) or str
+        File struct or full path of the audio file to be evaluated.
+    boundaries_id : str
+        Identifier of the boundaries algorithm.
+    labels_id : str
+        Identifier of the labels algorithm.
+    config : dict
+        Configuration of the algorithms to be evaluated.
+    annotator_id : int
+        Number identifiying the annotator.
+
+    Returns
+    -------
+    one_res : dict
+        Dictionary of the results (see function compute_results).
+    """
+    # Convert to file_struct if string is passed
+    if isinstance(file_struct, six.string_types):
+        file_struct = io.FileStruct(file_struct)
 
     est_file = file_struct.est_file
     ref_file = file_struct.ref_file
@@ -221,7 +252,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
 
     try:
         one_res = compute_gt_results(est_file, ref_file, boundaries_id,
-                                     labels_id, config)
+                                        labels_id, config,
+                                        annotator_id=annotator_id)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
@@ -230,7 +262,8 @@ def process_track(file_struct, boundaries_id, labels_id, config):
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config, ds_name):
+def get_results_file_name(boundaries_id, labels_id, config, ds_name,
+                          annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
     if ds_name == "*":
@@ -238,16 +271,21 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name):
     utils.ensure_dir(msaf.results_dir)
     file_name = os.path.join(msaf.results_dir, "results_%s" % ds_name)
     file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
-    sorted_keys = sorted(config.keys(),
-                         cmp=lambda x, y: cmp(x.lower(), y.lower()))
+    file_name += "_annotatorE%d" % (annotator_id)
+    sorted_keys = sorted(config.keys(), key=str.lower)
     for key in sorted_keys:
         file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
+
+    # Check for max file length
+    if len(file_name) > 255 - len(msaf.results_ext):
+        file_name = file_name[:255 - len(msaf.results_ext)]
+
     return file_name + msaf.results_ext
 
 
 def process(in_path, boundaries_id, labels_id=None, ds_name="*",
             annot_beats=False, framesync=False, feature="hpcp", hier=False,
-            save=False, n_jobs=4, config=None):
+            save=False, n_jobs=4, annotator_id=0, config=None):
     """Main process.
 
     Parameters
@@ -273,6 +311,8 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
+    annotator_id : int
+        Number identifiying the annotator.
     config: dict
         Dictionary containing custom configuration parameters for the
         algorithms.  If None, the default parameters are used.
@@ -302,29 +342,37 @@ def process(in_path, boundaries_id, labels_id=None, ds_name="*",
             return []
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name)
-
-    # If out_file already exists, do not compute new results
-    if os.path.exists(out_file):
-        logging.info("Results already exists, reading from file %s" % out_file)
-        results = pd.read_csv(out_file)
-        print_results(results)
-        return results
-
-    # Get files
-    file_structs = io.get_dataset_files(in_path, ds_name)
-
-    logging.info("Evaluating %d tracks..." % len(file_structs))
+    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,
+                                     annotator_id)
 
     # All evaluations
     results = pd.DataFrame()
 
-    # Evaluate in parallel
-    evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
-        file_struct, boundaries_id, labels_id, config)
-        for file_struct in file_structs[:])
+    if os.path.isfile(in_path):
+        # Single File mode
+        evals = [process_track(in_path, boundaries_id, labels_id, config,
+                               annotator_id=annotator_id)]
+    else:
+        # Collection mode
+        # If out_file already exists, do not compute new results
+        if os.path.exists(out_file):
+            logging.info("Results already exists, reading from file %s" %
+                         out_file)
+            results = pd.read_csv(out_file)
+            print_results(results)
+            return results
 
-    # Aggregat evaluations in pandas format
+        # Get files
+        file_structs = io.get_dataset_files(in_path, ds_name)
+
+        logging.info("Evaluating %d tracks..." % len(file_structs))
+
+        # Evaluate in parallel
+        evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
+            file_struct, boundaries_id, labels_id, config,
+            annotator_id=annotator_id) for file_struct in file_structs[:])
+
+    # Aggregate evaluations in pandas format
     for e in evals:
         if e != []:
             results = results.append(e, ignore_index=True)

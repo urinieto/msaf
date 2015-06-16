@@ -27,7 +27,7 @@ class XMeans:
         while not stop:
             stop = True
             final_means = []
-            for k in xrange(curr_K):
+            for k in range(curr_K):
                 # Find the data that corresponds to the k-th cluster
                 D = self.get_clustered_data(self.X, labels, k)
                 if len(D) == 0 or D.shape[0] == 1:
@@ -36,7 +36,7 @@ class XMeans:
                 # Whiten and find whitened mean
                 stdD = np.std(D, axis=0)
                 #D = vq.whiten(D)
-                D /= stdD  # Same as line above
+                D /= float(stdD)  # Same as line above
                 mean = D.mean(axis=0)
 
                 # Cluster this subspace by half (K=2)
@@ -51,8 +51,8 @@ class XMeans:
 
                 # Split or not
                 max_bic = np.max([np.abs(bic1), np.abs(bic2)])
-                norm_bic1 = bic1 / max_bic
-                norm_bic2 = bic2 / max_bic
+                norm_bic1 = bic1 / float(max_bic)
+                norm_bic2 = bic2 / float(max_bic)
                 diff_bic = np.abs(norm_bic1 - norm_bic2)
 
                 # Split!
@@ -112,13 +112,13 @@ class XMeans:
             #print bics, diff_bics
 
             # Find optimum K
-            for i in xrange(len(K[:-1])):
+            for i in range(len(K[:-1])):
                 #if bics[i] > diff_bics[i]:
                 if diff_bics[i] < th and K[i] != 1:
                     finalK = K[i]
                     break
 
-        print "Estimated K: ", finalK
+        #print "Estimated K: ", finalK
         if self.plot:
             plt.subplot(2, 1, 1)
             plt.plot(K, bics, label="BIC")
@@ -154,13 +154,13 @@ class XMeans:
 
         # Maximum likelihood estimate (MLE)
         mle_var = 0
-        for k in xrange(len(means)):
+        for k in range(len(means)):
             X = D[np.argwhere(labels == k)]
             X = X.reshape((X.shape[0], X.shape[-1]))
             for x in X:
                 mle_var += distance.euclidean(x, means[k])
                 #print x, means[k], mle_var
-        mle_var /= (float(R - K))
+        mle_var /= float(R - K)
 
         # Log-likelihood of the data
         l_D = - Rn/2. * np.log(2*np.pi) - (Rn * M)/2. * np.log(mle_var) - \
@@ -172,7 +172,7 @@ class XMeans:
         #print "BIC:", l_D, p, R, K
 
         # Return the bic
-        return l_D - p/2. * np.log(R)
+        return l_D - p / 2. * np.log(R)
 
     @classmethod
     def generate_2d_data(self, N=100, K=5):
@@ -186,7 +186,7 @@ class XMeans:
 
         # Generate random data
         X = np.empty((0, 2))
-        for i in xrange(K):
+        for i in range(K):
             mean = np.array([np.random.random()*spread,
                              np.random.random()*spread])
             x = np.random.normal(0.0, scale=1.0, size=(N, 2)) + mean
@@ -212,8 +212,8 @@ def main(args):
     xmeans = XMeans(X, init_K=2, plot=args.plot)
     est_K = xmeans.estimate_K_xmeans()
     est_K_knee = xmeans.estimate_K_knee()
-    print "Estimated x-means K:", est_K
-    print "Estimated Knee Point Detection K:", est_K_knee
+    #print "Estimated x-means K:", est_K
+    #print "Estimated Knee Point Detection K:", est_K_knee
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
