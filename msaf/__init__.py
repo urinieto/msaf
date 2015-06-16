@@ -10,11 +10,14 @@ __email__       = "oriol@nyu.edu"
 # Analysis Params
 class Anal():
     sample_rate = 11025
-    frame_size = 4096
+    frame_size = 2048
     hop_size = 512
     mfcc_coeff = 14
     n_mels = 128
     window_type = "blackmanharris62"
+    n_octaves = 6
+    f_min = 27.5   # Minimum frequency for chroma
+    cqt_bins = 84
 
 
 # Import all submodules (for each task)
@@ -32,14 +35,14 @@ prefix_dict = {
     "Cerulean"      : "large_scale",
     "Epiphyte"      : "function",
     "Isophonics"    : "function",
-    "SALAMI"        : "large_scale"
+    "SALAMI"        : "large_scale",
+    "SPAM"          : "large_scale"
 }
 
 results_dir = "results"
 results_ext = ".csv"
 out_boundaries_ext = "-bounds.wav"
 minimum__frames = 10
-
 
 
 class Dataset():

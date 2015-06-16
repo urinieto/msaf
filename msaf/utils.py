@@ -88,7 +88,7 @@ def times_to_intervals(times):
     inters: np.array(N-1, 2)
         A set of intervals.
     """
-    return np.asarray(zip(times[:-1], times[1:]))
+    return np.asarray(list(zip(times[:-1], times[1:])))
 
 
 def intervals_to_times(inters):
@@ -237,7 +237,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     return est_times, est_labels
 
 
-def align_end_hierarchies(hier1, hier2, thres=0.05):
+def align_end_hierarchies(hier1, hier2, thres=0.5):
     """Align the end of the hierarchies such that they end at the same exact
     second as long they have the same duration within a certain threshold.
 

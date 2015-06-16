@@ -179,7 +179,7 @@ def get_algo_ids(est_file):
     return algo_ids
 
 
-def read_references(audio_path):
+def read_references(audio_path, annotator_id=0):
     """Reads the boundary times and the labels.
 
     Parameters
@@ -211,7 +211,7 @@ def read_references(audio_path):
 
     try:
         ref_inters, ref_labels = jams2.converters.load_jams_range(
-            jam_path, "sections", context=context)
+            jam_path, "sections", context=context, annotator=annotator_id)
     except:
         logging.warning("Reference not found in %s" % jam_path)
         return []
@@ -286,6 +286,8 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         (Beat-sync) MFCC
     T: np.array((N, 6))
         (Beat-sync) Tonnetz
+    cqt: np.array((N, msaf.Anal.cqt_bins))
+        (Beat-sync) Constant-Q transform
     beats: np.array(T)
         Beats in seconds
     dur: float
@@ -334,6 +336,7 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         C = np.asarray(feats[feat_str]["hpcp"])
         M = np.asarray(feats[feat_str]["mfcc"])
         T = np.asarray(feats[feat_str]["tonnetz"])
+        cqt = np.asarray(feats[feat_str]["cqt"])
         analysis = feats["analysis"]
         dur = analysis["dur"]
 
@@ -351,11 +354,12 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         C = pre_features["%shpcp" % feat_prefix]
         M = pre_features["%smfcc" % feat_prefix]
         T = pre_features["%stonnetz" % feat_prefix]
+        cqt = pre_features["%scqt" % feat_prefix]
         beats = pre_features["beats"]
         dur = pre_features["anal"]["dur"]
         analysis = pre_features["anal"]
 
-    return C, M, T, beats, dur, analysis
+    return C, M, T, cqt, beats, dur, analysis
 
 
 def safe_write(jam, out_file):
@@ -449,7 +453,7 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
             segment.start.confidence = 0.0
             segment.end.value = float(bound_inter[1])
             segment.end.confidence = 0.0
-            segment.label.value = label
+            segment.label.value = int(label)
             segment.label.confidence = 0.0
             segment.label.context = "level_%d" % i
 
@@ -463,7 +467,8 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
     my_thread.join()
 
 
-def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
+def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
+                           annotator_id=0):
     """Gets all the estimated boundaries for all the algorithms.
 
     Parameters
@@ -488,8 +493,9 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
     jam_file = os.path.dirname(est_file) + "/../references/" + \
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
-    ann_inter, ann_labels = jams2.converters.load_jams_range(jam_file,
-                        "sections", context=msaf.prefix_dict[ds_prefix])
+    ann_inter, ann_labels = jams2.converters.load_jams_range(
+        jam_file, "sections", context=msaf.prefix_dict[ds_prefix],
+        annotator=annotator_id)
     ann_times = utils.intervals_to_times(ann_inter)
     all_boundaries.append(ann_times)
 
@@ -507,7 +513,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None):
     return all_boundaries
 
 
-def get_all_est_labels(est_file, annot_beats, algo_ids=None):
+def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
     """Gets all the estimated boundaries for all the algorithms.
 
     Parameters
@@ -519,6 +525,8 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
     algo_ids : list
         List of algorithm ids to to read boundaries from.
         If None, all algorithm ids are read.
+    annotator_id : int
+        Identifier of the annotator.
 
     Returns
     -------
@@ -536,7 +544,8 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None):
         os.path.basename(est_file).replace("json", "jams")
     ds_prefix = os.path.basename(est_file).split("_")[0]
     ann_inter, ann_labels = jams2.converters.load_jams_range(
-        jam_file, "sections", context=msaf.prefix_dict[ds_prefix])
+        jam_file, "sections", context=msaf.prefix_dict[ds_prefix],
+        annotator=annotator_id)
     gt_times = utils.intervals_to_times(ann_inter)
     all_labels.append(ann_labels)
 
@@ -663,10 +672,14 @@ def get_dataset_files(in_path, ds_name="*"):
     if ds_name == "SALAMI-i":
         file_structs = get_SALAMI_internet(file_structs)
 
+    # Sort by audio file name
+    file_structs = sorted(file_structs,
+                          key=lambda file_struct: file_struct.audio_file)
+
     return file_structs
 
 
-def read_hier_references(jams_file, annotation_id=0):
+def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     """Reads hierarchical references from a jams file.
 
     Parameters
@@ -675,6 +688,8 @@ def read_hier_references(jams_file, annotation_id=0):
         Path to the jams file.
     annotation_id : int > 0
         Identifier of the annotator to read from.
+    exclude_levels: list
+        List of levels to exclude. Empty list to include all levels.
 
     Returns
     -------
@@ -697,10 +712,12 @@ def read_hier_references(jams_file, annotation_id=0):
         levels = []
         jam = jams2.load(jams_file)
         annotation = jam.sections[annotation_id]
-        [levels.append(segment.label.context)
-            for segment in annotation.data]
+        for segment in annotation.data:
+            if segment.label.context not in exclude_levels:
+                levels.append(segment.label.context)
         c = Counter(levels)     # Count frequency
-        return np.asarray(c.keys())[np.argsort(c.values())]     # Sort
+        # Sort
+        return np.asarray(list(dict(c).keys()))[np.argsort(list(c.values()))]
 
     def get_segments_in_level(level):
         """Gets the segments of a specific level.

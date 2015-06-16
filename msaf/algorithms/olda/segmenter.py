@@ -103,7 +103,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #########
     #print '\tloading annotations and features of ', audio_path
     if pre_features is None:
-        chroma, mfcc, tonnetz, beats, dur, anal = msaf.io.get_features(audio_path, annot_beats)
+        chroma, mfcc, tonnetz, cqt, beats, dur, anal = msaf.io.get_features(audio_path, annot_beats)
     else:
         feat_prefix = ""
         if not framesync:
@@ -111,6 +111,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
         chroma = pre_features["%shpcp" % feat_prefix]
         mfcc = pre_features["%smfcc" % feat_prefix]
         tonnetz = pre_features["%stonnetz" % feat_prefix]
+        cqt = pre_features["%scqt" % feat_prefix]
         beats = pre_features["beats"]
         dur = pre_features["anal"]["dur"]
         anal = pre_features["anal"]

@@ -1,32 +1,36 @@
-[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
-
 # Music Structure Analysis Framework #
+
+Master branch:
+
+[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=master)](https://travis-ci.org/urinieto/msaf)
+
+Devel branch:
+
+[![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
 
 ## Description ##
 
-This framework contains a set of algorithms to segment a given music audio signal. It uses [librosa](https://github.com/bmcfee/librosa/) to extract the audio features, [JAMS](https://github.com/urinieto/jams) to read and write references and estimations respectively, and [mir_eval](https://github.com/craffel/mir_eval) to evaluate the estimations.
+This framework contains a set of algorithms to segment a given music audio signal into its different musical sections (e.g., verse, chorus). It uses [librosa](https://github.com/bmcfee/librosa/) to extract the audio features, [JAMS](https://github.com/urinieto/jams) to read and write references and estimations respectively, and [mir_eval](https://github.com/craffel/mir_eval) to evaluate the estimations.
 
 Two types of algorithms are included in MSAF:
-* Boundary Algorithms: Aim to identify the segment boundaries of a given audio signal
-* Labeling (or Structural) Algorithms: Aim to cluster the different music segments based on their acoustic similarity.
+* Boundary Algorithms: Aim to identify the segment boundaries of a given audio signal.
+* Labeling (or Structural Grouping) Algorithms: Aim to cluster the different music segments defined by the previously detected boundaries based on their acoustic similarity.
+
+(**Note**: Additional algorithms can be found in the [msaf-gpl](https://github.com/urinieto/msaf-gpl) package.)
 
 ## Boundary Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
 * Checkerboard-like Kernel (Foote 2000)
-* Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * OLDA (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/olda))
 * Spectral Clustering (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/laplacian_segmentation))
 * Structural Features (Serrà et al. 2012)
-* SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
 ## Labeling Algorithms ##
 
 * Improved C-NMF (Nieto & Jehan 2013)
 * 2D Fourier Magnitude Coefficients (Nieto & Bello 2014)
-* Constrained Clustering (Levy & Sandler 2008) (original source code from [here](http://code.soundsoftware.ac.uk/projects/qm-dsp))
 * Spectral Clustering (McFee & Ellis 2014) (original source code from [here](https://github.com/bmcfee/laplacian_segmentation))
-* SI-PLCA (Weiss & Bello 2011) (original source code from [here](http://ronw.github.io/siplca-segmentation/))
 
 ## Installing MSAF #
 
@@ -44,11 +48,9 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 
 ###Single File Mode###
 
-To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features:
+To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features (from the `scripts` folder):
 
     ./run_msaf.py audio_file.mp3 -bid cnmf -lid fmc2d -f hpcp
-
-(`run_msaf.py` is found in the `scripts` folder).
 
 The input file can be of type `mp3`, `wav` or `aif`.
 
@@ -201,4 +203,4 @@ Weiss, R., & Bello, J. P. (2011). Unsupervised Discovery of Temporal Structure i
 
 ## Credits ##
 
-Created by [Oriol Nieto](https://files.nyu.edu/onc202/public/) (<oriol@nyu.edu>).
+Created by [Oriol Nieto](http://marl.smusic.nyu.edu/nieto/) (<oriol@nyu.edu>).

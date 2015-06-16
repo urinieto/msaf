@@ -39,7 +39,7 @@ def resample_mx(X, incolpos, outcolpos):
         if len(wts) > 1:
             wts[0] = wts[0] - (outcolpos[c] - incolpos[firstincol])
             wts[-1] = wts[-1] - (incolpos[lastincol+1] - outcolpos[c+1])
-        wts = wts * 1. /sum(wts)
+        wts = wts * 1. / float(sum(wts))
         Y[:,c] = np.dot(X[:,firstincol:lastincol+1], wts)
     # done
     return Y
@@ -51,7 +51,7 @@ def magnitude(X):
     return np.sqrt(r * r + i * i);
 
 def json_to_bounds(segments_json):
-    """Extracts the boundaries from a json file and puts them into 
+    """Extracts the boundaries from a json file and puts them into
         an np array."""
     f = open(segments_json)
     segments = json.load(f)["segments"]
@@ -63,7 +63,7 @@ def json_to_bounds(segments_json):
     return np.asarray(bounds)
 
 def json_bounds_to_bounds(bounds_json):
-    """Extracts the boundaries from a bounds json file and puts them into 
+    """Extracts the boundaries from a bounds json file and puts them into
         an np array."""
     f = open(bounds_json)
     segments = json.load(f)["bounds"]
@@ -74,7 +74,7 @@ def json_bounds_to_bounds(bounds_json):
     return np.asarray(bounds)
 
 def json_to_labels(segments_json):
-    """Extracts the labels from a json file and puts them into 
+    """Extracts the labels from a json file and puts them into
         an np array."""
     f = open(segments_json)
     segments = json.load(f)["segments"]
@@ -93,7 +93,7 @@ def json_to_labels(segments_json):
 def json_to_beats(beats_json_file):
     """Extracts the beats from the beats_json_file and puts them into
         an np array."""
-    f = open(beats_json_file, "r") 
+    f = open(beats_json_file, "r")
     beats_json = json.load(f)
     beats = []
     for beat in beats_json["beats"]:
@@ -108,7 +108,7 @@ def analyze_results(file):
     for line in lines:
         F.append(float(line.split("\t")[0]))
     f.close()
-    print np.mean(F)
+    #print np.mean(F)
 
 def compute_ffmc2d(X):
     """Computes the 2D-Fourier Magnitude Coefficients."""
@@ -122,9 +122,9 @@ def compute_ffmc2d(X):
     fftshift = scipy.fftpack.fftshift(fft2m).flatten()
 
     #cmap = plt.cm.get_cmap('hot')
-    #plt.imshow(np.log1p(scipy.fftpack.fftshift(fft2m)).T, interpolation="nearest", 
+    #plt.imshow(np.log1p(scipy.fftpack.fftshift(fft2m)).T, interpolation="nearest",
     #    aspect="auto", cmap=cmap)
     #plt.show()
 
     # Take out redundant components
-    return fftshift[:fftshift.shape[0]/2+1]
+    return fftshift[:fftshift.shape[0] // 2 + 1]

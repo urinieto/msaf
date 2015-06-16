@@ -61,6 +61,8 @@ And that's it!
 """
 
 import json
+import six
+
 # from time import asctime
 from . import __VERSION__
 
@@ -73,7 +75,7 @@ class JSONType(object):
     """
     def __init__(self, **kwargs):
         object.__init__(self)
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             self.__dict__[name] = value
 
     def __repr__(self):
@@ -102,7 +104,7 @@ class JSONType(object):
         return len(self.keys())
 
     def update(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in six.iteritems(kwargs):
             self.__dict__[name] = value
 
     @property
