@@ -19,6 +19,9 @@ class Anal():
     f_min = 27.5   # Minimum frequency for chroma
     cqt_bins = 84
 
+# Default algorithms for msaf
+DEFAULT_BOUND_ID = "sf"
+DEFAULT_LABEL_ID = None
 
 # Import all submodules (for each task)
 from . import featextract
@@ -73,6 +76,3 @@ feat_dict = {
     'cnmf3' :   'hpcp',
     '2dfmc' :   ''
 }
-
-DEFAULT_BOUND_ID = "sf"
-DEFAULT_LABEL_ID = None
