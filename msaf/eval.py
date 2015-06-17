@@ -283,7 +283,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name,
     return file_name + msaf.results_ext
 
 
-def process(in_path, boundaries_id, labels_id=None, ds_name="*",
+def process(in_path, boundaries_id="sf", labels_id=None, ds_name="*",
             annot_beats=False, framesync=False, feature="hpcp", hier=False,
             save=False, n_jobs=4, annotator_id=0, config=None):
     """Main process.
