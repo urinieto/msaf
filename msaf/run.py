@@ -250,7 +250,7 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
             framesync=False, boundaries_id=msaf.DEFAULT_BOUND_ID,
             labels_id=msaf.DEFAULT_LABEL_ID, hier=False, sonify_bounds=False,
             plot=False, n_jobs=4, annotator_id=0, config=None,
-            out_bounds="out_bounds.wav"):
+            out_bounds="out_bounds.wav", out_sr=22050):
     """Main process to segment a file or a collection of files.
 
     Parameters
@@ -289,6 +289,8 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
     out_bounds: str
         Path to the output for the sonified boundaries (only in single file
         mode, when sonify_bounds is True.
+    out_sr : int
+        Sampling rate for the sonified bounds.
 
     Returns
     -------
@@ -340,9 +342,8 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
 
         if sonify_bounds:
             logging.info("Sonifying boundaries in %s..." % out_bounds)
-            fs = 44100
-            audio_hq, sr = librosa.load(in_path, sr=fs)
-            utils.sonify_clicks(audio_hq, est_times, out_bounds, fs)
+            audio_hq, sr = librosa.load(in_path, sr=out_sr)
+            utils.sonify_clicks(audio_hq, est_times, out_bounds, out_sr)
 
         if plot:
             plotting.plot_one_track(file_struct, est_times, est_labels,
