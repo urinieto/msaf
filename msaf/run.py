@@ -247,9 +247,10 @@ def process_track(file_struct, boundaries_id, labels_id, config,
 
 
 def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
-            framesync=False, boundaries_id="sf", labels_id=None, hier=False,
-            sonify_bounds=False, plot=False, n_jobs=4, annotator_id=0,
-            config=None, out_bounds="out_bounds.wav"):
+            framesync=False, boundaries_id=msaf.DEFAULT_BOUND_ID,
+            labels_id=msaf.DEFAULT_LABEL_ID, hier=False, sonify_bounds=False,
+            plot=False, n_jobs=4, annotator_id=0, config=None,
+            out_bounds="out_bounds.wav"):
     """Main process to segment a file or a collection of files.
 
     Parameters

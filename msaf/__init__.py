@@ -73,3 +73,6 @@ feat_dict = {
     'cnmf3' :   'hpcp',
     '2dfmc' :   ''
 }
+
+DEFAULT_BOUND_ID = "sf"
+DEFAULT_LABEL_ID = None
