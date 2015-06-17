@@ -563,19 +563,33 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
     return gt_times, all_labels
 
 
-def get_all_boundary_algorithms(algorithms):
+def get_all_boundary_algorithms():
+    """Gets all the possible boundary algorithms in MSAF.
+
+    Returns
+    -------
+    algo_ids : list
+        List of all the IDs of boundary algorithms (strings).
+    """
     algo_ids = []
-    for name in algorithms.__all__:
-        module = eval(algorithms.__name__ + "." + name)
+    for name in msaf.algorithms.__all__:
+        module = eval(msaf.algorithms.__name__ + "." + name)
         if module.is_boundary_type:
             algo_ids.append(module.algo_id)
     return algo_ids
 
 
-def get_all_label_algorithms(algorithms):
+def get_all_label_algorithms():
+    """Gets all the possible label (structural grouping) algorithms in MSAF.
+
+    Returns
+    -------
+    algo_ids : list
+        List of all the IDs of label algorithms (strings).
+    """
     algo_ids = []
-    for name in algorithms.__all__:
-        module = eval(algorithms.__name__ + "." + name)
+    for name in msaf.algorithms.__all__:
+        module = eval(msaf.algorithms.__name__ + "." + name)
         if module.is_label_type:
             algo_ids.append(module.algo_id)
     return algo_ids

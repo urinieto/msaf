@@ -140,13 +140,13 @@ def main():
                         dest="boundaries_id",
                         default="gt",
                         choices=["gt"] +
-                        io.get_all_boundary_algorithms(algorithms))
+                        io.get_all_boundary_algorithms())
     parser.add_argument("-lid",
                         action="store",
                         help="Label algorithm identifier",
                         dest="labels_id",
                         default=None,
-                        choices= io.get_all_label_algorithms(algorithms))
+                        choices= io.get_all_label_algorithms())
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",
