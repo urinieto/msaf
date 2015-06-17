@@ -62,7 +62,7 @@ class Dataset():
 
 
 feat_dict = {
-    'serra' :   'mix',
+    'sf'    :   'hpcp',
     'levy'  :   'hpcp',
     'foote' :   'hpcp',
     'siplca':   '',
