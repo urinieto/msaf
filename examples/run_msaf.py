@@ -35,14 +35,14 @@ def main():
                         dest="boundaries_id",
                         default="gt",
                         choices=["gt"] +
-                        msaf.io.get_all_boundary_algorithms(msaf.algorithms))
+                        msaf.io.get_all_boundary_algorithms())
     parser.add_argument("-lid",
                         action="store",
                         help="Label algorithm identifier",
                         dest="labels_id",
                         default=None,
                         choices=
-                        msaf.io.get_all_label_algorithms(msaf.algorithms))
+                        msaf.io.get_all_label_algorithms())
     parser.add_argument("-s",
                         action="store_true",
                         dest="sonify_bounds",
