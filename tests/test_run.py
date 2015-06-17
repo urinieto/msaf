@@ -25,7 +25,7 @@ fake_module_name = "fake_name_module"
 
 def test_get_boundaries_module():
     # Check that it returns modules for all the existing MSAF boundaries algos
-    bound_ids = msaf.io.get_all_boundary_algorithms(msaf.algorithms)
+    bound_ids = msaf.io.get_all_boundary_algorithms()
     for bound_id in bound_ids:
         bound_module = msaf.run.get_boundaries_module(bound_id)
         assert isinstance(bound_module, ModuleType)
@@ -46,7 +46,7 @@ def test_get_boundaries_module():
 
 def test_get_labels_module():
     # Check that it returns modules for all the existing MSAF boundaries algos
-    label_ids = msaf.io.get_all_label_algorithms(msaf.algorithms)
+    label_ids = msaf.io.get_all_label_algorithms()
     for label_id in label_ids:
         label_module = msaf.run.get_labels_module(label_id)
         assert isinstance(label_module, ModuleType)
@@ -66,8 +66,8 @@ def test_get_labels_module():
 
 
 def test_run_algorithms():
-    bound_ids = msaf.io.get_all_boundary_algorithms(msaf.algorithms)
-    label_ids = msaf.io.get_all_label_algorithms(msaf.algorithms)
+    bound_ids = msaf.io.get_all_boundary_algorithms()
+    label_ids = msaf.io.get_all_label_algorithms()
 
     # Add ground truth to boundary id
     bound_ids += ["gt"]
