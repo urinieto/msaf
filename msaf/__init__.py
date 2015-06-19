@@ -76,3 +76,5 @@ feat_dict = {
     'cnmf3' :   'hpcp',
     '2dfmc' :   ''
 }
+
+AVAILABLE_FEATS = ["hpcp", "mfcc", "cqt", "tonnetz"]

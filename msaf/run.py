@@ -302,6 +302,9 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
     # Seed random to reproduce results
     np.random.seed(123)
 
+    # Make sure that the features used are correct
+    assert feature in msaf.AVAILABLE_FEATS
+
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
