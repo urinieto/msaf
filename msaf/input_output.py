@@ -394,6 +394,9 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
     params : dict
         Dictionary with additional parameters for both algorithms.
     """
+    # Remove features if they exist
+    params.pop("features", None)
+
     # Convert to intervals and sanity check
     if 'numpy' in str(type(times)):
         inters = utils.times_to_intervals(times)

@@ -354,7 +354,6 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
 
         # Save estimations
         msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
-        config.pop("features", None)
         io.save_estimations(file_struct.est_file, est_times, est_labels,
                             boundaries_id, labels_id, **config)
 
