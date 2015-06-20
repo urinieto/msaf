@@ -332,6 +332,9 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
     # Hierarchical segmentation
     config["hier"] = hier
 
+    # Remove actual features
+    config.pop("features", None)
+
     # Sanity check for hierarchical evaluation
     if hier:
         try:
