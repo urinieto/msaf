@@ -304,7 +304,7 @@ def cond_entropy(y_old, y_new):
 
 def time_clusterer(Lf, k_min, k_max, times):
 
-    best_boundaries = [0, Lf.shape[1]]
+    best_boundaries = np.asarray([0, Lf.shape[1]])
     best_n_types    = 1
     Y_best          = Lf[:1].T
 
@@ -355,7 +355,7 @@ def fixed_partition(Lf, n_types):
 
 def median_partition(Lf, k_min, k_max, beats):
     best_score      = -np.inf
-    best_boundaries = [0, Lf.shape[1]-1]
+    best_boundaries = np.asarray([0, Lf.shape[1]-1])
     best_n_types    = 1
     Y_best          = Lf[:1].T
 
@@ -419,7 +419,7 @@ def label_entropy(labels):
 
 def label_clusterer(Lf, k_min, k_max):
     best_score      = -np.inf
-    best_boundaries = [0, Lf.shape[1]-1]
+    best_boundaries = np.asarray([0, Lf.shape[1]-1])
     best_n_types    = 1
     Y_best          = Lf[:1].T
 
