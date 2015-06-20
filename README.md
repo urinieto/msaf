@@ -41,6 +41,8 @@ From the root folder, type:
 
 A series of examples can be seen in the `examples` folder.
 
+You can follow a thorough example on this fantastic [Jupyter Notebook](https://github.com/urinieto/msaf/blob/master/examples/Run%20MSAF.ipynb).
+
 MSAF can be run in two different modes: **single file** and **collection** modes.
 
 ###Single File Mode###
