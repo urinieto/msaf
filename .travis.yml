@@ -27,6 +27,7 @@ before_install:
     - sudo ln -s /run/shm /dev/shm 
       # Some Brian Magic to install libsamplerate
     - conda config --set always_yes yes --set changeps1 no
+    - deps='pip numpy scipy pandas requests nose numpydoc matplotlib sphinx scikit-learn seaborn'
     - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
     - source activate test-environment
     - apt-get source libsamplerate
