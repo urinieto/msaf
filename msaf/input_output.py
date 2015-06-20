@@ -52,7 +52,8 @@ def has_same_parameters(est_params, boundaries_id, labels_id, params):
         if param_key in est_params.keys() and \
                 est_params[param_key] == params[param_key] and \
                 est_params["boundaries_id"] == boundaries_id and \
-                (labels_id is None or est_params["labels_id"] == labels_id):
+                ((labels_id is None and est_params["labels_id"] is None)
+                or (est_params["labels_id"] == labels_id)):
             K += 1
     return K == len(params.keys())
 
