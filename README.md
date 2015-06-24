@@ -155,10 +155,9 @@ For more examples, please explore the `examples` folder.
 
 ## Requirements ##
 
-* Python 2.7
+* Python 2.7 or 3.4
 * Numpy
 * Scipy
-* PyMF (for C-NMF algorithms only)
 * cvxopt (for C-NMF algorithms only)
 * Pandas (for evaluation only)
 * joblib
