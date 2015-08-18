@@ -410,11 +410,11 @@ def label_entropy(labels):
     hits = np.zeros(len(values))
 
     for v in values:
-        hits[v] = np.sum(values == v)
+        hits[v] = np.sum(labels == v)
 
     hits = hits / hits.sum()
 
-    return scipy.stats.entropy(labels)
+    return scipy.stats.entropy(hits)
 
 
 def label_clusterer(Lf, k_min, k_max):
