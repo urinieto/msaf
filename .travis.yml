@@ -50,7 +50,6 @@ install:
     - pip install git+https://github.com/bmcfee/samplerate.git
     - git clone https://github.com/bmcfee/librosa.git
     - cd librosa
-    - git checkout develop
     - python setup.py install
     - cd ..
     - python setup.py build
