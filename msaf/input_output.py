@@ -13,7 +13,6 @@ from threading import Thread
 
 # Local stuff
 import msaf
-from msaf import jams2
 from msaf import utils
 
 

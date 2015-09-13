@@ -12,7 +12,6 @@ import pylab as plt
 import msaf
 from msaf import io
 from msaf import utils
-from msaf import jams2
 
 translate_ids = {
     "2dfmc" : "2D-FMC",
