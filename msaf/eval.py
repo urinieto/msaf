@@ -15,8 +15,6 @@ import sys
 # Local stuff
 import msaf
 import msaf.input_output as io
-import msaf.algorithms as algorithms
-from msaf import jams2
 from msaf import utils
 
 

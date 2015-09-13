@@ -18,7 +18,6 @@ import json
 
 # Local stuff
 import msaf
-from msaf import jams2
 from msaf import utils
 from msaf import input_output as io
 from msaf.input_output import FileStruct
