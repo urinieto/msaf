@@ -23,101 +23,40 @@ import time
 import jams
 
 
-def fill_global_metadata(jam, json_file):
-    """Fills the global metada into the JAMS jam."""
-    # Open JSON
-    f = open(json_file, "r")
-    annot = json.load(f)
-    basename = os.path.basename(json_file).replace(".json", "")
-
-    if "-" in basename:
-        token = "-"
-    elif "," in basename:
-        token = ","
-
-    # Assign Metadata
-    jam.metadata.artist = basename.split(token)[0]
-    jam.metadata.duration = -1  # In seconds
-    jam.metadata.title = basename.split(token)[1]
-    jam.metadata.md5 = ""  # TODO
-    jam.metadata.echonest_id = annot["TRID"]
-    jam.metadata.mbid = ""  # TODO
-    jam.metadata.version = -1  # TODO
-
-    f.close()
+def convert_fm(fm2, jam):
+    """Converts the file_metada and puts it into the new jams."""
+    jam.file_metadata.title = fm2["title"]
+    jam.file_metadata.artist = fm2["artist"]
+    jam.file_metadata.duration = fm2["duration"]
 
 
-def fill_annoatation_metadata(annot, attribute, name):
-    """Fills the annotation metadata."""
-    annot.annotation_metadata.attribute = attribute
-    annot.annotation_metadata.corpus = "Cerulean"
-    annot.annotation_metadata.version = "1.0"
-    annot.annotation_metadata.annotation_tools = "Sonic Visualizer"
-    annot.annotation_metadata.annotation_rules = "TODO"  # TODO
-    annot.annotation_metadata.validation_and_reliability = "TODO"  # TODO
-    annot.annotation_metadata.origin = "Cerulean Mountain Trust"
-    annot.annotation_metadata.annotator.name = name
-    annot.annotation_metadata.annotator.email = "TODO"  # TODO
-    #TODO:
-    #time = "TODO"
+def convert_sections(sections, jam):
+    """Converts the given sections and puts them into the new jams."""
+    # TODO
 
 
-def fill_section_annotation(json_file, annot):
-    """Fills the JAMS annot annotation given a json file."""
-
-    # Annotation Metadata
-    fill_annoatation_metadata(annot, "sections", json_file.split("/")[-3])
-
-    # Open JSON
-    f = open(json_file, "r")
-    json_annot = json.load(f)
-
-    # Convert to JAMS
-    for i, json_section in enumerate(json_annot["sections"][:-1]):
-        start_time = json_section["start"]
-        end_time = json_annot["sections"][i + 1]["start"]
-        label = json_section["label"]
-        function_label = json_section["opt"]
-
-        section = annot.create_datapoint()
-        section.start.value = float(start_time)
-        section.start.confidence = 1.0
-        section.end.value = float(end_time)
-        section.end.confidence = 1.0
-        section.label.value = function_label
-        section.label.confidence = 1.0
-        section.label.context = "function"
-
-        section = annot.create_datapoint()
-        section.start.value = float(start_time)
-        section.start.confidence = 1.0
-        section.end.value = float(end_time)
-        section.end.confidence = 1.0
-        section.label.value = label
-        section.label.confidence = 1.0
-        section.label.context = "large_scale"
-
-    f.close()
+def convert_beats(beats, jam):
+    """Converts the given beats and puts them into the new jams."""
+    # TODO
 
 
-def convert_JAMS(jams2_file, jams_file):
-    """Creates a JAMS file given the Cerulean json files."""
+def convert_JAMS(jams2_file):
+    """Converts the given jams2 file into a jams file"""
+    # Open jams2 file
+    with open(jams2_file) as f:
+        jams2_data = json.load(f)
 
-    # New JAMS and annotation
-    jam = jams2.Jams()
+    # Create new jams
+    jam = jams.JAMS()
 
-    # Global file metadata
-    fill_global_metadata(jam, json_files[0])
+    # File Metadata
+    convert_fm(jams2_data["metadata"], jam)
 
-    # Create Section annotations
-    for json_file in json_files:
-        annot = jam.sections.create_annotation()
-        fill_section_annotation(json_file, annot)
+    # Convert the different tasks (only segment-related for now)
+    convert_sections(jams2_data["sections"], jam)
+    convert_beats(jams2_data["beats"], jam)
 
-    # Save JAMS
-    f = open(out_file, "w")
-    json.dump(jam, f, indent=2)
-    f.close()
+    return jam
 
 
 def process(in_dir, out_dir):
@@ -131,12 +70,15 @@ def process(in_dir, out_dir):
     # Get all jams2 files
     jams2_files = glob.glob(os.path.join(in_dir, "*.jams"))
 
-    for jams2_file in jams2_files:
+    for jams2_file in jams2_files[:1]:
         # Set output file
         jams_file = os.path.join(out_dir, os.path.basename(jams2_file))
 
         # Convert JAMS
-        convert_JAMS(jams2_file, jams_file)
+        jam = convert_JAMS(jams2_file)
+
+        # Save JAMS
+        # TODO
 
 
 def main():
