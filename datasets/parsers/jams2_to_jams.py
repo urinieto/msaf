@@ -86,6 +86,9 @@ def convert_sections(sections, jam):
             # Save annotation in JAMS
             jam.annotations.append(ann)
 
+    # Make sure that the duration of the whole file is set
+    # TODO
+
 
 def convert_beats(beats, jam):
     """Converts the given beats and puts them into the new jams."""
