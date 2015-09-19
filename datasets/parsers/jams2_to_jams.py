@@ -12,6 +12,7 @@ import argparse
 import glob
 import json
 import logging
+import numpy as np
 import os
 import time
 
@@ -54,6 +55,31 @@ def convert_fm(fm2, jam):
     jam.file_metadata.duration = fm2["duration"]
 
 
+def set_duration(jam):
+    """Sets the duration, if needed, of the jam based on the average of the
+    final boundaries."""
+
+    # Do not set duration if already set
+    if jam.file_metadata.duration != "":
+        return
+
+    # Get all segment data
+    datas = []
+    nss = ["segment_open", "segment_salami_function", "segment_salami_upper",
+           "segment_salami_lower"]
+    for ns in nss:
+        datas += jam.search(namespace=ns)
+
+    # Find all last bounds
+    last_bounds = []
+    for data in datas:
+        last_bound = (data.data["time"] + data.data["duration"]).max()
+        last_bounds += [last_bound.total_seconds() * 10e-4]
+
+    # Assign average to final duration
+    jam.file_metadata.duration = np.mean(last_bounds)
+
+
 def convert_sections(sections, jam):
     """Converts the given sections and puts them into the new jams."""
     for section_ann in sections:
@@ -87,7 +113,7 @@ def convert_sections(sections, jam):
             jam.annotations.append(ann)
 
     # Make sure that the duration of the whole file is set
-    # TODO
+    set_duration(jam)
 
 
 def convert_beats(beats, jam):
