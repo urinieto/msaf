@@ -126,9 +126,23 @@ def convert_sections(sections, jam):
 
 def convert_beats(beats, jam):
     """Converts the given beats and puts them into the new jams."""
-    pass
-    #beats_ann = beats[0]
-    #print(beats_ann)
+    if not beats:
+        return
+    # Get first annotation only
+    beat_ann = beats[0]
+
+    # Create new JAMS annotation
+    ann = jams.Annotation(namespace="beat")
+    ann.annotation_metadata = \
+        convert_am(beat_ann["annotation_metadata"])
+
+    # Add data
+    for data in beat_ann["data"]:
+        ann.append(time=data["time"]["value"], duration=0,
+                   value=data["label"]["value"])
+
+    # Save annotation in JAMS
+    jam.annotations.append(ann)
 
 
 def convert_JAMS(jams2_file):
