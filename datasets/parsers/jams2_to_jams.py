@@ -126,8 +126,9 @@ def convert_sections(sections, jam):
 
 def convert_beats(beats, jam):
     """Converts the given beats and puts them into the new jams."""
-    # TODO
     pass
+    #beats_ann = beats[0]
+    #print(beats_ann)
 
 
 def convert_JAMS(jams2_file):
@@ -161,7 +162,7 @@ def process(in_dir, out_dir):
     jams2_files = glob.glob(os.path.join(in_dir, "*.jams"))
 
     # Convert files
-    for jams2_file in jams2_files[30:]:
+    for jams2_file in jams2_files[:]:
         print("Converting %s..." % jams2_file)
 
         # Set output file
