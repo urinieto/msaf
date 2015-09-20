@@ -33,8 +33,8 @@ def get_contexts(section_ann):
     return list(set(contexts))
 
 
-def convert_am(am2, corpus="SPAM", curator_name="Oriol Nieto",
-               curator_email="oriol.nieto@gmail.com"):
+def convert_am(am2, corpus="", curator_name="",
+               curator_email=""):
     """Converts the annotation metadata 2 and returns it."""
     am = jams.AnnotationMetadata()
     am.data_source = am2["origin"]
