@@ -5,11 +5,11 @@ of the Segmentation Dataset.
 from collections import Counter
 import datetime
 import glob
+import jams
 import json
 import logging
 import numpy as np
 import os
-from threading import Thread
 
 # Local stuff
 import msaf
@@ -41,65 +41,6 @@ class FileStruct:
             "\n\tfeatures_file=%s,\n\tref_file=%s\n)" % (
                 self.ds_path, self.audio_file, self.est_file,
                 self.features_file, self.ref_file)
-
-
-def has_same_parameters(est_params, boundaries_id, labels_id, params):
-    """Checks whether the parameters in params are the same as the estimated
-    parameters in est_params."""
-    K = 0
-    for param_key in params.keys():
-        if param_key in est_params.keys() and \
-                est_params[param_key] == params[param_key] and \
-                est_params["boundaries_id"] == boundaries_id and \
-                ((labels_id is None and est_params["labels_id"] is None)
-                or (est_params["labels_id"] == labels_id)):
-            K += 1
-    return K == len(params.keys())
-
-
-def find_estimation(all_estimations, boundaries_id, labels_id, params,
-                    est_file):
-    """Finds the correct estimation from all the estimations contained in a
-    JAMS file given the specified arguments.
-
-    Parameters
-    ----------
-    all_estimations : list
-        List of section Range Annotations from a JAMS file.
-    boundaries_id : str
-        Identifier of the algorithm used to compute the boundaries.
-    labels_id : str
-        Identifier of the algorithm used to compute the labels.
-    params : dict
-        Additional search parameters. E.g. {"feature" : "hpcp"}.
-    est_file : str
-        Path to the estimated file (JAMS file).
-
-    Returns
-    -------
-    correct_est : RangeAnnotation
-        Correct estimation found in all the estimations.
-        None if it couldn't be found.
-    corect_i : int
-        Index of the estimation in the all_estimations list.
-    """
-    correct_est = None
-    correct_i = -1
-    found = False
-    for i, estimation in enumerate(all_estimations):
-        est_params = estimation.sandbox
-        if has_same_parameters(est_params, boundaries_id, labels_id,
-                               params) and not found:
-            correct_est = estimation
-            correct_i = i
-            found = True
-        elif has_same_parameters(est_params, boundaries_id, labels_id,
-                                 params) and found:
-            logging.warning("Multiple estimations match your parameters in "
-                            "file %s" % est_file)
-            correct_est = estimation
-            correct_i = i
-    return correct_est, correct_i
 
 
 def read_estimations(est_file, boundaries_id, labels_id=None, **params):
@@ -362,24 +303,53 @@ def get_features(audio_path, annot_beats=False, framesync=False,
     return C, M, T, cqt, beats, dur, analysis
 
 
-def safe_write(jam, out_file):
-    """This method is suposed to be called in a safe thread in order to
-    avoid interruptions and corrupt the file."""
-    try:
-        f = open(out_file, "w")
-        json.dump(jam, f, indent=2)
-    finally:
-        f.close()
-
-
-def save_estimations(out_file, times, labels, boundaries_id, labels_id,
-                     **params):
-    """Saves the segment estimations in a JAMS file.close
+def find_estimation(jam, boundaries_id, labels_id, params):
+    """Finds the correct estimation from all the estimations contained in a
+    JAMS file given the specified arguments.
 
     Parameters
     ----------
-    out_file : str
-        Path to the output JAMS file in which to save the estimations.
+    jam : jams.JAMS
+        JAMS object.
+    boundaries_id : str
+        Identifier of the algorithm used to compute the boundaries.
+    labels_id : str
+        Identifier of the algorithm used to compute the labels.
+    params : dict
+        Additional search parameters. E.g. {"feature" : "hpcp"}.
+
+    Returns
+    -------
+    ann : jams.Annotation
+        Found estimation.
+        `None` if it couldn't be found.
+    """
+    # Use handy JAMS search interface
+    ann = jam.search(namespace="segment_open").\
+        search(**{"Sandbox.boundaries_id": boundaries_id}).\
+        search(**{"Sandbox.labels_id": labels_id})
+    for key, val in zip(params.keys(), params.values()):
+        ann = ann.search(**{"Sandbox.%s" % key: val})
+
+    # Check estimations found
+    if len(ann) > 1:
+        logging.warning("More than one estimation with same parameters.")
+
+    # If we couldn't find anything, let's return None
+    if not ann:
+        ann = None
+
+    return ann
+
+
+def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
+                     **params):
+    """Saves the segment estimations in a JAMS file.
+
+    Parameters
+    ----------
+    file_struct : FileStruct
+        Object with the different file paths of the current file.
     times : np.array or list
         Estimated boundary times.
         If `list`, estimated hierarchical boundaries.
@@ -396,6 +366,9 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
     # Remove features if they exist
     params.pop("features", None)
 
+    # Get duration
+    dur = get_duration(file_struct.features_file)
+
     # Convert to intervals and sanity check
     if 'numpy' in str(type(times)):
         inters = utils.times_to_intervals(times)
@@ -410,32 +383,29 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
             est_inters = utils.times_to_intervals(times[level])
             inters.append(est_inters)
             assert len(inters[level]) == len(labels[level]), \
-            "Number of boundary intervals (%d) and labels (%d) do not match" % \
-                (len(inters[level]), len(labels[level]))
+                "Number of boundary intervals (%d) and labels (%d) do not " \
+                "match" % (len(inters[level]), len(labels[level]))
 
-    curr_estimation = None
-    curr_i = -1
+    # Create new estimation
+    ann = jams.Annotation(namespace="segment_open")
 
     # Find estimation in file
-    if os.path.isfile(out_file):
-        jam = jams2.load(out_file)
-        all_estimations = jam.sections
-        curr_estimation, curr_i = find_estimation(
-            all_estimations, boundaries_id, labels_id, params, out_file)
+    if os.path.isfile(file_struct.est_file):
+        jam = jams.load(file_struct.est_file)
+        curr_ann = find_estimation(jam, boundaries_id, labels_id, params)
+        if curr_ann is not None:
+            ann = curr_ann
+        else:
+            jam.annotations.append(ann)
     else:
         # Create new JAMS if it doesn't exist
-        jam = jams2.Jams()
-        jam.metadata.title = os.path.basename(out_file).replace(
-            msaf.Dataset.estimations_ext, "")
-
-    # Create new annotation if needed
-    if curr_estimation is None:
-        curr_estimation = jam.sections.create_annotation()
+        jam = jams.JAMS()
+        jam.file_metadata.duration = dur
+        jam.annotations.append(ann)
 
     # Save metadata and parameters
-    curr_estimation.annotation_metadata.attribute = "sections"
-    curr_estimation.annotation_metadata.version = msaf.__version__
-    curr_estimation.annotation_metadata.origin = "MSAF"
+    ann.annotation_metadata.version = msaf.__version__
+    ann.annotation_metadata.data_source = "MSAF"
     sandbox = {}
     sandbox["boundaries_id"] = boundaries_id
     sandbox["labels_id"] = labels_id
@@ -443,31 +413,22 @@ def save_estimations(out_file, times, labels, boundaries_id, labels_id,
         datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
     for key in params:
         sandbox[key] = params[key]
-    curr_estimation.sandbox = sandbox
+    ann.sandbox = sandbox
 
     # Save actual data
-    curr_estimation.data = []
     for i, (level_inters, level_labels) in enumerate(zip(inters, labels)):
         if level_labels is None:
             label = np.ones(len(inters)) * -1
         for bound_inter, label in zip(level_inters, level_labels):
-            segment = curr_estimation.create_datapoint()
-            segment.start.value = float(bound_inter[0])
-            segment.start.confidence = 0.0
-            segment.end.value = float(bound_inter[1])
-            segment.end.confidence = 0.0
-            segment.label.value = int(label)
-            segment.label.confidence = 0.0
-            segment.label.context = "level_%d" % i
+            dur = float(bound_inter[1]) - float(bound_inter[0])
+            ann.append(time=float(bound_inter[0]),
+                       duration=dur,
+                       value=str(int(label)))
+            # TODO: Hierarchical Level
+            #segment.label.context = "level_%d" % i
 
-    # Place estimation in its place
-    if curr_i != -1:
-        jam.sections[curr_i] = curr_estimation
-
-    # Write file and do not let users interrupt it
-    my_thread = Thread(target=safe_write, args=(jam, out_file,))
-    my_thread.start()
-    my_thread.join()
+    # Write results
+    jam.save(file_struct.est_file)
 
 
 def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
@@ -770,4 +731,19 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     return hier_bounds, hier_labels, hier_levels
 
 
+def get_duration(features_file):
+    """Reads the duration of a given features file.
 
+    Parameters
+    ----------
+    features_file: str
+        Path to the JSON file containing the features.
+
+    Returns
+    -------
+    dur: float
+        Duration of the analyzed file.
+    """
+    with open(features_file) as f:
+        feats = json.load(f)
+    return float(feats["analysis"]["dur"])
