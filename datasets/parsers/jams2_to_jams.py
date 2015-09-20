@@ -33,7 +33,8 @@ def get_contexts(section_ann):
     return list(set(contexts))
 
 
-def convert_am(am2, curator_name="", curator_email=""):
+def convert_am(am2, corpus="SPAM", curator_name="Oriol Nieto",
+               curator_email="oriol.nieto@gmail.com"):
     """Converts the annotation metadata 2 and returns it."""
     am = jams.AnnotationMetadata()
     am.data_source = am2["origin"]
@@ -42,7 +43,10 @@ def convert_am(am2, curator_name="", curator_email=""):
     am.annotation_tools = am2["annotation_tools"]
     am.annotator.name = am2["annotator"]["name"]
     am.version = am2["version"]
-    am.corpus = am2["corpus"]
+    if am2["corpus"] == "":
+        am.corpus = corpus
+    else:
+        am.corpus = am2["corpus"]
     am.curator.name = curator_name
     am.curator.email = curator_email
     return am
@@ -74,7 +78,7 @@ def set_duration(jam):
     last_bounds = []
     for data in datas:
         last_bound = (data.data["time"] + data.data["duration"]).max()
-        last_bounds += [last_bound.total_seconds() * 10e-4]
+        last_bounds += [last_bound.total_seconds()]
 
     # Assign average to final duration
     jam.file_metadata.duration = np.mean(last_bounds)
@@ -89,6 +93,8 @@ def convert_sections(sections, jam):
                 ns = "segment_open"
             elif context == "large_scale":
                 ns = "segment_salami_upper"
+            elif context == "small_scale":
+                ns = "segment_salami_lower"
             ann = jams.Annotation(namespace=ns)
             ann.annotation_metadata = \
                 convert_am(section_ann["annotation_metadata"])
@@ -101,8 +107,10 @@ def convert_sections(sections, jam):
 
                 # Hack to to convert to upper case
                 value = data["label"]["value"]
-                if context == "large_scale":
-                    value = value.upper()
+                if ns == "segment_salami_upper":
+                    value = value.upper().replace(" ", "")
+                if ns == "segment_salami_lower":
+                    value = value.lower().replace(" ", "")
 
                 # Append actual data point
                 # TODO: confidence?
@@ -153,7 +161,7 @@ def process(in_dir, out_dir):
     jams2_files = glob.glob(os.path.join(in_dir, "*.jams"))
 
     # Convert files
-    for jams2_file in jams2_files[:]:
+    for jams2_file in jams2_files[30:]:
         print("Converting %s..." % jams2_file)
 
         # Set output file
