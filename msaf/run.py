@@ -239,7 +239,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
 
     # Save
     logging.info("Writing results in: %s" % file_struct.est_file)
-    io.save_estimations(file_struct.est_file, est_times, est_labels,
+    io.save_estimations(file_struct, est_times, est_labels,
                         boundaries_id, labels_id, **config)
 
     return est_times, est_labels
@@ -353,7 +353,7 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
 
         # Save estimations
         msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
-        io.save_estimations(file_struct.est_file, est_times, est_labels,
+        io.save_estimations(file_struct, est_times, est_labels,
                             boundaries_id, labels_id, **config)
 
         return est_times, est_labels
