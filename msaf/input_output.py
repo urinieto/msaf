@@ -10,6 +10,7 @@ import json
 import logging
 import numpy as np
 import os
+import six
 
 # Local stuff
 import msaf
@@ -330,16 +331,17 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     if labels_id is not None:
         ann = ann.search(**{"Sandbox.labels_id": labels_id})
     for key, val in zip(params.keys(), params.values()):
-        # TODO: Problems with non-strings
-        print(jam)
-        print(key, val, str(val))
-        print({"Sandbox.%s" % key: str(val)})
-        ann = ann.search(**{"Sandbox.L_peaks": 64})
-        ann = ann.search(**{"Sandbox.%s" % key: str(val)})
+        if isinstance(val, six.string_types):
+            ann = ann.search(**{"Sandbox.%s" % key: val})
+        else:
+            ann = ann.search(**{"Sandbox.%s" % key: lambda x: x == val})
 
     # Check estimations found
     if len(ann) > 1:
         logging.warning("More than one estimation with same parameters.")
+
+    if len(ann) > 0:
+        ann = ann[0]
 
     # If we couldn't find anything, let's return None
     if not ann:
@@ -400,7 +402,8 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
         jam = jams.load(file_struct.est_file)
         curr_ann = find_estimation(jam, boundaries_id, labels_id, params)
         if curr_ann is not None:
-            ann = curr_ann
+            curr_ann.data = ann.data  # cleanup all data
+            ann = curr_ann  # This will overwrite the existing estimation
         else:
             jam.annotations.append(ann)
     else:
@@ -427,7 +430,7 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
             label = np.ones(len(inters)) * -1
         for bound_inter, label in zip(level_inters, level_labels):
             dur = float(bound_inter[1]) - float(bound_inter[0])
-            ann.append(time=float(bound_inter[0]),
+            ann.append(time=bound_inter[0],
                        duration=dur,
                        value=str(int(label)))
             # TODO: Hierarchical Level
