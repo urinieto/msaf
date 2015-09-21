@@ -327,7 +327,11 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     ann = jam.search(namespace="segment_open").\
         search(**{"Sandbox.boundaries_id": boundaries_id})
     if labels_id is not None:
-        ann = ann.search(**{"Sandbox.labels_id": labels_id})
+        try:
+            ann = ann.search(**{"Sandbox.labels_id": labels_id})
+        except TypeError:
+            # In case no label exists
+            ann = ann.search(**{"Sandbox.labels_id": lambda x: x == labels_id})
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, six.string_types):
             ann = ann.search(**{"Sandbox.%s" % key: val})
