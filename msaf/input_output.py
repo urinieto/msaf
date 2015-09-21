@@ -67,48 +67,50 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         Array containing the estimated labels.
         Empty array if labels_id is None.
     """
-
     # Open file and read jams
     try:
-        jam = jams2.load(est_file)
-    except:
-        logging.error("Could not open JAMS file %s" % est_file)
+        jam = jams.load(est_file)
+    except FileNotFoundError:
+        logging.error("JAMS file doesn't exist %s" % est_file)
+        return np.array([]), np.array([])
+    except Exception as e:
+        logging.error("Could not open JAMS file %s. Exception: %s" % (est_file,
+                                                                      e))
         return np.array([]), np.array([])
 
-    # Get all the estimations for the sections
-    all_estimations = jam.sections
-
     # Find correct estimation
-    correct_est, i = find_estimation(all_estimations, boundaries_id, labels_id,
-                                     params, est_file)
-    if correct_est is None:
+    est = find_estimation(jam, boundaries_id, labels_id, params)
+    if est is None:
         logging.error("Could not find estimation in %s" % est_file)
         return np.array([]), np.array([])
 
+    # TODO: Hierarchical
     # Retrieve unique levels of segmentation
-    levels = []
-    for range in correct_est.data:
-        levels.append(range.label.context)
-    levels = list(set(levels))
+    #levels = []
+    #for range in est.data:
+        #levels.append(range.label.context)
+    #levels = list(set(levels))
 
-    # Retrieve data
-    all_boundaries = []
-    all_labels = []
-    for level in levels:
-        boundaries = []
-        labels = []
-        for range in correct_est.data:
-            if level == range.label.context:
-                boundaries.append([range.start.value, range.end.value])
-                if labels_id is not None:
-                    labels.append(range.label.value)
-        all_boundaries.append(np.asarray(boundaries))
-        all_labels.append(np.asarray(labels, dtype=int))
+    ## Retrieve data
+    #all_boundaries = []
+    #all_labels = []
+    #for level in levels:
+        #boundaries = []
+        #labels = []
+        #for range in est.data:
+            #if level == range.label.context:
+                #boundaries.append([range.start.value, range.end.value])
+                #if labels_id is not None:
+                    #labels.append(range.label.value)
+        #all_boundaries.append(np.asarray(boundaries))
+        #all_labels.append(np.asarray(labels, dtype=int))
 
-    # If there is only one level, return np.arrays instead of lists
-    if len(levels) == 1:
-        all_boundaries = all_boundaries[0]
-        all_labels = all_labels[0]
+    ## If there is only one level, return np.arrays instead of lists
+    #if len(levels) == 1:
+        #all_boundaries = all_boundaries[0]
+        #all_labels = all_labels[0]
+
+    all_boundaries, all_labels = est.data.to_interval_values()
 
     return all_boundaries, all_labels
 
@@ -259,7 +261,8 @@ def get_features(audio_path, annot_beats=False, framesync=False,
                         ds_path, msaf.Dataset.references_dir,
                         os.path.basename(audio_path)[:-4] +
                         msaf.Dataset.references_ext)
-                    jam = jams2.load(annotation_path)
+                    # TODO: Correct exception handling
+                    jam = jams.load(annotation_path)
                 except:
                     raise RuntimeError("No references found in file %s" %
                                     annotation_path)
