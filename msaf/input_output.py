@@ -326,10 +326,16 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     """
     # Use handy JAMS search interface
     ann = jam.search(namespace="segment_open").\
-        search(**{"Sandbox.boundaries_id": boundaries_id}).\
-        search(**{"Sandbox.labels_id": labels_id})
+        search(**{"Sandbox.boundaries_id": boundaries_id})
+    if labels_id is not None:
+        ann = ann.search(**{"Sandbox.labels_id": labels_id})
     for key, val in zip(params.keys(), params.values()):
-        ann = ann.search(**{"Sandbox.%s" % key: val})
+        # TODO: Problems with non-strings
+        print(jam)
+        print(key, val, str(val))
+        print({"Sandbox.%s" % key: str(val)})
+        ann = ann.search(**{"Sandbox.L_peaks": 64})
+        ann = ann.search(**{"Sandbox.%s" % key: str(val)})
 
     # Check estimations found
     if len(ann) > 1:
