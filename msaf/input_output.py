@@ -145,18 +145,13 @@ def read_references(audio_path, annotator_id=0):
     jam_path = os.path.join(ds_path, msaf.Dataset.references_dir,
                             os.path.basename(audio_path)[:-4] +
                             msaf.Dataset.references_ext)
-    ds_prefix = os.path.basename(audio_path).split("_")[0]
-
-    # Get context
-    if ds_prefix in msaf.prefix_dict.keys():
-        context = msaf.prefix_dict[ds_prefix]
-    else:
-        context = "function"
 
     try:
-        ref_inters, ref_labels = jams2.converters.load_jams_range(
-            jam_path, "sections", context=context, annotator=annotator_id)
+        jam = jams.load(jam_path)
+        ann = jam.search(namespace='segment_.*')[annotator_id]
+        ref_inters, ref_labels = ann.data.to_interval_values()
     except:
+        # TODO: better exception handling
         logging.warning("Reference not found in %s" % jam_path)
         return []
 
@@ -450,7 +445,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
     Parameters
     ----------
     est_file: str
-        Path to the estimated file (JSON file)
+        Path to the estimated JAMS file.
     annot_beats: bool
         Whether to use the annotated beats or not.
     algo_ids : list
@@ -466,12 +461,12 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
     all_boundaries = []
 
     # Get GT boundaries
-    jam_file = os.path.dirname(est_file) + "/../references/" + \
-        os.path.basename(est_file).replace("json", "jams")
-    ds_prefix = os.path.basename(est_file).split("_")[0]
-    ann_inter, ann_labels = jams2.converters.load_jams_range(
-        jam_file, "sections", context=msaf.prefix_dict[ds_prefix],
-        annotator=annotator_id)
+    jam_file = os.path.join(os.path.dirname(est_file), "..",
+                            msaf.Dataset.references_dir,
+                            os.path.basename(est_file))
+    jam = jams.load(jam_file)
+    ann = jam.search(namespace='segment_.*')[annotator_id]
+    ann_inter, ann_labels = ann.data.to_interval_values()
     ann_times = utils.intervals_to_times(ann_inter)
     all_boundaries.append(ann_times)
 
@@ -479,8 +474,8 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
     if algo_ids is None:
         algo_ids = get_algo_ids(est_file)
     for algo_id in algo_ids:
-        est_inters = read_estimations(est_file, algo_id, annot_beats,
-                                      feature=msaf.feat_dict[algo_id])
+        est_inters, est_labels = read_estimations(
+            est_file, algo_id, annot_beats, feature=msaf.feat_dict[algo_id])
         if len(est_inters) == 0:
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
@@ -515,13 +510,12 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
     all_labels = []
 
     # Get GT boundaries and labels
-    jam_file = os.path.dirname(est_file) + "/../" + \
-        msaf.Dataset.references_dir + "/" + \
-        os.path.basename(est_file).replace("json", "jams")
-    ds_prefix = os.path.basename(est_file).split("_")[0]
-    ann_inter, ann_labels = jams2.converters.load_jams_range(
-        jam_file, "sections", context=msaf.prefix_dict[ds_prefix],
-        annotator=annotator_id)
+    jam_file = os.path.join(os.path.dirname(est_file), "..",
+                            msaf.Dataset.references_dir,
+                            os.path.basename(est_file))
+    jam = jams.load(jam_file)
+    ann = jam.search(namespace='segment_.*')[annotator_id]
+    ann_inter, ann_labels = ann.data.to_interval_values()
     gt_times = utils.intervals_to_times(ann_inter)
     all_labels.append(ann_labels)
 
@@ -529,9 +523,9 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
     if algo_ids is None:
         algo_ids = get_algo_ids(est_file)
     for algo_id in algo_ids:
-        est_labels = read_estimations(est_file, algo_id, annot_beats,
-                                      annot_bounds=True, bounds=False,
-                                      feature=msaf.feat_dict[algo_id])
+        est_inters, est_labels = read_estimations(
+            est_file, algo_id, annot_beats, annot_bounds=True, bounds=False,
+            feature=msaf.feat_dict[algo_id])
         if len(est_labels) == 0:
             logging.warning("no estimations for algorithm: %s" % algo_id)
             continue
@@ -594,8 +588,8 @@ def filter_by_artist(file_structs, artist_name="The Beatles"):
     """Filters data set files by artist name."""
     new_file_structs = []
     for file_struct in file_structs:
-        jam = jams2.load(file_struct.ref_file)
-        if jam.metadata.artist == artist_name:
+        jam = jams.load(file_struct.ref_file)
+        if jam.file_metadata.artist == artist_name:
             new_file_structs.append(file_struct)
     return new_file_structs
 
@@ -690,6 +684,7 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     hier_levels : list
         List of strings for the level identifiers.
     """
+    # TODO: Hier
     def get_levels():
         """Obtains the set of unique levels contained in the jams
             sorted by the number of segments they contain.
