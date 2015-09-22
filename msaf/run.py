@@ -2,10 +2,11 @@
 This module contains multiple functions in order to run MSAF algorithms.
 """
 
-import logging
-import os
+import jams
 import librosa
+import logging
 import numpy as np
+import os
 
 from joblib import Parallel, delayed
 
@@ -218,13 +219,12 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     """
     # Only analize files with annotated beats
     if config["annot_beats"]:
-        jam = jams2.load(file_struct.ref_file)
-        if len(jam.beats) > 0 and len(jam.beats[0].data) > 0:
-            pass
-        else:
+        jam = jams.load(file_struct.ref_file)
+        annots = jam.search(namespace="beat.*")
+        if not annots:
             logging.warning("No beat information in file %s" %
                             file_struct.ref_file)
-            return
+            return np.array([]), np.array([])
 
     logging.info("Segmenting %s" % file_struct.audio_file)
 
