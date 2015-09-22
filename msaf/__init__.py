@@ -3,7 +3,7 @@
 __author__      = "Oriol Nieto"
 __copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
 __license__     = "MIT"
-__version__     = "0.0.2"
+__version__     = "0.0.3"
 __email__       = "oriol@nyu.edu"
 
 
