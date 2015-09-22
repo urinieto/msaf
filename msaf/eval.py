@@ -139,7 +139,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         else:
             jam = jams.load(ref_file)
             ann = jam.search(namespace='segment_.*')[annotator_id]
-            ref_inters, ref_labels = ann.data.to_interval_values()
+            ref_inter, ref_labels = ann.data.to_interval_values()
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}
@@ -241,10 +241,11 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
         os.path.basename(ref_file)[:-4], "File names are different %s --- %s" \
         % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
 
+    # TODO: Better exception handling
     try:
         one_res = compute_gt_results(est_file, ref_file, boundaries_id,
-                                        labels_id, config,
-                                        annotator_id=annotator_id)
+                                     labels_id, config,
+                                     annotator_id=annotator_id)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
