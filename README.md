@@ -160,6 +160,7 @@ For more examples, please explore the `examples` folder.
 * Scipy
 * cvxopt (for C-NMF algorithms only)
 * Pandas (for evaluation only)
+* jams
 * joblib
 * [mir\_eval](https://github.com/craffel/mir_eval)
 * [librosa](https://github.com/bmcfee/librosa/) (>=0.4.0rc1)
