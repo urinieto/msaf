@@ -3,6 +3,7 @@ Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
 """
 
+import jams
 from joblib import Parallel, delayed
 import logging
 import mir_eval
@@ -128,16 +129,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     results : dict
         Dictionary of the results (see function compute_results).
     """
-
-    # Get the ds_prefix
-    ds_prefix = os.path.basename(est_file).split("_")[0]
-
-    # Get context
-    if ds_prefix in msaf.prefix_dict.keys():
-        context = msaf.prefix_dict[ds_prefix]
-    else:
-        context = "function"
-
+    # TODO: Better error handling
     try:
         # TODO: Read hierarchical annotations
         if config["hier"]:
@@ -145,8 +137,9 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                 msaf.io.read_hier_references(ref_file, annotation_id=0,
                                              exclude_levels=["function"])
         else:
-            ref_inter, ref_labels = jams2.converters.load_jams_range(
-                ref_file, "sections", annotator=annotator_id, context=context)
+            jam = jams.load(ref_file)
+            ann = jam.search(namespace='segment_.*')[annotator_id]
+            ref_inters, ref_labels = ann.data.to_interval_values()
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}

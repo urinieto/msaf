@@ -10,6 +10,7 @@ Features to be computed:
 
 import datetime
 import librosa
+import jams
 from joblib import Parallel, delayed
 import logging
 import numpy as np
@@ -248,16 +249,13 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
 
     # Read annotations if they exist in path/references_dir/file.jams
     if os.path.isfile(file_struct.ref_file):
-        jam = jams2.load(file_struct.ref_file)
+        jam = jams.load(file_struct.ref_file)
+        beat_annot = jam.search(namespace="beat.*")
 
         # If beat annotations exist, compute also annotated beatsync features
-        if jam.beats != []:
+        if len(beat_annot) > 0:
             logging.info("Reading beat annotations from JAMS")
-            annot = jam.beats[0]
-            annot_beats = []
-            for data in annot.data:
-                annot_beats.append(data.time.value)
-            annot_beats = np.unique(annot_beats)
+            annot_beats, _ = beat_annot[0].data.to_interval_values()[:, 0]
             annot_beats_idx = librosa.time_to_frames(
                 annot_beats, sr=msaf.Anal.sample_rate,
                 hop_length=msaf.Anal.hop_size)
