@@ -7,7 +7,7 @@ from distutils import sysconfig
 # MSAF configuration
 setup(
     name='msaf',
-    version='0.0.2',
+    version='0.0.3',
     description='Python module to discover the structure of music files',
     author='Oriol Nieto',
     author_email='oriol@nyu.edu',
