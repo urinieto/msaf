@@ -255,9 +255,10 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
         # If beat annotations exist, compute also annotated beatsync features
         if len(beat_annot) > 0:
             logging.info("Reading beat annotations from JAMS")
-            annot_beats, _ = beat_annot[0].data.to_interval_values()[:, 0]
+            annot_beats_inters, _ = beat_annot[0].data.to_interval_values()
+            annot_beats_times = annot_beats_inters[:, 0]
             annot_beats_idx = librosa.time_to_frames(
-                annot_beats, sr=msaf.Anal.sample_rate,
+                annot_beats_times, sr=msaf.Anal.sample_rate,
                 hop_length=msaf.Anal.hop_size)
             features["ann_mfcc"], features["ann_hpcp"], \
                 features["ann_tonnetz"], features["ann_cqt"] = \
