@@ -50,3 +50,5 @@ install:
     - pip install git+https://github.com/bmcfee/samplerate.git
     - pip install librosa
     - pip install jams
+    - python setup.py build
+    - python setup.py install
