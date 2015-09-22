@@ -36,6 +36,7 @@ setup(
     license='GPL',
     install_requires=[
         'audioread',
+        'jams',
         'numpy >= 1.8.0',
         'scipy >= 0.13.0',
         'scikit-learn >= 0.14.0',
