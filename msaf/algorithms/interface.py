@@ -3,6 +3,7 @@ import numpy as np
 import msaf.input_output as io
 import msaf.utils as U
 
+
 class SegmenterInterface:
     """This class is an interface for all the segmenter algorithms included
     in MSAF. These segmenters must inherit from it and implement one of the
@@ -85,10 +86,10 @@ class SegmenterInterface:
                     normalize=True):
         """This method obtains the actual features."""
         # Read features
-        self.hpcp, self.mfcc, self.tonnetz, self.cqt, beats, dur, self.anal = \
-            io.get_features(self.audio_file, annot_beats=self.annot_beats,
-                            framesync=self.framesync,
-                            pre_features=self.features)
+        if self.features is None:
+            self.features = io.get_features(self.audio_file,
+                                            annot_beats=self.annot_beats,
+                                            framesync=self.framesync)
 
         # Use specific feature
         if self.feature_str not in valid_features:
@@ -97,8 +98,8 @@ class SegmenterInterface:
                                (self.feature_str, __name__, valid_features))
         else:
             try:
-                F = eval("self." + self.feature_str)
-            except:
+                F = self.features[self.feature_str]
+            except KeyError:
                 raise RuntimeError("Feature %s in not supported by MSAF" %
                                    (self.feature_str))
 

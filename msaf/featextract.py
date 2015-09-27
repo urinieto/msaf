@@ -5,6 +5,7 @@ Features to be computed:
 
 - MFCC: Mel Frequency Cepstral Coefficients
 - HPCP: Harmonic Pithc Class Profile
+- CQT: Constant-Q Transform
 - Beats
 """
 

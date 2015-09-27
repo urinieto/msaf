@@ -100,25 +100,28 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     """
 
     # At this point, features should have already been computed
-    hpcp, mfcc, tonnetz, cqt, beats, dur, anal =  \
-            io.get_features(audio_file, config["annot_beats"],
-                            config["framesync"],
-                            pre_features=config["features"])
+    if config["features"] is None:
+        features = io.get_features(audio_file, config["annot_beats"],
+                                   config["framesync"])
+    else:
+        features = config["features"]
 
     # Check that there are enough audio frames
-    if hpcp.shape[0] <= msaf.minimum__frames:
+    if features["hpcp"].shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
-        return np.asarray([0, dur]), np.asarray([0], dtype=int)
+        return np.asarray([0, features["anal"]["dur"]]), \
+            np.asarray([0], dtype=int)
 
     # Get the corresponding modules
     bounds_module = get_boundaries_module(boundaries_id)
     labels_module = get_labels_module(labels_id)
 
     # Get the correct frame times
-    frame_times = beats
+    frame_times = features["beats"]
     if config["framesync"]:
-        frame_times = utils.get_time_frames(dur, anal)
+        frame_times = utils.get_time_frames(features["anal"]["dur"],
+                                            features["anal"])
 
     # Segment audio based on type of segmentation
     if config["hier"]:
@@ -141,9 +144,9 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
             est_level_times, est_level_labels = \
                 utils.process_segmentation_level(est_idxs[level],
                                                  est_labels[level],
-                                                 hpcp.shape[0],
+                                                 features["hpcp"].shape[0],
                                                  frame_times,
-                                                 dur)
+                                                 features["anal"]["dur"])
             est_times.append(est_level_times)
             cleaned_est_labels.append(est_level_labels)
         est_labels = cleaned_est_labels
@@ -168,8 +171,9 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
                     est_idxs = io.align_times(est_times, frame_times[:-1])
                     if est_idxs[0] != 0:
                         est_idxs = np.concatenate(([0], est_idxs))
-                    if est_idxs[-1] != hpcp.shape[0] - 1:
-                        est_idxs = np.concatenate((est_idxs, [hpcp.shape[0] - 1]))
+                    if est_idxs[-1] != features["hpcp"].shape[0] - 1:
+                        est_idxs = np.concatenate((
+                            est_idxs, [features["hpcp"].shape[0] - 1]))
                 except:
                     logging.warning("No references found for file: %s" %
                                     audio_file)
@@ -187,7 +191,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
 
         # Make sure the first and last boundaries are included
         est_times, est_labels = utils.process_segmentation_level(
-            est_idxs, est_labels, hpcp.shape[0], frame_times, dur)
+            est_idxs, est_labels, features["hpcp"].shape[0], frame_times,
+            features["anal"]["dur"])
 
     return est_times, est_labels
 
@@ -309,33 +314,23 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
         config["features"] = None
-        config["hier"] = hier
+
+    # Save multi-segment (hierarchical) configuration
+    config["hier"] = hier
 
     if os.path.isfile(in_path):
         # Single file mode
         # Get (if they exitst) or compute features
-        # TODO:Modularize!
         file_struct = msaf.io.FileStruct(in_path)
-        if os.path.exists(file_struct.features_file):
-            feat_prefix = ""
-            if not framesync:
-                feat_prefix = "bs_"
-            features = {}
-            features["%shpcp" % feat_prefix], features["%smfcc" % feat_prefix], \
-                features["%stonnetz" % feat_prefix], \
-                features["%scqt" % feat_prefix], features["beats"], dur, \
-                features["anal"] = msaf.io.get_features(in_path,
-                                                        annot_beats=annot_beats,
-                                                        framesync=framesync,
-                                                        pre_features=None)
-        else:
+        if not os.path.exists(file_struct.features_file):
             # Compute and save features
-            features = featextract.compute_features_for_audio_file(in_path)
+            all_features = featextract.compute_features_for_audio_file(in_path)
             msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
-            msaf.featextract.save_features(file_struct.features_file, features)
-
-        config["features"] = features
-        config["hier"] = hier
+            msaf.featextract.save_features(file_struct.features_file,
+                                           all_features)
+        # Get correct features
+        config["features"] = msaf.io.get_features(
+            in_path, annot_beats=annot_beats, framesync=framesync)
 
         # And run the algorithms
         est_times, est_labels = run_algorithms(in_path, boundaries_id,
