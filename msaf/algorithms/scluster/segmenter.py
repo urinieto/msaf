@@ -42,23 +42,24 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Read frame_times
-        self.hpcp, self.mfcc, self.tonnetz, self.cqt, beats, dur, self.anal = \
-            msaf.io.get_features(self.audio_file, annot_beats=self.annot_beats,
-                                 framesync=self.framesync,
-                                 pre_features=self.features)
-        frame_times = beats
+        if self.features is None:
+            self.features = msaf.io.get_features(self.audio_file,
+                                                annot_beats=self.annot_beats,
+                                                framesync=self.framesync)
+        frame_times = self.features["beats"]
         if self.framesync:
-            frame_times = msaf.utils.get_time_frames(dur, self.anal)
+            frame_times = msaf.utils.get_time_frames(
+                self.features["anal"]["dur"], self.features["anal"])
 
         # Brian wants HPCP and MFCC
         # (transosed, because he's that kind of person)
-        F = (self.hpcp.T, self.mfcc.T)
+        F = (self.features["hpcp"].T, self.features["mfcc"].T)
 
         # Do actual segmentation
-        est_idxs, est_labels = main.do_segmentation(F, frame_times,
-                                                      self.config,
-                                                      self.in_bound_idxs)
+        est_idxs, est_labels = main.do_segmentation(F, frame_times, self.config,
+                                                    self.in_bound_idxs)
 
+        # TODO: Hierarchical
         if 'numpy' in str(type(est_idxs)):
             # Flat output
             assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1

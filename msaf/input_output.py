@@ -200,8 +200,7 @@ def read_ref_bound_frames(audio_path, beats):
     return bound_frames
 
 
-def get_features(audio_path, annot_beats=False, framesync=False,
-                 pre_features=None):
+def get_features(audio_path, annot_beats=False, framesync=False):
     """
     Gets the features of an audio file given the audio_path.
 
@@ -213,93 +212,76 @@ def get_features(audio_path, annot_beats=False, framesync=False,
         Whether to use annotated beats or not.
     framesync: bool
         Whether to use framesync features or not.
-    pre_features: dict
-        Pre computed features as a dictionary.
-        `None` for reading them form the json file.
 
     Return
     ------
-    C: np.array((N, 12))
-        (Beat-sync) Chromagram
-    M: np.array((N, 13))
-        (Beat-sync) MFCC
-    T: np.array((N, 6))
-        (Beat-sync) Tonnetz
-    cqt: np.array((N, msaf.Anal.cqt_bins))
-        (Beat-sync) Constant-Q transform
-    beats: np.array(T)
-        Beats in seconds
-    dur: float
-        Song duration
-    analysis : dict
-        Parameters of analysis of track (e.g. sampling rate)
+    features : dict
+        A dictionary with the following keys:
+            "hpcp": np.array((N, 12)), Chromagram
+            "mfcc": np.array((N, 13)), MFCC
+            "tonnetz": np.array((N, 6)), Tonnetz
+            "cqt": np.array((N, msaf.Anal.cqt_bins)), Constant-Q transform
+            "beats": np.array(T), Beats in seconds
+            "anal" : dict, Parameters of analysis of track (e.g. sampling rate)
     """
-    if pre_features is None:
-        # Dataset path
-        ds_path = os.path.dirname(os.path.dirname(audio_path))
+    # Dataset path
+    ds_path = os.path.dirname(os.path.dirname(audio_path))
 
-        # Read Estimations
-        features_path = os.path.join(ds_path, msaf.Dataset.features_dir,
-            os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
-        with open(features_path, "r") as f:
-            feats = json.load(f)
+    # Read Estimations
+    features_path = os.path.join(ds_path, msaf.Dataset.features_dir,
+        os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
+    with open(features_path, "r") as f:
+        feats = json.load(f)
 
-        # Beat Synchronous Feats
-        if framesync:
-            feat_str = "framesync"
-            beats = None
-        else:
-            if annot_beats:
-                # Read references
-                try:
-                    annotation_path = os.path.join(
-                        ds_path, msaf.Dataset.references_dir,
-                        os.path.basename(audio_path)[:-4] +
-                        msaf.Dataset.references_ext)
-                    # TODO: Correct exception handling
-                    jam = jams.load(annotation_path)
-                except:
-                    raise RuntimeError("No references found in file %s" %
-                                    annotation_path)
-
-                feat_str = "ann_beatsync"
-                beats = []
-                beat_data = jam.beats[0].data
-                if beat_data == []:
-                    raise ValueError
-                for data in beat_data:
-                    beats.append(data.time.value)
-                beats = np.unique(beats)
-            else:
-                feat_str = "est_beatsync"
-                beats = np.asarray(feats["beats"]["times"])
-        C = np.asarray(feats[feat_str]["hpcp"])
-        M = np.asarray(feats[feat_str]["mfcc"])
-        T = np.asarray(feats[feat_str]["tonnetz"])
-        cqt = np.asarray(feats[feat_str]["cqt"])
-        analysis = feats["analysis"]
-        dur = analysis["dur"]
-
-        # Frame times might be shorter than the actual number of features.
-        if framesync:
-            frame_times = utils.get_time_frames(dur, analysis)
-            C = C[:len(frame_times)]
-            M = M[:len(frame_times)]
-            T = T[:len(frame_times)]
-
+    # Beat Synchronous Feats
+    if framesync:
+        feat_str = "framesync"
+        beats = None
     else:
-        feat_prefix = ""
-        if not framesync:
-            feat_prefix = "bs_"
-        C = pre_features["%shpcp" % feat_prefix]
-        M = pre_features["%smfcc" % feat_prefix]
-        T = pre_features["%stonnetz" % feat_prefix]
-        cqt = pre_features["%scqt" % feat_prefix]
-        beats = pre_features["beats"]
-        dur = pre_features["anal"]["dur"]
-        analysis = pre_features["anal"]
+        if annot_beats:
+            # Read references
+            try:
+                annotation_path = os.path.join(
+                    ds_path, msaf.Dataset.references_dir,
+                    os.path.basename(audio_path)[:-4] +
+                    msaf.Dataset.references_ext)
+                # TODO: Correct exception handling
+                jam = jams.load(annotation_path)
+            except:
+                raise RuntimeError("No references found in file %s" %
+                                annotation_path)
 
-    return C, M, T, cqt, beats, dur, analysis
+            feat_str = "ann_beatsync"
+            beats = []
+            beat_data = jam.beats[0].data
+            if beat_data == []:
+                raise ValueError
+            for data in beat_data:
+                beats.append(data.time.value)
+            beats = np.unique(beats)
+        else:
+            feat_str = "est_beatsync"
+            beats = np.asarray(feats["beats"]["times"])
+
+    # Build actual features dictionary
+    features = {}
+    features["hpcp"] = np.asarray(feats[feat_str]["hpcp"])
+    features["mfcc"] = np.asarray(feats[feat_str]["mfcc"])
+    features["tonnetz"] = np.asarray(feats[feat_str]["tonnetz"])
+    features["cqt"] = np.asarray(feats[feat_str]["cqt"])
+    features["beats"] = np.asarray(feats["beats"]["times"])
+    features["anal"] = feats["analysis"]
+
+    # Frame times might be shorter than the actual number of features.
+    if framesync:
+        frame_times = utils.get_time_frames(features["anal"]["dur"],
+                                            features["anal"])
+        features["hpcp"] = features["hpcp"][:len(frame_times)]
+        features["mfcc"] = features["mfcc"][:len(frame_times)]
+        features["tonnetz"] = features["tonnetz"][:len(frame_times)]
+        features["cqt"] = features["cqt"][:len(frame_times)]
+
+    return features
 
 
 def find_estimation(jam, boundaries_id, labels_id, params):
