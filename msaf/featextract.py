@@ -80,7 +80,7 @@ def compute_features(audio, y_harmonic):
     logging.info("Computing Constant-Q...")
     cqt = librosa.logamplitude(librosa.cqt(audio, sr=msaf.Anal.sample_rate,
                                            hop_length=msaf.Anal.hop_size,
-                                           n_bins=msaf.Anal.cqt_bins)**2,
+                                           n_bins=msaf.Anal.cqt_bins) ** 2,
                                ref_power=np.max).T
 
     logging.info("Computing MFCCs...")
