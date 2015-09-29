@@ -102,8 +102,6 @@ def test_run_algorithms():
                                     config["features"]["anal"]["dur"],
                                     decimal=2)
 
-    features = msaf.featextract.compute_features_for_audio_file(long_audio_file)
-
     def _test_run_msaf(bound_id, label_id):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
@@ -116,8 +114,8 @@ def test_run_algorithms():
                                                         config)
         npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
         assert len(est_times) - 1 == len(est_labels)
-        npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
-                                decimal=2)
+        npt.assert_almost_equal(
+            est_times[-1], config["features"]["anal"]["dur"], decimal=2)
 
     # Running all boundary algorithms on a relatively long file
     for bound_id in bound_ids:
