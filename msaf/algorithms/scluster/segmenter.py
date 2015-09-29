@@ -12,15 +12,6 @@ Original code by Brian McFee from:
     https://github.com/bmcfee/laplacian_segmentation
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "GPL"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
-import logging
-import numpy as np
-
 import msaf
 from msaf.algorithms.interface import SegmenterInterface
 from . import main
@@ -44,35 +35,22 @@ class Segmenter(SegmenterInterface):
         # Read frame_times
         if self.features is None:
             self.features = msaf.io.get_features(self.audio_file,
-                                                annot_beats=self.annot_beats,
-                                                framesync=self.framesync)
+                                                 annot_beats=self.annot_beats,
+                                                 framesync=self.framesync)
         frame_times = self.features["beats"]
         if self.framesync:
             frame_times = msaf.utils.get_time_frames(
                 self.features["anal"]["dur"], self.features["anal"])
 
         # Brian wants HPCP and MFCC
-        # (transosed, because he's that kind of person)
+        # (tranpsosed, because he's that kind of person)
         F = (self.features["hpcp"].T, self.features["mfcc"].T)
 
         # Do actual segmentation
-        est_idxs, est_labels = main.do_segmentation(F, frame_times, self.config,
-                                                    self.in_bound_idxs)
+        est_idxs, est_labels = main.do_segmentation(
+            F, frame_times, self.config, self.in_bound_idxs)
 
-        # TODO: Hierarchical
-        if 'numpy' in str(type(est_idxs)):
-            # Flat output
-            assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
-            est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
-        else:
-            # Hierarchical output
-            for layer in range(len(est_idxs)):
-                assert est_idxs[layer][0] == 0 and \
-                    est_idxs[layer][-1] == F[0].shape[1] - 1
-                est_idxs[layer], est_labels[layer] = \
-                    self._postprocess(est_idxs[layer], est_labels[layer])
-
-        return est_idxs, est_labels
+        return est_idxs, est_labels, F
 
     def processFlat(self):
         """Main process.for flat segmentation.
@@ -83,7 +61,9 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        return self.process()
+        est_idxs, est_labels, F = self.process()
+        assert est_idxs[0] == 0 and est_idxs[-1] == F[0].shape[1] - 1
+        return self._postprocess(est_idxs, est_labels)
 
     def processHierarchical(self):
         """Main process.for hierarchial segmentation.
@@ -96,4 +76,10 @@ class Segmenter(SegmenterInterface):
             List with np.arrays containing the labels for each layer of the
             hierarchical segmentation.
         """
+        est_idxs, est_labels, F = self.process()
+        for layer in range(len(est_idxs)):
+            assert est_idxs[layer][0] == 0 and \
+                est_idxs[layer][-1] == F[0].shape[1] - 1
+            est_idxs[layer], est_labels[layer] = \
+                self._postprocess(est_idxs[layer], est_labels[layer])
         return self.process()

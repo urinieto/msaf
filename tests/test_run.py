@@ -4,24 +4,20 @@
 # cd tests/
 # nosetests
 
-import glob
-import json
-import librosa
-from nose.tools import nottest, eq_, raises, assert_equals, assert_raises
+from nose.tools import assert_raises
 from types import ModuleType
-import copy
 import numpy.testing as npt
 import os
 
 # Msaf imports
 import msaf
-from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
 long_audio_file = os.path.join("..", "datasets", "Sargon", "audio",
                                "01-Sargon-Mindless.mp3")
 fake_module_name = "fake_name_module"
+
 
 def test_get_boundaries_module():
     # Check that it returns modules for all the existing MSAF boundaries algos

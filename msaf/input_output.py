@@ -245,7 +245,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
                     ds_path, msaf.Dataset.references_dir,
                     os.path.basename(audio_path)[:-4] +
                     msaf.Dataset.references_ext)
-                # TODO: Correct exception handling
+                # TODO: Better exception handling
                 jam = jams.load(annotation_path)
             except:
                 raise RuntimeError("No references found in file %s" %

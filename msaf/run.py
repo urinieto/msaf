@@ -1,7 +1,6 @@
 """
 This module contains multiple functions in order to run MSAF algorithms.
 """
-
 import jams
 import librosa
 import logging
@@ -72,6 +71,93 @@ def get_labels_module(labels_id):
     return module
 
 
+def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
+                     config, annotator_id=0):
+    """Runs hierarchical algorithms with the specified identifiers on the
+    audio_file. See run_algorithm for more information.
+    """
+    # Get features to make code nicer
+    features = config["features"]
+
+    if bounds_module is None:
+        raise RuntimeError("A boundary algorithm is needed when using "
+                           "hierarchical segmentation.")
+    if labels_module is not None and \
+            bounds_module.__name__ != labels_module.__name__:
+        raise RuntimeError("The same algorithm for boundaries and labels is "
+                           "needed when using hierarchical segmentation.")
+    S = bounds_module.Segmenter(audio_file, **config)
+    est_idxs, est_labels = S.processHierarchical()
+
+    # Make sure the first and last boundaries are included for each
+    # level in the hierarchy
+    est_times = []
+    cleaned_est_labels = []
+    for level in range(len(est_idxs)):
+        est_level_times, est_level_labels = \
+            utils.process_segmentation_level(
+                est_idxs[level], est_labels[level], features["hpcp"].shape[0],
+                frame_times, features["anal"]["dur"])
+        est_times.append(est_level_times)
+        cleaned_est_labels.append(est_level_labels)
+    est_labels = cleaned_est_labels
+
+    return est_times, est_labels
+
+
+def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
+             annotator_id):
+    """Runs the flat algorithms with the specified identifiers on the
+    audio_file. See run_algorithm for more information.
+    """
+    # Get features to make code nicer
+    features = config["features"]
+
+    # Segment using the specified boundaries and labels
+    # Case when boundaries and labels algorithms are the same
+    if bounds_module is not None and labels_module is not None and \
+            bounds_module.__name__ == labels_module.__name__:
+        S = bounds_module.Segmenter(audio_file, **config)
+        est_idxs, est_labels = S.processFlat()
+    # Different boundary and label algorithms
+    else:
+        # Identify segment boundaries
+        if bounds_module is not None:
+            S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
+            est_idxs, est_labels = S.processFlat()
+        else:
+            try:
+                est_times, est_labels = io.read_references(
+                    audio_file, annotator_id=annotator_id)
+                est_idxs = io.align_times(est_times, frame_times[:-1])
+                if est_idxs[0] != 0:
+                    est_idxs = np.concatenate(([0], est_idxs))
+                if est_idxs[-1] != features["hpcp"].shape[0] - 1:
+                    est_idxs = np.concatenate((
+                        est_idxs, [features["hpcp"].shape[0] - 1]))
+            except:
+                logging.warning("No references found for file: %s" %
+                                audio_file)
+                return [], []
+
+        # Label segments
+        if labels_module is not None:
+            if len(est_idxs) == 2:
+                est_labels = np.array([0])
+            else:
+                S = labels_module.Segmenter(audio_file,
+                                            in_bound_idxs=est_idxs,
+                                            **config)
+                est_labels = S.processFlat()[1]
+
+    # Make sure the first and last boundaries are included
+    est_times, est_labels = utils.process_segmentation_level(
+        est_idxs, est_labels, features["hpcp"].shape[0], frame_times,
+        features["anal"]["dur"])
+
+    return est_times, est_labels
+
+
 def run_algorithms(audio_file, boundaries_id, labels_id, config,
                    annotator_id=0):
     """Runs the algorithms with the specified identifiers on the audio_file.
@@ -124,75 +210,9 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
                                             features["anal"])
 
     # Segment audio based on type of segmentation
-    if config["hier"]:
-        # Hierarchical segmentation
-        if bounds_module is None:
-            raise RuntimeError("A boundary algorithm is needed when using "
-                               "hierarchical segmentation.")
-        if labels_module is not None and \
-                bounds_module.__name__ != labels_module.__name__:
-            raise RuntimeError("The same algorithm for boundaries and labels is "
-                               "needed when using hierarchical segmentation.")
-        S = bounds_module.Segmenter(audio_file, **config)
-        est_idxs, est_labels = S.processHierarchical()
-
-        # Make sure the first and last boundaries are included for each
-        # level in the hierarchy
-        est_times = []
-        cleaned_est_labels = []
-        for level in range(len(est_idxs)):
-            est_level_times, est_level_labels = \
-                utils.process_segmentation_level(est_idxs[level],
-                                                 est_labels[level],
-                                                 features["hpcp"].shape[0],
-                                                 frame_times,
-                                                 features["anal"]["dur"])
-            est_times.append(est_level_times)
-            cleaned_est_labels.append(est_level_labels)
-        est_labels = cleaned_est_labels
-    else:
-        # Flat segmentation
-        # Segment using the specified boundaries and labels
-        # Case when boundaries and labels algorithms are the same
-        if bounds_module is not None and labels_module is not None and \
-                bounds_module.__name__ == labels_module.__name__:
-            S = bounds_module.Segmenter(audio_file, **config)
-            est_idxs, est_labels = S.processFlat()
-        # Different boundary and label algorithms
-        else:
-            # Identify segment boundaries
-            if bounds_module is not None:
-                S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
-                est_idxs, est_labels = S.processFlat()
-            else:
-                try:
-                    est_times, est_labels = io.read_references(
-                        audio_file, annotator_id=annotator_id)
-                    est_idxs = io.align_times(est_times, frame_times[:-1])
-                    if est_idxs[0] != 0:
-                        est_idxs = np.concatenate(([0], est_idxs))
-                    if est_idxs[-1] != features["hpcp"].shape[0] - 1:
-                        est_idxs = np.concatenate((
-                            est_idxs, [features["hpcp"].shape[0] - 1]))
-                except:
-                    logging.warning("No references found for file: %s" %
-                                    audio_file)
-                    return [], []
-
-            # Label segments
-            if labels_module is not None:
-                if len(est_idxs) == 2:
-                    est_labels = np.array([0])
-                else:
-                    S = labels_module.Segmenter(audio_file,
-                                                in_bound_idxs=est_idxs,
-                                                **config)
-                    est_labels = S.processFlat()[1]
-
-        # Make sure the first and last boundaries are included
-        est_times, est_labels = utils.process_segmentation_level(
-            est_idxs, est_labels, features["hpcp"].shape[0], frame_times,
-            features["anal"]["dur"])
+    run_fun = run_hierarchical if config["hier"] else run_flat
+    est_times, est_labels = run_fun(audio_file, bounds_module, labels_module,
+                                    frame_times, config, annotator_id)
 
     return est_times, est_labels
 
