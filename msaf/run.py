@@ -380,4 +380,4 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
-            annotator_id=annotator_id) for file_struct in file_structs[:])
+            annotator_id=annotator_id) for file_struct in file_structs[60:])
