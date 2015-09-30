@@ -330,11 +330,12 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
     # Sanity check for hierarchical evaluation
     if hier:
         try:
-            from mir_eval.segment import tree
-        except:
+            from mir_eval import hierarchy
+        except ImportError:
             logging.error("An experimental mir_eval version is needed to "
                           "evaluate hierarchical segments. Please, download it"
-                          " from: https://github.com/urinieto/mir_eval")
+                          " from: https://github.com/bmcfee/mir_eval"
+                          " and checkout the tmeasures branch.")
             return []
 
     # Get out file in case we want to save results

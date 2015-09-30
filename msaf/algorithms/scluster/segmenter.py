@@ -82,4 +82,4 @@ class Segmenter(SegmenterInterface):
                 est_idxs[layer][-1] == F[0].shape[1] - 1
             est_idxs[layer], est_labels[layer] = \
                 self._postprocess(est_idxs[layer], est_labels[layer])
-        return self.process()
+        return est_idxs, est_labels
