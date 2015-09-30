@@ -169,7 +169,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             est_labels.append(np.ones(len(est_times[-1]) - 1) * -1)
 
         # Align the times
-        utils.align_end_hierarchies(est_times, ref_times)
+        utils.align_end_hierarchies(est_times, ref_times, thres=3)
 
         # To intervals
         est_hier = [utils.times_to_intervals(times) for times in est_times]
