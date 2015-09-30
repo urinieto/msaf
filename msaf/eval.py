@@ -129,13 +129,12 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     results : dict
         Dictionary of the results (see function compute_results).
     """
-    # TODO: Better error handling
     try:
-        # TODO: Read hierarchical annotations
         if config["hier"]:
             ref_times, ref_labels, ref_levels = \
-                msaf.io.read_hier_references(ref_file, annotation_id=0,
-                                             exclude_levels=["function"])
+                msaf.io.read_hier_references(
+                    ref_file, annotation_id=0,
+                    exclude_levels=["segment_salami_function"])
         else:
             jam = jams.load(ref_file)
             ann = jam.search(namespace='segment_.*')[annotator_id]
@@ -172,26 +171,25 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         # Align the times
         utils.align_end_hierarchies(est_times, ref_times)
 
-        # Build trees
-        ref_tree = mir_eval.segment.tree.SegmentTree(ref_times, ref_labels,
-                                                     ref_levels)
-        est_tree = mir_eval.segment.tree.SegmentTree(est_times, est_labels)
+        # To intervals
+        est_hier = [utils.times_to_intervals(times) for times in est_times]
+        ref_hier = [utils.times_to_intervals(times) for times in ref_times]
 
         # Compute evaluations
         res = {}
         res["t_recall10"], res["t_precision10"], res["t_measure10"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=100)
+            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=10)
         res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=150)
+            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=15)
         res["t_recall30"], res["t_precision30"], res["t_measure30"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=300)
+            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=30)
 
         res["track_id"] = os.path.basename(est_file)[:-5]
         return res
     else:
         # Flat
         return compute_results(ref_inter, est_inter, ref_labels, est_labels,
-                            bins, est_file)
+                               bins, est_file)
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):

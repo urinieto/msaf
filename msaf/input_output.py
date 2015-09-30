@@ -86,6 +86,25 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
 
     # Get data values
     all_boundaries, all_labels = est.data.to_interval_values()
+    if params["hier"]:
+        hier_bounds = []
+        hier_labels = []
+        curr_bounds = []
+        curr_labels = []
+        curr_level = all_labels[0]["level"]
+        for bounds, value in zip(all_boundaries, all_labels):
+            if curr_level != value["level"]:
+                hier_bounds.append(np.asarray(curr_bounds))
+                hier_labels.append(np.asarray(curr_labels))
+                curr_bounds = []
+                curr_labels = []
+            curr_bounds.append(bounds)
+            curr_labels.append(value["label"])
+            curr_level = value["level"]
+        hier_bounds.append(np.asarray(curr_bounds))
+        hier_labels.append(np.asarray(curr_labels))
+        all_boundaries = hier_bounds
+        all_labels = hier_labels
 
     return all_boundaries, all_labels
 
@@ -648,56 +667,27 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     hier_levels : list
         List of strings for the level identifiers.
     """
-    # TODO: Hier
-    def get_levels():
-        """Obtains the set of unique levels contained in the jams
-            sorted by the number of segments they contain.
-
-        Returns
-        -------
-        levels : np.array
-            Level identifiers for the entire hierarchy.
-        """
-        levels = []
-        jam = jams2.load(jams_file)
-        annotation = jam.sections[annotation_id]
-        for segment in annotation.data:
-            if segment.label.context not in exclude_levels:
-                levels.append(segment.label.context)
-        c = Counter(levels)     # Count frequency
-        # Sort
-        return np.asarray(list(dict(c).keys()))[np.argsort(list(c.values()))]
-
-    def get_segments_in_level(level):
-        """Gets the segments of a specific level.
-
-        Paramters
-        ---------
-        level : str
-            Indentifier of the level within the jams file.
-
-        Returns
-        -------
-        times : np.array
-            Boundary times in seconds for the given level.
-        labels : np.array
-            Labels for the given level.
-        """
-        intervals, labels = jams2.converters.load_jams_range(jams_file,
-                "sections", annotator=annotation_id, context=level)
-        times = utils.intervals_to_times(intervals)
-        return np.array(times), np.array(labels)
-
-    # Get the levels of the annotations in the jams file
-    hier_levels = get_levels()
-
-    # Get the boundaries and labels for each level
     hier_bounds = []
     hier_labels = []
-    for level in hier_levels:
-        bound_times, labels = get_segments_in_level(level)
-        hier_bounds.append(bound_times)
-        hier_labels.append(labels)
+    hier_levels = []
+    jam = jams.load(jams_file)
+    namespaces = ["segment_salami_upper", "segment_salami_function",
+                  "segment_open", "segment_tut", "segment_salami_lower"]
+
+    # Remove levels if needed
+    for exclude in exclude_levels:
+        if exclude in namespaces:
+            namespaces.remove(exclude)
+
+    # Build hierarchy references
+    for ns in namespaces:
+        ann = jam.search(namespace=ns)
+        if not ann:
+            continue
+        ref_inters, ref_labels = ann[annotation_id].data.to_interval_values()
+        hier_bounds.append(utils.intervals_to_times(ref_inters))
+        hier_labels.append(ref_labels)
+        hier_levels.append(ns)
 
     return hier_bounds, hier_labels, hier_levels
 
