@@ -84,32 +84,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         logging.error("Could not find estimation in %s" % est_file)
         return np.array([]), np.array([])
 
-    # TODO: Hierarchical
-    # Retrieve unique levels of segmentation
-    #levels = []
-    #for range in est.data:
-        #levels.append(range.label.context)
-    #levels = list(set(levels))
-
-    ## Retrieve data
-    #all_boundaries = []
-    #all_labels = []
-    #for level in levels:
-        #boundaries = []
-        #labels = []
-        #for range in est.data:
-            #if level == range.label.context:
-                #boundaries.append([range.start.value, range.end.value])
-                #if labels_id is not None:
-                    #labels.append(range.label.value)
-        #all_boundaries.append(np.asarray(boundaries))
-        #all_labels.append(np.asarray(labels, dtype=int))
-
-    ## If there is only one level, return np.arrays instead of lists
-    #if len(levels) == 1:
-        #all_boundaries = all_boundaries[0]
-        #all_labels = all_labels[0]
-
+    # Get data values
     all_boundaries, all_labels = est.data.to_interval_values()
 
     return all_boundaries, all_labels
@@ -306,7 +281,8 @@ def find_estimation(jam, boundaries_id, labels_id, params):
         `None` if it couldn't be found.
     """
     # Use handy JAMS search interface
-    ann = jam.search(namespace="segment_open").\
+    namespace = "multi_segment" if params["hier"] else "segment_open"
+    ann = jam.search(namespace=namespace).\
         search(**{"Sandbox.boundaries_id": boundaries_id})
     if labels_id is not None:
         try:
@@ -379,7 +355,8 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
                 "match" % (len(inters[level]), len(labels[level]))
 
     # Create new estimation
-    ann = jams.Annotation(namespace="segment_open")
+    namespace = "multi_segment" if params["hier"] else "segment_open"
+    ann = jams.Annotation(namespace=namespace)
 
     # Find estimation in file
     if os.path.isfile(file_struct.est_file):
@@ -414,11 +391,12 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
             label = np.ones(len(inters)) * -1
         for bound_inter, label in zip(level_inters, level_labels):
             dur = float(bound_inter[1]) - float(bound_inter[0])
-            ann.append(time=bound_inter[0],
-                       duration=dur,
-                       value=str(int(label)))
-            # TODO: Hierarchical Level
-            #segment.label.context = "level_%d" % i
+            if params["hier"]:
+                value = {"label": str(int(label)),
+                         "level": i}
+            else:
+                value = str(int(label))
+            ann.append(time=bound_inter[0], duration=dur, value=value)
 
     # Write results
     jam.save(file_struct.est_file)

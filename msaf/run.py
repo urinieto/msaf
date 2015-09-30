@@ -189,6 +189,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     if config["features"] is None:
         features = io.get_features(audio_file, config["annot_beats"],
                                    config["framesync"])
+        config["features"] = features
     else:
         features = config["features"]
 
