@@ -184,14 +184,10 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
         List of all the labels associated segments.
         If `list`, it will be a list of np.arrays, sorted by segmentation layer.
     """
-
-    # At this point, features should have already been computed
-    if config["features"] is None:
-        features = io.get_features(audio_file, config["annot_beats"],
-                                   config["framesync"])
-        config["features"] = features
-    else:
-        features = config["features"]
+    # At this point, features should have already been computed, let's read them
+    features = io.get_features(audio_file, config["annot_beats"],
+                               config["framesync"])
+    config["features"] = features
 
     # Check that there are enough audio frames
     if features["hpcp"].shape[0] <= msaf.minimum__frames:
@@ -380,4 +376,4 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
-            annotator_id=annotator_id) for file_struct in file_structs[60:])
+            annotator_id=annotator_id) for file_struct in file_structs[:])
