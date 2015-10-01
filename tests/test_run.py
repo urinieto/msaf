@@ -98,11 +98,19 @@ def test_run_algorithms():
                                     config["features"]["anal"]["dur"],
                                     decimal=2)
 
+    # Commpute and save features for long audio file
+    file_struct = msaf.io.FileStruct(long_audio_file)
+    all_features = msaf.featextract.compute_features_for_audio_file(
+        long_audio_file)
+    msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
+    msaf.featextract.save_features(file_struct.features_file,
+                                   all_features)
+
     def _test_run_msaf(bound_id, label_id):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
         config["features"] = msaf.io.get_features(
-            audio_file, annot_beats, framesync)
+            long_audio_file, annot_beats, framesync)
         config["hier"] = False
         est_times, est_labels = msaf.run.run_algorithms(long_audio_file,
                                                         bound_id,
