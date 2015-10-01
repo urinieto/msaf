@@ -64,7 +64,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
             So  : Oversegmentation normalized entropy score
             Su  : Undersegmentation normalized entropy score
     """
-    logging.info("Evaluating %s" % os.path.basename(est_file))
     res = {}
 
     ### Boundaries ###
@@ -152,6 +151,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         return {}
 
     # Compute the results and return
+    logging.info("Evaluating %s" % os.path.basename(est_file))
     if config["hier"]:
         # Hierarchical
         assert len(est_inter) == len(est_labels), "Same number of levels " \
@@ -169,7 +169,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             est_labels.append(np.ones(len(est_times[-1]) - 1) * -1)
 
         # Align the times
-        utils.align_end_hierarchies(est_times, ref_times, thres=3)
+        utils.align_end_hierarchies(est_times, ref_times, thres=1)
 
         # To intervals
         est_hier = [utils.times_to_intervals(times) for times in est_times]
@@ -181,8 +181,6 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=10)
         res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
             mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=15)
-        res["t_recall30"], res["t_precision30"], res["t_measure30"] = \
-            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=30)
 
         res["track_id"] = os.path.basename(est_file)[:-5]
         return res
