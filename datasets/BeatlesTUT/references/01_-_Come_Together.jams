@@ -1,294 +1,136 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 1.05, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 11.50141, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 1.05
+        }, 
+        {
+          "duration": 23.464683, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 12.55141
+        }, 
+        {
+          "duration": 11.406924, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 36.016093
+        }, 
+        {
+          "duration": 23.385882, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 47.423017
+        }, 
+        {
+          "duration": 5.742862, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 70.808899
+        }, 
+        {
+          "duration": 11.42652, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 76.551761
+        }, 
+        {
+          "duration": 23.267473, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 87.97828
+        }, 
+        {
+          "duration": 5.802067, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 111.245753
+        }, 
+        {
+          "duration": 5.624453, 
+          "confidence": null, 
+          "value": "introH", 
+          "time": 117.04782
+        }, 
+        {
+          "duration": 23.119461, 
+          "confidence": null, 
+          "value": "verseS", 
+          "time": 122.672273
+        }, 
+        {
+          "duration": 5.71326, 
+          "confidence": null, 
+          "value": "introH", 
+          "time": 145.791733
+        }, 
+        {
+          "duration": 23.504291, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 151.504993
+        }, 
+        {
+          "duration": 5.831669, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 175.009285
+        }, 
+        {
+          "duration": 11.367315, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 180.840954
+        }, 
+        {
+          "duration": 68.405065, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 192.208269
+        }, 
+        {
+          "duration": 0.036463, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 260.613333
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 1.05
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 1.05
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 12.5514101
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 12.5514101
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 36.0160926
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 36.0160926
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 47.4230166
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 47.4230166
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 70.8088987
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 70.8088987
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 76.5517608
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 76.5517608
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 87.9782804
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 87.9782804
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 111.245753
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 111.245753
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 117.0478199
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 117.0478199
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 122.6722726
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "introH"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 122.6722726
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 145.7917332
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 145.7917332
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 151.504993
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "introH"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 151.504993
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 175.0092847
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 175.0092847
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 180.840954
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 180.840954
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 192.2082688
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 192.2082688
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 260.6133333
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 260.6133333
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 260.6497959183674
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "01_-_Come_Together", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 260.6497959183674, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

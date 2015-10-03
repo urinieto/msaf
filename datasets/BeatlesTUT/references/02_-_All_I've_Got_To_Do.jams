@@ -1,144 +1,76 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 24.868706, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 21.644167, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 24.868706
+        }, 
+        {
+          "duration": 18.287113, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 46.512874
+        }, 
+        {
+          "duration": 21.732511, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 64.799986
+        }, 
+        {
+          "duration": 22.262572, 
+          "confidence": null, 
+          "value": "BridgeB\r", 
+          "time": 86.532497
+        }, 
+        {
+          "duration": 10.067413, 
+          "confidence": null, 
+          "value": "VerseO\r", 
+          "time": 108.795069
+        }, 
+        {
+          "duration": 5.689355, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 118.862482
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 24.8687064
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 24.8687064
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 46.5128737
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 46.5128737
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 64.7999864
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 64.7999864
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 86.5324971
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 86.5324971
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 108.7950692
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "BridgeB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 108.7950692
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 118.8624822
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseO\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 118.8624822
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 124.55183673469388
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "02_-_All_I've_Got_To_Do", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 124.55183673469388, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

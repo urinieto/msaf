@@ -1,144 +1,76 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.023565, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 1.562443, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 0.023565
+        }, 
+        {
+          "duration": 22.908748, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 1.586008
+        }, 
+        {
+          "duration": 42.741861, 
+          "confidence": null, 
+          "value": "bridge", 
+          "time": 24.494756
+        }, 
+        {
+          "duration": 22.511375, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 67.236617
+        }, 
+        {
+          "duration": 7.105342, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 89.747992
+        }, 
+        {
+          "duration": 0.03483, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 96.853333
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.0235647
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0235647
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 1.5860082
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 1.5860082
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 24.4947557
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 24.4947557
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 67.2366169
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 67.2366169
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 89.7479916
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 89.7479916
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 96.8533333
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 96.8533333
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 96.88816326530612
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "15_-_Carry_That_Weight", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 96.88816326530612, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

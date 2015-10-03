@@ -7,7 +7,7 @@ from distutils import sysconfig
 # MSAF configuration
 setup(
     name='msaf',
-    version='0.0.2',
+    version='0.0.3',
     description='Python module to discover the structure of music files',
     author='Oriol Nieto',
     author_email='oriol@nyu.edu',
@@ -36,6 +36,7 @@ setup(
     license='GPL',
     install_requires=[
         'audioread',
+        'jams',
         'numpy >= 1.8.0',
         'scipy >= 0.13.0',
         'scikit-learn >= 0.14.0',

@@ -1,129 +1,70 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 14.289018, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 28.753902, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 14.289018
+        }, 
+        {
+          "duration": 20.180491, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 43.04292
+        }, 
+        {
+          "duration": 28.490104, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 63.22341
+        }, 
+        {
+          "duration": 28.578037, 
+          "confidence": null, 
+          "value": "BridgeC\r", 
+          "time": 91.713515
+        }, 
+        {
+          "duration": 4.861101, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 120.291552
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 14.2890184
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 14.2890184
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 43.0429199
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 43.0429199
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 63.2234105
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 63.2234105
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 91.7135148
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 91.7135148
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 120.2915516
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "BridgeC\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 120.2915516
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 125.15265306122448
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "12_-_A_Taste_Of_Honey", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 125.15265306122448, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

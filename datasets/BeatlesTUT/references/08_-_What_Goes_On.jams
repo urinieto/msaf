@@ -1,189 +1,94 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.45981, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 5.892137, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 0.45981
+        }, 
+        {
+          "duration": 24.711504, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 6.351947
+        }, 
+        {
+          "duration": 17.466212, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 31.06345
+        }, 
+        {
+          "duration": 24.731211, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 48.529664
+        }, 
+        {
+          "duration": 17.3217, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 73.260874
+        }, 
+        {
+          "duration": 24.639249, 
+          "confidence": null, 
+          "value": "refrainS", 
+          "time": 90.582575
+        }, 
+        {
+          "duration": 17.301994, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 115.221823
+        }, 
+        {
+          "duration": 24.718073, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 132.523818
+        }, 
+        {
+          "duration": 13.572803, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 157.241891
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.45981
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.45981
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 6.3519471
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 6.3519471
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 31.0634515
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 31.0634515
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 48.5296638
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 48.5296638
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 73.2608744
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 73.2608744
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 90.5825749
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 90.5825749
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 115.2218235
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrainS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 115.2218235
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 132.5238179
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 132.5238179
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 157.241891
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 157.241891
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 170.814693877551
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "08_-_What_Goes_On", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 170.814693877551, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

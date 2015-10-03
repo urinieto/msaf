@@ -1,174 +1,88 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 3.899379, 
+          "confidence": null, 
+          "value": "Intro", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 14.196177, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 3.899379
+        }, 
+        {
+          "duration": 12.977621, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 18.095556
+        }, 
+        {
+          "duration": 15.719372, 
+          "confidence": null, 
+          "value": "Bridge", 
+          "time": 31.073177
+        }, 
+        {
+          "duration": 14.500816, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 46.792548
+        }, 
+        {
+          "duration": 12.977621, 
+          "confidence": null, 
+          "value": "VerseS", 
+          "time": 61.293364
+        }, 
+        {
+          "duration": 15.841227, 
+          "confidence": null, 
+          "value": "Bridge", 
+          "time": 74.270985
+        }, 
+        {
+          "duration": 15.841227, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 90.112212
+        }, 
+        {
+          "duration": 5.093091, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 105.953439
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 3.899379
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 3.899379
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 18.0955558
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 18.0955558
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 31.0731766
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 31.0731766
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 46.7925482
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 46.7925482
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 61.293364
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 61.293364
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 74.2709847
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 74.2709847
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 90.112212
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 90.112212
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 105.9534393
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 105.9534393
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 111.0465306122449
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "05_-_I'll_Follow_the_Sun", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 111.0465306122449, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

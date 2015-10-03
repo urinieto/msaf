@@ -2,6 +2,7 @@
 of MSAF.
 """
 
+import jams
 import logging
 import mir_eval
 import numpy as np
@@ -9,10 +10,8 @@ import os
 import pylab as plt
 
 # Local stuff
-import msaf
 from msaf import io
 from msaf import utils
-from msaf import jams2
 
 translate_ids = {
     "2dfmc" : "2D-FMC",
@@ -146,23 +145,18 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
 def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
                    ds_prefix, title=None):
     """Plots the results of one track, with ground truth if it exists."""
-    # Get context
-    if ds_prefix in msaf.prefix_dict.keys():
-        context = msaf.prefix_dict[ds_prefix]
-    else:
-        context = "function"
-
     # Set up the boundaries id
     bid_lid = boundaries_id
     if labels_id is not None:
         bid_lid += " + " + labels_id
     try:
         # Read file
-        ref_inter, ref_labels = jams2.converters.load_jams_range(
-            file_struct.ref_file, "sections", annotator=0, context=context)
+        jam = jams.load(file_struct.ref_file)
+        ann = jam.search(namespace='segment_.*')[0]
+        ref_inters, ref_labels = ann.data.to_interval_values()
 
         # To times
-        ref_times = utils.intervals_to_times(ref_inter)
+        ref_times = utils.intervals_to_times(ref_inters)
         all_boundaries = [ref_times, est_times]
         all_labels = [ref_labels, est_labels]
         algo_ids = ["GT", bid_lid]

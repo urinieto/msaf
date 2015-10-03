@@ -1,189 +1,94 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 8.742587, 
+          "confidence": null, 
+          "value": "Intro", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 15.062287, 
+          "confidence": null, 
+          "value": "RefrainA", 
+          "time": 8.742587
+        }, 
+        {
+          "duration": 15.530083, 
+          "confidence": null, 
+          "value": "VerseA", 
+          "time": 23.804874
+        }, 
+        {
+          "duration": 16.121645, 
+          "confidence": null, 
+          "value": "VerseB", 
+          "time": 39.334957
+        }, 
+        {
+          "duration": 15.08982, 
+          "confidence": null, 
+          "value": "RefrainA", 
+          "time": 55.456602
+        }, 
+        {
+          "duration": 16.203457, 
+          "confidence": null, 
+          "value": "VerseA", 
+          "time": 70.546421
+        }, 
+        {
+          "duration": 15.341024, 
+          "confidence": null, 
+          "value": "RefrainA", 
+          "time": 86.749878
+        }, 
+        {
+          "duration": 15.491897, 
+          "confidence": null, 
+          "value": "RefrainB", 
+          "time": 102.090902
+        }, 
+        {
+          "duration": 15.762451, 
+          "confidence": null, 
+          "value": "RefrainO", 
+          "time": 117.582799
+        }, 
+        {
+          "duration": 23.389443, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 133.34525
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 8.7425874
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 8.7425874
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 23.8048744
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 23.8048744
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 39.3349569
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 39.3349569
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 55.4566018
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 55.4566018
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 70.5464215
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 70.5464215
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 86.7498782
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 86.7498782
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 102.0909021
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 102.0909021
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 117.5827995
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 117.5827995
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 133.3452505
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainO"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 133.3452505
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 156.73469387755102
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "07_-_Please_Mister_Postman", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 156.73469387755102, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

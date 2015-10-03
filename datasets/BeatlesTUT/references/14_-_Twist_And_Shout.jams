@@ -1,144 +1,76 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 7.344008, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 30.055547, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 7.344008
+        }, 
+        {
+          "duration": 29.977141, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 37.399555
+        }, 
+        {
+          "duration": 28.618108, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 67.376696
+        }, 
+        {
+          "duration": 29.532842, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 95.994803
+        }, 
+        {
+          "duration": 26.429408, 
+          "confidence": null, 
+          "value": "BridgeC\r", 
+          "time": 125.527645
+        }, 
+        {
+          "duration": 1.198865, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 151.957053
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 7.3440076
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 7.3440076
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 37.3995545
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 37.3995545
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 67.3766956
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 67.3766956
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 95.9948033
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 95.9948033
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 125.5276451
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 125.5276451
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 151.9570531
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "BridgeC\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 151.9570531
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 153.15591836734694
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "14_-_Twist_And_Shout", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 153.15591836734694, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

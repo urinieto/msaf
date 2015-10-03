@@ -1,894 +1,377 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
-  "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "namespace": "segment_open",
       "annotation_metadata": {
-        "origin": "Jarlem All Studios", 
-        "annotation_rules": "SALAMI guidelines", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "version": "1.0",
         "annotator": {
-          "name": "Oriol Nieto", 
+          "name": "Oriol Nieto",
           "email": "oriol.nieto@gmail.com"
-        }, 
-        "version": "1.0", 
-        "corpus": "Sargon", 
-        "annotation_tools": "Sonic Visualizer"
-      }, 
+        },
+        "curator": {
+          "name": "Oriol Nieto",
+          "email": "oriol.nieto@gmail.com"
+        },
+        "validation": "",
+        "annotation_rules": "SALAMI guidelines",
+        "corpus": "Sargon",
+        "annotation_tools": "Sonic Visualizer",
+        "data_source": "Jarlem All Studios"
+      },
       "data": [
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 0.263038548
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Silence"
-          }
-        }, 
+          "time": 0.0,
+          "duration": 0.263039,
+          "confidence": null,
+          "value": "Silence"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 0.263038548
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 16.263786848
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Acoustic Guitar"
-          }
-        }, 
+          "time": 0.263039,
+          "duration": 16.000748,
+          "confidence": null,
+          "value": "Acoustic Guitar"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 16.263786848
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 58.554195011
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Acoustic Voice "
-          }
-        }, 
+          "time": 16.263787,
+          "duration": 42.290408,
+          "confidence": null,
+          "value": "Acoustic Voice "
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 58.554195011
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 74.892403628
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Metal Intro"
-          }
-        }, 
+          "time": 58.554195,
+          "duration": 16.338209,
+          "confidence": null,
+          "value": "Metal Intro"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 74.892403628
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 102.627528344
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Main Riff"
-          }
-        }, 
+          "time": 74.892404,
+          "duration": 27.735125,
+          "confidence": null,
+          "value": "Main Riff"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 102.627528344
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 116.266598639
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Main Riff"
-          }
-        }, 
+          "time": 102.627528,
+          "duration": 13.63907,
+          "confidence": null,
+          "value": "Main Riff"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 116.266598639
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 136.978548752
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-verse"
-          }
-        }, 
+          "time": 116.266599,
+          "duration": 20.71195,
+          "confidence": null,
+          "value": "Pre-verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 136.978548752
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 157.68941043
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 136.978549,
+          "duration": 20.710862,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 157.68941043
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 178.120702947
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 157.68941,
+          "duration": 20.431293,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 178.120702947
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 198.872222222
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 178.120703,
+          "duration": 20.751519,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 198.872222222
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 228.487913832
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Post-verse"
-          }
-        }, 
+          "time": 198.872222,
+          "duration": 29.615692,
+          "confidence": null,
+          "value": "Post-verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 228.487913832
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 250.671927437
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-chorus"
-          }
-        }, 
+          "time": 228.487914,
+          "duration": 22.184014,
+          "confidence": null,
+          "value": "Pre-chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 250.671927437
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 261.898140589
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Chorus"
-          }
-        }, 
+          "time": 250.671927,
+          "duration": 11.226213,
+          "confidence": null,
+          "value": "Chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 261.898140589
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 273.074716553
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Chorus"
-          }
-        }, 
+          "time": 261.898141,
+          "duration": 11.176576,
+          "confidence": null,
+          "value": "Chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 273.074716553
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 287.025034013
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Lead Break"
-          }
-        }, 
+          "time": 273.074717,
+          "duration": 13.950317,
+          "confidence": null,
+          "value": "Lead Break"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 287.025034013
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 300.81723356
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Lead Break"
-          }
-        }, 
+          "time": 287.025034,
+          "duration": 13.7922,
+          "confidence": null,
+          "value": "Lead Break"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 300.81723356
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 315.664807256
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Dawn Arrived"
-          }
-        }, 
+          "time": 300.817234,
+          "duration": 14.847574,
+          "confidence": null,
+          "value": "Dawn Arrived"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 315.664807256
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 352.67170068
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Arab"
-          }
-        }, 
+          "time": 315.664807,
+          "duration": 37.006893,
+          "confidence": null,
+          "value": "Arab"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 352.67170068
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 370.21494331
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Arab Hits"
-          }
-        }, 
+          "time": 352.671701,
+          "duration": 17.543243,
+          "confidence": null,
+          "value": "Arab Hits"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 370.21494331
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 384.478163265
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Metal Hits"
-          }
-        }, 
+          "time": 370.214943,
+          "duration": 14.26322,
+          "confidence": null,
+          "value": "Metal Hits"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 384.478163265
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 398.862811791
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Invocation"
-          }
-        }, 
+          "time": 384.478163,
+          "duration": 14.384649,
+          "confidence": null,
+          "value": "Invocation"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 398.862811791
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 413.205895691
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Invocation"
-          }
-        }, 
+          "time": 398.862812,
+          "duration": 14.343084,
+          "confidence": null,
+          "value": "Invocation"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 413.205895691
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 427.500907029
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Metal Hits"
-          }
-        }, 
+          "time": 413.205896,
+          "duration": 14.295011,
+          "confidence": null,
+          "value": "Metal Hits"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 427.500907029
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 447.884648526
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 427.500907,
+          "duration": 20.383741,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 447.884648526
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 466.788594104
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Prog Verse"
-          }
-        }, 
+          "time": 447.884649,
+          "duration": 18.903946,
+          "confidence": null,
+          "value": "Prog Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 466.788594104
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 485.747573696
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Post-prog Verse"
-          }
-        }, 
+          "time": 466.788594,
+          "duration": 18.95898,
+          "confidence": null,
+          "value": "Post-prog Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 485.747573696
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 495.450589569
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Riding"
-          }
-        }, 
+          "time": 485.747574,
+          "duration": 9.703016,
+          "confidence": null,
+          "value": "Riding"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 495.450589569
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 509.298503401
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Metal Riding"
-          }
-        }, 
+          "time": 495.45059,
+          "duration": 13.847914,
+          "confidence": null,
+          "value": "Metal Riding"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 509.298503401
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 530.009750566
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bass Solo"
-          }
-        }, 
+          "time": 509.298503,
+          "duration": 20.711247,
+          "confidence": null,
+          "value": "Bass Solo"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 530.009750566
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 547.48095238
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Lead Guitars"
-          }
-        }, 
+          "time": 530.009751,
+          "duration": 17.471202,
+          "confidence": null,
+          "value": "Lead Guitars"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 547.48095238
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 563.465328798
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Arab Lead Guitars"
-          }
-        }, 
+          "time": 547.480952,
+          "duration": 15.984376,
+          "confidence": null,
+          "value": "Arab Lead Guitars"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 563.465328798
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 567.200612244
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Prog Bridge"
-          }
-        }, 
+          "time": 563.465329,
+          "duration": 3.735283,
+          "confidence": null,
+          "value": "Prog Bridge"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 567.200612244
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 595.461156462
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Nu Metal"
-          }
-        }, 
+          "time": 567.200612,
+          "duration": 28.260544,
+          "confidence": null,
+          "value": "Nu Metal"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 595.461156462
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 613.10079365
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Lead Nu Metal"
-          }
-        }, 
+          "time": 595.461156,
+          "duration": 17.639637,
+          "confidence": null,
+          "value": "Lead Nu Metal"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 613.10079365
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 624.475873015
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-chorus"
-          }
-        }, 
+          "time": 613.100794,
+          "duration": 11.375079,
+          "confidence": null,
+          "value": "Pre-chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 624.475873015
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 635.652131519
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-chorus"
-          }
-        }, 
+          "time": 624.475873,
+          "duration": 11.176259,
+          "confidence": null,
+          "value": "Pre-chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 635.652131519
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 657.891564625
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Chorus"
-          }
-        }, 
+          "time": 635.652132,
+          "duration": 22.239433,
+          "confidence": null,
+          "value": "Chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 657.891564625
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 680.442675736
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Post-chorus"
-          }
-        }, 
+          "time": 657.891565,
+          "duration": 22.551111,
+          "confidence": null,
+          "value": "Post-chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 680.442675736
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 681.970068027
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Main Riff"
-          }
-        }, 
+          "time": 680.442676,
+          "duration": 1.527392,
+          "confidence": null,
+          "value": "Main Riff"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 681.970068027
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 704.489637188
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Lead Arab Guitar"
-          }
-        }, 
+          "time": 681.970068,
+          "duration": 22.519569,
+          "confidence": null,
+          "value": "Lead Arab Guitar"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 704.489637188
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 715.200385487
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar Break"
-          }
-        }, 
+          "time": 704.489637,
+          "duration": 10.710748,
+          "confidence": null,
+          "value": "Guitar Break"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 715.200385487
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 725.8330839
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar Solo 1"
-          }
-        }, 
+          "time": 715.200385,
+          "duration": 10.632698,
+          "confidence": null,
+          "value": "Guitar Solo 1"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 725.8330839
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 736.40079365
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar Solo 2"
-          }
-        }, 
+          "time": 725.833084,
+          "duration": 10.56771,
+          "confidence": null,
+          "value": "Guitar Solo 2"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 736.40079365
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 746.831904761
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar Solo 1"
-          }
-        }, 
+          "time": 736.400794,
+          "duration": 10.431111,
+          "confidence": null,
+          "value": "Guitar Solo 1"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 746.831904761
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 757.111383219
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar Solo 2"
-          }
-        }, 
+          "time": 746.831905,
+          "duration": 10.279478,
+          "confidence": null,
+          "value": "Guitar Solo 2"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 757.111383219
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 770.983628117
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-Coda"
-          }
-        }, 
+          "time": 757.111383,
+          "duration": 13.872245,
+          "confidence": null,
+          "value": "Pre-Coda"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 770.983628117
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 784.457142857
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Coda"
-          }
-        }, 
+          "time": 770.983628,
+          "duration": 13.473515,
+          "confidence": null,
+          "value": "Coda"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 784.457142857
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 797.96893424
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Coda"
-          }
-        }, 
+          "time": 784.457143,
+          "duration": 13.511791,
+          "confidence": null,
+          "value": "Coda"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 797.96893424
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 811.417482993
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Coda"
-          }
-        }, 
+          "time": 797.968934,
+          "duration": 13.448549,
+          "confidence": null,
+          "value": "Coda"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 811.417482993
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 819.974965986
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Coda"
-          }
-        }, 
+          "time": 811.417483,
+          "duration": 8.557483,
+          "confidence": null,
+          "value": "Coda"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 819.974965986
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 843.320226757
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Screams"
-          }
-        }, 
+          "time": 819.974966,
+          "duration": 23.345261,
+          "confidence": null,
+          "value": "Screams"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 843.320226757
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 844.976417233
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Main Riff"
-          }
-        }, 
+          "time": 843.320227,
+          "duration": 1.65619,
+          "confidence": null,
+          "value": "Main Riff"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 844.976417233
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 852.870680272
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro"
-          }
-        }, 
+          "time": 844.976417,
+          "duration": 7.894263,
+          "confidence": null,
+          "value": "Outro"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 852.870680272
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 869.142585034
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Acoustic Guitar"
-          }
-        }, 
+          "time": 852.87068,
+          "duration": 16.271905,
+          "confidence": null,
+          "value": "Acoustic Guitar"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 869.142585034
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 910.070884353
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Acoustic Voice "
-          }
-        }, 
+          "time": 869.142585,
+          "duration": 40.928299,
+          "confidence": null,
+          "value": "Acoustic Voice "
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 910.070884353
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 921.48585034
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Wind"
-          }
-        }, 
+          "time": 910.070884,
+          "duration": 11.414966,
+          "confidence": null,
+          "value": "Wind"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 921.48585034
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 925.108004535
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Silence"
-          }
+          "time": 921.48585,
+          "duration": 3.622154,
+          "confidence": null,
+          "value": "Silence"
         }
-      ], 
+      ],
       "sandbox": {}
     }
-  ], 
-  "metadata": {
-    "artist": "Sargon", 
-    "title": "The Curse Of Akkad", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
-    "duration": 925.1004081632653, 
-    "md5": ""
-  }
+  ],
+  "file_metadata": {
+    "artist": "Sargon",
+    "release": "Mirage",
+    "title": "The Curse Of Akkad",
+    "identifiers": {},
+    "jams_version": "0.2.0",
+    "duration": 925.1004081632653
+  },
+  "sandbox": {}
 }

@@ -1,144 +1,76 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 18.372337, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 21.864338, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 18.372337
+        }, 
+        {
+          "duration": 33.065406, 
+          "confidence": null, 
+          "value": "VerseB\r", 
+          "time": 40.236675
+        }, 
+        {
+          "duration": 33.066832, 
+          "confidence": null, 
+          "value": "VerseB\r", 
+          "time": 73.302082
+        }, 
+        {
+          "duration": 19.914436, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 106.368914
+        }, 
+        {
+          "duration": 10.80681, 
+          "confidence": null, 
+          "value": "Outro\r", 
+          "time": 126.283349
+        }, 
+        {
+          "duration": 4.963718, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 137.090159
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 18.3723371
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 18.3723371
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 40.2366754
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 40.2366754
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 73.3020817
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 73.3020817
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 106.3689139
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 106.3689139
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 126.2833495
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 126.2833495
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 137.0901593
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 137.0901593
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 142.0538775510204
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "03_-_If_I_Fell", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 142.0538775510204, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

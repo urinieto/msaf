@@ -3,6 +3,7 @@ Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
 """
 
+import jams
 from joblib import Parallel, delayed
 import logging
 import mir_eval
@@ -15,8 +16,6 @@ import sys
 # Local stuff
 import msaf
 import msaf.input_output as io
-import msaf.algorithms as algorithms
-from msaf import jams2
 from msaf import utils
 
 
@@ -65,7 +64,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
             So  : Oversegmentation normalized entropy score
             Su  : Undersegmentation normalized entropy score
     """
-    logging.info("Evaluating %s" % os.path.basename(est_file))
     res = {}
 
     ### Boundaries ###
@@ -130,25 +128,16 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     results : dict
         Dictionary of the results (see function compute_results).
     """
-
-    # Get the ds_prefix
-    ds_prefix = os.path.basename(est_file).split("_")[0]
-
-    # Get context
-    if ds_prefix in msaf.prefix_dict.keys():
-        context = msaf.prefix_dict[ds_prefix]
-    else:
-        context = "function"
-
     try:
-        # TODO: Read hierarchical annotations
         if config["hier"]:
             ref_times, ref_labels, ref_levels = \
-                msaf.io.read_hier_references(ref_file, annotation_id=0,
-                                             exclude_levels=["function"])
+                msaf.io.read_hier_references(
+                    ref_file, annotation_id=0,
+                    exclude_levels=["segment_salami_function"])
         else:
-            ref_inter, ref_labels = jams2.converters.load_jams_range(
-                ref_file, "sections", annotator=annotator_id, context=context)
+            jam = jams.load(ref_file)
+            ann = jam.search(namespace='segment_.*')[annotator_id]
+            ref_inter, ref_labels = ann.data.to_interval_values()
     except:
         logging.warning("No references for file: %s" % ref_file)
         return {}
@@ -162,6 +151,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         return {}
 
     # Compute the results and return
+    logging.info("Evaluating %s" % os.path.basename(est_file))
     if config["hier"]:
         # Hierarchical
         assert len(est_inter) == len(est_labels), "Same number of levels " \
@@ -179,28 +169,25 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
             est_labels.append(np.ones(len(est_times[-1]) - 1) * -1)
 
         # Align the times
-        utils.align_end_hierarchies(est_times, ref_times)
+        utils.align_end_hierarchies(est_times, ref_times, thres=1)
 
-        # Build trees
-        ref_tree = mir_eval.segment.tree.SegmentTree(ref_times, ref_labels,
-                                                     ref_levels)
-        est_tree = mir_eval.segment.tree.SegmentTree(est_times, est_labels)
+        # To intervals
+        est_hier = [utils.times_to_intervals(times) for times in est_times]
+        ref_hier = [utils.times_to_intervals(times) for times in ref_times]
 
         # Compute evaluations
         res = {}
         res["t_recall10"], res["t_precision10"], res["t_measure10"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=100)
+            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=10)
         res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=150)
-        res["t_recall30"], res["t_precision30"], res["t_measure30"] = \
-            mir_eval.segment.hmeasure(ref_tree, est_tree, window=300)
+            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=15)
 
         res["track_id"] = os.path.basename(est_file)[:-5]
         return res
     else:
         # Flat
         return compute_results(ref_inter, est_inter, ref_labels, est_labels,
-                            bins, est_file)
+                               bins, est_file)
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
@@ -250,10 +237,11 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
         os.path.basename(ref_file)[:-4], "File names are different %s --- %s" \
         % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
 
+    # TODO: Better exception handling
     try:
         one_res = compute_gt_results(est_file, ref_file, boundaries_id,
-                                        labels_id, config,
-                                        annotator_id=annotator_id)
+                                     labels_id, config,
+                                     annotator_id=annotator_id)
     except:
         logging.warning("Could not compute evaluations for %s. Error: %s" %
                         (est_file, sys.exc_info()[1]))
@@ -338,11 +326,12 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
     # Sanity check for hierarchical evaluation
     if hier:
         try:
-            from mir_eval.segment import tree
-        except:
+            from mir_eval import hierarchy
+        except ImportError:
             logging.error("An experimental mir_eval version is needed to "
                           "evaluate hierarchical segments. Please, download it"
-                          " from: https://github.com/urinieto/mir_eval")
+                          " from: https://github.com/bmcfee/mir_eval"
+                          " and checkout the tmeasures branch.")
             return []
 
     # Get out file in case we want to save results

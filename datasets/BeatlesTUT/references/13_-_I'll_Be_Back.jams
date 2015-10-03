@@ -1,189 +1,94 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 4.565419, 
+          "confidence": null, 
+          "value": "Intro", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 22.397018, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 4.565419
+        }, 
+        {
+          "duration": 13.332346, 
+          "confidence": null, 
+          "value": "BridgeA", 
+          "time": 26.962437
+        }, 
+        {
+          "duration": 23.091756, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 40.294784
+        }, 
+        {
+          "duration": 18.19551, 
+          "confidence": null, 
+          "value": "BridgeB", 
+          "time": 63.38654
+        }, 
+        {
+          "duration": 22.52935, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 81.58205
+        }, 
+        {
+          "duration": 13.663174, 
+          "confidence": null, 
+          "value": "BridgeA", 
+          "time": 104.1114
+        }, 
+        {
+          "duration": 11.711292, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 117.774573
+        }, 
+        {
+          "duration": 8.866176, 
+          "confidence": null, 
+          "value": "Outro", 
+          "time": 129.485865
+        }, 
+        {
+          "duration": 2.082245, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 138.352041
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 4.5654189
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 4.5654189
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 26.9624374
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 26.9624374
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 40.2947838
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "BridgeA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 40.2947838
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 63.38654
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 63.38654
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 81.5820499
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "BridgeB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 81.5820499
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 104.1113995
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 104.1113995
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 117.7745733
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "BridgeA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 117.7745733
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 129.4858651
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 129.4858651
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 138.3520409
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 138.3520409
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 140.43428571428572
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "13_-_I'll_Be_Back", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 140.43428571428572, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

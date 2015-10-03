@@ -1,189 +1,94 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.425166, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 7.124401, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 0.425166
+        }, 
+        {
+          "duration": 28.032217, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 7.549567
+        }, 
+        {
+          "duration": 28.095419, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 35.581785
+        }, 
+        {
+          "duration": 10.428054, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 63.677203
+        }, 
+        {
+          "duration": 28.118401, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 74.105258
+        }, 
+        {
+          "duration": 10.588928, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 102.223658
+        }, 
+        {
+          "duration": 10.669365, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 112.812586
+        }, 
+        {
+          "duration": 27.144716, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 123.481951
+        }, 
+        {
+          "duration": 0.021497, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 150.626667
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.4251658
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.4251658
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 7.5495665
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 7.5495665
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 35.5817848
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 35.5817848
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 63.6772035
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 63.6772035
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 74.1052577
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 74.1052577
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 102.2236583
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 102.2236583
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 112.812586
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 112.812586
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 123.4819506
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 123.4819506
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 150.6266667
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 150.6266667
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 150.64816326530612
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "13_-_Got_To_Get_You_Into_My_Life", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 150.64816326530612, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

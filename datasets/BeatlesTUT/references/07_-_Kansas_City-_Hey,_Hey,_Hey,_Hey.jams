@@ -1,159 +1,82 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 7.459691, 
+          "confidence": null, 
+          "value": "Intro", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 21.612666, 
+          "confidence": null, 
+          "value": "VerseA", 
+          "time": 7.459691
+        }, 
+        {
+          "duration": 22.276885, 
+          "confidence": null, 
+          "value": "VerseA", 
+          "time": 29.072357
+        }, 
+        {
+          "duration": 20.641885, 
+          "confidence": null, 
+          "value": "VerseS", 
+          "time": 51.349242
+        }, 
+        {
+          "duration": 21.817041, 
+          "confidence": null, 
+          "value": "VerseB", 
+          "time": 71.991127
+        }, 
+        {
+          "duration": 21.714854, 
+          "confidence": null, 
+          "value": "VerseB", 
+          "time": 93.808168
+        }, 
+        {
+          "duration": 29.634389, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 115.523022
+        }, 
+        {
+          "duration": 8.311977, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 145.157411
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 7.4596909
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 7.4596909
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 29.0723572
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 29.0723572
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 51.3492424
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 51.3492424
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 71.991127
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 71.991127
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 93.8081683
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 93.8081683
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 115.523022
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 115.523022
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 145.1574107
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 145.1574107
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 153.46938775510205
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "07_-_Kansas_City-_Hey,_Hey,_Hey,_Hey", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 153.46938775510205, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

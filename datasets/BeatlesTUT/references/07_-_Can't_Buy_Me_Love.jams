@@ -1,189 +1,94 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 9.438898, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 16.352253, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 9.438898
+        }, 
+        {
+          "duration": 15.71449, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 25.791152
+        }, 
+        {
+          "duration": 12.219547, 
+          "confidence": null, 
+          "value": "Refrain\r", 
+          "time": 41.505642
+        }, 
+        {
+          "duration": 17.933907, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 53.725188
+        }, 
+        {
+          "duration": 16.581848, 
+          "confidence": null, 
+          "value": "VerseS\r", 
+          "time": 71.659095
+        }, 
+        {
+          "duration": 11.811378, 
+          "confidence": null, 
+          "value": "Refrain\r", 
+          "time": 88.240943
+        }, 
+        {
+          "duration": 16.428785, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 100.052321
+        }, 
+        {
+          "duration": 13.877731, 
+          "confidence": null, 
+          "value": "Outro\r", 
+          "time": 116.481106
+        }, 
+        {
+          "duration": 4.589734, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 130.358837
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 9.4388982
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 9.4388982
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 25.7911516
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 25.7911516
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 41.5056416
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 41.5056416
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 53.7251882
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Refrain\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 53.7251882
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 71.6590948
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 71.6590948
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 88.2409431
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 88.2409431
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 100.0523211
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Refrain\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 100.0523211
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 116.4811061
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 116.4811061
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 130.3588375
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 130.3588375
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 134.94857142857143
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "07_-_Can't_Buy_Me_Love", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 134.94857142857143, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

@@ -1,174 +1,88 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 13.899709, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 13.266977, 
+          "confidence": null, 
+          "value": "VerseB\r", 
+          "time": 13.899709
+        }, 
+        {
+          "duration": 19.002393, 
+          "confidence": null, 
+          "value": "Refrain\r", 
+          "time": 27.166686
+        }, 
+        {
+          "duration": 19.104446, 
+          "confidence": null, 
+          "value": "RefrainS\r", 
+          "time": 46.169079
+        }, 
+        {
+          "duration": 13.532316, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 65.273525
+        }, 
+        {
+          "duration": 13.593548, 
+          "confidence": null, 
+          "value": "VerseB\r", 
+          "time": 78.805841
+        }, 
+        {
+          "duration": 17.90485, 
+          "confidence": null, 
+          "value": "Refrain\r", 
+          "time": 92.39939
+        }, 
+        {
+          "duration": 13.345253, 
+          "confidence": null, 
+          "value": "Outro\r", 
+          "time": 110.30424
+        }, 
+        {
+          "duration": 4.690098, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 123.649494
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 13.8997094
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 13.8997094
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 27.1666861
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 27.1666861
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 46.1690789
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Refrain\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 46.1690789
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 65.2735253
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainS\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 65.2735253
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 78.8058415
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 78.8058415
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 92.39939
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 92.39939
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 110.3042403
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Refrain\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 110.3042403
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 123.6494937
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 123.6494937
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 128.33959183673468
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "13_-_Not_A_Second_Time", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 128.33959183673468, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

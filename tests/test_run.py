@@ -4,24 +4,20 @@
 # cd tests/
 # nosetests
 
-import glob
-import json
-import librosa
-from nose.tools import nottest, eq_, raises, assert_equals, assert_raises
+from nose.tools import assert_raises
 from types import ModuleType
-import copy
 import numpy.testing as npt
 import os
 
 # Msaf imports
 import msaf
-from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
 long_audio_file = os.path.join("..", "datasets", "Sargon", "audio",
                                "01-Sargon-Mindless.mp3")
 fake_module_name = "fake_name_module"
+
 
 def test_get_boundaries_module():
     # Check that it returns modules for all the existing MSAF boundaries algos
@@ -79,31 +75,42 @@ def test_run_algorithms():
     feature = "hpcp"
     annot_beats = False
     framesync = False
-    features = msaf.featextract.compute_features_for_audio_file(audio_file)
+    file_struct = msaf.io.FileStruct(audio_file)
+    all_features = msaf.featextract.compute_features_for_audio_file(audio_file)
+    msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
+    msaf.featextract.save_features(file_struct.features_file,
+                                   all_features)
 
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
         for label_id in label_ids:
             config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                                bound_id, label_id)
-            config["features"] = copy.deepcopy(features)
+            config["features"] = msaf.io.get_features(
+                audio_file, annot_beats, framesync)
             config["hier"] = False
-            est_times, est_labels = msaf.run.run_algorithms(audio_file,
-                                                            bound_id,
-                                                            label_id,
-                                                            config)
+            est_times, est_labels = msaf.run.run_algorithms(
+                audio_file, bound_id, label_id, config)
             assert len(est_times) == 2
             assert len(est_labels) == 1
             npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
-            npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
+            npt.assert_almost_equal(est_times[-1],
+                                    config["features"]["anal"]["dur"],
                                     decimal=2)
 
-    features = msaf.featextract.compute_features_for_audio_file(long_audio_file)
+    # Commpute and save features for long audio file
+    file_struct = msaf.io.FileStruct(long_audio_file)
+    all_features = msaf.featextract.compute_features_for_audio_file(
+        long_audio_file)
+    msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
+    msaf.featextract.save_features(file_struct.features_file,
+                                   all_features)
 
     def _test_run_msaf(bound_id, label_id):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
-        config["features"] = copy.deepcopy(features)
+        config["features"] = msaf.io.get_features(
+            long_audio_file, annot_beats, framesync)
         config["hier"] = False
         est_times, est_labels = msaf.run.run_algorithms(long_audio_file,
                                                         bound_id,
@@ -111,8 +118,8 @@ def test_run_algorithms():
                                                         config)
         npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
         assert len(est_times) - 1 == len(est_labels)
-        npt.assert_almost_equal(est_times[-1], features["anal"]["dur"],
-                                decimal=2)
+        npt.assert_almost_equal(
+            est_times[-1], config["features"]["anal"]["dur"], decimal=2)
 
     # Running all boundary algorithms on a relatively long file
     for bound_id in bound_ids:
