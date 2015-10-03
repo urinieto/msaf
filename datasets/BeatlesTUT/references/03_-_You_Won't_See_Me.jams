@@ -1,174 +1,88 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.480237, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 4.024639, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 0.480237
+        }, 
+        {
+          "duration": 36.458155, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 4.504876
+        }, 
+        {
+          "duration": 37.001219, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 40.963032
+        }, 
+        {
+          "duration": 16.590775, 
+          "confidence": null, 
+          "value": "bridge", 
+          "time": 77.96425
+        }, 
+        {
+          "duration": 37.64269, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 94.555025
+        }, 
+        {
+          "duration": 16.736564, 
+          "confidence": null, 
+          "value": "bridge", 
+          "time": 132.197715
+        }, 
+        {
+          "duration": 37.934268, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 148.934279
+        }, 
+        {
+          "duration": 15.731454, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 186.868546
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.4802375
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.4802375
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 4.5048765
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 4.5048765
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 40.9630316
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 40.9630316
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 77.9642503
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 77.9642503
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 94.5550252
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 94.5550252
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 132.197715
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 132.197715
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 148.9342788
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 148.9342788
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 186.8685464
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 186.8685464
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 202.6
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "03_-_You_Won't_See_Me", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 202.6057142857143, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

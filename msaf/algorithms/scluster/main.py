@@ -550,16 +550,17 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     try:
         L = sym_laplacian(T)
         #import pylab as plt
-        #import pdb; pdb.set_trace()  # XXX BREAKPOINT
         #plt.imshow(L, interpolation="nearest")
         #plt.show()
 
         # Get the bottom k eigenvectors of L
         # TODO: Sometimes nans in L
-        Lf = factorize(L, k=1+MAX_REP)[0]
+        Lf = factorize(L, k=1 + MAX_REP)[0]
     except:
         logging.warning("Warning, nan numbers in scluster, returning only"
                         " first and last boundary")
+        if parameters['hier']:
+            return [np.array([0, X[0].shape[1]-1])], [[0]]
         if bound_idxs is not None:
             return bound_idxs, [0] * (len(bound_idxs) - 1)
         else:

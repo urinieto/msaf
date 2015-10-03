@@ -5,11 +5,13 @@ Features to be computed:
 
 - MFCC: Mel Frequency Cepstral Coefficients
 - HPCP: Harmonic Pithc Class Profile
+- CQT: Constant-Q Transform
 - Beats
 """
 
 import datetime
 import librosa
+import jams
 from joblib import Parallel, delayed
 import logging
 import numpy as np
@@ -18,7 +20,6 @@ import json
 
 # Local stuff
 import msaf
-from msaf import jams2
 from msaf import utils
 from msaf import input_output as io
 from msaf.input_output import FileStruct
@@ -79,7 +80,7 @@ def compute_features(audio, y_harmonic):
     logging.info("Computing Constant-Q...")
     cqt = librosa.logamplitude(librosa.cqt(audio, sr=msaf.Anal.sample_rate,
                                            hop_length=msaf.Anal.hop_size,
-                                           n_bins=msaf.Anal.cqt_bins)**2,
+                                           n_bins=msaf.Anal.cqt_bins) ** 2,
                                ref_power=np.max).T
 
     logging.info("Computing MFCCs...")
@@ -249,18 +250,16 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
 
     # Read annotations if they exist in path/references_dir/file.jams
     if os.path.isfile(file_struct.ref_file):
-        jam = jams2.load(file_struct.ref_file)
+        jam = jams.load(file_struct.ref_file)
+        beat_annot = jam.search(namespace="beat.*")
 
         # If beat annotations exist, compute also annotated beatsync features
-        if jam.beats != []:
+        if len(beat_annot) > 0:
             logging.info("Reading beat annotations from JAMS")
-            annot = jam.beats[0]
-            annot_beats = []
-            for data in annot.data:
-                annot_beats.append(data.time.value)
-            annot_beats = np.unique(annot_beats)
+            annot_beats_inters, _ = beat_annot[0].data.to_interval_values()
+            annot_beats_times = annot_beats_inters[:, 0]
             annot_beats_idx = librosa.time_to_frames(
-                annot_beats, sr=msaf.Anal.sample_rate,
+                annot_beats_times, sr=msaf.Anal.sample_rate,
                 hop_length=msaf.Anal.hop_size)
             features["ann_mfcc"], features["ann_hpcp"], \
                 features["ann_tonnetz"], features["ann_cqt"] = \

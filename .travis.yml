@@ -48,9 +48,7 @@ install:
     - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels cvxopt scikit-learn
     #- conda install --yes -c dan_blanchard python-coveralls nose-cov 
     - pip install git+https://github.com/bmcfee/samplerate.git
-    - git clone https://github.com/bmcfee/librosa.git
-    - cd librosa
-    - python setup.py install
-    - cd ..
+    - pip install librosa
+    - pip install jams
     - python setup.py build
     - python setup.py install

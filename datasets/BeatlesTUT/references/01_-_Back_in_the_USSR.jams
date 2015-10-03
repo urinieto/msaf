@@ -1,249 +1,118 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 2.746326, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 13.972321, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 2.746326
+        }, 
+        {
+          "duration": 13.410713, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 16.718648
+        }, 
+        {
+          "duration": 10.053406, 
+          "confidence": null, 
+          "value": "refrainA", 
+          "time": 30.129361
+        }, 
+        {
+          "duration": 13.509457, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 40.182767
+        }, 
+        {
+          "duration": 12.503499, 
+          "confidence": null, 
+          "value": "refrainB", 
+          "time": 53.692225
+        }, 
+        {
+          "duration": 16.885279, 
+          "confidence": null, 
+          "value": "bridge", 
+          "time": 66.195724
+        }, 
+        {
+          "duration": 13.472428, 
+          "confidence": null, 
+          "value": "verseS", 
+          "time": 83.081003
+        }, 
+        {
+          "duration": 10.071921, 
+          "confidence": null, 
+          "value": "refrainB", 
+          "time": 96.553431
+        }, 
+        {
+          "duration": 16.977852, 
+          "confidence": null, 
+          "value": "bridge", 
+          "time": 106.625352
+        }, 
+        {
+          "duration": 13.632888, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 123.603204
+        }, 
+        {
+          "duration": 10.127465, 
+          "confidence": null, 
+          "value": "refrainA", 
+          "time": 137.236092
+        }, 
+        {
+          "duration": 15.929777, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 147.363556
+        }, 
+        {
+          "duration": 0.024218, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 163.293333
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 2.7463264
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 2.7463264
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 16.7186479
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 16.7186479
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 30.129361
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 30.129361
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 40.1827672
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrainA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 40.1827672
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 53.6922246
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 53.6922246
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 66.1957242
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrainB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 66.1957242
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 83.0810031
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 83.0810031
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 96.5534314
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 96.5534314
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 106.6253522
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrainB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 106.6253522
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 123.6032039
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 123.6032039
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 137.2360917
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 137.2360917
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 147.3635562
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrainA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 147.3635562
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 163.2933333
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 163.2933333
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 163.31755102040816
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "01_-_Back_in_the_USSR", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 163.31755102040816, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

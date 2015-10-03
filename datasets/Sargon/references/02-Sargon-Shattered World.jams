@@ -1,399 +1,179 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
-  "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "namespace": "segment_open",
       "annotation_metadata": {
-        "origin": "Jarlem All Studios", 
-        "annotation_rules": "SALAMI guidelines", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "version": "1.0",
         "annotator": {
-          "name": "Oriol Nieto", 
+          "name": "Oriol Nieto",
           "email": "oriol.nieto@gmail.com"
-        }, 
-        "version": "1.0", 
-        "corpus": "Sargon", 
-        "annotation_tools": "Sonic Visualizer"
-      }, 
+        },
+        "curator": {
+          "name": "Oriol Nieto",
+          "email": "oriol.nieto@gmail.com"
+        },
+        "validation": "",
+        "annotation_rules": "SALAMI guidelines",
+        "corpus": "Sargon",
+        "annotation_tools": "Sonic Visualizer",
+        "data_source": "Jarlem All Studios"
+      },
       "data": [
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 0.789478458
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Silence"
-          }
-        }, 
+          "time": 0.0,
+          "duration": 0.789478,
+          "confidence": null,
+          "value": "Silence"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 0.789478458
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 15.992108843
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
+          "time": 0.789478,
+          "duration": 15.20263,
+          "confidence": null,
+          "value": "Intro"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 15.992108843
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 28.226371882
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-verse"
-          }
-        }, 
+          "time": 15.992109,
+          "duration": 12.234263,
+          "confidence": null,
+          "value": "Pre-verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 28.226371882
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 40.193424036
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-verse"
-          }
-        }, 
+          "time": 28.226372,
+          "duration": 11.967052,
+          "confidence": null,
+          "value": "Pre-verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 40.193424036
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 56.323492063
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 40.193424,
+          "duration": 16.130068,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 56.323492063
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 64.905714285
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 56.323492,
+          "duration": 8.582222,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 64.905714285
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 96.240249433
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Chorus"
-          }
-        }, 
+          "time": 64.905714,
+          "duration": 31.334535,
+          "confidence": null,
+          "value": "Chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 96.240249433
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 104.176145124
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge"
-          }
-        }, 
+          "time": 96.240249,
+          "duration": 7.935896,
+          "confidence": null,
+          "value": "Bridge"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 104.176145124
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 112.371201814
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Post-chorus"
-          }
-        }, 
+          "time": 104.176145,
+          "duration": 8.195057,
+          "confidence": null,
+          "value": "Post-chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 112.371201814
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 120.97154195
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-solos"
-          }
-        }, 
+          "time": 112.371202,
+          "duration": 8.60034,
+          "confidence": null,
+          "value": "Pre-solos"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 120.97154195
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 137.771111111
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Two voices"
-          }
-        }, 
+          "time": 120.971542,
+          "duration": 16.799569,
+          "confidence": null,
+          "value": "Two voices"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 137.771111111
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 145.870272108
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-bass solo"
-          }
-        }, 
+          "time": 137.771111,
+          "duration": 8.099161,
+          "confidence": null,
+          "value": "Pre-bass solo"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 145.870272108
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 177.452698412
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bass solo"
-          }
-        }, 
+          "time": 145.870272,
+          "duration": 31.582426,
+          "confidence": null,
+          "value": "Bass solo"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 177.452698412
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 196.19877551
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar solo"
-          }
-        }, 
+          "time": 177.452698,
+          "duration": 18.746077,
+          "confidence": null,
+          "value": "Guitar solo"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 196.19877551
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 214.40430839
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Guitar solo 2"
-          }
-        }, 
+          "time": 196.198776,
+          "duration": 18.205533,
+          "confidence": null,
+          "value": "Guitar solo 2"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 214.40430839
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 232.331746031
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Drums solo"
-          }
-        }, 
+          "time": 214.404308,
+          "duration": 17.927438,
+          "confidence": null,
+          "value": "Drums solo"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 232.331746031
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 244.373582766
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-verse"
-          }
-        }, 
+          "time": 232.331746,
+          "duration": 12.041837,
+          "confidence": null,
+          "value": "Pre-verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 244.373582766
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 256.133106575
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Pre-verse"
-          }
-        }, 
+          "time": 244.373583,
+          "duration": 11.759524,
+          "confidence": null,
+          "value": "Pre-verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 256.133106575
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 271.852902494
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 256.133107,
+          "duration": 15.719796,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 271.852902494
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 280.1161678
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
+          "time": 271.852902,
+          "duration": 8.263265,
+          "confidence": null,
+          "value": "Verse"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 280.1161678
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 310.715306122
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Chorus"
-          }
-        }, 
+          "time": 280.116168,
+          "duration": 30.599138,
+          "confidence": null,
+          "value": "Chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 310.715306122
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 318.427188208
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge"
-          }
-        }, 
+          "time": 310.715306,
+          "duration": 7.711882,
+          "confidence": null,
+          "value": "Bridge"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 318.427188208
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 327.122721088
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Post-chorus"
-          }
-        }, 
+          "time": 318.427188,
+          "duration": 8.695533,
+          "confidence": null,
+          "value": "Post-chorus"
+        },
         {
-          "start": {
-            "confidence": 0.0, 
-            "value": 327.122721088
-          }, 
-          "end": {
-            "confidence": 0.0, 
-            "value": 330.870068027
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Silence"
-          }
+          "time": 327.122721,
+          "duration": 3.747347,
+          "confidence": null,
+          "value": "Silence"
         }
-      ], 
+      ],
       "sandbox": {}
     }
-  ], 
-  "metadata": {
-    "artist": "Sargon", 
-    "title": "Shattered World", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
-    "duration": 330.8669387755102, 
-    "md5": ""
-  }
+  ],
+  "file_metadata": {
+    "artist": "Sargon",
+    "release": "Mirage",
+    "title": "Shattered World",
+    "identifiers": {},
+    "jams_version": "0.2.0",
+    "duration": 330.8669387755102
+  },
+  "sandbox": {}
 }

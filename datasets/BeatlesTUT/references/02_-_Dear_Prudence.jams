@@ -1,174 +1,88 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 2.76908, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 15.370808, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 2.76908
+        }, 
+        {
+          "duration": 45.424022, 
+          "confidence": null, 
+          "value": "verseA", 
+          "time": 18.139888
+        }, 
+        {
+          "duration": 45.421709, 
+          "confidence": null, 
+          "value": "verseA", 
+          "time": 63.56391
+        }, 
+        {
+          "duration": 22.983362, 
+          "confidence": null, 
+          "value": "bridge", 
+          "time": 108.985618
+        }, 
+        {
+          "duration": 44.028368, 
+          "confidence": null, 
+          "value": "verseA", 
+          "time": 131.96898
+        }, 
+        {
+          "duration": 43.510281, 
+          "confidence": null, 
+          "value": "verseB", 
+          "time": 175.997347
+        }, 
+        {
+          "duration": 16.839038, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 219.507629
+        }, 
+        {
+          "duration": 0.035374, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 236.346667
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 2.7690797
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 2.7690797
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 18.1398875
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 18.1398875
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 63.5639095
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 63.5639095
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 108.9856181
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 108.9856181
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 131.9689797
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 131.9689797
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 175.9973472
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verseA"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 175.9973472
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 219.5076287
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verseB"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 219.5076287
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 236.3466667
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 236.3466667
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 236.38204081632654
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "02_-_Dear_Prudence", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 236.38204081632654, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

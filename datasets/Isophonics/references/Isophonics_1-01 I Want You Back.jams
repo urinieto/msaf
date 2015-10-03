@@ -1,189 +1,92 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
-      "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
-        "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
-        }, 
-        "version": "1.0", 
-        "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
-      }, 
       "data": [
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.385
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
+          "duration": 0.385, 
+          "confidence": 1.0, 
+          "value": "silence", 
+          "time": 0.0
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.385
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 30.408
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
+          "duration": 30.023, 
+          "confidence": 1.0, 
+          "value": "intro", 
+          "time": 0.385
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 30.408
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 49.903
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
+          "duration": 19.495, 
+          "confidence": 1.0, 
+          "value": "verse", 
+          "time": 30.408
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 49.903
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 68.352
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
+          "duration": 18.449, 
+          "confidence": 1.0, 
+          "value": "bridge", 
+          "time": 49.903
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 68.352
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 77.944
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
+          "duration": 9.592, 
+          "confidence": 1.0, 
+          "value": "refrain", 
+          "time": 68.352
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 77.944
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 97.426
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
+          "duration": 19.482, 
+          "confidence": 1.0, 
+          "value": "verse", 
+          "time": 77.944
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 97.426
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 114.567
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "bridge"
-          }
+          "duration": 17.141, 
+          "confidence": 1.0, 
+          "value": "bridge", 
+          "time": 97.426
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 114.567
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 134.152
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "break"
-          }
+          "duration": 19.585, 
+          "confidence": 1.0, 
+          "value": "break", 
+          "time": 114.567
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 134.152
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 177.825
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
+          "duration": 43.673, 
+          "confidence": 1.0, 
+          "value": "outro", 
+          "time": 134.152
         }, 
         {
-          "start": {
-            "confidence": 1.0, 
-            "value": 177.825
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 178.76
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
+          "duration": 0.935, 
+          "confidence": 1.0, 
+          "value": "silence", 
+          "time": 177.825
         }
       ], 
+      "annotation_metadata": {
+        "annotation_tools": "", 
+        "curator": {
+          "name": "Matthias Mauch", 
+          "email": "m.mauch@qmul.ac.uk"
+        }, 
+        "annotator": {}, 
+        "version": 1.0, 
+        "corpus": "Isophonics", 
+        "annotation_rules": "", 
+        "validation": "", 
+        "data_source": ""
+      }, 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "Michael Jackson", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "1-01 I Want You Back", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
-    "duration": 178.99, 
-    "md5": ""
+    "identifiers": {}, 
+    "release": "", 
+    "duration": 178.76, 
+    "artist": "Michael Jackson"
   }
 }

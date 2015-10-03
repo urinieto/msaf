@@ -1,174 +1,88 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 15.871823, 
+          "confidence": null, 
+          "value": "Intro", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 15.62613, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 15.871823
+        }, 
+        {
+          "duration": 15.62613, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 31.497953
+        }, 
+        {
+          "duration": 15.724407, 
+          "confidence": null, 
+          "value": "VerseS", 
+          "time": 47.124083
+        }, 
+        {
+          "duration": 15.773546, 
+          "confidence": null, 
+          "value": "VerseS", 
+          "time": 62.84849
+        }, 
+        {
+          "duration": 15.773546, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 78.622036
+        }, 
+        {
+          "duration": 15.871824, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 94.395582
+        }, 
+        {
+          "duration": 17.112465, 
+          "confidence": null, 
+          "value": "Outro", 
+          "time": 110.267405
+        }, 
+        {
+          "duration": 7.359721, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 127.37987
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 15.8718235
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 15.8718235
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 31.4979532
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 31.4979532
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 47.1240829
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 47.1240829
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 62.8484901
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 62.8484901
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 78.6220361
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 78.6220361
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 94.3955821
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 94.3955821
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 110.2674056
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 110.2674056
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 127.3798705
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 127.3798705
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 134.7395918367347
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "09_-_Words_of_Love", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 134.7395918367347, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

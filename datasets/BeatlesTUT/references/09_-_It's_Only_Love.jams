@@ -1,144 +1,76 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.436197, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 8.334647, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 0.436197
+        }, 
+        {
+          "duration": 25.489439, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 8.770844
+        }, 
+        {
+          "duration": 17.009321, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 34.260283
+        }, 
+        {
+          "duration": 25.496991, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 51.269604
+        }, 
+        {
+          "duration": 16.914929, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 76.766594
+        }, 
+        {
+          "duration": 25.118476, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 93.681524
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.436197
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.436197
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 8.7708439
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 8.7708439
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 34.2602832
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 34.2602832
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 51.2696038
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 51.2696038
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 76.7665944
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 76.7665944
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 93.6815237
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 93.6815237
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 118.8
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "09_-_It's_Only_Love", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 118.80489795918368, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

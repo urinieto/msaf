@@ -1,219 +1,106 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.988812, 
+          "confidence": null, 
+          "value": "Si", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 2.433722, 
+          "confidence": null, 
+          "value": "Intro", 
+          "time": 0.988812
+        }, 
+        {
+          "duration": 20.535204, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 3.422534
+        }, 
+        {
+          "duration": 20.383091, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 23.957738
+        }, 
+        {
+          "duration": 14.120441, 
+          "confidence": null, 
+          "value": "Bridge", 
+          "time": 44.340829
+        }, 
+        {
+          "duration": 21.511941, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 58.46127
+        }, 
+        {
+          "duration": 13.040654, 
+          "confidence": null, 
+          "value": "VerseS", 
+          "time": 79.973211
+        }, 
+        {
+          "duration": 6.941333, 
+          "confidence": null, 
+          "value": "VerseH", 
+          "time": 93.013865
+        }, 
+        {
+          "duration": 14.097876, 
+          "confidence": null, 
+          "value": "Bridge", 
+          "time": 99.955199
+        }, 
+        {
+          "duration": 20.90885, 
+          "confidence": null, 
+          "value": "Verse", 
+          "time": 114.053074
+        }, 
+        {
+          "duration": 11.978869, 
+          "confidence": null, 
+          "value": "Outro", 
+          "time": 134.961924
+        }, 
+        {
+          "duration": 5.614309, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 146.940793
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.9888122
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Si"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.9888122
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 3.422534
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 3.422534
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 23.957738
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 23.957738
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 44.3408293
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 44.3408293
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 58.4612704
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 58.4612704
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 79.973211
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 79.973211
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 93.0138654
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 93.0138654
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 99.9551986
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseH"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 99.9551986
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 114.0530741
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 114.0530741
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 134.9619238
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 134.9619238
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 146.9407928
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 146.9407928
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 152.55510204081634
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "01_-_A_Hard_Day's_Night", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 152.55510204081634, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

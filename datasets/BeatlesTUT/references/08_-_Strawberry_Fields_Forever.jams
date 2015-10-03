@@ -1,204 +1,100 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 0.388129, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 9.627482, 
+          "confidence": null, 
+          "value": "intro", 
+          "time": 0.388129
+        }, 
+        {
+          "duration": 24.234371, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 10.015611
+        }, 
+        {
+          "duration": 21.356539, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 34.249982
+        }, 
+        {
+          "duration": 25.218892, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 55.606521
+        }, 
+        {
+          "duration": 20.409884, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 80.825413
+        }, 
+        {
+          "duration": 25.247292, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 101.235297
+        }, 
+        {
+          "duration": 20.20162, 
+          "confidence": null, 
+          "value": "verse", 
+          "time": 126.482589
+        }, 
+        {
+          "duration": 30.662159, 
+          "confidence": null, 
+          "value": "refrain", 
+          "time": 146.684209
+        }, 
+        {
+          "duration": 73.133632, 
+          "confidence": null, 
+          "value": "outro", 
+          "time": 177.346368
+        }, 
+        {
+          "duration": 0.034286, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 250.48
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 0.3881286
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.3881286
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 10.0156111
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "intro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 10.0156111
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 34.2499819
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 34.2499819
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 55.6065211
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 55.6065211
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 80.8254132
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 80.8254132
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 101.2352974
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 101.2352974
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 126.4825892
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 126.4825892
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 146.6842092
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "verse"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 146.6842092
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 177.3463682
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "refrain"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 177.3463682
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 250.48
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "outro"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 250.48
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 250.5142857142857
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "08_-_Strawberry_Fields_Forever", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 250.5142857142857, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

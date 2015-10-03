@@ -1,159 +1,82 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 16.064063, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 25.780232, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 16.064063
+        }, 
+        {
+          "duration": 15.200405, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 41.844296
+        }, 
+        {
+          "duration": 26.125696, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 57.044701
+        }, 
+        {
+          "duration": 15.200405, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 83.170397
+        }, 
+        {
+          "duration": 21.309341, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 98.370802
+        }, 
+        {
+          "duration": 10.079084, 
+          "confidence": null, 
+          "value": "Outro\r", 
+          "time": 119.680143
+        }, 
+        {
+          "duration": 3.987712, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 129.759226
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 16.0640642
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 16.0640642
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 41.8442964
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 41.8442964
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 57.0447012
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 57.0447012
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 83.1703971
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 83.1703971
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 98.370802
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 98.370802
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 119.6801425
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 119.6801425
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 129.7592264
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 129.7592264
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 133.74693877551022
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "01_-_It_Won't_Be_Long", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 133.74693877551022, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

@@ -1,189 +1,94 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 7.762283, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 15.658399, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 7.762283
+        }, 
+        {
+          "duration": 15.123069, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 23.420683
+        }, 
+        {
+          "duration": 16.354328, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 38.543752
+        }, 
+        {
+          "duration": 15.337201, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 54.89808
+        }, 
+        {
+          "duration": 15.4978, 
+          "confidence": null, 
+          "value": "VerseS\r", 
+          "time": 70.235282
+        }, 
+        {
+          "duration": 15.952831, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 85.733082
+        }, 
+        {
+          "duration": 16.140196, 
+          "confidence": null, 
+          "value": "Verse\r", 
+          "time": 101.685913
+        }, 
+        {
+          "duration": 14.587739, 
+          "confidence": null, 
+          "value": "Outro\r", 
+          "time": 117.826109
+        }, 
+        {
+          "duration": 4.337172, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 132.413849
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 7.7622834
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 7.7622834
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 23.4206827
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 23.4206827
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 38.5437522
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 38.5437522
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 54.8980804
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 54.8980804
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 70.2352818
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 70.2352818
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 85.7330821
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseS\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 85.7330821
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 101.6859129
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 101.6859129
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 117.8261091
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Verse\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 117.8261091
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 132.4138486
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Outro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 132.4138486
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 136.75102040816327
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "06_-_Till_There_Was_You", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 136.75102040816327, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }

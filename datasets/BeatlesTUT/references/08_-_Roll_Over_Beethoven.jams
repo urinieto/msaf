@@ -1,264 +1,124 @@
 {
-  "chords": [], 
-  "notes": [], 
-  "tags": [], 
   "sandbox": {}, 
-  "sources": [], 
-  "beats": [], 
-  "pitch": [], 
-  "melody": [], 
-  "sections": [
+  "annotations": [
     {
+      "data": [
+        {
+          "duration": 17.369796, 
+          "confidence": null, 
+          "value": "Intro\r", 
+          "time": 0.0
+        }, 
+        {
+          "duration": 11.786647, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 17.369796
+        }, 
+        {
+          "duration": 5.893324, 
+          "confidence": null, 
+          "value": "RefrainA\r", 
+          "time": 29.156443
+        }, 
+        {
+          "duration": 12.096822, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 35.049767
+        }, 
+        {
+          "duration": 5.981945, 
+          "confidence": null, 
+          "value": "RefrainA\r", 
+          "time": 47.146589
+        }, 
+        {
+          "duration": 12.096822, 
+          "confidence": null, 
+          "value": "VerseA\r", 
+          "time": 53.128534
+        }, 
+        {
+          "duration": 5.893324, 
+          "confidence": null, 
+          "value": "RefrainA\r", 
+          "time": 65.225356
+        }, 
+        {
+          "duration": 17.923399, 
+          "confidence": null, 
+          "value": "Bridge\r", 
+          "time": 71.11868
+        }, 
+        {
+          "duration": 17.238546, 
+          "confidence": null, 
+          "value": "GuitarS\r", 
+          "time": 89.042079
+        }, 
+        {
+          "duration": 11.824788, 
+          "confidence": null, 
+          "value": "VerseB\r", 
+          "time": 106.280626
+        }, 
+        {
+          "duration": 5.912394, 
+          "confidence": null, 
+          "value": "RefrainB\r", 
+          "time": 118.105414
+        }, 
+        {
+          "duration": 12.465891, 
+          "confidence": null, 
+          "value": "VerseB\r", 
+          "time": 124.017808
+        }, 
+        {
+          "duration": 5.200057, 
+          "confidence": null, 
+          "value": "RefrainB\r", 
+          "time": 136.483699
+        }, 
+        {
+          "duration": 21.227632, 
+          "confidence": null, 
+          "value": "RefrainA\r", 
+          "time": 141.683756
+        }, 
+        {
+          "duration": 4.716367, 
+          "confidence": null, 
+          "value": "silence", 
+          "time": 162.911388
+        }
+      ], 
       "annotation_metadata": {
-        "origin": "Centre for Digital Music", 
-        "annotation_rules": "TODO", 
-        "validation_and_reliability": "TODO", 
-        "attribute": "sections", 
+        "annotation_tools": "Sonic Visualizer", 
+        "curator": {
+          "name": "", 
+          "email": ""
+        }, 
         "annotator": {
-          "name": "TODO", 
-          "email": "TODO"
+          "name": "TODO"
         }, 
         "version": "1.0", 
         "corpus": "Isophonics", 
-        "annotation_tools": "Sonic Visualizer"
+        "annotation_rules": "TODO", 
+        "validation": "TODO", 
+        "data_source": "Centre for Digital Music"
       }, 
-      "data": [
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 0.0
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 17.3697959
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Intro\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 17.3697959
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 29.1564432
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 29.1564432
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 35.0497668
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 35.0497668
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 47.146589
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 47.146589
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 53.128534
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 53.128534
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 65.2253562
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 65.2253562
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 71.1186798
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 71.1186798
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 89.0420791
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "Bridge\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 89.0420791
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 106.2806256
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "GuitarS\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 106.2806256
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 118.1054137
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 118.1054137
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 124.0178078
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 124.0178078
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 136.4836989
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "VerseB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 136.4836989
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 141.6837563
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainB\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 141.6837563
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 162.9113879
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "RefrainA\r"
-          }
-        }, 
-        {
-          "start": {
-            "confidence": 1.0, 
-            "value": 162.9113879
-          }, 
-          "end": {
-            "confidence": 1.0, 
-            "value": 167.62775510204082
-          }, 
-          "label": {
-            "confidence": 1.0, 
-            "context": "function", 
-            "value": "silence"
-          }
-        }
-      ], 
+      "namespace": "segment_open", 
       "sandbox": {}
     }
   ], 
-  "metadata": {
-    "artist": "The Beatles", 
+  "file_metadata": {
+    "jams_version": "0.2.0", 
     "title": "08_-_Roll_Over_Beethoven", 
-    "mbid": "", 
-    "version": 0.01, 
-    "echonest_id": "", 
+    "identifiers": {}, 
+    "release": "", 
     "duration": 167.62775510204082, 
-    "md5": ""
+    "artist": "The Beatles"
   }
 }
