@@ -69,7 +69,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     """
     # Open file and read jams
     try:
-        jam = jams.load(est_file)
+        jam = jams.load(est_file, validate=False)
     except FileNotFoundError:
         logging.error("JAMS file doesn't exist %s" % est_file)
         return np.array([]), np.array([])
@@ -141,7 +141,7 @@ def read_references(audio_path, annotator_id=0):
                             msaf.Dataset.references_ext)
 
     try:
-        jam = jams.load(jam_path)
+        jam = jams.load(jam_path, validate=False)
         ann = jam.search(namespace='segment_.*')[annotator_id]
         ref_inters, ref_labels = ann.data.to_interval_values()
     except:
@@ -240,7 +240,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
                     os.path.basename(audio_path)[:-4] +
                     msaf.Dataset.references_ext)
                 # TODO: Better exception handling
-                jam = jams.load(annotation_path)
+                jam = jams.load(annotation_path, validate=False)
             except:
                 raise RuntimeError("No references found in file %s" %
                                 annotation_path)
@@ -379,7 +379,7 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
 
     # Find estimation in file
     if os.path.isfile(file_struct.est_file):
-        jam = jams.load(file_struct.est_file)
+        jam = jams.load(file_struct.est_file, validate=False)
         curr_ann = find_estimation(jam, boundaries_id, labels_id, params)
         if curr_ann is not None:
             curr_ann.data = ann.data  # cleanup all data
@@ -447,7 +447,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
     jam_file = os.path.join(os.path.dirname(est_file), "..",
                             msaf.Dataset.references_dir,
                             os.path.basename(est_file))
-    jam = jams.load(jam_file)
+    jam = jams.load(jam_file, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
     ann_inter, ann_labels = ann.data.to_interval_values()
     ann_times = utils.intervals_to_times(ann_inter)
@@ -496,7 +496,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
     jam_file = os.path.join(os.path.dirname(est_file), "..",
                             msaf.Dataset.references_dir,
                             os.path.basename(est_file))
-    jam = jams.load(jam_file)
+    jam = jams.load(jam_file, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
     ann_inter, ann_labels = ann.data.to_interval_values()
     gt_times = utils.intervals_to_times(ann_inter)
@@ -670,7 +670,7 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     hier_bounds = []
     hier_labels = []
     hier_levels = []
-    jam = jams.load(jams_file)
+    jam = jams.load(jams_file, validate=False)
     namespaces = ["segment_salami_upper", "segment_salami_function",
                   "segment_open", "segment_tut", "segment_salami_lower"]
 

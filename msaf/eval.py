@@ -137,7 +137,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                     ref_file, annotation_id=0,
                     exclude_levels=["segment_salami_function"])
         else:
-            jam = jams.load(ref_file)
+            jam = jams.load(ref_file, validate=False)
             ann = jam.search(namespace='segment_.*')[annotator_id]
             ref_inter, ref_labels = ann.data.to_interval_values()
     except:
