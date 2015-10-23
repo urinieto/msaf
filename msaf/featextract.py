@@ -156,11 +156,18 @@ def save_features(out_file, features):
 def compute_beat_sync_features(features, beats_idx):
     """Given a dictionary of features, and the estimated index frames,
     calculate beat-synchronous features."""
-    bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx, pad=False).T
-    bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx, pad=False).T
+    pad = True
+    bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx, pad=pad).T
+    bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx, pad=pad).T
     bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx,
-                                      pad=False).T
-    bs_cqt = librosa.feature.sync(features["cqt"].T, beats_idx, pad=False).T
+                                      pad=pad).T
+    bs_cqt = librosa.feature.sync(features["cqt"].T, beats_idx, pad=pad).T
+
+    # Make sure we have the right size (remove last frame if needed)
+    bs_mfcc = bs_mfcc[:len(beats_idx), :]
+    bs_hpcp = bs_hpcp[:len(beats_idx), :]
+    bs_tonnetz = bs_tonnetz[:len(beats_idx), :]
+    bs_cqt = bs_cqt[:len(beats_idx), :]
     return bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt
 
 
