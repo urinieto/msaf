@@ -10,8 +10,8 @@ __email__       = "oriol.nieto@gmail.com"
 # Analysis Params
 class Anal():
     sample_rate = 22050
-    frame_size = 2048
-    hop_size = 512
+    frame_size = 4096
+    hop_size = 1024
     mfcc_coeff = 14
     n_mels = 128
     window_type = "blackmanharris62"

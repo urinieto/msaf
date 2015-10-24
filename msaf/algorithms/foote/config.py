@@ -4,7 +4,7 @@ import msaf
 
 # Foote Params
 config = {
-    "M_gaussian"    : 96,
+    "M_gaussian"    : 66,
     "m_median"      : 12,
     "L_peaks"       : 64
 

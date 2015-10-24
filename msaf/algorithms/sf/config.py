@@ -2,7 +2,7 @@
 
 # Serra params
 config = {
-    "M_gaussian"    : 29,
+    "M_gaussian"    : 27,
     "m_embedded"    : 3,
     "k_nearest"     : 0.04,
     "Mp_adaptive"   : 28,
