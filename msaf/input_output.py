@@ -2,7 +2,6 @@
 These set of functions help the algorithms of MSAF to read and write files
 of the Segmentation Dataset.
 """
-from collections import Counter
 import datetime
 import glob
 import jams
@@ -69,7 +68,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     """
     # Open file and read jams
     try:
-        jam = jams.load(est_file, validate=False)
+        jam = jams.load(est_file)
     except FileNotFoundError:
         logging.error("JAMS file doesn't exist %s" % est_file)
         return np.array([]), np.array([])
@@ -670,7 +669,7 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     hier_bounds = []
     hier_labels = []
     hier_levels = []
-    jam = jams.load(jams_file, validate=False)
+    jam = jams.load(jams_file)
     namespaces = ["segment_salami_upper", "segment_salami_function",
                   "segment_open", "segment_tut", "segment_salami_lower"]
 

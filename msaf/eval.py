@@ -28,6 +28,8 @@ def print_results(results):
         Dataframe with all the results
     """
     res = results.mean()
+    logging.info(results["HitRate_3F"])
+    logging.info(results["track_id"])
     logging.info("Results:\n%s" % res)
 
 
@@ -40,7 +42,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     results : dict
         Contains the results of all the evaluations for the given file.
         Keys are the following:
-            track_name  : Name of the track
+            track_id  : Name of the track
             ds_name :   Name of the data set
             HitRate_3F  :   F-measure of hit rate at 3 seconds
             HitRate_3P  :   Precision of hit rate at 3 seconds
@@ -76,6 +78,24 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
     res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
+    #caca = mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
+    #print(caca)
+
+    #my_est = np.asarray([[0.,            0.60371882],
+                         #[0.60371882,   23.82367347],
+                         #[23.82367347,   43.23555556],
+                         #[43.23555556,   56.61024943],
+                         #[56.61024943,   77.9261678 ],
+                         #[77.9261678,    99.66004535],
+                         #[99.66004535,  112.24526077],
+                         #[112.24526077,  127.43111111],
+                         #[127.43111111,  145.77487528],
+                         #[145.77487528,  152.55510204]])
+    #print(len(my_est), len(est_inter))
+    #caca = mir_eval.segment.detection(ann_inter, my_est, window=3, trim=False)
+    #print(caca)
+    #for r1, r2 in zip(est_inter.flatten(), my_est.flatten()):
+        #print(r1, r2)
 
     # Information gain
     res["D"] = compute_information_gain(ann_inter, est_inter, est_file,

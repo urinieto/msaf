@@ -66,7 +66,7 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
         config = io.get_configuration(feature, annot_beats, framesync,
                                       boundaries_id, labels_id)
 
-        MM = range(14, 32)
+        MM = range(20, 32)
         mm = range(3, 4)
         kk = np.arange(0.03, 0.1, 0.01)
         Mpp = range(16, 32)
