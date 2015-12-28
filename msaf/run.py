@@ -334,7 +334,9 @@ def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
 
     # Save multi-segment (hierarchical) configuration
     config["hier"] = hier
-
+    if not os.path.exists(in_path):
+        raise RuntimeError("File or directory does not exists, %s" %
+                           in_path)
     if os.path.isfile(in_path):
         # Single file mode
         # Get (if they exitst) or compute features
