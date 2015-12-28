@@ -251,9 +251,6 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     logging.info("Segmenting %s" % file_struct.audio_file)
 
     # Compute features if needed
-    if not os.path.exists(file_struct.features_file):
-        raise RuntimeError("File or directory does not exists, %s" %
-                           file_struct.features_file)
     if not os.path.isfile(file_struct.features_file):
         featextract.compute_all_features(file_struct)
 
