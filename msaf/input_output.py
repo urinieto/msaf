@@ -374,6 +374,7 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
 
     # Create new estimation
     namespace = "multi_segment" if params["hier"] else "segment_open"
+    print(namespace)
     ann = jams.Annotation(namespace=namespace)
 
     # Find estimation in file
@@ -414,7 +415,7 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
                          "level": i}
             else:
                 value = str(int(label))
-            ann.append(time=bound_inter[0], duration=dur, value=value)
+            ann.append(time=bound_inter[0], duration=dur, value=unicode(value))
 
     # Write results
     jam.save(file_struct.est_file)
