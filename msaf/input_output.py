@@ -221,7 +221,8 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
     # Read Estimations
-    features_path = os.path.join(ds_path, msaf.Dataset.features_dir,
+    features_path = os.path.join(
+        ds_path, msaf.Dataset.features_dir,
         os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
     with open(features_path, "r") as f:
         feats = json.load(f)
@@ -242,7 +243,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
                 jam = jams.load(annotation_path, validate=False)
             except:
                 raise RuntimeError("No references found in file %s" %
-                                annotation_path)
+                                   annotation_path)
 
             feat_str = "ann_beatsync"
             beats = []
@@ -593,13 +594,13 @@ def get_dataset_files(in_path, ds_name="*"):
 
     # All datasets
     ds_dict = {
-        "Beatles"   : "Isophonics",
-        "Cerulean"  : "Cerulean",
-        "Epiphyte"  : "Epiphyte",
+        "Beatles": "Isophonics",
+        "Cerulean": "Cerulean",
+        "Epiphyte": "Epiphyte",
         "Isophonics": "Isophonics",
-        "SALAMI"    : "SALAMI",
-        "SALAMI-i"  : "SALAMI",
-        "*"         : "*"
+        "SALAMI": "SALAMI",
+        "SALAMI-i": "SALAMI",
+        "*": "*"
     }
 
     try:
