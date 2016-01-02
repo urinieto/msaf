@@ -200,6 +200,10 @@ Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2014). Unsupervised Music 
 
 Weiss, R., & Bello, J. P. (2011). Unsupervised Discovery of Temporal Structure in Music. IEEE Journal of Selected Topics in Signal Processing, 5(6), 1240–1251.
 
+## Citing MSAF ##
+
+Nieto, O., & Bello, J. P. (2015). MSAF: Music Structure Analytis Framework. International Society for Music Information Retrieval Conference. Málaga, Spain. ([PDF](http://ismir2015.uma.es/LBD/LBD30.pdf))
+
 ## Credits ##
 
 Created by [Oriol Nieto](http://marl.smusic.nyu.edu/nieto/) (<oriol@nyu.edu>).
