@@ -3,7 +3,6 @@
 Runs one boundary algorithm and a label algorithm on a specified audio file or
 dataset.
 """
-
 import argparse
 import logging
 import os
@@ -15,9 +14,9 @@ import msaf
 
 def main():
     """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(description=
-        "Runs the speficied algorithm(s) on the input file or MSAF formatted "
-        "dataset and evaluates the results if annotations exist.",
+    parser = argparse.ArgumentParser(
+        description="Runs the speficied algorithm(s) on the input file or MSAF"
+        " formatted dataset and evaluates the results if annotations exist.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
@@ -33,7 +32,7 @@ def main():
                         action="store",
                         help="Boundary algorithm identifier",
                         dest="boundaries_id",
-                        default="gt",
+                        default="sf",
                         choices=["gt"] +
                         msaf.io.get_all_boundary_algorithms())
     parser.add_argument("-lid",
@@ -41,8 +40,7 @@ def main():
                         help="Label algorithm identifier",
                         dest="labels_id",
                         default=None,
-                        choices=
-                        msaf.io.get_all_label_algorithms())
+                        choices=msaf.io.get_all_label_algorithms())
     parser.add_argument("-s",
                         action="store_true",
                         dest="sonify_bounds",
@@ -78,7 +76,8 @@ def main():
     parser.add_argument("-hier",
                         action="store_true",
                         dest="hier",
-                        help="Compute hierarchical segmentation", default=False)
+                        help="Compute hierarchical segmentation",
+                        default=False)
     parser.add_argument("-save",
                         action="store_true",
                         dest="save",
@@ -86,7 +85,8 @@ def main():
     parser.add_argument("-e",
                         action="store_true",
                         dest="evaluate",
-                        help="Evaluates the results exclusively", default=False)
+                        help="Evaluates the results exclusively",
+                        default=False)
 
     args = parser.parse_args()
     start_time = time.time()
