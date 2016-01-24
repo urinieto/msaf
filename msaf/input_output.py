@@ -375,7 +375,6 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
 
     # Create new estimation
     namespace = "multi_segment" if params["hier"] else "segment_open"
-    print(namespace)
     ann = jams.Annotation(namespace=namespace)
 
     # Find estimation in file
