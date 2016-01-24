@@ -415,7 +415,8 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
                          "level": i}
             else:
                 value = str(int(label))
-            ann.append(time=bound_inter[0], duration=dur, value=unicode(value))
+            ann.append(time=bound_inter[0], duration=dur,
+                       value=six.text_type(value))
 
     # Write results
     jam.save(file_struct.est_file)
