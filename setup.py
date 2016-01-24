@@ -33,7 +33,7 @@ setup(
         "Programming Language :: Python :: 3.4"
     ],
     keywords='audio music sound',
-    license='GPL',
+    license='MIT',
     install_requires=[
         'audioread',
         'jams',
