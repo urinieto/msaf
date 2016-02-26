@@ -84,10 +84,13 @@ def compute_features(audio, y_harmonic):
                                        n_mels=msaf.Anal.n_mels)
 
     logging.info("Computing Constant-Q...")
-    cqt = librosa.logamplitude(librosa.cqt(audio, sr=msaf.Anal.sample_rate,
-                                           hop_length=msaf.Anal.hop_size,
-                                           n_bins=msaf.Anal.cqt_bins) ** 2,
-                               ref_power=np.max).T
+    cqt = librosa.logamplitude(np.abs(
+        librosa.cqt(audio,
+                    sr=msaf.Anal.sample_rate,
+                    hop_length=msaf.Anal.hop_size,
+                    n_bins=msaf.Anal.cqt_bins,
+                    real=False)) ** 2,
+        ref_power=np.max).T
 
     logging.info("Computing MFCCs...")
     log_S = librosa.logamplitude(S, ref_power=np.max)
@@ -100,7 +103,6 @@ def compute_features(audio, y_harmonic):
                                       n_octaves=msaf.Anal.n_octaves,
                                       fmin=msaf.Anal.f_min).T
 
-    #plt.imshow(hpcp.T, interpolation="nearest", aspect="auto"); plt.show()
     logging.info("Computing Tonnetz...")
     tonnetz = utils.chroma_to_tonnetz(hpcp)
     return mfcc, hpcp, tonnetz, cqt
