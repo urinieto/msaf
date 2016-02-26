@@ -179,12 +179,14 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     -------
     est_times: np.array or list
         List of estimated times for the segment boundaries.
-        If `list`, it will be a list of np.arrays, sorted by segmentation layer.
+        If `list`, it will be a list of np.arrays, sorted by segmentation
+        layer.
     est_labels: np.array or list
         List of all the labels associated segments.
-        If `list`, it will be a list of np.arrays, sorted by segmentation layer.
+        If `list`, it will be a list of np.arrays, sorted by segmentation
+        layer.
     """
-    # At this point, features should have already been computed, let's read them
+    # Features should have already been computed, let's read them
     features = io.get_features(audio_file, config["annot_beats"],
                                config["framesync"])
     config["features"] = features
