@@ -1,21 +1,17 @@
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, find_packages
 import glob
-import sys
 import numpy.distutils.misc_util
-from distutils import sysconfig
 
 # MSAF configuration
 setup(
     name='msaf',
-    version='0.0.3',
+    version='0.0.4',
     description='Python module to discover the structure of music files',
     author='Oriol Nieto',
     author_email='oriol@nyu.edu',
     url='https://github.com/urinieto/msaf',
     download_url='https://github.com/urinieto/msaf/releases',
     packages=find_packages(),
-    #data_files=[('msaf/algorithms/olda/models', glob.glob('msaf/algorithms/olda/models/*.npy')),
-                #('msaf/algorithms/cc', ['co_segmenter.so'])],
     data_files=[('msaf/algorithms/olda/models',
                  glob.glob('msaf/algorithms/olda/models/*.npy'))],
     long_description="""A python module to segment audio into all its """
