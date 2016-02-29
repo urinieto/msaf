@@ -301,14 +301,14 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     """
     # Use handy JAMS search interface
     namespace = "multi_segment" if params["hier"] else "segment_open"
-    ann = jam.search(namespace=namespace).\
-        search(**{"Sandbox.boundaries_id": boundaries_id})
-    if labels_id is not None:
-        try:
-            ann = ann.search(**{"Sandbox.labels_id": labels_id})
-        except TypeError:
-            # In case no label exists
-            ann = ann.search(**{"Sandbox.labels_id": lambda x: x == labels_id})
+    try:
+        ann = jam.search(namespace=namespace).\
+            search(**{"Sandbox.boundaries_id": boundaries_id}).\
+            search(**{"Sandbox.labels_id": labels_id})
+    except TypeError:
+        # In case no label exists
+        ann = jam.search(namespace=namespace).\
+            search(**{"Sandbox.boundaries_id": boundaries_id})
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, six.string_types):
             ann = ann.search(**{"Sandbox.%s" % key: val})
