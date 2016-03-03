@@ -68,7 +68,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     """
     res = {}
 
-    ### Boundaries ###
+    # --Boundaries-- #
     # Hit Rate
     res["HitRate_3P"], res["HitRate_3R"], res["HitRate_3F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
@@ -78,24 +78,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
     res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
-    #caca = mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
-    #print(caca)
-
-    #my_est = np.asarray([[0.,            0.60371882],
-                         #[0.60371882,   23.82367347],
-                         #[23.82367347,   43.23555556],
-                         #[43.23555556,   56.61024943],
-                         #[56.61024943,   77.9261678 ],
-                         #[77.9261678,    99.66004535],
-                         #[99.66004535,  112.24526077],
-                         #[112.24526077,  127.43111111],
-                         #[127.43111111,  145.77487528],
-                         #[145.77487528,  152.55510204]])
-    #print(len(my_est), len(est_inter))
-    #caca = mir_eval.segment.detection(ann_inter, my_est, window=3, trim=False)
-    #print(caca)
-    #for r1, r2 in zip(est_inter.flatten(), my_est.flatten()):
-        #print(r1, r2)
 
     # Information gain
     res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
@@ -107,7 +89,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     res["DevtR2E"], res["DevtE2R"] = mir_eval.segment.deviation(
         ann_inter, est_inter, trim=True)
 
-    ### Labels ###
+    # --Labels-- #
     if "-1" in est_labels:
         est_labels = None
     if est_labels is not None and len(est_labels) != 0:
@@ -116,7 +98,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
             ann_labels = list(ann_labels)
             est_labels = list(est_labels)
             ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                                ann_labels)
+                                                                   ann_labels)
             est_inter, est_labels = mir_eval.util.adjust_intervals(
                 est_inter, est_labels, t_min=0, t_max=ann_inter.max())
 
@@ -225,7 +207,8 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return D
 
 
-def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0):
+def process_track(file_struct, boundaries_id, labels_id, config,
+                  annotator_id=0):
     """Processes a single track.
 
     Parameters
