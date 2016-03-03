@@ -42,14 +42,16 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["features"] = None
 
                             # Run process
-                            msaf.run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
-                                        boundaries_id=boundaries_id,
-                                        labels_id=labels_id, config=config)
+                            msaf.run.process(
+                                in_path, ds_name=ds_name, n_jobs=n_jobs,
+                                boundaries_id=boundaries_id,
+                                labels_id=labels_id, config=config)
 
                             # Compute evaluations
-                            results = msaf.eval.process(in_path, boundaries_id, labels_id,
-                                                ds_name, save=True, n_jobs=n_jobs,
-                                                config=config)
+                            results = msaf.eval.process(
+                                in_path, boundaries_id, labels_id,
+                                ds_name, save=True, n_jobs=n_jobs,
+                                config=config)
 
                             # Save avg results
                             new_columns = {"config_h": h, "config_R": R,
@@ -57,9 +59,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                                            "config_R_labels": R_labels,
                                            "config_rank_labels": rank_labels}
                             results = results.append([new_columns],
-                                                    ignore_index=True)
+                                                     ignore_index=True)
                             all_results = all_results.append(results.mean(),
-                                                            ignore_index=True)
+                                                             ignore_index=True)
                             all_results.to_csv(results_file)
 
     elif labels_id is None and boundaries_id == "sf":
@@ -85,23 +87,24 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
                             config["features"] = None
 
                             # Run process
-                            msaf.run.process(in_path, ds_name=ds_name, n_jobs=n_jobs,
-                                        boundaries_id=boundaries_id,
-                                        labels_id=labels_id, config=config)
+                            msaf.run.process(
+                                in_path, ds_name=ds_name, n_jobs=n_jobs,
+                                boundaries_id=boundaries_id,
+                                labels_id=labels_id, config=config)
 
                             # Compute evaluations
-                            results = msaf.eval.process(in_path, boundaries_id, labels_id,
-                                                ds_name, save=True, n_jobs=n_jobs,
-                                                config=config)
+                            results = msaf.eval.process(
+                                in_path, boundaries_id, labels_id, ds_name,
+                                save=True, n_jobs=n_jobs, config=config)
 
                             # Save avg results
                             new_columns = {"config_M": M, "config_m": m,
                                            "config_k": k, "config_Mp": Mp,
                                            "config_ot": ot}
                             results = results.append([new_columns],
-                                                    ignore_index=True)
+                                                     ignore_index=True)
                             all_results = all_results.append(results.mean(),
-                                                            ignore_index=True)
+                                                             ignore_index=True)
                             all_results.to_csv(results_file)
 
     else:
@@ -111,9 +114,9 @@ def process(in_path, annot_beats=False, feature="mfcc", ds_name="*",
 
 def main():
     """Main function to sweep parameters of a certain algorithm."""
-    parser = argparse.ArgumentParser(description=
-        "Runs the speficied algorithm(s) on the MSAF formatted dataset.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description="Runs the speficied algorithm(s) on the MSAF formatted "
+        "dataset.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
                         help="Input dataset")
@@ -146,7 +149,7 @@ def main():
                         help="Label algorithm identifier",
                         dest="labels_id",
                         default=None,
-                        choices= io.get_all_label_algorithms())
+                        choices=io.get_all_label_algorithms())
     parser.add_argument("-d",
                         action="store",
                         dest="ds_name",

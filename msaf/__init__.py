@@ -1,10 +1,10 @@
 """Top-level module for MSAF."""
 
-__author__      = "Oriol Nieto"
-__copyright__   = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__     = "MIT"
-__version__     = "0.0.3"
-__email__       = "oriol.nieto@gmail.com"
+__author__ = "Oriol Nieto"
+__copyright__ = "Copyright 2016, Music and Audio Research Lab (MARL)"
+__license__ = "MIT"
+__version__ = "0.0.3"
+__email__ = "oriol.nieto@gmail.com"
 
 
 # Analysis Params
@@ -37,11 +37,11 @@ from .input_output import get_all_label_algorithms
 
 # Global Config
 prefix_dict = {
-    "Cerulean"      : "large_scale",
-    "Epiphyte"      : "function",
-    "Isophonics"    : "function",
-    "SALAMI"        : "large_scale",
-    "SPAM"          : "large_scale"
+    "Cerulean": "large_scale",
+    "Epiphyte": "function",
+    "Isophonics": "function",
+    "SALAMI": "large_scale",
+    "SPAM": "large_scale"
 }
 
 results_dir = "results"
@@ -65,16 +65,13 @@ class Dataset():
 
 
 feat_dict = {
-    'sf'    :   'hpcp',
-    'levy'  :   'hpcp',
-    'foote' :   'hpcp',
+    'sf': 'hpcp',
+    'levy':   'hpcp',
+    'foote':   'hpcp',
     'siplca':   '',
-    'olda'  :   '',
-    'kmeans':   'hpcp',
-    'cnmf'  :   'hpcp',
-    'cnmf2' :   'hpcp',
-    'cnmf3' :   'hpcp',
-    '2dfmc' :   ''
+    'olda':   '',
+    'cnmf':   'hpcp',
+    '2dfmc':   ''
 }
 
 AVAILABLE_FEATS = ["hpcp", "mfcc", "cqt", "tonnetz"]
