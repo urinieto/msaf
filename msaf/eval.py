@@ -2,7 +2,6 @@
 Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
 """
-
 import jams
 from joblib import Parallel, delayed
 import logging
@@ -36,6 +35,21 @@ def print_results(results):
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
                     est_file):
     """Compute the results using all the available evaluations.
+
+    Parameters
+    ----------
+    ann_inter : np.array
+        Annotated intervals in seconds.
+    est_inter : np.array
+        Estimated intervals in seconds.
+    ann_labels : np.array
+        Annotated labels.
+    est_labels : np.array
+        Estimated labels
+    bins : int
+        Number of bins for the information gain.
+    est_file : str
+        Path to the output file to store results.
 
     Return
     ------
@@ -240,6 +254,11 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     assert os.path.basename(est_file)[:-4] == \
         os.path.basename(ref_file)[:-4], "File names are different %s --- %s" \
         % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
+
+    if not os.path.isfile(ref_file):
+        raise RuntimeError("Reference file %s does not exis. You must have "
+                           "annotated references to run evaluations." %
+                           ref_file)
 
     # TODO: Better exception handling
     try:
