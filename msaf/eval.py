@@ -14,6 +14,7 @@ import sys
 
 # Local stuff
 import msaf
+from msaf.exceptions import NoReferencesError
 import msaf.input_output as io
 from msaf import utils
 
@@ -256,9 +257,9 @@ def process_track(file_struct, boundaries_id, labels_id, config,
         % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
 
     if not os.path.isfile(ref_file):
-        raise RuntimeError("Reference file %s does not exis. You must have "
-                           "annotated references to run evaluations." %
-                           ref_file)
+        raise NoReferencesError("Reference file %s does not exis. You must "
+                                "have annotated references to run "
+                                "evaluations." % ref_file)
 
     # TODO: Better exception handling
     try:
