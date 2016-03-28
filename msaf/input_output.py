@@ -73,8 +73,8 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         logging.error("JAMS file doesn't exist %s" % est_file)
         return np.array([]), np.array([])
     except Exception as e:
-        logging.error("Could not open JAMS file %s. Exception: %s" % (est_file,
-                                                                      e))
+        logging.error("Could not open JAMS file %s. Exception: %s" %
+                      (est_file, e))
         return np.array([]), np.array([])
 
     # Find correct estimation
@@ -410,13 +410,13 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
             label = np.ones(len(inters)) * -1
         for bound_inter, label in zip(level_inters, level_labels):
             dur = float(bound_inter[1]) - float(bound_inter[0])
+            label = chr(int(label) + 65)
             if params["hier"]:
-                value = {"label": str(int(label)),
-                         "level": i}
+                value = {"label": label, "level": i}
             else:
-                value = str(int(label))
+                value = label
             ann.append(time=bound_inter[0], duration=dur,
-                       value=six.text_type(value))
+                       value=value)
 
     # Write results
     jam.save(file_struct.est_file)
