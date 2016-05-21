@@ -163,7 +163,7 @@ For more examples, please explore the `examples` folder.
 * jams
 * joblib
 * [mir\_eval](https://github.com/craffel/mir_eval)
-* [librosa](https://github.com/bmcfee/librosa/) (>=0.4.0rc1)
+* [librosa](https://github.com/bmcfee/librosa/) (>=0.4.0)
 * BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
 * ffmpeg (to read mp3 files only)
 
