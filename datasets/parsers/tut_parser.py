@@ -22,6 +22,7 @@ Example:
 """
 
 import argparse
+import librosa
 import logging
 import os
 import time
@@ -82,27 +83,20 @@ def get_duration_from_annot(annot):
     return dur.total_seconds()
 
 
-def fix_chord_labels(annot):
-    """Fixes the name of the chords."""
-    for i, label in enumerate(annot.data["value"]):
-        annot.data.loc[i, "value"] = CHORDS_DICT.get(label, label)
+def get_duration_from_audio(audio_file):
+    """Obtains the duration from a given audio file."""
+    y, sr = librosa.load(audio_file)
+    return len(y) / float(sr)
 
 
-def fix_key_labels(annot):
-    """Fixes the name of the keys."""
-    for i, label in enumerate(annot.data["value"]):
-        annot.data.loc[i, "value"] = KEYS_DICT.get(label, label)
-
-
-def fix_beats_values(annot):
-    """Fixes the beat labels."""
-    for i, value in enumerate(annot.data["value"]):
-        try:
-            annot.data.loc[i, "value"] = float(value)
-        except ValueError:
-            annot.data.loc[i, "value"] = None
-    # Convert to float
-    annot.data["value"] = annot.data["value"].astype("float")
+def append_silence(annot, dur, tol=0.1, label="Silence"):
+    """Appends silence if needed (ie, last boundary is not placed at the
+    end of the actual audio file."""
+    last_bound = annot.data.iloc[-1].time + annot.data.iloc[-1].duration
+    if last_bound.total_seconds() + tol < dur:
+        annot.append(time=last_bound.total_seconds(),
+                     duration=dur - last_bound.total_seconds(),
+                     confidence=1, value=label)
 
 
 def fix_ranges(annot):
@@ -114,16 +108,7 @@ def fix_ranges(annot):
     annot.data.drop(idxs, inplace=True)
 
 
-def fix_silence(annot):
-    """Removes the silences for the keys."""
-    idxs = []
-    for i, label in enumerate(annot.data["value"]):
-        if label.lower() == "silence":
-            idxs.append(i)
-    annot.data.drop(idxs, inplace=True)
-
-
-def process(in_dir, out_dir):
+def process(in_dir, out_dir, audio_dir, audio_ext=".wav"):
     """Converts the original Isophonic files into the JAMS format, and saves
     them in the out_dir folder."""
     all_jams = dict()
@@ -141,11 +126,22 @@ def process(in_dir, out_dir):
                 out_dir, *parts[1:]).replace(".lab", ".jams")
             logging.info("%s -> %s" % (title, output_paths[title]))
 
+        # Get actual data from lab file
         jam = all_jams[title]
         tmp_jam, annot = jams.util.import_lab(NS_DICT['segment'], lab_file,
                                               jam=jam)
         fix_ranges(jam.annotations[-1])
-        jam.file_metadata.duration = get_duration_from_annot(annot)
+
+        # Get the duration
+        if audio_dir is None:
+            jam.file_metadata.duration = get_duration_from_annot(annot)
+        else:
+            audio_file = os.path.join(audio_dir, os.path.basename(lab_file))
+            audio_file = audio_file.replace(".lab", audio_ext)
+            jam.file_metadata.duration = get_duration_from_audio(audio_file)
+
+        # Append silence if needed
+        append_silence(annot, jam.file_metadata.duration)
 
         # Add Metadata
         curator = jams.Curator(name="Matthias Mauch",
@@ -173,6 +169,11 @@ if __name__ == '__main__':
     parser.add_argument("out_dir",
                         action="store",
                         help="Output JAMS folder")
+    parser.add_argument("-a",
+                        dest="audio_dir",
+                        default=None,
+                        action="store",
+                        help="Audio folder to read the durations from")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -180,7 +181,7 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
 
     # Run the parser
-    process(args.in_dir, args.out_dir)
+    process(args.in_dir, args.out_dir, args.audio_dir)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
