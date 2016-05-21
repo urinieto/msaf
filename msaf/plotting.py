@@ -143,7 +143,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
 
 
 def plot_one_track(file_struct, est_times, est_labels, boundaries_id,
-                   labels_id, ds_prefix, title=None):
+                   labels_id, title=None):
     """Plots the results of one track, with ground truth if it exists."""
     # Set up the boundaries id
     bid_lid = boundaries_id
@@ -184,7 +184,6 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id,
         if i == 0:
             color = "g"
         for b in boundaries:
-            print(b)
             plt.axvline(b, i / float(N), (i + 1) / float(N), color=color)
         if labels_id is not None:
             labels = all_labels[i]
