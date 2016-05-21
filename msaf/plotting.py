@@ -36,7 +36,7 @@ def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
     plt.gcf().subplots_adjust(bottom=0.22)
     plt.gca().set_yticklabels(algo_ids)
     plt.xlabel("Time (seconds)")
-    plt.xlim((0, last_bound))
+    plt.xlim((0, last_bound + 1))
     plt.tight_layout()
     if output_file is not None:
         plt.savefig(output_file)
@@ -184,6 +184,7 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id,
         if i == 0:
             color = "g"
         for b in boundaries:
+            print(b)
             plt.axvline(b, i / float(N), (i + 1) / float(N), color=color)
         if labels_id is not None:
             labels = all_labels[i]
