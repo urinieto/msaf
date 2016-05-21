@@ -13,183 +13,166 @@ Example:
     /01_-_Please_Please_Me
         /01_-_I_Saw_Her_Standing_There.lab
 
-To parse the entire dataset, you simply need the path to the TUT Beatles dataset
-and an output folder.
+To parse the entire dataset, you simply need the path to the TUT Beatles
+dataset and an output folder.
 
 Example:
 ./tut_parser.py ~/datasets/BeatlesTUT -o ~/datasets/BeatlesTUT/outJAMS
 
 """
 
-__author__ = "Oriol Nieto"
-__copyright__ = "Copyright 2014, Music and Audio Research Lab (MARL)"
-__license__ = "MIT"
-__version__ = "1.0"
-__email__ = "oriol@nyu.edu"
-
 import argparse
-import glob
-from joblib import Parallel, delayed
-import json
 import logging
 import os
 import time
 
-from msaf import jams2
+import jams
 
 
-def fill_global_metadata(jam, lab_file, dur):
+__author__ = "Oriol Nieto"
+__copyright__ = "Copyright 2015, Music and Audio Research Lab (MARL)"
+__license__ = "MIT"
+__version__ = "1.1"
+__email__ = "oriol@nyu.edu"
+
+# Map of JAMS attributes to Isophonics directories.
+ISO_ATTRS = {'beat': 'beat',
+             'chord': 'chordlab',
+             'key': 'keylab',
+             'segment': 'seglab'}
+
+# Namespace dictionary
+NS_DICT = {'beat': 'beat',
+           'chord': 'chord',
+           'key': 'key_mode',
+           'segment': 'segment_open'}
+
+# Map chords that don't make much sense
+CHORDS_DICT = {
+    "E:4": "E:sus4",
+    "Db:6": "Db:maj6",
+    "F#min7": "F#:min7",
+    "B:7sus": "B:maj7",
+    "Db:6/2": "Db:maj6/2",
+    "Ab:6": "Ab:maj6",
+    "F:6": "F:maj6",
+    "D:6": "D:maj6",
+    "G:6": "G:maj6",
+    "A:6": "A:maj6",
+    "E:sus": "E",
+    "E:7sus": "E:maj7"
+}
+
+# Map keys that don't make much sense
+KEYS_DICT = {
+    "C#:modal": "C#"
+}
+
+
+def fill_file_metadata(jam, artist, title):
     """Fills the global metada into the JAMS jam."""
-    jam.metadata.artist = "The Beatles"
-    jam.metadata.duration = dur  # In seconds
-    jam.metadata.title = os.path.basename(lab_file).replace(".lab", "")
-
-    # TODO: extra info
-    #jam.metadata.genre = metadata[14]
+    jam.file_metadata.artist = artist
+    jam.file_metadata.duration = None
+    jam.file_metadata.title = title
 
 
-def fill_annotation_metadata(annot, attribute):
-    """Fills the annotation metadata."""
-    annot.annotation_metadata.attribute = attribute
-    annot.annotation_metadata.corpus = "Isophonics"
-    annot.annotation_metadata.version = "1.0"
-    annot.annotation_metadata.annotation_tools = "Sonic Visualizer"
-    annot.annotation_metadata.annotation_rules = "TODO"  # TODO
-    annot.annotation_metadata.validation_and_reliability = "TODO"  # TODO
-    annot.annotation_metadata.origin = "Centre for Digital Music"
-    annot.annotation_metadata.annotator.name = "TODO"
-    annot.annotation_metadata.annotator.email = "TODO"  # TODO
-    #TODO:
-    #time = "TODO"
+def get_duration_from_annot(annot):
+    """Obtains the actual duration from a given annotation."""
+    dur = annot.data.iloc[-1].time + annot.data.iloc[-1].duration
+    return dur.total_seconds()
 
 
-def fill_section_annotation(lab_file, annot, dur):
-    """Fills the JAMS annot annotation given a lab file."""
-
-    # Annotation Metadata
-    fill_annotation_metadata(annot, "sections")
-
-    # Open lab file
-    try:
-        f = open(lab_file, "r")
-    except IOError:
-        logging.warning("Annotation doesn't exist: %s", lab_file)
-        return
-
-    # Convert to JAMS
-    lines = f.readlines()
-    for line in lines:
-        # Hacky stuff to accept inconsistencies in the dataset
-        section_raw = line.strip("\n").split(" ")
-        if len(section_raw) == 0 or section_raw[0] == '':
-            continue
-        start_time = section_raw[0]
-        if '\t' in section_raw[1]:
-            end_time = section_raw[1].split('\t')[0]
-            label = section_raw[1].split('\t')[1]
-        else:
-            end_time = section_raw[1]
-            label = section_raw[2]
-        if float(end_time) <= float(start_time):
-            logging.warning("Start time is after end time in file %s" %
-                            lab_file)
-            continue
-        if float(start_time) > dur:
-            continue
-        if float(end_time) > dur:
-            end_time = dur
-        section = annot.create_datapoint()
-        section.start.value = float(start_time)
-        section.start.confidence = 1.0
-        section.end.value = float(end_time)
-        section.end.confidence = 1.0
-        section.label.value = label
-        section.label.confidence = 1.0
-        section.label.context = "function"  # Only function level of annotation
-
-    # Add the last boundary if needed
-    if section.end.value < dur - 0.01:
-        end_time = section.end.value
-        section = annot.create_datapoint()
-        section.start.value = end_time
-        section.start.confidence = 1.0
-        section.end.value = dur
-        section.end.confidence = 1.0
-        section.label.value = "silence"
-        section.label.confidence = 1.0
-        section.label.context = "function"  # Only function level of annotation
-
-    f.close()
+def fix_chord_labels(annot):
+    """Fixes the name of the chords."""
+    for i, label in enumerate(annot.data["value"]):
+        annot.data.loc[i, "value"] = CHORDS_DICT.get(label, label)
 
 
-def create_JAMS(lab_file, out_file, parse_beats=False):
-    """Creates a JAMS file given the Isophonics lab file."""
-
-    # New JAMS and annotation
-    jam = jams2.Jams()
-
-    logging.info("Parsing %s..." % lab_file)
-
-    try:
-        import librosa
-        audio_file = os.path.dirname(lab_file) + "/../../audio/" + os.path.basename(lab_file)[:-4] + ".wav"
-        print "AUDIO", audio_file
-        y, sr = librosa.load(audio_file)
-        dur = len(y) / float(sr)
-    except:
-        dur = -1  # In seconds
-
-    # Global file metadata
-    fill_global_metadata(jam, lab_file, dur)
-
-    # Create Section annotations
-    annot = jam.sections.create_annotation()
-    fill_section_annotation(lab_file, annot, dur)
-
-    # Save JAMS
-    with open(out_file, "w") as f:
-        json.dump(jam, f, indent=2)
+def fix_key_labels(annot):
+    """Fixes the name of the keys."""
+    for i, label in enumerate(annot.data["value"]):
+        annot.data.loc[i, "value"] = KEYS_DICT.get(label, label)
 
 
-def process(in_dir, out_dir, n_jobs=1):
-    """Converts the TUT Beatles files into the JAMS format, and saves
+def fix_beats_values(annot):
+    """Fixes the beat labels."""
+    for i, value in enumerate(annot.data["value"]):
+        try:
+            annot.data.loc[i, "value"] = float(value)
+        except ValueError:
+            annot.data.loc[i, "value"] = None
+    # Convert to float
+    annot.data["value"] = annot.data["value"].astype("float")
+
+
+def fix_ranges(annot):
+    """Remove the empty ranges from the annotation."""
+    idxs = []
+    for i, dur in enumerate(annot.data["duration"]):
+        if dur.total_seconds() <= 0:
+            idxs.append(i)
+    annot.data.drop(idxs, inplace=True)
+
+
+def fix_silence(annot):
+    """Removes the silences for the keys."""
+    idxs = []
+    for i, label in enumerate(annot.data["value"]):
+        if label.lower() == "silence":
+            idxs.append(i)
+    annot.data.drop(idxs, inplace=True)
+
+
+def process(in_dir, out_dir):
+    """Converts the original Isophonic files into the JAMS format, and saves
     them in the out_dir folder."""
+    all_jams = dict()
+    output_paths = dict()
+    all_labs = jams.util.find_with_extension(in_dir, 'lab', 5)
+    all_labs += jams.util.find_with_extension(in_dir, 'txt', 4)
 
-    # Check if output folder and create it if needed:
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    for lab_file in all_labs:
+        title = jams.util.filebase(lab_file)
+        if title not in all_jams:
+            all_jams[title] = jams.JAMS()
+            parts = lab_file.replace(in_dir, '').strip('/').split('/')
+            fill_file_metadata(all_jams[title], artist=parts[1], title=title)
+            output_paths[title] = os.path.join(
+                out_dir, *parts[1:]).replace(".lab", ".jams")
+            logging.info("%s -> %s" % (title, output_paths[title]))
 
-    # Get all the lab files
-    lab_files = glob.glob(os.path.join(in_dir, "*", "*.lab"))
+        jam = all_jams[title]
+        tmp_jam, annot = jams.util.import_lab(NS_DICT['segment'], lab_file,
+                                              jam=jam)
+        fix_ranges(jam.annotations[-1])
+        jam.file_metadata.duration = get_duration_from_annot(annot)
 
-    Parallel(n_jobs=n_jobs)(delayed(create_JAMS)(
-        lab_file,
-        os.path.join(out_dir,
-                     os.path.basename(lab_file).replace(".lab", "") + ".jams"))
-        for lab_file in lab_files)
+        # Add Metadata
+        curator = jams.Curator(name="Matthias Mauch",
+                               email="m.mauch@qmul.ac.uk")
+        ann_meta = jams.AnnotationMetadata(curator=curator,
+                                           version=1.0,
+                                           corpus="Beatles TUT",
+                                           annotator=None)
+        jam.annotations[-1].annotation_metadata = ann_meta
 
-    logging.info("Parsed %d files" % len(lab_files))
+    logging.info("Saving and validating JAMS...")
+    for title in all_jams:
+        out_file = output_paths[title]
+        jams.util.smkdirs(os.path.split(out_file)[0])
+        all_jams[title].save(out_file)
 
 
-def main():
-    """Main function to convert the dataset into JAMS."""
-    parser = argparse.ArgumentParser(description=
-        "Converts the TUT Beatles dataset to the JAMS format",
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description="Converts the Beatles TUT dataset to the JAMS format",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_dir",
                         action="store",
-                        help="TUT Beatles main folder")
-    parser.add_argument("-o",
+                        help="Beatles TUT main folder")
+    parser.add_argument("out_dir",
                         action="store",
-                        dest="out_dir",
-                        default="outJAMS",
                         help="Output JAMS folder")
-    parser.add_argument("-j",
-                        action="store",
-                        dest="n_jobs",
-                        default=1,
-                        type=int,
-                        help="The number of threads to use")
     args = parser.parse_args()
     start_time = time.time()
 
@@ -197,10 +180,7 @@ def main():
     logging.basicConfig(format='%(asctime)s: %(message)s', level=logging.INFO)
 
     # Run the parser
-    process(args.in_dir, args.out_dir, n_jobs=args.n_jobs)
+    process(args.in_dir, args.out_dir)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-if __name__ == '__main__':
-    main()
