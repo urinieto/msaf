@@ -286,7 +286,7 @@ class Segmenter(SegmenterInterface):
         F, frame_times, dur = features(self.audio_file, self.annot_beats,
                                        self.features, self.framesync)
 
-        print(F)
+        print(F, dur)
         # try:
         # Load and apply transform
         W = load_transform(self.config["transform"])
