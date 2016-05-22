@@ -284,7 +284,7 @@ class Segmenter(SegmenterInterface):
         """
         print(self.audio_file,
               self.annot_beats,
-              self.features.shape,
+              self.features,
               self.framesync)
         # Preprocess to obtain features, times, and input boundary indeces
         F, frame_times, dur = features(self.audio_file, self.annot_beats,
