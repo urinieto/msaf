@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="21" name="" sampleRate="44100" start="2048" end="19837440" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="20" />
+    <dataset id="20" dimensions="1">
+      <point frame="2048" label="silence" />
+      <point frame="49152" label="a" />
+      <point frame="390656" label="a&apos;" />
+      <point frame="996352" label="a&apos;&apos;" />
+      <point frame="1548288" label="a&apos;&apos;&apos; " />
+      <point frame="3103744" label="b" />
+      <point frame="3623424" label="b&apos;" />
+      <point frame="4060672" label="b&apos;&apos;" />
+      <point frame="4587520" label="b&apos;&apos;&apos;" />
+      <point frame="5451264" label="b&apos;&apos;&apos;&apos;" />
+      <point frame="8429568" label="c" />
+      <point frame="10103296" label="c&apos;" />
+      <point frame="11164160" label="c&apos;&apos;" />
+      <point frame="11859456" label="c&apos;&apos;&apos;" />
+      <point frame="13862912" label="c&apos;&apos;&apos;&apos;" />
+      <point frame="14504448" label="d" />
+      <point frame="15361024" label="d&apos;" />
+      <point frame="17059840" label="d&apos;&apos;" />
+      <point frame="18970112" label="d&apos;&apos;&apos;" />
+      <point frame="19837440" label="end" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="18" type="timeinstants" name="Time Instants" model="21"  plotStyle="0" colourName="Red" colour="#800000" darkBackground="false"  presentationName="small scale"/>
+  </display>
+</sv>
