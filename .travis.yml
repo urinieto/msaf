@@ -9,7 +9,8 @@ notifications:
 
 script: 
     - cd tests
-    - nosetests test_featextract.py test_run.py test_input_output.py -v -s
+    #- nosetests test_featextract.py test_run.py test_input_output.py -v -s
+    - nosetests test_featextract.py -v -s
 
 before_install:
     - sudo apt-get update -qq
