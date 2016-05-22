@@ -286,19 +286,20 @@ class Segmenter(SegmenterInterface):
         F, frame_times, dur = features(self.audio_file, self.annot_beats,
                                        self.features, self.framesync)
 
-        try:
-            # Load and apply transform
-            W = load_transform(self.config["transform"])
-            F = W.dot(F)
+        print(F)
+        # try:
+        # Load and apply transform
+        W = load_transform(self.config["transform"])
+        F = W.dot(F)
 
-            # Get Segments
-            kmin, kmax = get_num_segs(dur)
-            est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
-        except:
-            # The audio file is too short, only beginning and end
-            logging.warning("Audio file too short! "
-                            "Only start and end boundaries.")
-            est_idxs = [0, F.shape[1] - 1]
+        # Get Segments
+        kmin, kmax = get_num_segs(dur)
+        est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
+        # except:
+            # # The audio file is too short, only beginning and end
+            # logging.warning("Audio file too short! "
+                            # "Only start and end boundaries.")
+            # est_idxs = [0, F.shape[1] - 1]
 
         # Make sure that the first and last boundaries are included
         assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[1] - 1
