@@ -45,13 +45,15 @@ def compute_beats(y_percussive, sr=22050):
     logging.info("Estimating Beats...")
     tempo, beats_idx = librosa.beat.beat_track(y=y_percussive, sr=sr,
                                                hop_length=msaf.Anal.hop_size)
+
+    # If librosa couldn't track any beat, simply add the first and last
+    if tempo == 0:
+        beats_idx = np.array([0, len(y_percussive) - 1])
+
+    # To times
     times = librosa.frames_to_time(beats_idx, sr=sr,
                                    hop_length=msaf.Anal.hop_size)
 
-    # Remove first beat time if 0
-    if times[0] == 0:
-        times = times[1:]
-        beats_idx = beats_idx[1:]
     return beats_idx, times
 
 

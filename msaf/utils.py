@@ -2,13 +2,13 @@
 Useful functions that are common in MSAF
 """
 
-import copy
 import mir_eval
 import numpy as np
 import os
 import scipy.io.wavfile
 
 import msaf
+
 
 def lognormalize_chroma(C):
     """Log-normalizes chroma such that each vector is between -80 to 0."""
@@ -26,7 +26,8 @@ def normalize_chroma(C):
 
 
 def normalize_matrix(X):
-    """Nomalizes a matrix such that it's maximum value is 1 and minimum is 0."""
+    """Nomalizes a matrix such that it's maximum value is 1 and
+    minimum is 0."""
     X += np.abs(X.min())
     X /= X.max()
     return X
