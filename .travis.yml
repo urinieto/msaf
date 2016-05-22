@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 
 addons:
   apt:
@@ -24,6 +24,7 @@ before_install:
     - export PATH="$HOME/env/miniconda$TRAVIS_PYTHON_VERSION/bin:$PATH";
     - hash -r
     - source activate test-environment
+    - sudo apt-get install liblapack-dev
 
 install:
     # install your own package into the environment
