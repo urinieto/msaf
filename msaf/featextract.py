@@ -48,7 +48,8 @@ def compute_beats(y_percussive, sr=22050):
 
     # Add first and last beat
     beats_idx = np.concatenate(([0], beats_idx,
-                                [len(y_percussive) / msaf.Anal.hop_size]))
+                                [len(y_percussive) / msaf.Anal.hop_size])).\
+        astype(np.int)
 
     # To times
     times = librosa.frames_to_time(beats_idx, sr=sr,
