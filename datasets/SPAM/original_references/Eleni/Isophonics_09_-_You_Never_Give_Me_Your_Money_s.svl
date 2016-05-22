@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sonic-visualiser>
+<sv>
+  <data>
+    <model id="12" name="" sampleRate="11025" start="0" end="2673664" type="sparse" dimensions="1" resolution="1" notifyOnAdd="true" dataset="11" />
+    <dataset id="11" dimensions="1">
+      <point frame="0" label="a" />
+      <point frame="257024" label="b" />
+      <point frame="521728" label="b&apos;" />
+      <point frame="775424" label="c " />
+      <point frame="893440" label="c" />
+      <point frame="1016832" label="d" />
+      <point frame="1103872" label="d" />
+      <point frame="1190880" label="d&apos;" />
+      <point frame="1280880" label="d&apos;" />
+      <point frame="1371600" label="d&apos; " />
+      <point frame="1443584" label="e" />
+      <point frame="1523456" label="f" />
+      <point frame="1548032" label="f&apos;" />
+      <point frame="1576960" label="f&apos;&apos;" />
+      <point frame="1602816" label="f&apos;&apos;&apos;" />
+      <point frame="1636864" label="g" />
+      <point frame="1755136" label="h" />
+      <point frame="1817280" label="g" />
+      <point frame="1856000" label="i" />
+      <point frame="2035080" label="j" />
+      <point frame="2088000" label="k" />
+      <point frame="2252520" label="k&apos;" />
+      <point frame="2362680" label="k&apos;&apos;" />
+      <point frame="2535936" label="Z" />
+      <point frame="2673664" label="Silence" />
+    </dataset>
+  </data>
+  <display>
+    <layer id="9" type="timeinstants" name="Time Instants" model="12"  plotStyle="0" colourName="Red" colour="#800000" darkBackground="false"  presentationName="Small Scale"/>
+  </display>
+</sv>
