@@ -4,10 +4,9 @@
 # cd tests/
 # nosetests
 
-import glob
 import json
 import librosa
-from nose.tools import nottest, eq_, raises, assert_equals
+from nose.tools import assert_equals
 import numpy.testing as npt
 import os
 
@@ -29,7 +28,8 @@ def test_compute_beats():
 
 
 def test_compute_features():
-    mfcc, hpcp, tonnetz, cqt = msaf.featextract.compute_features(audio, y_harmonic)
+    mfcc, hpcp, tonnetz, cqt = msaf.featextract.compute_features(audio,
+                                                                 y_harmonic)
     assert mfcc.shape[1] == msaf.Anal.mfcc_coeff
     assert hpcp.shape[1] == 12
     assert tonnetz.shape[1] == 6
@@ -67,6 +67,7 @@ def test_compute_beat_sync_features():
     # Compute beat sync feats
     bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt = \
         msaf.featextract.compute_beat_sync_features(features, beats_idx)
+    print(beats_idx)
     assert_equals(bs_mfcc.shape[0],  len(beats_idx) - 1)
     assert_equals(bs_mfcc.shape[0], bs_hpcp.shape[0])
     assert_equals(bs_hpcp.shape[0], bs_tonnetz.shape[0])
