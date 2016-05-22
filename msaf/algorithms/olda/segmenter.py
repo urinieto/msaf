@@ -136,12 +136,13 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #########
     #print '\tgenerating structure features'
 
-    try:
+    # TODO:
+    # try:
         # This might fail if audio file (or number of beats) is too small
-        R_timbre = repetition(librosa.feature.stack_memory(M))
-        R_chroma = repetition(librosa.feature.stack_memory(C))
-    except:
-        return None, None, dur
+    R_timbre = repetition(librosa.feature.stack_memory(M))
+    R_chroma = repetition(librosa.feature.stack_memory(C))
+    # except:
+        # return None, None, dur
     if R_timbre is None or R_chroma is None:
         return None, None, dur
 
@@ -282,28 +283,27 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        print(self.audio_file,
-              self.annot_beats,
-              self.features,
-              self.framesync)
+        # print(self.audio_file,
+              # self.annot_beats,
+              # self.features,
+              # self.framesync)
         # Preprocess to obtain features, times, and input boundary indeces
         F, frame_times, dur = features(self.audio_file, self.annot_beats,
                                        self.features, self.framesync)
 
-        print(F, dur)
-        # try:
-        # Load and apply transform
-        W = load_transform(self.config["transform"])
-        F = W.dot(F)
+        try:
+            # Load and apply transform
+            W = load_transform(self.config["transform"])
+            F = W.dot(F)
 
-        # Get Segments
-        kmin, kmax = get_num_segs(dur)
-        est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
-        # except:
-            # # The audio file is too short, only beginning and end
-            # logging.warning("Audio file too short! "
-                            # "Only start and end boundaries.")
-            # est_idxs = [0, F.shape[1] - 1]
+            # Get Segments
+            kmin, kmax = get_num_segs(dur)
+            est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
+        except:
+            # The audio file is too short, only beginning and end
+            logging.warning("Audio file too short! "
+                            "Only start and end boundaries.")
+            est_idxs = [0, F.shape[1] - 1]
 
         # Make sure that the first and last boundaries are included
         assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[1] - 1
