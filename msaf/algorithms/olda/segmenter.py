@@ -282,6 +282,10 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
+        print(self.audio_file.shape,
+              self.annot_beats.shape,
+              self.features.shape,
+              self.framesync)
         # Preprocess to obtain features, times, and input boundary indeces
         F, frame_times, dur = features(self.audio_file, self.annot_beats,
                                        self.features, self.framesync)
