@@ -49,8 +49,8 @@ def test_save_features():
     # Check that the json file is actually readable
     with open(tmp_file, "r") as f:
         features = json.load(f)
-    npt.assert_almost_equal(features["analysis"]["dur"], len(audio) / float(sr),
-                            decimal=1)
+    npt.assert_almost_equal(features["analysis"]["dur"],
+                            len(audio) / float(sr), decimal=1)
 
     # Clean up
     os.remove(tmp_file)
@@ -67,7 +67,7 @@ def test_compute_beat_sync_features():
     # Compute beat sync feats
     bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt = \
         msaf.featextract.compute_beat_sync_features(features, beats_idx)
-    assert_equals(bs_mfcc.shape[0],  len(beats_idx))
+    assert_equals(bs_mfcc.shape[0],  len(beats_idx) - 1)
     assert_equals(bs_mfcc.shape[0], bs_hpcp.shape[0])
     assert_equals(bs_hpcp.shape[0], bs_tonnetz.shape[0])
 
