@@ -282,7 +282,7 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        print(self.audio_file.shape,
+        print(self.audio_file,
               self.annot_beats.shape,
               self.features.shape,
               self.framesync)
