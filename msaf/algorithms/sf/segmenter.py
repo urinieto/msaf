@@ -149,7 +149,7 @@ class Segmenter(SegmenterInterface):
             # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Recurrence matrix
-            print(E.shape)
+            print(E.shape, k * int(F.shape[0]))
             R = librosa.segment.recurrence_matrix(
                 E.T,
                 k=k * int(F.shape[0]),
