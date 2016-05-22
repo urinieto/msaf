@@ -283,7 +283,7 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         print(self.audio_file,
-              self.annot_beats.shape,
+              self.annot_beats,
               self.features.shape,
               self.framesync)
         # Preprocess to obtain features, times, and input boundary indeces
