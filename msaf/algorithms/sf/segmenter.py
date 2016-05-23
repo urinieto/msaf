@@ -154,7 +154,7 @@ class Segmenter(SegmenterInterface):
                 E.T,
                 k=k * int(F.shape[0]),
                 width=1,  # zeros from the diagonal
-                metric="seuclidean",
+                metric="euclidean",
                 sym=True).astype(np.float32)
 
             # Circular shift
