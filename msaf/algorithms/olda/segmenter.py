@@ -80,7 +80,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
         return e_vecs.T.dot(X)
 
     # Latent factor repetition features
-    def repetition(X, metric='seuclidean'):
+    def repetition(X, metric='euclidean'):
         R = librosa.segment.recurrence_matrix(X,
                                             k=2 * int(np.ceil(np.sqrt(X.shape[1]))),
                                             width=REP_WIDTH,
