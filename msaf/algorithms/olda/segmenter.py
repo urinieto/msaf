@@ -136,7 +136,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #########
     #print '\tgenerating structure features'
 
-    # TODO:
+    # TODO: Handle the exceptions correctly
     # try:
         # This might fail if audio file (or number of beats) is too small
     R_timbre = repetition(librosa.feature.stack_memory(M))
