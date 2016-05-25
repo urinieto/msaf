@@ -78,6 +78,8 @@ def compute_features(audio, y_harmonic):
         Tonal Centroid features.
     cqt: np.array(N, msaf.Anal.cqt_bins)
         Constant-Q log-scale features.
+    tempogram: np.array(N, 192)
+        Tempogram features.
     """
     logging.info("Computing Spectrogram...")
     S = librosa.feature.melspectrogram(audio,
@@ -108,7 +110,12 @@ def compute_features(audio, y_harmonic):
 
     logging.info("Computing Tonnetz...")
     tonnetz = utils.chroma_to_tonnetz(hpcp)
-    return mfcc, hpcp, tonnetz, cqt
+    logging.info("Computing Tempogram...")
+    tempogram = librosa.feature.tempogram(audio,
+                                      sr=msaf.Anal.sample_rate,
+                                      hop_length=msaf.Anal.hop_size,
+                                      win_length=192).T
+    return mfcc, hpcp, tonnetz, cqt, tempogram
 
 
 def save_features(out_file, features):
@@ -141,20 +148,23 @@ def save_features(out_file, features):
         "mfcc": features["mfcc"].tolist(),
         "hpcp": features["hpcp"].tolist(),
         "tonnetz": features["tonnetz"].tolist(),
-        "cqt": features["cqt"].tolist()
+        "cqt": features["cqt"].tolist(),
+        "tempogram": features["tempogram"].tolist()
     }
     out_json["est_beatsync"] = {
         "mfcc": features["bs_mfcc"].tolist(),
         "hpcp": features["bs_hpcp"].tolist(),
         "tonnetz": features["bs_tonnetz"].tolist(),
-        "cqt": features["bs_cqt"].tolist()
+        "cqt": features["bs_cqt"].tolist(),
+        "tempogram": features["bs_tempogram"].tolist()
     }
     try:
         out_json["ann_beatsync"] = {
             "mfcc": features["ann_mfcc"].tolist(),
             "hpcp": features["ann_hpcp"].tolist(),
             "tonnetz": features["ann_tonnetz"].tolist(),
-            "cqt": features["ann_cqt"].tolist()
+            "cqt": features["ann_cqt"].tolist(),
+            "tempogram": features["ann_tempogram"].tolist()
         }
     except:
         logging.warning("No annotated beats")
@@ -173,13 +183,15 @@ def compute_beat_sync_features(features, beats_idx):
     bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx,
                                       pad=pad).T
     bs_cqt = librosa.feature.sync(features["cqt"].T, beats_idx, pad=pad).T
+    bs_tempogram = librosa.feature.sync(features["tempogram"].T, beats_idx, pad=pad).T
 
     # Make sure we have the right size (remove last frame if needed)
     bs_mfcc = bs_mfcc[:len(beats_idx), :]
     bs_hpcp = bs_hpcp[:len(beats_idx), :]
     bs_tonnetz = bs_tonnetz[:len(beats_idx), :]
     bs_cqt = bs_cqt[:len(beats_idx), :]
-    return bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt
+    bs_tempogram = bs_tempogram[:len(beats_idx), :]
+    return bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt, bs_tempogram
 
 
 def compute_features_for_audio_file(audio_file):
@@ -207,7 +219,7 @@ def compute_features_for_audio_file(audio_file):
 
     # Compute framesync features
     features["mfcc"], features["hpcp"], features["tonnetz"], \
-        features["cqt"] = compute_features(audio, y_harmonic)
+        features["cqt"], features["tempogram"] = compute_features(audio, y_harmonic)
 
     # Estimate Beats
     features["beats_idx"], features["beats"] = compute_beats(
@@ -215,7 +227,7 @@ def compute_features_for_audio_file(audio_file):
 
     # Compute Beat-sync features
     features["bs_mfcc"], features["bs_hpcp"], features["bs_tonnetz"], \
-        features["bs_cqt"] = compute_beat_sync_features(features,
+        features["bs_cqt"], features["bs_tempogram"] = compute_beat_sync_features(features,
                                                         features["beats_idx"])
 
     # Analysis parameters
@@ -280,7 +292,7 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
                 annot_beats_times, sr=msaf.Anal.sample_rate,
                 hop_length=msaf.Anal.hop_size)
             features["ann_mfcc"], features["ann_hpcp"], \
-                features["ann_tonnetz"], features["ann_cqt"] = \
+                features["ann_tonnetz"], features["ann_cqt"], features["ann_tempogram"] = \
                 compute_beat_sync_features(features, annot_beats_idx)
 
     # Save output as json file
