@@ -58,7 +58,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         Contains the results of all the evaluations for the given file.
         Keys are the following:
             track_id  : Name of the track
-            ds_name :   Name of the data set
             HitRate_3F  :   F-measure of hit rate at 3 seconds
             HitRate_3P  :   Precision of hit rate at 3 seconds
             HitRate_3R  :   Recall of hit rate at 3 seconds
@@ -133,7 +132,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     # Names
     base = os.path.basename(est_file)
     res["track_id"] = base[:-5]
-    res["ds_name"] = base.split("_")[0]
 
     return res
 
@@ -275,14 +273,11 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config, ds_name,
-                          annotator_id):
+def get_results_file_name(boundaries_id, labels_id, config, annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
-    if ds_name == "*":
-        ds_name = "All"
     utils.ensure_dir(msaf.results_dir)
-    file_name = os.path.join(msaf.results_dir, "results_%s" % ds_name)
+    file_name = os.path.join(msaf.results_dir, "results")
     file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
     file_name += "_annotatorE%d" % (annotator_id)
     sorted_keys = sorted(config.keys(), key=str.lower)
@@ -297,7 +292,7 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name,
 
 
 def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
-            labels_id=msaf.DEFAULT_LABEL_ID, ds_name="*", annot_beats=False,
+            labels_id=msaf.DEFAULT_LABEL_ID, annot_beats=False,
             framesync=False, feature="hpcp", hier=False, save=False,
             n_jobs=4, annotator_id=0, config=None):
     """Main process.
@@ -310,8 +305,6 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
         Boundaries algorithm identifier (e.g. siplca, cnmf)
     labels_id : str
         Labels algorithm identifier (e.g. siplca, cnmf)
-    ds_name : str
-        Name of the dataset to be evaluated (e.g. SALAMI). * stands for all.
     annot_beats : boolean
         Whether to use the annotated beats or not.
     framesync: str
@@ -349,7 +342,7 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
     config.pop("features", None)
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,
+    out_file = get_results_file_name(boundaries_id, labels_id, config,
                                      annotator_id)
 
     # All evaluations
@@ -370,7 +363,7 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
             return results
 
         # Get files
-        file_structs = io.get_dataset_files(in_path, ds_name)
+        file_structs = io.get_dataset_files(in_path)
 
         logging.info("Evaluating %d tracks..." % len(file_structs))
 
