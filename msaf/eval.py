@@ -105,8 +105,9 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         ann_inter, est_inter, trim=True)
 
     # --Labels-- #
-    if "-1" in est_labels:
+    if est_labels is not None and "-1" in est_labels:
         est_labels = None
+
     if est_labels is not None and len(est_labels) != 0:
         try:
             # Align labels with intervals
@@ -346,16 +347,6 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
 
     # Remove actual features
     config.pop("features", None)
-
-    # Sanity check for hierarchical evaluation
-    if hier:
-        try:
-            from mir_eval import hierarchy
-        except ImportError:
-            logging.error("An experimental mir_eval version is needed to "
-                          "evaluate hierarchical segments. Please, download it"
-                          " from: https://github.com/bmcfee/mir_eval")
-            return []
 
     # Get out file in case we want to save results
     out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,

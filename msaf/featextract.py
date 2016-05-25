@@ -45,13 +45,16 @@ def compute_beats(y_percussive, sr=22050):
     logging.info("Estimating Beats...")
     tempo, beats_idx = librosa.beat.beat_track(y=y_percussive, sr=sr,
                                                hop_length=msaf.Anal.hop_size)
+
+    # Add first and last beat
+    beats_idx = np.concatenate(([0], beats_idx,
+                                [len(y_percussive) / msaf.Anal.hop_size])).\
+        astype(np.int)
+
+    # To times
     times = librosa.frames_to_time(beats_idx, sr=sr,
                                    hop_length=msaf.Anal.hop_size)
 
-    # Remove first beat time if 0
-    if times[0] == 0:
-        times = times[1:]
-        beats_idx = beats_idx[1:]
     return beats_idx, times
 
 
@@ -166,7 +169,7 @@ def save_features(out_file, features):
 def compute_beat_sync_features(features, beats_idx):
     """Given a dictionary of features, and the estimated index frames,
     calculate beat-synchronous features."""
-    pad = True
+    pad = False
     bs_mfcc = librosa.feature.sync(features["mfcc"].T, beats_idx, pad=pad).T
     bs_hpcp = librosa.feature.sync(features["hpcp"].T, beats_idx, pad=pad).T
     bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx,

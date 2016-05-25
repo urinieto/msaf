@@ -150,11 +150,12 @@ class Segmenter(SegmenterInterface):
             #plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Recurrence matrix
+            print(E.shape, k * int(F.shape[0]))
             R = librosa.segment.recurrence_matrix(
                 E.T,
                 k=k * int(F.shape[0]),
                 width=1,  # zeros from the diagonal
-                metric="seuclidean",
+                metric="euclidean",
                 sym=True).astype(np.float32)
 
             # Circular shift
