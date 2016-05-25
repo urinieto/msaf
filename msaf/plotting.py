@@ -14,14 +14,14 @@ from msaf import io
 from msaf import utils
 
 translate_ids = {
-    "2dfmc" : "2D-FMC",
-    "cnmf3" : "C-NMF",
-    "foote" : "Ckboard",
-    "levy"  : "CC",
-    "cc"    : "CC",
-    "olda"  : "OLDA",
-    "serra" : "SF",
-    "sf"    : "SF",
+    "2dfmc": "2D-FMC",
+    "cnmf3": "C-NMF",
+    "foote": "Ckboard",
+    "levy": "CC",
+    "cc": "CC",
+    "olda": "OLDA",
+    "serra": "SF",
+    "sf": "SF",
     "siplca": "SI-PLCA"
 }
 
@@ -36,7 +36,7 @@ def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
     plt.gcf().subplots_adjust(bottom=0.22)
     plt.gca().set_yticklabels(algo_ids)
     plt.xlabel("Time (seconds)")
-    plt.xlim((0, last_bound))
+    plt.xlim((0, last_bound + 1))
     plt.tight_layout()
     if output_file is not None:
         plt.savefig(output_file)
@@ -142,8 +142,8 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
                      output_file)
 
 
-def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
-                   ds_prefix, title=None):
+def plot_one_track(file_struct, est_times, est_labels, boundaries_id,
+                   labels_id, title=None):
     """Plots the results of one track, with ground truth if it exists."""
     # Set up the boundaries id
     bid_lid = boundaries_id
@@ -230,11 +230,10 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
 
     # Plot axvspans for each segment
     B = float(len(level_bounds))
-    #plt.figure(figsize=figsize)
+    # plt.figure(figsize=figsize)
     for i, segments in enumerate(level_bounds):
         labels = utils.segment_labels_to_floats(segments)
         for segment, label in zip(segments, labels):
-            #print i, label, cmap(label)
             if res is None:
                 start = segment.start
                 end = segment.end

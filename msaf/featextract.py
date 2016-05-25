@@ -122,10 +122,12 @@ def save_features(out_file, features):
         Dictionary containing the features.
     """
     logging.info("Saving the JSON file in %s" % out_file)
-    out_json = {"metadata": {"version": {"librosa": librosa.__version__}}}
+    out_json = {"metadata": {"versions":
+                             {"librosa": librosa.__version__,
+                              "msaf": msaf.__version__}}}
     out_json["analysis"] = {
         "dur": features["anal"]["dur"],
-        "frame_rate": msaf.Anal.frame_size,
+        "n_fft": msaf.Anal.frame_size,
         "hop_size": msaf.Anal.hop_size,
         "mfcc_coeff": msaf.Anal.mfcc_coeff,
         "n_mels": msaf.Anal.n_mels,
@@ -220,7 +222,7 @@ def compute_features_for_audio_file(audio_file):
 
     # Analysis parameters
     features["anal"] = {}
-    features["anal"]["frame_rate"] = msaf.Anal.frame_size
+    features["anal"]["n_fft"] = msaf.Anal.frame_size
     features["anal"]["hop_size"] = msaf.Anal.hop_size
     features["anal"]["mfcc_coeff"] = msaf.Anal.mfcc_coeff
     features["anal"]["sample_rate"] = msaf.Anal.sample_rate

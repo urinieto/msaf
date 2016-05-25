@@ -589,38 +589,24 @@ def get_SALAMI_internet(file_structs):
     return new_file_structs
 
 
-def get_dataset_files(in_path, ds_name="*"):
-    """Gets the files of the dataset with a prefix of ds_name."""
+def get_dataset_files(in_path):
+    """Gets the files of the input path.
 
-    # All datasets
-    ds_dict = {
-        "Beatles": "Isophonics",
-        "Cerulean": "Cerulean",
-        "Epiphyte": "Epiphyte",
-        "Isophonics": "Isophonics",
-        "SALAMI": "SALAMI",
-        "SALAMI-i": "SALAMI",
-        "*": "*"
-    }
+    Parameters
+    ----------
+    in_path: str
+        Path to the input dataset.
 
-    try:
-        prefix = ds_dict[ds_name]
-    except KeyError:
-        raise RuntimeError("Dataset %s is not valid. Valid datasets are: %s" %
-                           (ds_name, ds_dict.keys()))
-
+    Returns
+    -------
+    file_structs: list
+        List of file structs containing the dataset files.
+    """
     # Get audio files
     audio_files = []
     for ext in msaf.Dataset.audio_exts:
-        audio_files += glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
-                                              ("%s_*" + ext) % prefix))
-
-    # Check for datasets with different prefix
-    if len(audio_files) == 0:
-        for ext in msaf.Dataset.audio_exts:
-            audio_files += glob.glob(os.path.join(in_path,
-                                                  msaf.Dataset.audio_dir,
-                                                  "*" + ext))
+        audio_files += glob.glob(
+            os.path.join(in_path, msaf.Dataset.audio_dir, "*" + ext))
 
     # Make sure directories exist
     utils.ensure_dir(os.path.join(in_path, msaf.Dataset.features_dir))
@@ -631,14 +617,6 @@ def get_dataset_files(in_path, ds_name="*"):
     file_structs = []
     for audio_file in audio_files:
         file_structs.append(FileStruct(audio_file))
-
-    # Filter by the beatles
-    if ds_name == "Beatles":
-        file_structs = filter_by_artist(file_structs, "The Beatles")
-
-    # Salami Internet hack
-    if ds_name == "SALAMI-i":
-        file_structs = get_SALAMI_internet(file_structs)
 
     # Sort by audio file name
     file_structs = sorted(file_structs,
