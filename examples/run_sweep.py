@@ -123,7 +123,7 @@ def main():
                         default="hpcp",
                         type=str,
                         help="Type of features",
-                        choices=["hpcp", "tonnetz", "mfcc", "cqt"])
+                        choices=["hpcp", "tonnetz", "mfcc", "cqt", "tempogram"])
     parser.add_argument("-b",
                         action="store_true",
                         dest="annot_beats",
