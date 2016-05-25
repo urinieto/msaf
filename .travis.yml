@@ -1,54 +1,37 @@
+sudo: true
+
+addons:
+  apt:
+    packages:
+    - ffmpeg
+
+cache:
+  directories:
+  - $HOME/env
+
 language: python
 
-python:
-  - "2.7"
-  - "3.4"
-
 notifications:
-    email: false 
+  email: false
 
-script: 
-    - cd tests
-    - nosetests test_featextract.py test_run.py test_input_output.py -v -s
+python:
+    - "2.7"
+    - "3.4"
+    - "3.5"
 
 before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq
-    - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh;
-      else
-        wget http://repo.continuum.io/miniconda/Miniconda3-3.8.3-Linux-x86_64.sh -O miniconda.sh;
-      fi
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - conda update --yes conda
-      # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-    - sudo rm -rf /dev/shm
-    - sudo ln -s /run/shm /dev/shm 
-      # Some Brian Magic to install libsamplerate
-    - conda config --set always_yes yes --set changeps1 no
-    - deps='pip numpy scipy pandas requests nose numpydoc matplotlib sphinx scikit-learn seaborn'
-    - conda create -q -n test-environment "python=$TRAVIS_PYTHON_VERSION" $deps 
+    - bash .travis_dependencies.sh
+    - export PATH="$HOME/env/miniconda$TRAVIS_PYTHON_VERSION/bin:$PATH";
+    - hash -r
     - source activate test-environment
-    - apt-get source libsamplerate
-    - pushd libsamplerate-*
-    - ./configure --prefix=$HOME/miniconda/envs/test-environment
-    - make && make install
-    - popd
+    - sudo apt-get install liblapack-dev
 
 install:
-    # install gcc-4.8 with c++11 support: https://github.com/travis-ci-tester/travis-test-gcc-cxx-11
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo apt-get update
-    - sudo apt-get install ffmpeg # ffmpeg is in the default repo again.
-    - sudo apt-get install g++-4.8
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
-    - sudo apt-get install liblapack-dev
-    - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels cvxopt scikit-learn
-    #- conda install --yes -c dan_blanchard python-coveralls nose-cov 
-    - pip install git+https://github.com/bmcfee/samplerate.git
-    - pip install librosa
-    - pip install jams
-    - python setup.py build
-    - python setup.py install
+    # install your own package into the environment
+    # pip install -e rather than setup.py, so that coverage can find the source
+    - pip install -e ./
+
+script:
+    - python --version
+    - cd tests
+    - nosetests test_*.py -v -s

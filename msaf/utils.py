@@ -1,7 +1,6 @@
 """
 Useful functions that are common in MSAF
 """
-import copy
 import mir_eval
 import numpy as np
 import os
