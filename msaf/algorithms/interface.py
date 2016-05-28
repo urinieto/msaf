@@ -41,7 +41,7 @@ class SegmenterInterface:
 
     In these cases, est_times or est_labels will be empty (None).
     """
-    def __init__(self, audio_file, in_bound_idxs=None, feature="hpcp",
+    def __init__(self, audio_file, in_bound_idxs=None, feature="pcp",
                  annot_beats=False, framesync=False, features=None, **config):
         """Inits the Segmenter.
 
@@ -53,7 +53,7 @@ class SegmenterInterface:
             Array containing the frame indeces of the previously find
             boundaries. `None` for computing them.
         feature: str
-            Identifier of the features (e.g., hpcp, mfcc)
+            Identifier of the features (e.g., pcp, mfcc)
         annot_beats: boolean
             Whether to use annotated beats or estimated ones.
         framesync: boolean
@@ -82,7 +82,7 @@ class SegmenterInterface:
         raise NotImplementedError("This method does not return hierarchical "
                                   "segmentations.")
 
-    def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc", "cqt"],
+    def _preprocess(self, valid_features=["pcp", "tonnetz", "mfcc", "cqt"],
                     normalize=True):
         """This method obtains the actual features."""
         # Read features
