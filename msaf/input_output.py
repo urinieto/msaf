@@ -214,6 +214,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
             "mfcc": np.array((N, 13)), MFCC
             "tonnetz": np.array((N, 6)), Tonnetz
             "cqt": np.array((N, msaf.Anal.cqt_bins)), Constant-Q transform
+            "tempogram": np.array((N, 192)), Tempogram
             "beats": np.array(T), Beats in seconds
             "anal" : dict, Parameters of analysis of track (e.g. sampling rate)
     """
@@ -263,6 +264,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     features["mfcc"] = np.asarray(feats[feat_str]["mfcc"])
     features["tonnetz"] = np.asarray(feats[feat_str]["tonnetz"])
     features["cqt"] = np.asarray(feats[feat_str]["cqt"])
+    features["tempogram"] = np.asarray(feats[feat_str]["tempogram"])
     features["beats"] = np.asarray(feats["beats"]["times"])
     features["anal"] = feats["analysis"]
 
@@ -274,6 +276,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
         features["mfcc"] = features["mfcc"][:len(frame_times)]
         features["tonnetz"] = features["tonnetz"][:len(frame_times)]
         features["cqt"] = features["cqt"][:len(frame_times)]
+        features["tempogram"] = features["tempogram"][:len(frame_times)]
 
     return features
 
