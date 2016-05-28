@@ -27,10 +27,9 @@ import msaf.featextract
 
 def main():
     """Main function to parse the arguments and call the main process."""
-    parser = argparse.ArgumentParser(
-        description="Extracts a set of features from the Segmentation dataset "
-        "or a given audio file and saves them into the 'features' folder of "
-        "the dataset",
+    parser = argparse.ArgumentParser(description=
+        "Extracts a set of features from the Segmentation dataset or a given "
+        "audio file and saves them into the 'features' folder of the dataset",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",
                         action="store",
@@ -57,17 +56,23 @@ def main():
                         type=str,
                         help="Output file (only for single file mode)",
                         default="out.json")
+    parser.add_argument("-d",
+                        action="store",
+                        dest="ds_name",
+                        default="*",
+                        help="The prefix of the dataset to use "
+                        "(e.g. Isophonics, SALAMI)")
     args = parser.parse_args()
     start_time = time.time()
 
     # Setup the logger
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
-                        level=logging.INFO)
+        level=logging.INFO)
 
     # Run the algorithm
     msaf.featextract.process(args.in_path, sonify_beats=args.sonify_beats,
                              n_jobs=args.n_jobs, overwrite=args.overwrite,
-                             out_file=args.out_file)
+                             out_file=args.out_file, ds_name=args.ds_name)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))

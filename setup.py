@@ -1,15 +1,11 @@
 from setuptools import setup, find_packages
 import glob
-import imp
 import numpy.distutils.misc_util
-
-
-version = imp.load_source('msaf.version', 'msaf/version.py')
 
 # MSAF configuration
 setup(
     name='msaf',
-    version=version.version,
+    version='0.0.4',
     description='Python module to discover the structure of music files',
     author='Oriol Nieto',
     author_email='oriol@nyu.edu',
