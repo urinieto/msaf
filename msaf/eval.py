@@ -293,7 +293,7 @@ def get_results_file_name(boundaries_id, labels_id, config, annotator_id):
 
 def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
             labels_id=msaf.DEFAULT_LABEL_ID, annot_beats=False,
-            framesync=False, feature="hpcp", hier=False, save=False,
+            framesync=False, feature="pcp", hier=False, save=False,
             n_jobs=4, annotator_id=0, config=None):
     """Main process.
 
@@ -310,7 +310,7 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
     framesync: str
         Whether to use framesync features or not (default: False -> beatsync)
     feature: str
-        String representing the feature to be used (e.g. hpcp, mfcc, tonnetz)
+        String representing the feature to be used (e.g. pcp, mfcc, tonnetz)
     hier : bool
         Whether to compute a hierarchical or flat segmentation.
     save: boolean

@@ -65,13 +65,13 @@ class Dataset():
 
 
 feat_dict = {
-    'sf': 'hpcp',
-    'levy':   'hpcp',
-    'foote':   'hpcp',
+    'sf': 'pcp',
+    'levy':   'pcp',
+    'foote':   'pcp',
     'siplca':   '',
     'olda':   '',
-    'cnmf':   'hpcp',
+    'cnmf':   'pcp',
     '2dfmc':   ''
 }
 
-AVAILABLE_FEATS = ["hpcp", "mfcc", "cqt", "tonnetz"]
+AVAILABLE_FEATS = ["pcp", "mfcc", "cqt", "tonnetz"]

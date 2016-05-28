@@ -96,7 +96,7 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     for level in range(len(est_idxs)):
         est_level_times, est_level_labels = \
             utils.process_segmentation_level(
-                est_idxs[level], est_labels[level], features["hpcp"].shape[0],
+                est_idxs[level], est_labels[level], features["pcp"].shape[0],
                 frame_times, features["anal"]["dur"])
         est_times.append(est_level_times)
         cleaned_est_labels.append(est_level_labels)
@@ -132,9 +132,9 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
                 est_idxs = io.align_times(est_times, frame_times[:-1])
                 if est_idxs[0] != 0:
                     est_idxs = np.concatenate(([0], est_idxs))
-                if est_idxs[-1] != features["hpcp"].shape[0] - 1:
+                if est_idxs[-1] != features["pcp"].shape[0] - 1:
                     est_idxs = np.concatenate((
-                        est_idxs, [features["hpcp"].shape[0] - 1]))
+                        est_idxs, [features["pcp"].shape[0] - 1]))
             except:
                 logging.warning("No references found for file: %s" %
                                 audio_file)
@@ -152,7 +152,7 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
 
     # Make sure the first and last boundaries are included
     est_times, est_labels = utils.process_segmentation_level(
-        est_idxs, est_labels, features["hpcp"].shape[0], frame_times,
+        est_idxs, est_labels, features["pcp"].shape[0], frame_times,
         features["anal"]["dur"])
 
     return est_times, est_labels
@@ -192,7 +192,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     config["features"] = features
 
     # Check that there are enough audio frames
-    if features["hpcp"].shape[0] <= msaf.minimum__frames:
+    if features["pcp"].shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
         return np.asarray([0, features["anal"]["dur"]]), \
@@ -269,7 +269,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     return est_times, est_labels
 
 
-def process(in_path, annot_beats=False, feature="hpcp", framesync=False,
+def process(in_path, annot_beats=False, feature="pcp", framesync=False,
             boundaries_id=msaf.DEFAULT_BOUND_ID,
             labels_id=msaf.DEFAULT_LABEL_ID, hier=False, sonify_bounds=False,
             plot=False, n_jobs=4, annotator_id=0, config=None,
@@ -285,7 +285,7 @@ def process(in_path, annot_beats=False, feature="hpcp", framesync=False,
         Whether to use annotated beats or not. Only available in collection
         mode.
     feature: str
-        String representing the feature to be used (e.g. hpcp, mfcc, tonnetz)
+        String representing the feature to be used (e.g. pcp, mfcc, tonnetz)
     framesync: str
         Whether to use framesync features or not (default: False -> beatsync)
     boundaries_id: str
