@@ -34,7 +34,7 @@ def print_results(results):
 
 
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
-                    est_file):
+                    est_file, weight=0.58):
     """Compute the results using all the available evaluations.
 
     Parameters
@@ -51,47 +51,72 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         Number of bins for the information gain.
     est_file : str
         Path to the output file to store results.
+    weight: float
+        Weight the Precision and Recall values of the hit rate boundaries
+        differently (<1 will weight Precision higher, >1 will weight Recall
+        higher).
+        The default parameter (0.58) is the one proposed in (Nieto et al. 2014)
 
     Return
     ------
     results : dict
         Contains the results of all the evaluations for the given file.
         Keys are the following:
-            track_id  : Name of the track
-            HitRate_3F  :   F-measure of hit rate at 3 seconds
-            HitRate_3P  :   Precision of hit rate at 3 seconds
-            HitRate_3R  :   Recall of hit rate at 3 seconds
-            HitRate_0.5F  :   F-measure of hit rate at 0.5 seconds
-            HitRate_0.5P  :   Precision of hit rate at 0.5 seconds
-            HitRate_0.5R  :   Recall of hit rate at 0.5 seconds
-            HitRate_t3F  :   F-measure of hit rate at 3 seconds (trimmed)
-            HitRate_t3P  :   Precision of hit rate at 3 seconds (trimmed)
-            HitRate_t3F  :   Recall of hit rate at 3 seconds (trimmed)
-            HitRate_t0.5F  :   F-measure of hit rate at 0.5 seconds (trimmed)
-            HitRate_t0.5P  :   Precision of hit rate at 0.5 seconds (trimmed)
-            HitRate_t0.5R  :   Recall of hit rate at 0.5 seconds (trimmed)
-            DevA2E  :   Median deviation of annotation to estimation
-            DevE2A  :   Median deviation of estimation to annotation
-            D   :   Information gain
-            PWF : F-measure of pair-wise frame clustering
-            PWP : Precision of pair-wise frame clustering
-            PWR : Recall of pair-wise frame clustering
-            Sf  : F-measure normalized entropy score
-            So  : Oversegmentation normalized entropy score
-            Su  : Undersegmentation normalized entropy score
+            track_id: Name of the track
+            HitRate_3F: F-measure of hit rate at 3 seconds
+            HitRate_3P: Precision of hit rate at 3 seconds
+            HitRate_3R: Recall of hit rate at 3 seconds
+            HitRate_0.5F: F-measure of hit rate at 0.5 seconds
+            HitRate_0.5P: Precision of hit rate at 0.5 seconds
+            HitRate_0.5R: Recall of hit rate at 0.5 seconds
+            HitRate_w3F: F-measure of hit rate at 3 seconds weighted
+            HitRate_w0.5F: F-measure of hit rate at 0.5 seconds weighted
+            HitRate_wt3F: F-measure of hit rate at 3 seconds weighted and
+                          trimmed
+            HitRate_wt0.5F: F-measure of hit rate at 0.5 seconds weighted
+                            and trimmed
+            HitRate_t3F: F-measure of hit rate at 3 seconds (trimmed)
+            HitRate_t3P: Precision of hit rate at 3 seconds (trimmed)
+            HitRate_t3F: Recall of hit rate at 3 seconds (trimmed)
+            HitRate_t0.5F: F-measure of hit rate at 0.5 seconds (trimmed)
+            HitRate_t0.5P: Precision of hit rate at 0.5 seconds (trimmed)
+            HitRate_t0.5R: Recall of hit rate at 0.5 seconds (trimmed)
+            DevA2E: Median deviation of annotation to estimation
+            DevE2A: Median deviation of estimation to annotation
+            D: Information gain
+            PWF: F-measure of pair-wise frame clustering
+            PWP: Precision of pair-wise frame clustering
+            PWR: Recall of pair-wise frame clustering
+            Sf: F-measure normalized entropy score
+            So: Oversegmentation normalized entropy score
+            Su: Undersegmentation normalized entropy score
     """
     res = {}
 
     # --Boundaries-- #
-    # Hit Rate
+    # Hit Rate standard
     res["HitRate_3P"], res["HitRate_3R"], res["HitRate_3F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
     res["HitRate_0.5P"], res["HitRate_0.5R"], res["HitRate_0.5F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=False)
+
+    # Hit rate trimmed
     res["HitRate_t3P"], res["HitRate_t3R"], res["HitRate_t3F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
     res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
+
+    # Hit rate weighted
+    res["HitRate_w3P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=3, trim=False, beta=weight)
+    res["HitRate_w0.5P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=.5, trim=False, beta=weight)
+
+    # Hit rate weighted and trimmed
+    res["HitRate_wt3P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=3, trim=True, beta=weight)
+    res["HitRate_wt0.5P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=.5, trim=True, beta=weight)
 
     # Information gain
     res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
