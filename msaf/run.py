@@ -269,8 +269,8 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     return est_times, est_labels
 
 
-def process(in_path, annot_beats=False, feature="hpcp", framesync=False,
-            boundaries_id=msaf.DEFAULT_BOUND_ID,
+def process(in_path, annot_beats=False, feature="hpcp", ds_name="*",
+            framesync=False, boundaries_id=msaf.DEFAULT_BOUND_ID,
             labels_id=msaf.DEFAULT_LABEL_ID, hier=False, sonify_bounds=False,
             plot=False, n_jobs=4, annotator_id=0, config=None,
             out_bounds="out_bounds.wav", out_sr=22050):
@@ -286,6 +286,8 @@ def process(in_path, annot_beats=False, feature="hpcp", framesync=False,
         mode.
     feature: str
         String representing the feature to be used (e.g. hpcp, mfcc, tonnetz)
+    ds_name: str
+        Prefix of the dataset to be used (e.g. SALAMI, Isophonics)
     framesync: str
         Whether to use framesync features or not (default: False -> beatsync)
     boundaries_id: str
@@ -363,7 +365,7 @@ def process(in_path, annot_beats=False, feature="hpcp", framesync=False,
 
         if plot:
             plotting.plot_one_track(file_struct, est_times, est_labels,
-                                    boundaries_id, labels_id)
+                                    boundaries_id, labels_id, ds_name)
 
         # Save estimations
         msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
@@ -373,7 +375,7 @@ def process(in_path, annot_beats=False, feature="hpcp", framesync=False,
         return est_times, est_labels
     else:
         # Collection mode
-        file_structs = io.get_dataset_files(in_path)
+        file_structs = io.get_dataset_files(in_path, ds_name)
 
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
