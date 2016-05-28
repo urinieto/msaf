@@ -56,7 +56,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     labels_id : str
         Identifier of the algorithm used to compute the labels.
     params : dict
-        Additional search parameters. E.g. {"feature" : "hpcp"}.
+        Additional search parameters. E.g. {"feature" : "pcp"}.
 
     Returns
     -------
@@ -210,7 +210,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     ------
     features : dict
         A dictionary with the following keys:
-            "hpcp": np.array((N, 12)), Chromagram
+            "pcp": np.array((N, 12)), Chromagram
             "mfcc": np.array((N, 13)), MFCC
             "tonnetz": np.array((N, 6)), Tonnetz
             "cqt": np.array((N, msaf.Anal.cqt_bins)), Constant-Q transform
@@ -259,7 +259,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
 
     # Build actual features dictionary
     features = {}
-    features["hpcp"] = np.asarray(feats[feat_str]["hpcp"])
+    features["pcp"] = np.asarray(feats[feat_str]["pcp"])
     features["mfcc"] = np.asarray(feats[feat_str]["mfcc"])
     features["tonnetz"] = np.asarray(feats[feat_str]["tonnetz"])
     features["cqt"] = np.asarray(feats[feat_str]["cqt"])
@@ -270,7 +270,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     if framesync:
         frame_times = utils.get_time_frames(features["anal"]["dur"],
                                             features["anal"])
-        features["hpcp"] = features["hpcp"][:len(frame_times)]
+        features["pcp"] = features["pcp"][:len(frame_times)]
         features["mfcc"] = features["mfcc"][:len(frame_times)]
         features["tonnetz"] = features["tonnetz"][:len(frame_times)]
         features["cqt"] = features["cqt"][:len(frame_times)]
@@ -291,7 +291,7 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     labels_id : str
         Identifier of the algorithm used to compute the labels.
     params : dict
-        Additional search parameters. E.g. {"feature" : "hpcp"}.
+        Additional search parameters. E.g. {"feature" : "pcp"}.
 
     Returns
     -------
