@@ -101,7 +101,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
         features = msaf.io.get_features(audio_path, annot_beats, framesync)
     else:
         features = pre_features
-    chroma = features["hpcp"]
+    chroma = features["pcp"]
     mfcc = features["mfcc"]
     tonnetz = features["tonnetz"]
     cqt = features["cqt"]

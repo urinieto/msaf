@@ -5,8 +5,8 @@ This script identifies the boundaries of a given track using the Spectral
 Clustering method published here:
 
     Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with Spectral
-    Clustering. In Proc. of the 15th International Society for Music Information
-    Retrieval Conference (pp. 405–410). Taipei, Taiwan.
+    Clustering. In Proc. of the 15th International Society for Music
+    Information Retrieval Conference (pp. 405–410). Taipei, Taiwan.
 
 Original code by Brian McFee from:
     https://github.com/bmcfee/laplacian_segmentation
@@ -42,9 +42,9 @@ class Segmenter(SegmenterInterface):
             frame_times = msaf.utils.get_time_frames(
                 self.features["anal"]["dur"], self.features["anal"])
 
-        # Brian wants HPCP and MFCC
+        # Brian wants PCP and MFCC
         # (tranpsosed, because he's that kind of person)
-        F = (self.features["hpcp"].T, self.features["mfcc"].T)
+        F = (self.features["pcp"].T, self.features["mfcc"].T)
 
         # Do actual segmentation
         est_idxs, est_labels = main.do_segmentation(

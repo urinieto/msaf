@@ -129,7 +129,7 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        #F = self._preprocess(valid_features=["hpcp", "cqt"])
+        #F = self._preprocess(valid_features=["pcp", "cqt"])
         F = self._preprocess()
 
         # Find the labels using 2D-FMCs
