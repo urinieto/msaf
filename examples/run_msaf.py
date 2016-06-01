@@ -27,7 +27,7 @@ def main():
                         default="hpcp",
                         type=str,
                         help="Type of features",
-                        choices=["hpcp", "tonnetz", "mfcc", "cqt"])
+                        choices=["hpcp", "tonnetz", "mfcc", "cqt", "tempogram"])
     parser.add_argument("-bid",
                         action="store",
                         help="Boundary algorithm identifier",
