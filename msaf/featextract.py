@@ -107,8 +107,10 @@ def compute_features(audio, y_harmonic):
                                       hop_length=msaf.Anal.hop_size,
                                       n_octaves=msaf.Anal.n_octaves,
                                       fmin=msaf.Anal.f_min).T
+
     logging.info("Computing Tonnetz...")
     tonnetz = utils.chroma_to_tonnetz(hpcp)
+
     logging.info("Computing Tempogram...")
     tempogram = librosa.feature.tempogram(audio,
                                       sr=msaf.Anal.sample_rate,
