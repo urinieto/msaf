@@ -47,16 +47,20 @@ def compute_beats(y_percussive, sr=22050):
                                                hop_length=msaf.Anal.hop_size)
 
     # Add first and last beat if no beat is found
-    if tempo == 0:
-        beats_idx = np.concatenate(
-            ([0], beats_idx, [len(y_percussive) / msaf.Anal.hop_size]))
+    #if tempo == 0:
+        #beats_idx = np.concatenate(
+            #([0], beats_idx, [len(y_percussive) / msaf.Anal.hop_size]))
 
-    # Beat Indeces to Integer
-    beats_idx = beats_idx.astype(np.int)
+    ## Beat Indeces to Integer
+    #beats_idx = beats_idx.astype(np.int)
 
     # To times
     times = librosa.frames_to_time(beats_idx, sr=sr,
                                    hop_length=msaf.Anal.hop_size)
+
+    if times[0] == 0:
+        times = times[1:]
+        beats_idx = beats_idx[1:]
 
     return beats_idx, times
 
@@ -83,34 +87,60 @@ def compute_features(audio, y_harmonic):
         Constant-Q log-scale features.
     """
     logging.info("Computing Spectrogram...")
-    S = librosa.feature.melspectrogram(audio,
-                                       sr=msaf.Anal.sample_rate,
-                                       n_fft=msaf.Anal.frame_size,
-                                       hop_length=msaf.Anal.hop_size,
-                                       n_mels=msaf.Anal.n_mels)
+    #S = librosa.feature.melspectrogram(audio,
+                                       #sr=msaf.Anal.sample_rate,
+                                       #n_fft=msaf.Anal.frame_size,
+                                       #hop_length=msaf.Anal.hop_size,
+                                       #n_mels=msaf.Anal.n_mels)
 
     logging.info("Computing Constant-Q...")
-    cqt = librosa.logamplitude(np.abs(
-        librosa.cqt(audio,
-                    sr=msaf.Anal.sample_rate,
-                    hop_length=msaf.Anal.hop_size,
-                    n_bins=msaf.Anal.cqt_bins,
-                    real=False)) ** 2,
-        ref_power=np.max).T
+    #cqt = librosa.logamplitude(librosa.cqt(audio, sr=msaf.Anal.sample_rate,
+                                           #hop_length=msaf.Anal.hop_size,
+                                           #n_bins=msaf.Anal.cqt_bins) ** 2,
+                               #ref_power=np.max).T
+
+    #linear_cqt = np.abs(librosa.cqt(y_harmonic,
+                                    #sr=msaf.Anal.sample_rate,
+                                    #hop_length=msaf.Anal.hop_size,
+                                    #n_bins=msaf.Anal.cqt_bins,
+                                    #norm=np.inf,
+                                    #filter_scale=1,
+                                    #real=False))
+    #cqt = librosa.logamplitude(linear_cqt, ref_power=np.max).T
 
     logging.info("Computing MFCCs...")
-    log_S = librosa.logamplitude(S, ref_power=np.max)
-    mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=msaf.Anal.mfcc_coeff).T
+    #log_S = librosa.logamplitude(S, ref_power=np.max)
+    #mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=msaf.Anal.mfcc_coeff).T
 
-    logging.info("Computing HPCPs...")
-    pcp = librosa.feature.chroma_cqt(y=y_harmonic,
+    logging.info("Computing PCPs...")
+    pcp_cqt = np.abs(librosa.hybrid_cqt(y_harmonic,
+                                        sr=msaf.Anal.sample_rate,
+                                        hop_length=msaf.Anal.hop_size,
+                                        n_bins=msaf.Anal.cqt_bins,
+                                        norm=np.inf,
+                                        filter_scale=1))
+    pcp = librosa.feature.chroma_cqt(C=pcp_cqt,
                                      sr=msaf.Anal.sample_rate,
                                      hop_length=msaf.Anal.hop_size,
                                      n_octaves=msaf.Anal.n_octaves,
-                                     fmin=msaf.Anal.f_min).T
+                                     fmin=None).T
+    #pcp = librosa.feature.chroma_cqt(C=linear_cqt,
+                                     #sr=msaf.Anal.sample_rate,
+                                     #hop_length=msaf.Anal.hop_size,
+                                     #n_octaves=msaf.Anal.n_octaves,
+                                     #fmin=msaf.Anal.f_min).T
+    #pcp = librosa.feature.chroma_stft(y=y_harmonic,
+                                      #sr=msaf.Anal.sample_rate,
+                                      #n_fft=msaf.Anal.frame_size,
+                                      #hop_length=msaf.Anal.hop_size).T
 
     logging.info("Computing Tonnetz...")
-    tonnetz = utils.chroma_to_tonnetz(pcp)
+    #tonnetz = utils.chroma_to_tonnetz(pcp)
+
+    # TODO:
+    tonnetz = pcp
+    mfcc = pcp
+    cqt = pcp
     return mfcc, pcp, tonnetz, cqt
 
 
