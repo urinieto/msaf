@@ -26,44 +26,163 @@ from msaf import input_output as io
 from msaf.input_output import FileStruct
 
 
-def compute_beats(y_percussive, sr=22050):
-    """Computes the beats using librosa.
+class Features(object):
+    """Features class."""
+    def __init__(self, audio_file, json_file, sr, hop_length, beat_sync):
+        self.audio_file = audio_file
+        self.json_file = json_file
+        self.sr = sr
+        self.hop_length = hop_length
+        self.beat_sync = beat_sync
+        self._audio = None
+        self._audio_harmonic = None
+        self._audio_percussive = None
+        self._features = None
+        self._beatsync_features = None
+        self._framesync_features = None
+        self._beats_times = None
+        self._beats_frames = None
 
-    Parameters
-    ----------
-    y_percussive: np.array
-        Percussive part of the audio signal in samples.
-    sr: int
-        Sample rate.
+    def compute_HPSS(self):
+        """Compute harmonic-percussive source separation."""
+        return librosa.effects.hpss(self._audio)
 
-    Returns
-    -------
-    beats_idx: np.array
-        Indeces in frames of the estimated beats.
-    beats_times: np.array
-        Time of the estimated beats.
-    """
-    logging.info("Estimating Beats...")
-    tempo, beats_idx = librosa.beat.beat_track(y=y_percussive, sr=sr,
-                                               hop_length=msaf.Anal.hop_size)
+    def compute_beats(self):
+        """Computes the beats using librosa."""
+        # Compute harmonic-percussive source separiation if needed
+        if self._audio_percussive is None:
+            self._audio_harmonic, self._audio_percussive = self.compute_HPSS()
 
-    # Add first and last beat if no beat is found
-    #if tempo == 0:
-        #beats_idx = np.concatenate(
-            #([0], beats_idx, [len(y_percussive) / msaf.Anal.hop_size]))
+        tempo, beats_idx = librosa.beat.beat_track(
+            y=self._audio_percussive, sr=self.sr,
+            hop_length=self.hop_length)
 
-    ## Beat Indeces to Integer
-    #beats_idx = beats_idx.astype(np.int)
+        # To times
+        times = librosa.frames_to_time(beats_idx, sr=sr,
+                                       hop_length=msaf.Anal.hop_size)
 
-    # To times
-    times = librosa.frames_to_time(beats_idx, sr=sr,
-                                   hop_length=msaf.Anal.hop_size)
+        if times[0] == 0:
+            times = times[1:]
+            beats_idx = beats_idx[1:]
 
-    if times[0] == 0:
-        times = times[1:]
-        beats_idx = beats_idx[1:]
+        return times, beats_idx
 
-    return beats_idx, times
+    def compute_beat_sync_features(self, pad):
+        """Makes the features beat-synchronous."""
+        beat_sync = librosa.feature.sync(self._framesync_features.T,
+                                         self.beats_frames, pad=pad).T
+
+        # TODO: Make sure we have the right size (remove last frame if needed)
+        # beat_sync = beat_sync[:len(self._beats_frames), :]
+        return beat_sync
+
+    def read_features(self):
+        """Reads the features from a file."""
+        # TODO: Read features and return True if features could be read.
+        return False
+
+    def write_features(self):
+        """Saves features to file."""
+        out_json = {"metadata": {"versions":
+                                 {"librosa": librosa.__version__,
+                                  "msaf": msaf.__version__,
+                                  "numpy": np.__version__}}}
+        out_json["analysis"] = {
+            "dur": features["anal"]["dur"],
+            "n_fft": msaf.Anal.frame_size,
+            "hop_size": msaf.Anal.hop_size,
+            "mfcc_coeff": msaf.Anal.mfcc_coeff,
+            "n_mels": msaf.Anal.n_mels,
+            "sample_rate": msaf.Anal.sample_rate,
+            "window_type": msaf.Anal.window_type
+        }
+        out_json["beats"] = {
+            "times": features["beats"].tolist()
+        }
+        out_json["timestamp"] = \
+            datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
+        out_json["framesync"] = {
+            "mfcc": features["mfcc"].tolist(),
+            "pcp": features["pcp"].tolist(),
+            "tonnetz": features["tonnetz"].tolist(),
+            "cqt": features["cqt"].tolist(),
+            "tempogram": features["tempogram"].tolist()
+        }
+        out_json["est_beatsync"] = {
+            "mfcc": features["bs_mfcc"].tolist(),
+            "pcp": features["bs_pcp"].tolist(),
+            "tonnetz": features["bs_tonnetz"].tolist(),
+            "cqt": features["bs_cqt"].tolist(),
+            "tempogram": features["bs_tempogram"].tolist()
+        }
+        try:
+            out_json["ann_beatsync"] = {
+                "mfcc": features["ann_mfcc"].tolist(),
+                "pcp": features["ann_pcp"].tolist(),
+                "tonnetz": features["ann_tonnetz"].tolist(),
+                "cqt": features["ann_cqt"].tolist(),
+                "tempogram": features["ann_tempogram"].tolist()
+            }
+        except:
+            logging.warning("No annotated beats")
+
+        # Actual save
+        with open(out_file, "w") as f:
+            json.dump(out_json, f, indent=2)
+            pass
+
+    @property
+    def features(self):
+        # Compute features if needed
+        if self._features is None:
+            if not self.read_features():
+                self._audio, _ = librosa.load(self.audio_file, sr=self.sr)
+                self._framesync_features = self.compute_features()
+                self._beats_times, self._beats_frames = self.compute_beats()
+                pad = True  # Always append to the end of the features
+                self._beatsync_features = self.compute_beat_sync_features(pad)
+
+        # Choose features based on type (beatsync or framesync)
+        self._features = self._beatsync_features \
+            if self.beat_sync else self._framesync_features
+
+        return self._features
+
+    def compute_features(self):
+        raise NotImplementedError("This method must contain the actual "
+                                  "implementation of the features")
+
+    def get_id(self):
+        raise NotImplementedError("This method must return a string identifier"
+                                  " of the features")
+
+
+class CQT(Features):
+
+    def __init__(self, audio_file, json_file, beat_sync,
+                 sr=msaf.Anal.sample_rate, hop_length=msaf.Anal.hop_size,
+                 n_bins=msaf.Anal.sample_rate, norm=msaf.Anal.cqt_norm,
+                 filter_scale=msaf.Anal.cqt_filter_scale,
+                 ref_power=msaf.Anal.cqt_ref_power):
+        # Init the parent
+        super().__init__(audio_file=audio_file, json_file=json_file,
+                         sr=sr, hop_length=hop_length, beat_sync=beat_sync)
+
+        self.sr = sr
+
+    def compute_features(self):
+        linear_cqt = np.abs(librosa.cqt(self.audio,
+                                        sr=self.sr,
+                                        hop_length=self.hop_length,
+                                        n_bins=self.cqt_bins,
+                                        norm=self.cqt_norm,
+                                        filter_scale=self.filter_scale,
+                                        real=False)) ** 2
+        cqt = librosa.logamplitude(linear_cqt, ref_power=self.ref_power).T
+        return cqt
+
+    def get_id(self):
+        return "cqt"
 
 
 def compute_features(audio, y_harmonic):
