@@ -74,4 +74,4 @@ feat_dict = {
     '2dfmc':   ''
 }
 
-AVAILABLE_FEATS = ["pcp", "mfcc", "cqt", "tonnetz"]
+AVAILABLE_FEATS = ["pcp", "mfcc", "cqt", "tonnetz", "tempogram"]
