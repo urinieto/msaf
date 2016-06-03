@@ -117,13 +117,13 @@ def compute_features(audio, y_harmonic):
                                         sr=msaf.Anal.sample_rate,
                                         hop_length=msaf.Anal.hop_size,
                                         n_bins=msaf.Anal.cqt_bins,
-                                        norm=np.inf,
-                                        filter_scale=1))
+                                        norm=1,
+                                        fmin=f_min)) ** 2
     pcp = librosa.feature.chroma_cqt(C=pcp_cqt,
                                      sr=msaf.Anal.sample_rate,
                                      hop_length=msaf.Anal.hop_size,
                                      n_octaves=msaf.Anal.n_octaves,
-                                     fmin=None).T
+                                     fmin=f_min).T
     #pcp = librosa.feature.chroma_cqt(C=linear_cqt,
                                      #sr=msaf.Anal.sample_rate,
                                      #hop_length=msaf.Anal.hop_size,
