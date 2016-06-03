@@ -36,6 +36,8 @@ setup(
     license='MIT',
     install_requires=[
         'audioread',
+        'enum34',
+        'future',
         'jams',
         'numpy >= 1.8.0',
         'scipy >= 0.13.0',

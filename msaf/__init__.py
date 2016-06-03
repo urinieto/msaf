@@ -21,7 +21,6 @@ class Anal(object):
     cqt_bins = 84
     cqt_norm = np.inf
     cqt_filter_scale = 1
-    cqt_ref_power = np.max
 
 # Default algorithms for msaf
 DEFAULT_BOUND_ID = "sf"
