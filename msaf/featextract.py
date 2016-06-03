@@ -50,7 +50,7 @@ class Features(object):
     """
     def __init__(self, file_struct, sr, hop_length, feat_type):
         """Init function for the base class to make sure all features have
-        at least these four attributes.
+        at least parameters as attributes.
 
         Parameters
         ----------
