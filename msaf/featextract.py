@@ -4,8 +4,9 @@ MSAF module to extract the audio features using librosa.
 Features to be computed:
 
 - MFCC: Mel Frequency Cepstral Coefficients
-- HPCP: Harmonic Pithc Class Profile
+- PCP: Harmonic Pithc Class Profile
 - CQT: Constant-Q Transform
+- Tempogram: Rhythmic features
 - Beats
 """
 
@@ -85,6 +86,8 @@ def compute_features(audio, y_harmonic):
         Tonal Centroid features.
     cqt: np.array(N, msaf.Anal.cqt_bins)
         Constant-Q log-scale features.
+    tempogram: np.array(N, 192)
+        Tempogram features.
     """
     logging.info("Computing Spectrogram...")
     #S = librosa.feature.melspectrogram(audio,
@@ -117,13 +120,13 @@ def compute_features(audio, y_harmonic):
                                         sr=msaf.Anal.sample_rate,
                                         hop_length=msaf.Anal.hop_size,
                                         n_bins=msaf.Anal.cqt_bins,
-                                        norm=np.inf,
-                                        filter_scale=1))
+                                        norm=1,
+                                        fmin=f_min)) ** 2
     pcp = librosa.feature.chroma_cqt(C=pcp_cqt,
                                      sr=msaf.Anal.sample_rate,
                                      hop_length=msaf.Anal.hop_size,
                                      n_octaves=msaf.Anal.n_octaves,
-                                     fmin=None).T
+                                     fmin=f_min).T
     #pcp = librosa.feature.chroma_cqt(C=linear_cqt,
                                      #sr=msaf.Anal.sample_rate,
                                      #hop_length=msaf.Anal.hop_size,
@@ -141,7 +144,13 @@ def compute_features(audio, y_harmonic):
     tonnetz = pcp
     mfcc = pcp
     cqt = pcp
-    return mfcc, pcp, tonnetz, cqt
+
+    logging.info("Computing Tempogram...")
+    tempogram = librosa.feature.tempogram(audio,
+                                          sr=msaf.Anal.sample_rate,
+                                          hop_length=msaf.Anal.hop_size,
+                                          win_length=192).T
+    return mfcc, pcp, tonnetz, cqt, tempogram
 
 
 def save_features(out_file, features):
@@ -176,20 +185,23 @@ def save_features(out_file, features):
         "mfcc": features["mfcc"].tolist(),
         "pcp": features["pcp"].tolist(),
         "tonnetz": features["tonnetz"].tolist(),
-        "cqt": features["cqt"].tolist()
+        "cqt": features["cqt"].tolist(),
+        "tempogram": features["tempogram"].tolist()
     }
     out_json["est_beatsync"] = {
         "mfcc": features["bs_mfcc"].tolist(),
         "pcp": features["bs_pcp"].tolist(),
         "tonnetz": features["bs_tonnetz"].tolist(),
-        "cqt": features["bs_cqt"].tolist()
+        "cqt": features["bs_cqt"].tolist(),
+        "tempogram": features["bs_tempogram"].tolist()
     }
     try:
         out_json["ann_beatsync"] = {
             "mfcc": features["ann_mfcc"].tolist(),
             "pcp": features["ann_pcp"].tolist(),
             "tonnetz": features["ann_tonnetz"].tolist(),
-            "cqt": features["ann_cqt"].tolist()
+            "cqt": features["ann_cqt"].tolist(),
+            "tempogram": features["ann_tempogram"].tolist()
         }
     except:
         logging.warning("No annotated beats")
@@ -208,13 +220,16 @@ def compute_beat_sync_features(features, beats_idx):
     bs_tonnetz = librosa.feature.sync(features["tonnetz"].T, beats_idx,
                                       pad=pad).T
     bs_cqt = librosa.feature.sync(features["cqt"].T, beats_idx, pad=pad).T
+    bs_tempogram = librosa.feature.sync(features["tempogram"].T, beats_idx,
+                                        pad=pad).T
 
     # Make sure we have the right size (remove last frame if needed)
     bs_mfcc = bs_mfcc[:len(beats_idx), :]
     bs_pcp = bs_pcp[:len(beats_idx), :]
     bs_tonnetz = bs_tonnetz[:len(beats_idx), :]
     bs_cqt = bs_cqt[:len(beats_idx), :]
-    return bs_mfcc, bs_pcp, bs_tonnetz, bs_cqt
+    bs_tempogram = bs_tempogram[:len(beats_idx), :]
+    return bs_mfcc, bs_pcp, bs_tonnetz, bs_cqt, bs_tempogram
 
 
 def compute_features_for_audio_file(audio_file):
@@ -242,7 +257,8 @@ def compute_features_for_audio_file(audio_file):
 
     # Compute framesync features
     features["mfcc"], features["pcp"], features["tonnetz"], \
-        features["cqt"] = compute_features(audio, y_harmonic)
+        features["cqt"], features["tempogram"] = \
+        compute_features(audio, y_harmonic)
 
     # Estimate Beats
     features["beats_idx"], features["beats"] = compute_beats(
@@ -250,8 +266,8 @@ def compute_features_for_audio_file(audio_file):
 
     # Compute Beat-sync features
     features["bs_mfcc"], features["bs_pcp"], features["bs_tonnetz"], \
-        features["bs_cqt"] = compute_beat_sync_features(features,
-                                                        features["beats_idx"])
+        features["bs_cqt"], features["bs_tempogram"] = \
+        compute_beat_sync_features(features, features["beats_idx"])
 
     # Analysis parameters
     features["anal"] = {}
@@ -315,7 +331,8 @@ def compute_all_features(file_struct, sonify_beats=False, overwrite=False,
                 annot_beats_times, sr=msaf.Anal.sample_rate,
                 hop_length=msaf.Anal.hop_size)
             features["ann_mfcc"], features["ann_pcp"], \
-                features["ann_tonnetz"], features["ann_cqt"] = \
+                features["ann_tonnetz"], features["ann_cqt"], \
+                features["ann_tempogram"] = \
                 compute_beat_sync_features(features, annot_beats_idx)
 
     # Save output as json file
