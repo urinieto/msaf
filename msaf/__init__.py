@@ -6,9 +6,10 @@ __license__ = "MIT"
 __email__ = "oriol.nieto@gmail.com"
 
 from .version import version as __version__
+import numpy as np
 
 # Analysis Params
-class Anal():
+class Anal(object):
     sample_rate = 22050
     frame_size = 4096
     hop_size = 1024
@@ -18,6 +19,9 @@ class Anal():
     n_octaves = 6
     f_min = 27.5   # Minimum frequency for chroma
     cqt_bins = 84
+    cqt_norm = np.inf
+    cqt_filter_scale = 1
+    cqt_ref_power = np.max
 
 # Default algorithms for msaf
 DEFAULT_BOUND_ID = "sf"
