@@ -15,10 +15,11 @@ from builtins import super
 from enum import Enum
 import librosa
 import jams
+import json
 import logging
 import numpy as np
 import os
-import json
+from six import with_metaclass
 
 # Local stuff
 import msaf
@@ -33,8 +34,21 @@ from msaf.input_output import FileStruct
 #   - ann_beatsync: Beat-synchronous using annotated beats from ground-truth
 FeatureTypes = Enum('FeatureTypes', 'framesync est_beatsync ann_beatsync')
 
+# All available features
+features_registry = {}
 
-class Features(object):
+
+class MetaFeatures(type):
+    """Meta-class to register the available features."""
+    def __new__(meta, name, bases, class_dict):
+        cls = type.__new__(meta, name, bases, class_dict)
+        # Register classes that inherit from the base class Features
+        if len(bases) > 0 and bases[0].__name__ == "Features":
+            features_registry[cls.__name__] = cls
+        return cls
+
+
+class Features(with_metaclass(MetaFeatures)):
     """This is the base class for all the features in MSAF.
 
     It contains functions to automatically estimate beats, read annotated
@@ -70,6 +84,7 @@ class Features(object):
         # The following attributes will be populated, if needed,
         # once the `features` getter is called
         self._features = None  # The actual features
+        self._dur = None  # The duration of the audio file in seconds
         self._framesync_features = None  # Frame-sync features
         self._est_beatsync_features = None  # Estimated Beat-sync features
         self._ann_beatsync_features = None  # Annotated Beat-sync features
@@ -153,10 +168,57 @@ class Features(object):
         # beatsync = beatsync[:len(beats_frames), :]
         return beatsync
 
-    def read_features(self):
-        """Reads the features from a file."""
-        # TODO: Read features and return True if features could be read.
-        return False
+    def read_features(self, tol=1e-3):
+        """Reads the features from a file and stores them in the current
+        object.
+
+        Parameters
+        ----------
+        tol: float
+            Tolerance level to detect duration of audio.
+        """
+        try:
+            # Read JSON file
+            with open(self.file_struct.features_file) as f:
+                feats = json.load(f)
+
+            # Check that we have the correct parameters
+            assert(np.isclose(
+                self._dur, float(feats["globals"]["dur"]), rtol=tol))
+            assert(self.sr == int(feats["globals"]["sample_rate"]))
+            assert(self.hop_length == int(feats["globals"]["hop_length"]))
+            assert(self.get_id() in feats.keys())
+
+            # TODO: Check for specific features params
+
+            # Store actual features
+            self._est_beats_times = np.array(feats["est_beats"])
+            self._est_beats_frames = librosa.core.time_to_frames(
+                self._est_beats_times, sr=self.sr, hop_length=self.hop_length)
+            self._framesync_features = \
+                np.array(feats[self.get_id()]["framesync"])
+            self._est_beatsync_features = \
+                np.array(feats[self.get_id()]["est_beatsync"])
+
+            # Read annotated beats if available
+            if "ann_beats" in feats.keys():
+                self._ann_beats_times = np.array(feats["ann_beats"])
+                self._ann_beats_frames = librosa.core.time_to_frames(
+                    self._ann_beats_times, sr=self.sr,
+                    hop_length=self.hop_length)
+                self._ann_beatsync_features = \
+                    np.array(feats[self.get_id()]["ann_beatsync"])
+        except KeyError:
+            raise WrongFeaturesFormatError(
+                "The features file %s is not correctly formatted" %
+                self.file_struct.features_file)
+        except AssertError:
+            raise FeaturesNotFound(
+                "The features for the given parameters were not found in "
+                "features file %s" % self.file_struct.features_file)
+        except IOError:
+            raise NoFeaturesFileError("Could not find features file %s",
+                                      self.file_struct.features_file)
 
     def write_features(self):
         """Saves features to file."""
@@ -164,14 +226,11 @@ class Features(object):
                                  {"librosa": librosa.__version__,
                                   "msaf": msaf.__version__,
                                   "numpy": np.__version__}}}
-        out_json["analysis"] = {
-            "dur": features["anal"]["dur"],
-            "n_fft": msaf.Anal.frame_size,
-            "hop_size": msaf.Anal.hop_size,
-            "mfcc_coeff": msaf.Anal.mfcc_coeff,
-            "n_mels": msaf.Anal.n_mels,
-            "sample_rate": msaf.Anal.sample_rate,
-            "window_type": msaf.Anal.window_type
+        out_json["globals"] = {
+            "dur": self._dur,
+            "sample_rate": self.sr,
+            "hop_length": self.hop_length,
+            "audio_file": self.file_struct.audio_file
         }
         out_json["beats"] = {
             "times": features["beats"].tolist()
@@ -214,6 +273,9 @@ class Features(object):
         self._audio, _ = librosa.load(self.file_struct.audio_file,
                                       sr=self.sr)
 
+        # Get duration of audio file
+        self._dur = len(self._audio) / float(self.sr)
+
         # Compute actual features
         self._framesync_features = self.compute_features()
 
@@ -234,7 +296,10 @@ class Features(object):
         been computed yet."""
         # Compute features if needed
         if self._features is None:
-            if not self.read_features():
+            try:
+                self.read_features()
+            except (NoFeaturesFileError, FeaturesNotFound,
+                    WrongFeaturesFormatError):
                 self._compute_all_features()
                 # TODO: Write features to disk
 
@@ -596,46 +661,3 @@ class CQT(Features):
 
     ## Save output as json file
     #save_features(out_file, features)
-
-
-#def process(in_path, sonify_beats=False, n_jobs=1, overwrite=False,
-            #out_file="out.json", out_beats="out_beats.wav",
-            #ds_name="*"):
-    #"""Main process to compute features.
-
-    #Parameters
-    #----------
-    #in_path: str
-        #Path to the file or dataset to compute the features.
-    #sonify_beats: bool
-        #Whether to sonify the beats on top of the audio file
-        #(single file mode only).
-    #n_jobs: int
-        #Number of threads (collection mode only).
-    #overwrite: bool
-        #Whether to overwrite the previously computed features.
-    #out_file: str
-        #Path to the output json file (single file mode only).
-    #out_beats: str
-        #Path to the new file containing the sonified beats.
-    #ds_name: str
-        #Name of the prefix of the dataset (e.g., Beatles)
-    #"""
-
-    ## If in_path it's a file, we only compute one file
-    #if os.path.isfile(in_path):
-        #file_struct = FileStruct(in_path)
-        #file_struct.features_file = out_file
-        #compute_all_features(file_struct, sonify_beats, overwrite, out_beats)
-
-    #elif os.path.isdir(in_path):
-        ## Check that in_path exists
-        #utils.ensure_dir(in_path)
-
-        ## Get files
-        #file_structs = io.get_dataset_files(in_path, ds_name=ds_name)
-
-        ## Compute features using joblib
-        #Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
-            #file_struct, sonify_beats, overwrite, out_beats)
-            #for file_struct in file_structs)

@@ -9,3 +9,17 @@ class MSAFError(Exception):
 class NoReferencesError(MSAFError):
     '''Exception class for trying evaluations without references'''
     pass
+
+
+class WrongFeaturesFormatError(MSAFError):
+    '''Exception class for worngly formatted features files'''
+    pass
+
+
+class NoFeaturesFileError(MSAFError):
+    '''Exception class for missing features file'''
+    pass
+
+
+class FeaturesNotFound(MSAFError):
+    '''Exception class for missing specific features in a file'''
