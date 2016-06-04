@@ -15,7 +15,6 @@ from builtins import super
 from enum import Enum
 import librosa
 import jams
-from joblib import Parallel, delayed
 import logging
 import numpy as np
 import os
@@ -83,7 +82,15 @@ class Features(object):
         self._ann_beats_frames = None  # Annotated beats in frames
 
     def compute_HPSS(self):
-        """Computes harmonic-percussive source separation."""
+        """Computes harmonic-percussive source separation.
+
+        Returns
+        -------
+        audio_harmonic: np.array
+            The harmonic component of the audio signal
+        audio_percussive: np.array
+            The percussive component of the audio signal
+        """
         return librosa.effects.hpss(self._audio)
 
     def estimate_beats(self):
@@ -201,6 +208,26 @@ class Features(object):
             json.dump(out_json, f, indent=2)
             pass
 
+    def _compute_all_features(self):
+        """Computes all the features (beatsync, framesync) from the audio."""
+        # Read actual audio waveform
+        self._audio, _ = librosa.load(self.file_struct.audio_file,
+                                      sr=self.sr)
+
+        # Compute actual features
+        self._framesync_features = self.compute_features()
+
+        # Compute/Read beats
+        self._est_beats_times, self._est_beats_frames = self.estimate_beats()
+        self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
+
+        # Beat-Synchronize
+        pad = True  # Always append to the end of the features
+        self._est_beatsync_features = \
+            self.compute_beat_sync_features(self._est_beats_frames, pad)
+        self._ann_beatsync_features = \
+            self.compute_beat_sync_features(self._ann_beats_frames, pad)
+
     @property
     def features(self):
         """This getter will compute the actual features if they haven't
@@ -208,29 +235,9 @@ class Features(object):
         # Compute features if needed
         if self._features is None:
             if not self.read_features():
-                # Read actual audio waveform
-                self._audio, _ = librosa.load(self.file_struct.audio_file,
-                                              sr=self.sr)
-
-                # Compute actual features
-                self._framesync_features = self.compute_features()
-
-                # Compute/Read beats and beat-synchronize
-                self._est_beats_times, self._est_beats_frames = \
-                    self.estimate_beats()
-                self._ann_beats_times, self._ann_beats_frames = \
-                    self.read_ann_beats()
-                pad = True  # Always append to the end of the features
-                self._est_beatsync_features = \
-                    self.compute_beat_sync_features(self._est_beats_frames,
-                                                    pad)
-                self._ann_beatsync_features = \
-                    self.compute_beat_sync_features(self._ann_beats_frames,
-                                                    pad)
-
+                self._compute_all_features()
                 # TODO: Write features to disk
 
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         # Choose features based on type
         if self.feat_type is FeatureTypes.framesync:
             self._features = self._framesync_features
@@ -257,11 +264,37 @@ class Features(object):
 
 
 class CQT(Features):
+    """This class contains the implementation of the Constant-Q Transform.
 
+    These features contain both harmonic and timbral content of the given
+    audio signal.
+    """
     def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
                  hop_length=msaf.Anal.hop_size, n_bins=msaf.Anal.cqt_bins,
                  norm=msaf.Anal.cqt_norm,
                  filter_scale=msaf.Anal.cqt_filter_scale, ref_power=np.max):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        file_struct: `msaf.input_output.FileStruct`
+            Object containing the file paths from where to extract/read
+            the features.
+        feat_type: `FeatureTypes`
+            Enum containing the type of features.
+        sr: int > 0
+            Sampling rate for the analysis.
+        hop_length: int > 0
+            Hop size in frames for the analysis.
+        n_bins: int > 0
+            Number of frequency bins for the CQT.
+        norm: float
+            The normalization coefficient.
+        filter_scale: float
+            The scale of the filter for the CQT.
+        ref_power: function
+            The reference power for logarithmic scaling.
+        """
         # Init the parent
         super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
                          feat_type=feat_type)
@@ -271,19 +304,25 @@ class CQT(Features):
         self.filter_scale = filter_scale
         self.ref_power = ref_power
 
+    def get_id(self):
+        """Identifier of these features."""
+        return "cqt"
+
     def compute_features(self):
-        linear_cqt = np.abs(librosa.cqt(self._audio,
-                                        sr=self.sr,
-                                        hop_length=self.hop_length,
-                                        n_bins=self.n_bins,
-                                        norm=self.norm,
-                                        filter_scale=self.filter_scale,
-                                        real=False)) ** 2
+        """Actual implementation of the features.
+
+        Returns
+        -------
+        cqt: np.array(N, F)
+            The features, each row representing a time-frame.
+        """
+        linear_cqt = np.abs(librosa.cqt(
+            self._audio, sr=self.sr, hop_length=self.hop_length,
+            n_bins=self.n_bins, norm=self.norm, filter_scale=self.filter_scale,
+            real=False)) ** 2
         cqt = librosa.logamplitude(linear_cqt, ref_power=self.ref_power).T
         return cqt
 
-    def get_id(self):
-        return "cqt"
 
 
 #def compute_features(audio, y_harmonic):
