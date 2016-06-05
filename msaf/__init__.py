@@ -21,6 +21,7 @@ class Anal(object):
     cqt_bins = 84
     cqt_norm = np.inf
     cqt_filter_scale = 1
+    win_length = 192    # Tempogram
 
 # Default algorithms for msaf
 DEFAULT_BOUND_ID = "sf"
