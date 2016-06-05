@@ -7,20 +7,89 @@
 import json
 import librosa
 from nose.tools import assert_equals
+import numpy as np
 import numpy.testing as npt
 import os
 
 # Msaf imports
-import msaf.features
+import msaf
+from msaf.base import FeatureTypes
+from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram
 from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
-sr = msaf.Anal.sample_rate
-audio, fs = librosa.load(audio_file, sr=sr)
-y_harmonic, y_percussive = librosa.effects.hpss(audio)
+file_struct = FileStruct(audio_file)
+msaf.utils.ensure_dir("features")
+features_file = os.path.join("features", "chirp.json")
+file_struct.features_file = features_file
+os.remove(features_file)
 
 
+def test_registry():
+    """All the features should be in the features register."""
+    assert(CQT.get_id() in msaf.base.features_registry.keys())
+    assert(PCP.get_id() in msaf.base.features_registry.keys())
+    assert(Tonnetz.get_id() in msaf.base.features_registry.keys())
+    assert(MFCC.get_id() in msaf.base.features_registry.keys())
+    assert(Tempogram.get_id() in msaf.base.features_registry.keys())
+
+
+def run_framesync(features_class):
+    """Runs the framesync features for the given features class with the
+    default parameters, and checks that it correctly saved the information
+    in the json file."""
+    feat_type = FeatureTypes.framesync
+    feats = features_class(file_struct, feat_type).features
+    assert (os.path.isfile(file_struct.features_file))
+    with open(file_struct.features_file) as f:
+        data = json.load(f)
+    assert(features_class.get_id() in data.keys())
+    read_feats = np.array(data[features_class.get_id()]["framesync"])
+    assert(np.array_equal(feats, read_feats))
+
+
+def test_standard_cqt():
+    """CQT features should run and create the proper entry in the json file."""
+    run_framesync(CQT)
+
+
+def test_standard_pcp():
+    """PCP features should run and create the proper entry in the json file."""
+    run_framesync(PCP)
+
+
+def test_standard_mfcc():
+    """MFCC features should run and create the proper entry in the json
+    file."""
+    run_framesync(MFCC)
+
+
+def test_standard_tonnetz():
+    """Tonnetz features should run and create the proper entry in the json
+    file."""
+    run_framesync(Tonnetz)
+
+
+def test_standard_tempogram():
+    """Tempogram features should run and create the proper entry in the json
+    file."""
+    run_framesync(Tempogram)
+
+
+def test_metadata():
+    """The metadata of the json file should be correct."""
+    # Note: The json file should have been created with previous tests
+    with open(file_struct.features_file) as f:
+        data = json.load(f)
+    assert("metadata" in data.keys())
+    metadata = data["metadata"]
+    assert("timestamp" in metadata.keys())
+    assert(metadata["versions"]["numpy"] == np.__version__)
+    assert(metadata["versions"]["msaf"] == msaf.__version__)
+    assert(metadata["versions"]["librosa"] == librosa.__version__)
+
+"""
 def test_compute_beats():
     beats_idx, beats_times = msaf.featextract.compute_beats(y_percussive)
     assert len(beats_idx) > 0
@@ -122,3 +191,4 @@ def test_compute_all_features():
     # Clean up
     os.remove(feat_file)
     os.remove(beats_file)
+"""

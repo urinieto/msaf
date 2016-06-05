@@ -140,7 +140,7 @@ class Features(six.with_metaclass(MetaFeatures)):
                                        hop_length=self.hop_length)
 
         # TODO: Is this really necessary?
-        if times[0] == 0:
+        if len(times) > 0 and times[0] == 0:
             times = times[1:]
             frames = frames[1:]
 
