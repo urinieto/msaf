@@ -19,13 +19,15 @@ import json
 import logging
 import numpy as np
 import os
-from six import with_metaclass
+import six
 
 # Local stuff
 import msaf
 from msaf import utils
 from msaf import input_output as io
 from msaf.input_output import FileStruct
+from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
+    FeaturesNotFound
 
 
 # Three types of features at the moment:
@@ -43,12 +45,12 @@ class MetaFeatures(type):
     def __new__(meta, name, bases, class_dict):
         cls = type.__new__(meta, name, bases, class_dict)
         # Register classes that inherit from the base class Features
-        if len(bases) > 0 and bases[0].__name__ == "Features":
+        if "Features" in [base.__name__ for base in bases]:
             features_registry[cls.__name__] = cls
         return cls
 
 
-class Features(with_metaclass(MetaFeatures)):
+class Features(six.with_metaclass(MetaFeatures)):
     """This is the base class for all the features in MSAF.
 
     It contains functions to automatically estimate beats, read annotated
@@ -76,6 +78,7 @@ class Features(with_metaclass(MetaFeatures)):
         feat_type: `FeatureTypes`
             Enum containing the type of feature.
         """
+        # Set the global parameters
         self.file_struct = file_struct
         self.sr = sr
         self.hop_length = hop_length
@@ -83,8 +86,8 @@ class Features(with_metaclass(MetaFeatures)):
 
         # The following attributes will be populated, if needed,
         # once the `features` getter is called
+        self.dur = None  # The duration of the audio file in seconds
         self._features = None  # The actual features
-        self._dur = None  # The duration of the audio file in seconds
         self._framesync_features = None  # Frame-sync features
         self._est_beatsync_features = None  # Estimated Beat-sync features
         self._ann_beatsync_features = None  # Annotated Beat-sync features
@@ -95,6 +98,11 @@ class Features(with_metaclass(MetaFeatures)):
         self._est_beats_frames = None  # Estimated beats in frames
         self._ann_beats_times = None  # Annotated beat times
         self._ann_beats_frames = None  # Annotated beats in frames
+
+        # Differentiate global params from sublcass attributes.
+        # This is a bit hacky... I accept Pull Requests ^_^
+        self._global_param_names = ["file_struct", "sr", "feat_type",
+                                    "hop_length", "dur"]
 
     def compute_HPSS(self):
         """Computes harmonic-percussive source separation.
@@ -182,14 +190,21 @@ class Features(with_metaclass(MetaFeatures)):
             with open(self.file_struct.features_file) as f:
                 feats = json.load(f)
 
-            # Check that we have the correct parameters
+            # Check that we have the correct global parameters
             assert(np.isclose(
-                self._dur, float(feats["globals"]["dur"]), rtol=tol))
+                self.dur, float(feats["globals"]["dur"]), rtol=tol))
             assert(self.sr == int(feats["globals"]["sample_rate"]))
             assert(self.hop_length == int(feats["globals"]["hop_length"]))
             assert(self.get_id() in feats.keys())
 
-            # TODO: Check for specific features params
+            # Check for specific features params
+            for param_name in self.get_param_names():
+                # Ignore global names
+                if param_name in self._global_param_names:
+                    continue
+                value = getattr(self, param_name)
+                assert(str(value) ==
+                       feats[self.get_id()]["params"][param_name])
 
             # Store actual features
             self._est_beats_times = np.array(feats["est_beats"])
@@ -222,50 +237,47 @@ class Features(with_metaclass(MetaFeatures)):
 
     def write_features(self):
         """Saves features to file."""
-        out_json = {"metadata": {"versions":
-                                 {"librosa": librosa.__version__,
-                                  "msaf": msaf.__version__,
-                                  "numpy": np.__version__}}}
+        # Metadata
+        out_json = {"metadata": {
+            "versions": {"librosa": librosa.__version__,
+                         "msaf": msaf.__version__,
+                         "numpy": np.__version__},
+            "timestamp": datetime.datetime.today().strftime(
+                "%Y/%m/%d %H:%M:%S")}}
+
+        # Global parameters
         out_json["globals"] = {
-            "dur": self._dur,
+            "dur": self.dur,
             "sample_rate": self.sr,
             "hop_length": self.hop_length,
             "audio_file": self.file_struct.audio_file
         }
-        out_json["beats"] = {
-            "times": features["beats"].tolist()
-        }
-        out_json["timestamp"] = \
-            datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-        out_json["framesync"] = {
-            "mfcc": features["mfcc"].tolist(),
-            "pcp": features["pcp"].tolist(),
-            "tonnetz": features["tonnetz"].tolist(),
-            "cqt": features["cqt"].tolist(),
-            "tempogram": features["tempogram"].tolist()
-        }
-        out_json["est_beatsync"] = {
-            "mfcc": features["bs_mfcc"].tolist(),
-            "pcp": features["bs_pcp"].tolist(),
-            "tonnetz": features["bs_tonnetz"].tolist(),
-            "cqt": features["bs_cqt"].tolist(),
-            "tempogram": features["bs_tempogram"].tolist()
-        }
-        try:
-            out_json["ann_beatsync"] = {
-                "mfcc": features["ann_mfcc"].tolist(),
-                "pcp": features["ann_pcp"].tolist(),
-                "tonnetz": features["ann_tonnetz"].tolist(),
-                "cqt": features["ann_cqt"].tolist(),
-                "tempogram": features["ann_tempogram"].tolist()
-            }
-        except:
-            logging.warning("No annotated beats")
 
-        # Actual save
-        with open(out_file, "w") as f:
+        # TODO: Specific parameters of the current features
+
+        # Beats
+        out_json["est_beats"] = self._est_beats_times.tolist()
+        if self._ann_beats_times is not None:
+            out_json["ann_beats"] = self._ann_beats_times.tolist()
+
+        # Actual features
+        out_json[self.get_id()] = {}
+        out_json[self.get_id()]["framesync"] = \
+            self._framesync_features.tolist()
+        out_json[self.get_id()]["est_beatsync"] = \
+            self._est_beatsync_features.tolist()
+        if self._ann_beatsync_features is not None:
+            out_json[self.get_id()]["ann_beatsync"] = \
+                self._ann_beatsync_features.tolist()
+
+        # Save it
+        with open("caca.json", "w") as f:
             json.dump(out_json, f, indent=2)
             pass
+
+    def get_param_names(self):
+        """Returns all the parameter names for these features."""
+        return [name for name in vars(self) if not name.startswith('_')]
 
     def _compute_all_features(self):
         """Computes all the features (beatsync, framesync) from the audio."""
@@ -274,7 +286,7 @@ class Features(with_metaclass(MetaFeatures)):
                                       sr=self.sr)
 
         # Get duration of audio file
-        self._dur = len(self._audio) / float(self.sr)
+        self.dur = len(self._audio) / float(self.sr)
 
         # Compute actual features
         self._framesync_features = self.compute_features()
