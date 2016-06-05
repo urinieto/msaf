@@ -57,6 +57,7 @@ class CQT(Features):
         self.filter_scale = filter_scale
         self.ref_power = ref_power
 
+    @classmethod
     def get_id(self):
         """Identifier of these features."""
         return "cqt"
@@ -119,6 +120,7 @@ class MFCC(Features):
         self.n_mfcc = n_mfcc
         self.ref_power = ref_power
 
+    @classmethod
     def get_id(self):
         """Identifier of these features."""
         return "mfcc"
@@ -182,6 +184,7 @@ class PCP(Features):
         self.f_min = f_min
         self.n_octaves = n_octaves
 
+    @classmethod
     def get_id(self):
         """Identifier of these features."""
         return "pcp"
@@ -251,6 +254,7 @@ class Tonnetz(Features):
         self.f_min = f_min
         self.n_octaves = n_octaves
 
+    @classmethod
     def get_id(self):
         """Identifier of these features."""
         return "tonnetz"
@@ -277,7 +281,7 @@ class Tempogram(Features):
     """
     def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
                  hop_length=msaf.Anal.hop_size,
-                 win_length=sr.msaf.Anal.win_length):
+                 win_length=msaf.Anal.win_length):
         """Constructor of the class.
 
         Parameters
@@ -300,6 +304,7 @@ class Tempogram(Features):
         # Init the local parameters
         self.win_length = win_length
 
+    @classmethod
     def get_id(self):
         """Identifier of these features."""
         return "tempogram"
@@ -313,7 +318,6 @@ class Tempogram(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        tempogram = librosa.feature.tempogram(self._audio,
-                                              sr=self.sr,
-                                              hop_length=self.hop_length,
-                                              win_length=self.win_length).T
+        return librosa.feature.tempogram(self._audio, sr=self.sr,
+                                         hop_length=self.hop_length,
+                                         win_length=self.win_length).T

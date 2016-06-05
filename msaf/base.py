@@ -46,7 +46,7 @@ class MetaFeatures(type):
         cls = type.__new__(meta, name, bases, class_dict)
         # Register classes that inherit from the base class Features
         if "Features" in [base.__name__ for base in bases]:
-            features_registry[cls.__name__] = cls
+            features_registry[cls.get_id()] = cls
         return cls
 
 
@@ -387,6 +387,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         raise NotImplementedError("This method must contain the actual "
                                   "implementation of the features")
 
+    @classmethod
     def get_id(self):
         raise NotImplementedError("This method must return a string identifier"
                                   " of the features")
