@@ -10,6 +10,7 @@ Features to be computed:
 - Beats
 """
 
+import collections
 import datetime
 from builtins import super
 from enum import Enum
@@ -207,7 +208,6 @@ class Features(six.with_metaclass(MetaFeatures)):
         tol: float
             Tolerance level to detect duration of audio.
         """
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         try:
             # Read JSON file
             with open(self.file_struct.features_file) as f:
@@ -266,7 +266,7 @@ class Features(six.with_metaclass(MetaFeatures)):
 
     def write_features(self):
         """Saves features to file."""
-        out_json = {}
+        out_json = collections.OrderedDict()
         try:
             # Only save the right information
             self.read_features()
@@ -274,12 +274,12 @@ class Features(six.with_metaclass(MetaFeatures)):
                 NoFeaturesFileError):
             # We need to create the file or overwite it
             # Metadata
-            out_json = {"metadata": {
+            out_json = collections.OrderedDict({"metadata": {
                 "versions": {"librosa": librosa.__version__,
                              "msaf": msaf.__version__,
                              "numpy": np.__version__},
                 "timestamp": datetime.datetime.today().strftime(
-                    "%Y/%m/%d %H:%M:%S")}}
+                    "%Y/%m/%d %H:%M:%S")}})
 
             # Global parameters
             out_json["globals"] = {
@@ -362,7 +362,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             try:
                 self.read_features()
             except (NoFeaturesFileError, FeaturesNotFound,
-                    WrongFeaturesFormatError):
+                    WrongFeaturesFormatError, FeatureParamsError):
                 self._compute_all_features()
                 self.write_features()
 
@@ -453,6 +453,70 @@ class CQT(Features):
             real=False)) ** 2
         cqt = librosa.logamplitude(linear_cqt, ref_power=self.ref_power).T
         return cqt
+
+
+class MFCC(Features):
+    """This class contains the implementation of the MFCC Features.
+
+    The Mel-Frequency Cepstral Coefficients contain timbral content of a
+    given audio signal.
+    """
+    def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
+                 hop_length=msaf.Anal.hop_size, n_fft=msaf.Anal.n_fft,
+                 n_mels=msaf.Anal.n_mels, n_mfcc=msaf.Anal.n_mfcc,
+                 ref_power=np.max):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        file_struct: `msaf.input_output.FileStruct`
+            Object containing the file paths from where to extract/read
+            the features.
+        feat_type: `FeatureTypes`
+            Enum containing the type of features.
+        sr: int > 0
+            Sampling rate for the analysis.
+        hop_length: int > 0
+            Hop size in frames for the analysis.
+        n_fft: int > 0
+            Number of frames for the FFT.
+        n_mels: int > 0
+            Number of mel filters.
+        n_mfcc: int > 0
+            Number of mel coefficients.
+        ref_power: function
+            The reference power for logarithmic scaling.
+        """
+        # Init the parent
+        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
+                         feat_type=feat_type)
+        # Init the MFCC parameters
+        self.n_fft = n_fft
+        self.n_mels = n_mels
+        self.n_mfcc = n_mfcc
+        self.ref_power = ref_power
+
+    def get_id(self):
+        """Identifier of these features."""
+        return "mfcc"
+
+    def compute_features(self):
+        """Actual implementation of the features.
+
+        Returns
+        -------
+        mfcc: np.array(N, F)
+            The features, each row representing a feature vector for a give
+            time frame/beat.
+        """
+        S = librosa.feature.melspectrogram(self._audio,
+                                           sr=self.sr,
+                                           n_fft=self.n_fft,
+                                           hop_length=self.hop_length,
+                                           n_mels=self.n_mels)
+        log_S = librosa.logamplitude(S, ref_power=self.ref_power)
+        mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=self.n_mfcc).T
+        return mfcc
 
 
 #def compute_features(audio, y_harmonic):

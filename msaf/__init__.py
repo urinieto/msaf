@@ -11,9 +11,9 @@ import numpy as np
 # Analysis Params
 class Anal(object):
     sample_rate = 22050
-    frame_size = 4096
+    n_fft = 4096
     hop_size = 1024
-    mfcc_coeff = 14
+    n_mfcc = 14
     n_mels = 128
     window_type = "blackmanharris62"
     n_octaves = 6
