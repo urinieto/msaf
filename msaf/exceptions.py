@@ -23,3 +23,9 @@ class NoFeaturesFileError(MSAFError):
 
 class FeaturesNotFound(MSAFError):
     '''Exception class for missing specific features in a file'''
+    pass
+
+
+class FeatureTypeNotFound(MSAFError):
+    '''Exception class for feature type missing'''
+    pass

@@ -27,7 +27,7 @@ from msaf import utils
 from msaf import input_output as io
 from msaf.input_output import FileStruct
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
-    FeaturesNotFound
+    FeaturesNotFound, FeatureTypeNotFound
 
 
 # Three types of features at the moment:
@@ -317,7 +317,6 @@ class Features(six.with_metaclass(MetaFeatures)):
                 self._compute_all_features()
                 self.write_features()
 
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         # Choose features based on type
         if self.feat_type is FeatureTypes.framesync:
             self._features = self._framesync_features
@@ -330,7 +329,9 @@ class Features(six.with_metaclass(MetaFeatures)):
                 self._features = self._est_beatsync_features
             else:
                 self._features = self._ann_beatsync_features
-        # TODO: What if feat_type is wrong?
+        else:
+            raise FeatureTypeNotFound("Feature type %s is not valid." %
+                                      self.feat_type)
 
         return self._features
 
