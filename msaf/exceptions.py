@@ -34,3 +34,8 @@ class FeatureTypeNotFound(MSAFError):
 class FeatureParamsError(MSAFError):
     '''Exception class for feature parameters missing'''
     pass
+
+
+class NoAudioFileError(MSAFError):
+    '''Exception class for audio file not found'''
+    pass

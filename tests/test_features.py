@@ -6,7 +6,7 @@
 
 import json
 import librosa
-from nose.tools import assert_equals
+from nose.tools import assert_equals, raises
 import numpy as np
 import numpy.testing as npt
 import os
@@ -14,6 +14,7 @@ import os
 # Msaf imports
 import msaf
 from msaf.base import FeatureTypes
+from msaf.exceptions import NoAudioFileError
 from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram
 from msaf.input_output import FileStruct
 
@@ -23,7 +24,10 @@ file_struct = FileStruct(audio_file)
 msaf.utils.ensure_dir("features")
 features_file = os.path.join("features", "chirp.json")
 file_struct.features_file = features_file
-os.remove(features_file)
+try:
+    os.remove(features_file)
+except OSError:
+    pass
 
 
 def test_registry():
@@ -45,6 +49,9 @@ def run_framesync(features_class):
     with open(file_struct.features_file) as f:
         data = json.load(f)
     assert(features_class.get_id() in data.keys())
+    assert("framesync" in data[features_class.get_id()].keys())
+    assert("est_beatsync" in data[features_class.get_id()].keys())
+    assert("ann_beatsync" not in data[features_class.get_id()].keys())
     read_feats = np.array(data[features_class.get_id()]["framesync"])
     assert(np.array_equal(feats, read_feats))
 
@@ -89,106 +96,75 @@ def test_metadata():
     assert(metadata["versions"]["msaf"] == msaf.__version__)
     assert(metadata["versions"]["librosa"] == librosa.__version__)
 
-"""
-def test_compute_beats():
-    beats_idx, beats_times = msaf.featextract.compute_beats(y_percussive)
-    assert len(beats_idx) > 0
-    assert len(beats_idx) == len(beats_times)
+
+def test_change_local_cqt_paramaters():
+    """The features should be correctly updated if parameters of CQT are
+    updated."""
+    feat_type = FeatureTypes.framesync
+    feats = CQT(file_struct, feat_type, n_bins=70).features
+    assert (os.path.isfile(file_struct.features_file))
+    with open(file_struct.features_file) as f:
+        data = json.load(f)
+    assert(CQT.get_id() in data.keys())
+
+    # These should be here from previous tests
+    assert(MFCC.get_id() in data.keys())
+    assert(Tonnetz.get_id() in data.keys())
+    assert(Tempogram.get_id() in data.keys())
+    assert(PCP.get_id() in data.keys())
+    assert("framesync" in data[CQT.get_id()].keys())
+    assert("est_beatsync" in data[CQT.get_id()].keys())
+    assert("ann_beatsync" not in data[CQT.get_id()].keys())
 
 
-def test_compute_features():
-    mfcc, hpcp, tonnetz, cqt = msaf.featextract.compute_features(audio,
-                                                                 y_harmonic)
-    assert mfcc.shape[1] == msaf.Anal.mfcc_coeff
-    assert hpcp.shape[1] == 12
-    assert tonnetz.shape[1] == 6
-    assert_equals(mfcc.shape[0], hpcp.shape[0])
-    assert_equals(hpcp.shape[0], tonnetz.shape[0])
+def test_change_global_paramaters():
+    """The features should be correctly updated if global parameters
+    updated."""
+    feat_type = FeatureTypes.framesync
+    feats = CQT(file_struct, feat_type, sr=11025).features
+    assert (os.path.isfile(file_struct.features_file))
+    with open(file_struct.features_file) as f:
+        data = json.load(f)
+    assert(CQT.get_id() in data.keys())
+
+    # These should have disappeared, since we now have new global parameters
+    assert(MFCC.get_id() not in data.keys())
+    assert(Tonnetz.get_id() not in data.keys())
+    assert(Tempogram.get_id() not in data.keys())
+    assert(PCP.get_id() not in data.keys())
+    assert("framesync" in data[CQT.get_id()].keys())
+    assert("est_beatsync" in data[CQT.get_id()].keys())
+    assert("ann_beatsync" not in data[CQT.get_id()].keys())
 
 
-def test_save_features():
-    # Read audio and compute features
-    tmp_file = "temp.json"
-    features = msaf.featextract.compute_features_for_audio_file(audio_file)
-    msaf.featextract.save_features(tmp_file, features)
-
-    # Check that new file exists
-    assert os.path.isfile(tmp_file)
-
-    # Check that the json file is actually readable
-    with open(tmp_file, "r") as f:
-        features = json.load(f)
-    npt.assert_almost_equal(features["analysis"]["dur"],
-                            len(audio) / float(sr), decimal=1)
-
-    # Clean up
-    os.remove(tmp_file)
+def test_no_audio():
+    """The features should be returned even without having an audio file if
+    they have been previously been computed."""
+    # This file doesn't exist
+    no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
+    feat_type = FeatureTypes.framesync
+    feats = CQT(no_audio_file_struct, feat_type, sr=22050).features
+    assert (os.path.isfile(no_audio_file_struct.features_file))
+    with open(no_audio_file_struct.features_file) as f:
+        data = json.load(f)
+    assert(CQT.get_id() in data.keys())
 
 
-def test_compute_beat_sync_features():
-    # Compute features
-    features = msaf.featextract.compute_features_for_audio_file(audio_file)
-
-    # Beat track
-    beats_idx, beats_times = msaf.featextract.compute_beats(y_percussive,
-                                                            sr=sr)
-
-    # Compute beat sync feats
-    bs_mfcc, bs_hpcp, bs_tonnetz, bs_cqt = \
-        msaf.featextract.compute_beat_sync_features(features, beats_idx)
-    assert_equals(bs_mfcc.shape[0],  len(beats_idx) - 1)
-    assert_equals(bs_mfcc.shape[0], bs_hpcp.shape[0])
-    assert_equals(bs_hpcp.shape[0], bs_tonnetz.shape[0])
+@raises(NoAudioFileError)
+def test_no_audio_no_params():
+    """The features should raise a NoFileAudioError if different parameters
+    want to be explored and no audio file is found."""
+    # This file doesn't exist
+    no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
+    feat_type = FeatureTypes.framesync
+    feats = CQT(no_audio_file_struct, feat_type, sr=11025).features
 
 
-def test_compute_features_for_audio_file():
-    features = msaf.featextract.compute_features_for_audio_file(audio_file)
-    keys = ["mfcc", "hpcp", "tonnetz", "cqt", "beats_idx", "beats", "bs_mfcc",
-            "bs_hpcp", "bs_tonnetz", "bs_cqt", "anal"]
-    anal_keys = ["frame_rate", "hop_size", "mfcc_coeff", "sample_rate",
-                 "window_type", "n_mels", "dur"]
-    for key in keys:
-        assert key in features.keys()
-    for anal_key in anal_keys:
-        assert anal_key in features["anal"].keys()
-
-
-def test_compute_all_features():
-    # Create file struct
-    file_struct = FileStruct(audio_file)
-
-    # Set output file
-    feat_file = "tmp.json"
-    beats_file = "beats.wav"
-    file_struct.features_file = feat_file
-
-    # Remove previously computed outputs if exist
-    if os.path.isfile(feat_file):
-        os.remove(feat_file)
-    if os.path.isfile(beats_file):
-        os.remove(beats_file)
-
-    # Call main function
-    msaf.featextract.compute_all_features(file_struct, sonify_beats=False,
-                                          overwrite=False)
-    assert os.path.isfile(feat_file)
-
-    # Call again main function (should do nothing, since feat_file exists)
-    msaf.featextract.compute_all_features(file_struct, sonify_beats=False,
-                                          overwrite=False)
-    assert os.path.isfile(feat_file)
-
-    # Overwrite
-    msaf.featextract.compute_all_features(file_struct, sonify_beats=False,
-                                          overwrite=True)
-    assert os.path.isfile(feat_file)
-
-    # Sonify
-    msaf.featextract.compute_all_features(file_struct, sonify_beats=True,
-                                          overwrite=True, out_beats=beats_file)
-    assert os.path.isfile(feat_file) and os.path.isfile(beats_file)
-
-    # Clean up
-    os.remove(feat_file)
-    os.remove(beats_file)
-"""
+@raises(NoAudioFileError)
+def test_no_audio_no_features():
+    """The features should raise a NoFileAudioError if no features nor
+    audio files are found."""
+    # This file doesn't exist
+    no_audio_file_struct = FileStruct("fixtures/caca.mp3")
+    feat_type = FeatureTypes.framesync
+    feats = CQT(no_audio_file_struct, feat_type, sr=11025).features
