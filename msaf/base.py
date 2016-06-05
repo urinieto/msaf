@@ -27,7 +27,7 @@ from msaf import utils
 from msaf import input_output as io
 from msaf.input_output import FileStruct
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
-    FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError
+    FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError
 
 
 # Three types of features at the moment:
@@ -221,6 +221,8 @@ class Features(six.with_metaclass(MetaFeatures)):
                 self.dur, float(feats["globals"]["dur"]), rtol=tol))
             assert(self.sr == int(feats["globals"]["sample_rate"]))
             assert(self.hop_length == int(feats["globals"]["hop_length"]))
+            assert(os.path.basename(self.file_struct.audio_file) ==
+                   os.path.basename(feats["globals"]["audio_file"]))
 
             # Check for specific features params
             feat_params_err = FeatureParamsError(
@@ -230,9 +232,14 @@ class Features(six.with_metaclass(MetaFeatures)):
                 raise feat_params_err
             for param_name in self.get_param_names():
                 value = getattr(self, param_name)
-                if str(value) != \
-                        feats[self.get_id()]["params"][param_name]:
-                    raise feat_params_err
+                if hasattr(value, '__call__'):
+                    if value.__name__ != \
+                            feats[self.get_id()]["params"][param_name]:
+                        raise feat_params_err
+                else:
+                    if str(value) != \
+                            feats[self.get_id()]["params"][param_name]:
+                        raise feat_params_err
 
             # Store actual features
             self._est_beats_times = np.array(feats["est_beats"])
@@ -267,7 +274,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         """Saves features to file."""
         out_json = collections.OrderedDict()
         try:
-            # Only save the right information
+            # Only save the necessary information
             self.read_features()
         except (WrongFeaturesFormatError, FeaturesNotFound,
                 NoFeaturesFileError):
@@ -302,7 +309,12 @@ class Features(six.with_metaclass(MetaFeatures)):
             out_json[self.get_id()]["params"] = {}
             for param_name in self.get_param_names():
                 value = getattr(self, param_name)
-                out_json[self.get_id()]["params"][param_name] = str(value)
+                # Check for special case of functions
+                if hasattr(value, '__call__'):
+                    value = value.__name__
+                else:
+                    value = str(value)
+                out_json[self.get_id()]["params"][param_name] = value
 
             # Actual features
             out_json[self.get_id()]["framesync"] = \
@@ -361,9 +373,20 @@ class Features(six.with_metaclass(MetaFeatures)):
             try:
                 self.read_features()
             except (NoFeaturesFileError, FeaturesNotFound,
-                    WrongFeaturesFormatError, FeatureParamsError):
-                self._compute_all_features()
-                self.write_features()
+                    WrongFeaturesFormatError, FeatureParamsError) as e:
+                try:
+                    self._compute_all_features()
+                    self.write_features()
+                except IOError:
+                    if isinstance(e, FeaturesNotFound) or \
+                            isinstance(e, FeatureParamsError):
+                        msg = "Computation of the features is needed for " \
+                            "current parameters but no audio file was found." \
+                            "Please, change your parameters or add the audio" \
+                            " file in %s"
+                    else:
+                        msg = "Couldn't find audio file in %s"
+                    raise NoAudioFileError(msg % self.file_struct.audio_file)
 
         # Choose features based on type
         if self.feat_type is FeatureTypes.framesync:
