@@ -29,3 +29,8 @@ class FeaturesNotFound(MSAFError):
 class FeatureTypeNotFound(MSAFError):
     '''Exception class for feature type missing'''
     pass
+
+
+class FeatureParamsError(MSAFError):
+    '''Exception class for feature parameters missing'''
+    pass
