@@ -199,9 +199,6 @@ class Features(six.with_metaclass(MetaFeatures)):
 
             # Check for specific features params
             for param_name in self.get_param_names():
-                # Ignore global names
-                if param_name in self._global_param_names:
-                    continue
                 value = getattr(self, param_name)
                 assert(str(value) ==
                        feats[self.get_id()]["params"][param_name])
@@ -253,7 +250,12 @@ class Features(six.with_metaclass(MetaFeatures)):
             "audio_file": self.file_struct.audio_file
         }
 
-        # TODO: Specific parameters of the current features
+        # Specific parameters of the current features
+        out_json[self.get_id()] = {}
+        out_json[self.get_id()]["params"] = {}
+        for param_name in self.get_param_names():
+            value = getattr(self, param_name)
+            out_json[self.get_id()]["params"][param_name] = str(value)
 
         # Beats
         out_json["est_beats"] = self._est_beats_times.tolist()
@@ -261,7 +263,6 @@ class Features(six.with_metaclass(MetaFeatures)):
             out_json["ann_beats"] = self._ann_beats_times.tolist()
 
         # Actual features
-        out_json[self.get_id()] = {}
         out_json[self.get_id()]["framesync"] = \
             self._framesync_features.tolist()
         out_json[self.get_id()]["est_beatsync"] = \
@@ -276,8 +277,9 @@ class Features(six.with_metaclass(MetaFeatures)):
             pass
 
     def get_param_names(self):
-        """Returns all the parameter names for these features."""
-        return [name for name in vars(self) if not name.startswith('_')]
+        """Returns the parameter names for these features."""
+        return [name for name in vars(self) if not name.startswith('_') and
+                name not in self._global_param_names]
 
     def _compute_all_features(self):
         """Computes all the features (beatsync, framesync) from the audio."""
@@ -313,8 +315,9 @@ class Features(six.with_metaclass(MetaFeatures)):
             except (NoFeaturesFileError, FeaturesNotFound,
                     WrongFeaturesFormatError):
                 self._compute_all_features()
-                # TODO: Write features to disk
+                self.write_features()
 
+        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         # Choose features based on type
         if self.feat_type is FeatureTypes.framesync:
             self._features = self._framesync_features
