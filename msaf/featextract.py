@@ -27,7 +27,7 @@ from msaf import utils
 from msaf import input_output as io
 from msaf.input_output import FileStruct
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
-    FeaturesNotFound, FeatureTypeNotFound
+    FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError
 
 
 # Three types of features at the moment:
@@ -207,23 +207,33 @@ class Features(six.with_metaclass(MetaFeatures)):
         tol: float
             Tolerance level to detect duration of audio.
         """
+        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         try:
             # Read JSON file
             with open(self.file_struct.features_file) as f:
                 feats = json.load(f)
+
+            # Store duration
+            if self.dur is None:
+                self.dur = float(feats["globals"]["dur"])
 
             # Check that we have the correct global parameters
             assert(np.isclose(
                 self.dur, float(feats["globals"]["dur"]), rtol=tol))
             assert(self.sr == int(feats["globals"]["sample_rate"]))
             assert(self.hop_length == int(feats["globals"]["hop_length"]))
-            assert(self.get_id() in feats.keys())
 
             # Check for specific features params
+            feat_params_err = FeatureParamsError(
+                "Couldn't find features for %s id in file %s" %
+                (self.get_id(), self.file_struct.features_file))
+            if self.get_id() not in feats.keys():
+                raise feat_params_err
             for param_name in self.get_param_names():
                 value = getattr(self, param_name)
-                assert(str(value) ==
-                       feats[self.get_id()]["params"][param_name])
+                if str(value) != \
+                        feats[self.get_id()]["params"][param_name]:
+                    raise feat_params_err
 
             # Store actual features
             self._est_beats_times = np.array(feats["est_beats"])
@@ -246,7 +256,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             raise WrongFeaturesFormatError(
                 "The features file %s is not correctly formatted" %
                 self.file_struct.features_file)
-        except AssertError:
+        except AssertionError:
             raise FeaturesNotFound(
                 "The features for the given parameters were not found in "
                 "features file %s" % self.file_struct.features_file)
@@ -256,47 +266,57 @@ class Features(six.with_metaclass(MetaFeatures)):
 
     def write_features(self):
         """Saves features to file."""
-        # Metadata
-        out_json = {"metadata": {
-            "versions": {"librosa": librosa.__version__,
-                         "msaf": msaf.__version__,
-                         "numpy": np.__version__},
-            "timestamp": datetime.datetime.today().strftime(
-                "%Y/%m/%d %H:%M:%S")}}
+        out_json = {}
+        try:
+            # Only save the right information
+            self.read_features()
+        except (WrongFeaturesFormatError, FeaturesNotFound,
+                NoFeaturesFileError):
+            # We need to create the file or overwite it
+            # Metadata
+            out_json = {"metadata": {
+                "versions": {"librosa": librosa.__version__,
+                             "msaf": msaf.__version__,
+                             "numpy": np.__version__},
+                "timestamp": datetime.datetime.today().strftime(
+                    "%Y/%m/%d %H:%M:%S")}}
 
-        # Global parameters
-        out_json["globals"] = {
-            "dur": self.dur,
-            "sample_rate": self.sr,
-            "hop_length": self.hop_length,
-            "audio_file": self.file_struct.audio_file
-        }
+            # Global parameters
+            out_json["globals"] = {
+                "dur": self.dur,
+                "sample_rate": self.sr,
+                "hop_length": self.hop_length,
+                "audio_file": self.file_struct.audio_file
+            }
 
-        # Specific parameters of the current features
-        out_json[self.get_id()] = {}
-        out_json[self.get_id()]["params"] = {}
-        for param_name in self.get_param_names():
-            value = getattr(self, param_name)
-            out_json[self.get_id()]["params"][param_name] = str(value)
+            # Beats
+            out_json["est_beats"] = self._est_beats_times.tolist()
+            if self._ann_beats_times is not None:
+                out_json["ann_beats"] = self._ann_beats_times.tolist()
+        except FeatureParamsError:
+            # We have other features in the file, simply add these ones
+            with open(self.file_struct.features_file) as f:
+                out_json = json.load(f)
+        finally:
+            # Specific parameters of the current features
+            out_json[self.get_id()] = {}
+            out_json[self.get_id()]["params"] = {}
+            for param_name in self.get_param_names():
+                value = getattr(self, param_name)
+                out_json[self.get_id()]["params"][param_name] = str(value)
 
-        # Beats
-        out_json["est_beats"] = self._est_beats_times.tolist()
-        if self._ann_beats_times is not None:
-            out_json["ann_beats"] = self._ann_beats_times.tolist()
+            # Actual features
+            out_json[self.get_id()]["framesync"] = \
+                self._framesync_features.tolist()
+            out_json[self.get_id()]["est_beatsync"] = \
+                self._est_beatsync_features.tolist()
+            if self._ann_beatsync_features is not None:
+                out_json[self.get_id()]["ann_beatsync"] = \
+                    self._ann_beatsync_features.tolist()
 
-        # Actual features
-        out_json[self.get_id()]["framesync"] = \
-            self._framesync_features.tolist()
-        out_json[self.get_id()]["est_beatsync"] = \
-            self._est_beatsync_features.tolist()
-        if self._ann_beatsync_features is not None:
-            out_json[self.get_id()]["ann_beatsync"] = \
-                self._ann_beatsync_features.tolist()
-
-        # Save it
-        with open("caca.json", "w") as f:
-            json.dump(out_json, f, indent=2)
-            pass
+            # Save it
+            with open(self.file_struct.features_file, "w") as f:
+                json.dump(out_json, f, indent=2)
 
     def get_param_names(self):
         """Returns the parameter names for these features, avoiding
