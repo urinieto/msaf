@@ -26,8 +26,8 @@ class Anal(object):
 DEFAULT_BOUND_ID = "sf"
 DEFAULT_LABEL_ID = None
 
-# Import all submodules (for each task)
-from . import featextract
+# Import all submodules
+from . import features
 from . import input_output as io
 from . import eval
 from . import plotting
@@ -37,15 +37,6 @@ from . import run
 from .run import process
 from .input_output import get_all_boundary_algorithms
 from .input_output import get_all_label_algorithms
-
-# Global Config
-prefix_dict = {
-    "Cerulean": "large_scale",
-    "Epiphyte": "function",
-    "Isophonics": "function",
-    "SALAMI": "large_scale",
-    "SPAM": "large_scale"
-}
 
 results_dir = "results"
 results_ext = ".csv"
@@ -69,12 +60,10 @@ class Dataset():
 
 feat_dict = {
     'sf': 'pcp',
-    'levy':   'pcp',
-    'foote':   'pcp',
-    'siplca':   '',
-    'olda':   '',
-    'cnmf':   'pcp',
-    '2dfmc':   ''
+    'levy': 'pcp',
+    'foote': 'pcp',
+    'siplca': '',
+    'olda': '',
+    'cnmf': 'pcp',
+    '2dfmc': ''
 }
-
-AVAILABLE_FEATS = ["pcp", "mfcc", "cqt", "tonnetz", "tempogram"]
