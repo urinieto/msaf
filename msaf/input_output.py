@@ -221,7 +221,7 @@ def get_features(audio_path, annot_beats=False, framesync=False):
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
-    # Read Estimations
+    # Read Features
     features_path = os.path.join(
         ds_path, msaf.Dataset.features_dir,
         os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
