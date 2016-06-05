@@ -117,7 +117,15 @@ class Features(six.with_metaclass(MetaFeatures)):
         return librosa.effects.hpss(self._audio)
 
     def estimate_beats(self):
-        """Estimates the beats using librosa."""
+        """Estimates the beats using librosa.
+
+        Returns
+        -------
+        times: np.array
+            Times of estimated beats in seconds.
+        frames: np.array
+            Frame indeces of estimated beats.
+        """
         # Compute harmonic-percussive source separiation if needed
         if self._audio_percussive is None:
             self._audio_harmonic, self._audio_percussive = self.compute_HPSS()
@@ -139,7 +147,15 @@ class Features(six.with_metaclass(MetaFeatures)):
         return times, frames
 
     def read_ann_beats(self):
-        """Reads the annotated beats if available."""
+        """Reads the annotated beats if available.
+
+        Returns
+        -------
+        times: np.array
+            Times of annotated beats in seconds.
+        frames: np.array
+            Frame indeces of annotated beats.
+        """
         times, frames = (None, None)
 
         # Read annotations if they exist in correct folder
@@ -164,6 +180,12 @@ class Features(six.with_metaclass(MetaFeatures)):
             The frame indeces of the beat positions.
         pad: boolean
             If `True`, `beat_frames` is padded to span the full range.
+
+        Returns
+        -------
+        beatsync: np.array
+            The beat-synchronized features.
+            `None` if the beat_frames was `None`.
         """
         if beat_frames is None:
             return None
@@ -277,7 +299,8 @@ class Features(six.with_metaclass(MetaFeatures)):
             pass
 
     def get_param_names(self):
-        """Returns the parameter names for these features."""
+        """Returns the parameter names for these features, avoiding
+        the global parameters."""
         return [name for name in vars(self) if not name.startswith('_') and
                 name not in self._global_param_names]
 
