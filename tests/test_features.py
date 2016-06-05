@@ -11,7 +11,7 @@ import numpy.testing as npt
 import os
 
 # Msaf imports
-import msaf.featextract
+import msaf.features
 from msaf.input_output import FileStruct
 
 # Global vars
@@ -117,39 +117,6 @@ def test_compute_all_features():
     # Sonify
     msaf.featextract.compute_all_features(file_struct, sonify_beats=True,
                                           overwrite=True, out_beats=beats_file)
-    assert os.path.isfile(feat_file) and os.path.isfile(beats_file)
-
-    # Clean up
-    os.remove(feat_file)
-    os.remove(beats_file)
-
-
-def test_process():
-    # Set output file
-    feat_file = "tmp.json"
-    beats_file = "beats.wav"
-
-    # Remove previously computed outputs if exist
-    if os.path.isfile(feat_file):
-        os.remove(feat_file)
-    if os.path.isfile(beats_file):
-        os.remove(beats_file)
-
-    # Call main function
-    msaf.featextract.process(audio_file, out_file=feat_file)
-    assert os.path.isfile(feat_file)
-
-    # Call again main function (should do nothing, since feat_file exists)
-    msaf.featextract.process(audio_file, out_file=feat_file)
-    assert os.path.isfile(feat_file)
-
-    # Overwrite
-    msaf.featextract.process(audio_file, out_file=feat_file, overwrite=True)
-    assert os.path.isfile(feat_file)
-
-    # Sonify
-    msaf.featextract.process(audio_file, out_file=feat_file, overwrite=True,
-                             sonify_beats=True, out_beats=beats_file)
     assert os.path.isfile(feat_file) and os.path.isfile(beats_file)
 
     # Clean up
