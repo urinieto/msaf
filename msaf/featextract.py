@@ -330,7 +330,13 @@ class Features(six.with_metaclass(MetaFeatures)):
     @property
     def features(self):
         """This getter will compute the actual features if they haven't
-        been computed yet."""
+        been computed yet.
+
+        Returns
+        -------
+        features: np.array
+            The actual features. Each row corresponds to a feature vector.
+        """
         # Compute features if needed
         if self._features is None:
             try:
@@ -418,7 +424,8 @@ class CQT(Features):
         Returns
         -------
         cqt: np.array(N, F)
-            The features, each row representing a time-frame.
+            The features, each row representing a feature vector for a give
+            time frame/beat.
         """
         linear_cqt = np.abs(librosa.cqt(
             self._audio, sr=self.sr, hop_length=self.hop_length,
@@ -426,7 +433,6 @@ class CQT(Features):
             real=False)) ** 2
         cqt = librosa.logamplitude(linear_cqt, ref_power=self.ref_power).T
         return cqt
-
 
 
 #def compute_features(audio, y_harmonic):
