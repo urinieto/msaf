@@ -3,7 +3,7 @@
 A Python framework to analyze music structure.
 
 * Master branch: [![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=master)](https://travis-ci.org/urinieto/msaf)
-* Devel branch: [![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=devel)](https://travis-ci.org/urinieto/msaf)
+* Devel branch: [![Build Status](https://travis-ci.org/urinieto/msaf.svg?branch=0.1.0-dev)](https://travis-ci.org/urinieto/msaf) [![Coverage Status](https://coveralls.io/repos/github/urinieto/msaf/badge.svg?branch=0.1.0-dev)](https://coveralls.io/github/urinieto/msaf?branch=0.1.0-dev)
 
 ## Description ##
 
