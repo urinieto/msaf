@@ -35,6 +35,7 @@ from . import plotting
 from . import utils
 from . import algorithms
 from . import run
+from .base import features_registry
 from .run import process
 from .input_output import get_all_boundary_algorithms
 from .input_output import get_all_label_algorithms
@@ -43,6 +44,7 @@ results_dir = "results"
 results_ext = ".csv"
 out_boundaries_ext = "-bounds.wav"
 minimum__frames = 10
+features_tmp_file = ".features_msaf_tmp.json"
 
 
 class Dataset():

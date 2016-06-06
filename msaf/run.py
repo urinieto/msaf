@@ -12,8 +12,8 @@ from joblib import Parallel, delayed
 import msaf
 from msaf import input_output as io
 from msaf import utils
-from msaf import featextract
 from msaf import plotting
+from msaf.input_output import FileStruct
 import msaf.algorithms as algorithms
 
 
@@ -187,12 +187,14 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
         layer.
     """
     # Features should have already been computed, let's read them
-    features = io.get_features(audio_file, config["annot_beats"],
-                               config["framesync"])
-    config["features"] = features
+    file_struct = FileStruct(audio_file)
+    features_object = io.get_features(
+        config["feature"], file_struct, config["annot_beats"],
+        config["framesync"])
+    config["features"] = features_object.features
 
     # Check that there are enough audio frames
-    if features["pcp"].shape[0] <= msaf.minimum__frames:
+    if config["features"].shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
         return np.asarray([0, features["anal"]["dur"]]), \
@@ -203,11 +205,13 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     labels_module = get_labels_module(labels_id)
 
     # Get the correct frame times
-    frame_times = features["beats"]
+    frame_times = features_object.beat_times
     if config["framesync"]:
-        frame_times = utils.get_time_frames(features["anal"]["dur"],
+        # TODO: analisis parameters
+        frame_times = utils.get_time_frames(features_object.dur,
                                             features["anal"])
 
+    import pdb; pdb.set_trace()  # XXX BREAKPOINT
     # Segment audio based on type of segmentation
     run_fun = run_hierarchical if config["hier"] else run_flat
     est_times, est_labels = run_fun(audio_file, bounds_module, labels_module,
@@ -241,20 +245,12 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     est_labels: np.array
         List of all the labels associated segments.
     """
-    # Only analize files with annotated beats
-    if config["annot_beats"]:
-        jam = jams.load(file_struct.ref_file)
-        annots = jam.search(namespace="beat.*")
-        if not annots:
-            logging.warning("No beat information in file %s" %
-                            file_struct.ref_file)
-            return np.array([]), np.array([])
-
     logging.info("Segmenting %s" % file_struct.audio_file)
 
-    # Compute features if needed
-    if not os.path.isfile(file_struct.features_file):
-        featextract.compute_all_features(file_struct)
+    # Get features
+    config["features"] = io.get_features(
+        config["feature"], file_struct, config["annot_beats"],
+        config["framesync"])
 
     # Get estimations
     est_times, est_labels = run_algorithms(file_struct.audio_file,
@@ -324,7 +320,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
     np.random.seed(123)
 
     # Make sure that the features used are correct
-    assert feature in msaf.AVAILABLE_FEATS
+    assert feature in msaf.features_registry.keys()
 
     # Set up configuration based on algorithms parameters
     if config is None:
@@ -341,15 +337,13 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         # Single file mode
         # Get (if they exitst) or compute features
         file_struct = msaf.io.FileStruct(in_path)
-        if not os.path.exists(file_struct.features_file):
-            # Compute and save features
-            all_features = featextract.compute_features_for_audio_file(in_path)
-            msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
-            msaf.featextract.save_features(file_struct.features_file,
-                                           all_features)
-        # Get correct features
-        config["features"] = msaf.io.get_features(
-            in_path, annot_beats=annot_beats, framesync=framesync)
+
+        # Use temporary file in single mode
+        file_struct.features_file = msaf.features_tmp_file
+
+        # Get features
+        config["features"] = io.get_features(feature, file_struct,
+                                             annot_beats, framesync).features
 
         # And run the algorithms
         est_times, est_labels = run_algorithms(in_path, boundaries_id,

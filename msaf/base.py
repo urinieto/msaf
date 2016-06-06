@@ -23,7 +23,6 @@ import six
 # Local stuff
 import msaf
 from msaf import utils
-from msaf import input_output as io
 from msaf.input_output import FileStruct
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
     FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError
@@ -358,6 +357,15 @@ class Features(six.with_metaclass(MetaFeatures)):
             self.compute_beat_sync_features(self._ann_beats_frames, pad)
 
     @property
+    def beat_times(self):
+        """This getter gets the beat times, for the corresponding type of
+        features."""
+        beat_times = self._est_beats_times
+        if self.feat_type is FeatureTypes.ann_beatsync:
+            beat_times = self._ann_beats_times
+        return np.array(beat_times)
+
+    @property
     def features(self):
         """This getter will compute the actual features if they haven't
         been computed yet.
@@ -374,6 +382,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             except (NoFeaturesFileError, FeaturesNotFound,
                     WrongFeaturesFormatError, FeatureParamsError) as e:
                 try:
+                    import pdb; pdb.set_trace()  # XXX BREAKPOINT
                     self._compute_all_features()
                     self.write_features()
                 except IOError:
