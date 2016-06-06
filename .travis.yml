@@ -34,4 +34,7 @@ install:
 script:
     - python --version
     - cd tests
-    - nosetests test_*.py -v -s
+    - nosetests --with-coverage test_*.py -v -s
+
+after_success:
+      coveralls
