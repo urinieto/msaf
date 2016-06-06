@@ -16,7 +16,6 @@ from enum import Enum
 import librosa
 import jams
 import json
-import logging
 import numpy as np
 import os
 import six
@@ -395,11 +394,9 @@ class Features(six.with_metaclass(MetaFeatures)):
             self._features = self._est_beatsync_features
         elif self.feat_type is FeatureTypes.ann_beatsync:
             if self._ann_beatsync_features is None:
-                # TODO: Improve error checking
-                logging.warning("NO ANNOTATED BEATS!")
-                self._features = self._est_beatsync_features
-            else:
-                self._features = self._ann_beatsync_features
+                raise FeatureTypeNotFound(
+                    "Feature type %s is not valid because no annotated beats "
+                    "were found" % self.feat_type)
         else:
             raise FeatureTypeNotFound("Feature type %s is not valid." %
                                       self.feat_type)
