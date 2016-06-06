@@ -13,6 +13,7 @@ import six
 
 # Local stuff
 import msaf
+from msaf.exceptions import FeatureTypeNotFound
 from msaf import utils
 
 
@@ -191,94 +192,6 @@ def read_ref_bound_frames(audio_path, beats):
     # align with beats
     bound_frames = align_times(ref_times, beats)
     return bound_frames
-
-
-def get_features(audio_path, annot_beats=False, framesync=False):
-    """
-    Gets the features of an audio file given the audio_path.
-
-    Parameters
-    ----------
-    audio_path: str
-        Path to the audio file.
-    annot_beats: bool
-        Whether to use annotated beats or not.
-    framesync: bool
-        Whether to use framesync features or not.
-
-    Return
-    ------
-    features : dict
-        A dictionary with the following keys:
-            "pcp": np.array((N, 12)), Chromagram
-            "mfcc": np.array((N, 13)), MFCC
-            "tonnetz": np.array((N, 6)), Tonnetz
-            "cqt": np.array((N, msaf.Anal.cqt_bins)), Constant-Q transform
-            "tempogram": np.array((N, 192)), Tempogram
-            "beats": np.array(T), Beats in seconds
-            "anal" : dict, Parameters of analysis of track (e.g. sampling rate)
-    """
-    # Dataset path
-    ds_path = os.path.dirname(os.path.dirname(audio_path))
-
-    # Read Features
-    features_path = os.path.join(
-        ds_path, msaf.Dataset.features_dir,
-        os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
-    with open(features_path, "r") as f:
-        feats = json.load(f)
-
-    # Beat Synchronous Feats
-    if framesync:
-        feat_str = "framesync"
-        beats = None
-    else:
-        if annot_beats:
-            # Read references
-            try:
-                annotation_path = os.path.join(
-                    ds_path, msaf.Dataset.references_dir,
-                    os.path.basename(audio_path)[:-4] +
-                    msaf.Dataset.references_ext)
-                # TODO: Better exception handling
-                jam = jams.load(annotation_path, validate=False)
-            except:
-                raise RuntimeError("No references found in file %s" %
-                                   annotation_path)
-
-            feat_str = "ann_beatsync"
-            beats = []
-            beat_data = jam.beats[0].data
-            if beat_data == []:
-                raise ValueError
-            for data in beat_data:
-                beats.append(data.time.value)
-            beats = np.unique(beats)
-        else:
-            feat_str = "est_beatsync"
-            beats = np.asarray(feats["beats"]["times"])
-
-    # Build actual features dictionary
-    features = {}
-    features["pcp"] = np.asarray(feats[feat_str]["pcp"])
-    features["mfcc"] = np.asarray(feats[feat_str]["mfcc"])
-    features["tonnetz"] = np.asarray(feats[feat_str]["tonnetz"])
-    features["cqt"] = np.asarray(feats[feat_str]["cqt"])
-    features["tempogram"] = np.asarray(feats[feat_str]["tempogram"])
-    features["beats"] = np.asarray(feats["beats"]["times"])
-    features["anal"] = feats["analysis"]
-
-    # Frame times might be shorter than the actual number of features.
-    if framesync:
-        frame_times = utils.get_time_frames(features["anal"]["dur"],
-                                            features["anal"])
-        features["pcp"] = features["pcp"][:len(frame_times)]
-        features["mfcc"] = features["mfcc"][:len(frame_times)]
-        features["tonnetz"] = features["tonnetz"][:len(frame_times)]
-        features["cqt"] = features["cqt"][:len(frame_times)]
-        features["tempogram"] = features["tempogram"][:len(frame_times)]
-
-    return features
 
 
 def find_estimation(jam, boundaries_id, labels_id, params):
@@ -552,6 +465,23 @@ def get_all_label_algorithms():
     return algo_ids
 
 
+def get_features(features_id, file_struct, annot_beats, framesync):
+    """Gets the features from the given parameters."""
+    from msaf.base import FeatureTypes
+    if framesync:
+        feat_type = FeatureTypes.est_beatsync
+    elif annot_beats and not framesync:
+        feat_type = FeatureTypes.ann_beatsync
+    elif not annot_beats and not framesync:
+        feat_type = FeatureTypes.est_beatsync
+    else:
+        raise FeatureTypeNotFound("Type of features not valid.")
+
+    # Get features
+    return msaf.features_registry[features_id](
+        file_struct, feat_type)
+
+
 def get_configuration(feature, annot_beats, framesync, boundaries_id,
                       labels_id):
     """Gets the configuration dictionary from the current parameters of the
@@ -689,4 +619,4 @@ def get_duration(features_file):
     """
     with open(features_file) as f:
         feats = json.load(f)
-    return float(feats["analysis"]["dur"])
+    return float(feats["globals"]["dur"])

@@ -27,7 +27,7 @@ def main():
                         default="pcp",
                         type=str,
                         help="Type of features",
-                        choices=["pcp", "tonnetz", "mfcc", "cqt", "tempogram"])
+                        choices=msaf.features_registry.keys())
     parser.add_argument("-bid",
                         action="store",
                         help="Boundary algorithm identifier",
