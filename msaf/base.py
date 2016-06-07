@@ -92,6 +92,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         self._audio = None  # Actual audio signal
         self._audio_harmonic = None  # Harmonic audio signal
         self._audio_percussive = None  # Percussive audio signal
+        self._framesync_times = None  # The frame synced times
         self._est_beats_times = None  # Estimated beat times
         self._est_beats_frames = None  # Estimated beats in frames
         self._ann_beats_times = None  # Annotated beat times
@@ -193,7 +194,7 @@ class Features(six.with_metaclass(MetaFeatures)):
                                         beat_frames, pad=pad).T
 
         # TODO: Make sure we have the right size (remove last frame if needed)
-        # beatsync = beatsync[:len(beats_frames), :]
+        #beatsync = beatsync[:len(beat_frames), :]
         return beatsync
 
     def read_features(self, tol=1e-3):
@@ -350,20 +351,32 @@ class Features(six.with_metaclass(MetaFeatures)):
         self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
 
         # Beat-Synchronize
-        pad = True  # Always append to the end of the features
+        pad = False  # Always append to the end of the features
         self._est_beatsync_features = \
             self.compute_beat_sync_features(self._est_beats_frames, pad)
         self._ann_beatsync_features = \
             self.compute_beat_sync_features(self._ann_beats_frames, pad)
 
     @property
-    def beat_times(self):
-        """This getter gets the beat times, for the corresponding type of
+    def frame_times(self):
+        """This getter returns the frame times, for the corresponding type of
         features."""
-        beat_times = self._est_beats_times
-        if self.feat_type is FeatureTypes.ann_beatsync:
-            beat_times = self._ann_beats_times
-        return np.array(beat_times)
+        frame_times = None
+        if self.feat_type is FeatureTypes.framesync:
+            frame_times = np.array([i * self.hop_length / float(self.sr) for
+                                    i in np.arange(self.features.shape[0])])
+        elif self.feat_type is FeatureTypes.est_beatsync:
+            frame_times = self._est_beats_times
+        elif self.feat_type is FeatureTypes.ann_beatsync:
+            if self._ann_beatsync_features is None:
+                raise FeatureTypeNotFound(
+                    "Feature type %s is not valid because no annotated beats "
+                    "were found" % self.feat_type)
+            frame_times = self._ann_beats_times
+        else:
+            raise FeatureTypeNotFound("Feature type %s is not valid"
+                                      % self.feat_type)
+        return frame_times
 
     @property
     def features(self):
@@ -382,7 +395,6 @@ class Features(six.with_metaclass(MetaFeatures)):
             except (NoFeaturesFileError, FeaturesNotFound,
                     WrongFeaturesFormatError, FeatureParamsError) as e:
                 try:
-                    import pdb; pdb.set_trace()  # XXX BREAKPOINT
                     self._compute_all_features()
                     self.write_features()
                 except IOError:
@@ -406,11 +418,45 @@ class Features(six.with_metaclass(MetaFeatures)):
                 raise FeatureTypeNotFound(
                     "Feature type %s is not valid because no annotated beats "
                     "were found" % self.feat_type)
+            self_features = self._ann_beatsync_features
         else:
             raise FeatureTypeNotFound("Feature type %s is not valid." %
                                       self.feat_type)
 
         return self._features
+
+    @classmethod
+    def select_features(cls, features_id, file_struct, annot_beats, framesync):
+        """Selects the features from the given parameters.
+
+        Parameters
+        ----------
+        features_id: str
+            The identifier of the features (it must be a key inside the
+            `features_registry`)
+        file_struct: msaf.io.FileStruct
+            The file struct containing the files to extract the features from
+        annot_beats: boolean
+            Whether to use annotated (`True`) or estimated (`False`) beats
+        framesync: boolean
+            Whether to use framesync (`True`) or beatsync (`False`) features
+
+        Returns
+        -------
+        features: obj
+            The actual features object that inherits from `msaf.Features`
+        """
+        if framesync:
+            feat_type = FeatureTypes.est_beatsync
+        elif annot_beats and not framesync:
+            feat_type = FeatureTypes.ann_beatsync
+        elif not annot_beats and not framesync:
+            feat_type = FeatureTypes.est_beatsync
+        else:
+            raise FeatureTypeNotFound("Type of features not valid.")
+
+        # Select features with default parameters
+        return features_registry[features_id](file_struct, feat_type)
 
     def compute_features(self):
         raise NotImplementedError("This method must contain the actual "

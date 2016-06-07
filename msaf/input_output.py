@@ -465,23 +465,6 @@ def get_all_label_algorithms():
     return algo_ids
 
 
-def get_features(features_id, file_struct, annot_beats, framesync):
-    """Gets the features from the given parameters."""
-    from msaf.base import FeatureTypes
-    if framesync:
-        feat_type = FeatureTypes.est_beatsync
-    elif annot_beats and not framesync:
-        feat_type = FeatureTypes.ann_beatsync
-    elif not annot_beats and not framesync:
-        feat_type = FeatureTypes.est_beatsync
-    else:
-        raise FeatureTypeNotFound("Type of features not valid.")
-
-    # Get features
-    return msaf.features_registry[features_id](
-        file_struct, feat_type)
-
-
 def get_configuration(feature, annot_beats, framesync, boundaries_id,
                       labels_id):
     """Gets the configuration dictionary from the current parameters of the

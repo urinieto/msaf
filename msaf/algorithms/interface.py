@@ -84,14 +84,8 @@ class SegmenterInterface:
 
     def _preprocess(
         self, valid_features=["pcp", "tonnetz", "mfcc", "cqt", "tempogram"],
-        normalize=True):
+            normalize=True):
         """This method obtains the actual features."""
-        # Read features
-        if self.features is None:
-            self.features = io.get_features(self.audio_file,
-                                            annot_beats=self.annot_beats,
-                                            framesync=self.framesync)
-
         # Use specific feature
         if self.feature_str not in valid_features:
             raise RuntimeError("Feature %s in not valid for algorithm: %s "
@@ -99,7 +93,7 @@ class SegmenterInterface:
                                (self.feature_str, __name__, valid_features))
         else:
             try:
-                F = self.features[self.feature_str]
+                F = self.features.features
             except KeyError:
                 raise RuntimeError("Feature %s in not supported by MSAF" %
                                    (self.feature_str))
