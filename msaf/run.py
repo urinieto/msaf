@@ -78,7 +78,7 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     audio_file. See run_algorithm for more information.
     """
     # Get features to make code nicer
-    features = config["features"]
+    features = config["features"].features
 
     if bounds_module is None:
         raise RuntimeError("A boundary algorithm is needed when using "
@@ -97,8 +97,8 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     for level in range(len(est_idxs)):
         est_level_times, est_level_labels = \
             utils.process_segmentation_level(
-                est_idxs[level], est_labels[level], features["pcp"].shape[0],
-                frame_times, features["anal"]["dur"])
+                est_idxs[level], est_labels[level], features.shape[0],
+                frame_times, features.dur)
         est_times.append(est_level_times)
         cleaned_est_labels.append(est_level_labels)
     est_labels = cleaned_est_labels
@@ -191,7 +191,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     if config["features"].features.shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
-        return np.asarray([0, features["anal"]["dur"]]), \
+        return np.asarray([0, config["features"].dur]), \
             np.asarray([0], dtype=int)
 
     # Get the corresponding modules
