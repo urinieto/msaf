@@ -14,6 +14,7 @@ from msaf import input_output as io
 from msaf import utils
 from msaf import plotting
 from msaf.input_output import FileStruct
+from msaf.features import Features
 import msaf.algorithms as algorithms
 
 
@@ -111,7 +112,7 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
     audio_file. See run_algorithm for more information.
     """
     # Get features to make code nicer
-    features = config["features"]
+    features = config["features"].features
 
     # Segment using the specified boundaries and labels
     # Case when boundaries and labels algorithms are the same
@@ -132,9 +133,9 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
                 est_idxs = io.align_times(est_times, frame_times[:-1])
                 if est_idxs[0] != 0:
                     est_idxs = np.concatenate(([0], est_idxs))
-                if est_idxs[-1] != features["pcp"].shape[0] - 1:
+                if est_idxs[-1] != features.shape[0] - 1:
                     est_idxs = np.concatenate((
-                        est_idxs, [features["pcp"].shape[0] - 1]))
+                        est_idxs, [features.shape[0] - 1]))
             except:
                 logging.warning("No references found for file: %s" %
                                 audio_file)
@@ -152,8 +153,8 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
 
     # Make sure the first and last boundaries are included
     est_times, est_labels = utils.process_segmentation_level(
-        est_idxs, est_labels, features["pcp"].shape[0], frame_times,
-        features["anal"]["dur"])
+        est_idxs, est_labels, features.shape[0], frame_times,
+        config["features"].dur)
 
     return est_times, est_labels
 
@@ -186,15 +187,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
         If `list`, it will be a list of np.arrays, sorted by segmentation
         layer.
     """
-    # Features should have already been computed, let's read them
-    file_struct = FileStruct(audio_file)
-    features_object = io.get_features(
-        config["feature"], file_struct, config["annot_beats"],
-        config["framesync"])
-    config["features"] = features_object.features
-
     # Check that there are enough audio frames
-    if config["features"].shape[0] <= msaf.minimum__frames:
+    if config["features"].features.shape[0] <= msaf.minimum__frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
         return np.asarray([0, features["anal"]["dur"]]), \
@@ -205,13 +199,8 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
     labels_module = get_labels_module(labels_id)
 
     # Get the correct frame times
-    frame_times = features_object.beat_times
-    if config["framesync"]:
-        # TODO: analisis parameters
-        frame_times = utils.get_time_frames(features_object.dur,
-                                            features["anal"])
+    frame_times = config["features"].frame_times
 
-    import pdb; pdb.set_trace()  # XXX BREAKPOINT
     # Segment audio based on type of segmentation
     run_fun = run_hierarchical if config["hier"] else run_flat
     est_times, est_labels = run_fun(audio_file, bounds_module, labels_module,
@@ -248,7 +237,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     logging.info("Segmenting %s" % file_struct.audio_file)
 
     # Get features
-    config["features"] = io.get_features(
+    config["features"] = Features.select_features(
         config["feature"], file_struct, config["annot_beats"],
         config["framesync"])
 
@@ -342,8 +331,8 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         file_struct.features_file = msaf.features_tmp_file
 
         # Get features
-        config["features"] = io.get_features(feature, file_struct,
-                                             annot_beats, framesync).features
+        config["features"] = Features.select_features(
+            feature, file_struct, annot_beats, framesync)
 
         # And run the algorithms
         est_times, est_labels = run_algorithms(in_path, boundaries_id,
