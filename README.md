@@ -49,7 +49,7 @@ MSAF can be run in two different modes: **single file** and **collection** modes
 
 To run an audio file with the Convex NMF method for boundaries and 2D-FMC for labels using HPCP as features (from the `examples` folder):
 
-    ./run_msaf.py audio_file.mp3 -bid cnmf -lid fmc2d -f hpcp
+    ./run_msaf.py audio_file.mp3 -bid cnmf -lid fmc2d -f pcp
 
 The input file can be of type `mp3`, `wav` or `aif`.
 
@@ -144,7 +144,7 @@ As an example:
 
 ```python
 import msaf
-estimations = msaf.process("../datasets/Sargon/audio/01-Sargon-Mindless.mp3", feature="hpcp", boundaries_id="cnmf", labels_id="cnmf")
+estimations = msaf.process("../datasets/Sargon/audio/01-Sargon-Mindless.mp3", feature="pcp", boundaries_id="cnmf", labels_id="cnmf")
 est_boundary_times = estimations[0]
 est_labels = estimations[1]
 ```
