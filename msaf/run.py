@@ -106,7 +106,7 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     return est_times, est_labels
 
 
-def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
+def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
              annotator_id):
     """Runs the flat algorithms with the specified identifiers on the
     audio_file. See run_algorithm for more information.
@@ -118,18 +118,18 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
     # Case when boundaries and labels algorithms are the same
     if bounds_module is not None and labels_module is not None and \
             bounds_module.__name__ == labels_module.__name__:
-        S = bounds_module.Segmenter(audio_file, **config)
+        S = bounds_module.Segmenter(file_struct, **config)
         est_idxs, est_labels = S.processFlat()
     # Different boundary and label algorithms
     else:
         # Identify segment boundaries
         if bounds_module is not None:
-            S = bounds_module.Segmenter(audio_file, in_labels=[], **config)
+            S = bounds_module.Segmenter(file_struct, in_labels=[], **config)
             est_idxs, est_labels = S.processFlat()
         else:
             try:
                 est_times, est_labels = io.read_references(
-                    audio_file, annotator_id=annotator_id)
+                    file_struct.audio_file, annotator_id=annotator_id)
                 est_idxs = io.align_times(est_times, frame_times[:-1])
                 if est_idxs[0] != 0:
                     est_idxs = np.concatenate(([0], est_idxs))
@@ -138,7 +138,7 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
                         est_idxs, [features.shape[0] - 1]))
             except:
                 logging.warning("No references found for file: %s" %
-                                audio_file)
+                                file_struct.audio_file)
                 return [], []
 
         # Label segments
@@ -146,7 +146,7 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
             if len(est_idxs) == 2:
                 est_labels = np.array([0])
             else:
-                S = labels_module.Segmenter(audio_file,
+                S = labels_module.Segmenter(file_struct,
                                             in_bound_idxs=est_idxs,
                                             **config)
                 est_labels = S.processFlat()[1]
@@ -159,14 +159,14 @@ def run_flat(audio_file, bounds_module, labels_module, frame_times, config,
     return est_times, est_labels
 
 
-def run_algorithms(audio_file, boundaries_id, labels_id, config,
+def run_algorithms(file_struct, boundaries_id, labels_id, config,
                    annotator_id=0):
     """Runs the algorithms with the specified identifiers on the audio_file.
 
     Parameters
     ----------
-    audio_file: str
-        Path to the audio file to segment.
+    file_struct: `msaf.io.FileStruct`
+        Object with the file paths.
     boundaries_id: str
         Identifier of the boundaries algorithm to use ("gt" for ground truth).
     labels_id: str
@@ -203,7 +203,7 @@ def run_algorithms(audio_file, boundaries_id, labels_id, config,
 
     # Segment audio based on type of segmentation
     run_fun = run_hierarchical if config["hier"] else run_flat
-    est_times, est_labels = run_fun(audio_file, bounds_module, labels_module,
+    est_times, est_labels = run_fun(file_struct, bounds_module, labels_module,
                                     frame_times, config, annotator_id)
 
     return est_times, est_labels
@@ -215,7 +215,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
 
     Parameters
     ----------
-    file_struct: Object
+    file_struct: `msaf.io.FileStruct`
         FileStruct containing the paths of the input files (audio file,
         features file, reference file, output estimation file).
     boundaries_id: str
@@ -242,7 +242,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
         config["framesync"])
 
     # Get estimations
-    est_times, est_labels = run_algorithms(file_struct.audio_file,
+    est_times, est_labels = run_algorithms(file_struct,
                                            boundaries_id, labels_id, config,
                                            annotator_id=annotator_id)
 
@@ -335,7 +335,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
             feature, file_struct, annot_beats, framesync)
 
         # And run the algorithms
-        est_times, est_labels = run_algorithms(in_path, boundaries_id,
+        est_times, est_labels = run_algorithms(file_struct, boundaries_id,
                                                labels_id, config,
                                                annotator_id=annotator_id)
 

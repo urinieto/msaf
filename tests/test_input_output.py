@@ -22,16 +22,11 @@ audio, fs = librosa.load(audio_file, sr=sr)
 y_harmonic, y_percussive = librosa.effects.hpss(audio)
 
 
-def test_get_features():
-    #TODO
-    pass
-
-
 def test_read_hier_references():
     one_jams = os.path.join("..", "datasets", "Sargon", "references",
                             "01-Sargon-Mindless.jams")
     three_jams = os.path.join("..", "datasets", "SALAMI", "references",
-                            "SALAMI_200.jams")
+                              "SALAMI_200.jams")
 
     # One level file
     hier_bounds, hier_labels, hier_levels = \

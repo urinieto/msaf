@@ -41,14 +41,14 @@ class SegmenterInterface:
 
     In these cases, est_times or est_labels will be empty (None).
     """
-    def __init__(self, audio_file, in_bound_idxs=None, feature="pcp",
+    def __init__(self, file_struct, in_bound_idxs=None, feature="pcp",
                  annot_beats=False, framesync=False, features=None, **config):
         """Inits the Segmenter.
 
         Parameters
         ----------
-        audio_file: str
-            Path to the audio file.
+        file_struct: `msaf.io.FileStruct`
+            Object with the file paths.
         in_bound_idxs: np.array
             Array containing the frame indeces of the previously find
             boundaries. `None` for computing them.
@@ -63,7 +63,8 @@ class SegmenterInterface:
         config: dict
             Configuration for the given algorithm (see module's __config.py__).
         """
-        self.audio_file = audio_file
+        self.file_struct = file_struct
+        self.audio_file = file_struct.audio_file
         self.in_bound_idxs = in_bound_idxs
         self.feature_str = feature
         self.annot_beats = annot_beats

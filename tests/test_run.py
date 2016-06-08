@@ -11,6 +11,7 @@ import os
 
 # Msaf imports
 import msaf
+from msaf.features import Features
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
@@ -72,54 +73,44 @@ def test_run_algorithms():
     label_ids += [None]
 
     # Config params
-    feature = "hpcp"
+    feature = "pcp"
     annot_beats = False
     framesync = False
     file_struct = msaf.io.FileStruct(audio_file)
-    all_features = msaf.featextract.compute_features_for_audio_file(audio_file)
-    msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
-    msaf.featextract.save_features(file_struct.features_file,
-                                   all_features)
+    file_struct.features_file = msaf.features_tmp_file
 
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
         for label_id in label_ids:
             config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                                bound_id, label_id)
-            config["features"] = msaf.io.get_features(
-                audio_file, annot_beats, framesync)
             config["hier"] = False
+            config["features"] = Features.select_features(
+                feature, file_struct, annot_beats, framesync)
             est_times, est_labels = msaf.run.run_algorithms(
-                audio_file, bound_id, label_id, config)
+                file_struct, bound_id, label_id, config)
             assert len(est_times) == 2
             assert len(est_labels) == 1
             npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
-            npt.assert_almost_equal(est_times[-1],
-                                    config["features"]["anal"]["dur"],
+            npt.assert_almost_equal(est_times[-1], config["features"].dur,
                                     decimal=2)
 
     # Commpute and save features for long audio file
     file_struct = msaf.io.FileStruct(long_audio_file)
-    all_features = msaf.featextract.compute_features_for_audio_file(
-        long_audio_file)
-    msaf.utils.ensure_dir(os.path.dirname(file_struct.features_file))
-    msaf.featextract.save_features(file_struct.features_file,
-                                   all_features)
+    file_struct.features_file = msaf.features_tmp_file
 
     def _test_run_msaf(bound_id, label_id):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
-        config["features"] = msaf.io.get_features(
-            long_audio_file, annot_beats, framesync)
         config["hier"] = False
-        est_times, est_labels = msaf.run.run_algorithms(long_audio_file,
-                                                        bound_id,
-                                                        label_id,
-                                                        config)
+        config["features"] = Features.select_features(
+            feature, file_struct, annot_beats, framesync)
+        est_times, est_labels = msaf.run.run_algorithms(
+            file_struct, bound_id, label_id, config)
         npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
         assert len(est_times) - 1 == len(est_labels)
-        npt.assert_almost_equal(
-            est_times[-1], config["features"]["anal"]["dur"], decimal=2)
+        npt.assert_almost_equal(est_times[-1], config["features"].dur,
+                                decimal=2)
 
     # Running all boundary algorithms on a relatively long file
     for bound_id in bound_ids:

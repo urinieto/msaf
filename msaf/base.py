@@ -362,9 +362,11 @@ class Features(six.with_metaclass(MetaFeatures)):
         """This getter returns the frame times, for the corresponding type of
         features."""
         frame_times = None
+        # Make sure we have already computed the features
+        features = self.features
         if self.feat_type is FeatureTypes.framesync:
             frame_times = np.array([i * self.hop_length / float(self.sr) for
-                                    i in np.arange(self.features.shape[0])])
+                                    i in np.arange(features.shape[0])])
         elif self.feat_type is FeatureTypes.est_beatsync:
             frame_times = self._est_beats_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
