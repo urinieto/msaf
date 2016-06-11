@@ -203,3 +203,140 @@ def AddConfigVar(name, doc, configparam, root=config/):
                 pass
         setattr(root.__class__, sections[0], configparam)
         _config_var_list.append(configparam)
+
+
+class ConfigParam(object):
+
+    def __init__(self, default, filter=None, allow_override=True):
+        """
+        If allow_override is False, we can't change the value after the import
+        of Theano. So the value should be the same during all the execution.
+        """
+        self.default = default
+        self.filter = filter
+        self.allow_override = allow_override
+        self.is_default = True
+        # N.B. --
+        # self.fullname  # set by AddConfigVar
+        # self.doc       # set by AddConfigVar
+
+        # Note that we do not call `self.filter` on the default value: this
+        # will be done automatically in AddConfigVar, potentially with a
+        # more appropriate user-provided default value.
+        # Calling `filter` here may actually be harmful if the default value is
+        # invalid and causes a crash or has unwanted side effects.
+
+    def __get__(self, cls, type_, delete_key=False):
+        if cls is None:
+            return self
+        if not hasattr(self, 'val'):
+            try:
+                val_str = fetch_val_for_key(self.fullname,
+                                            delete_key=delete_key)
+                self.is_default = False
+            except KeyError:
+                if callable(self.default):
+                    val_str = self.default()
+                else:
+                    val_str = self.default
+            self.__set__(cls, val_str)
+        # print "RVAL", self.val
+        return self.val
+
+    def __set__(self, cls, val):
+        if not self.allow_override and hasattr(self, 'val'):
+            raise Exception(
+                "Can't change the value of this config parameter "
+                "after initialization!")
+        # print "SETTING PARAM", self.fullname,(cls), val
+        if self.filter:
+            self.val = self.filter(val)
+        else:
+            self.val = val
+
+
+class EnumStr(ConfigParam):
+    def __init__(self, default, *options, **kwargs):
+        self.default = default
+        self.all = (default,) + options
+
+        # All options should be strings
+        for val in self.all:
+            if not isinstance(val, string_types):
+                raise ValueError('Valid values for an EnumStr parameter '
+                                 'should be strings', val, type(val))
+
+        convert = kwargs.get("convert", None)
+
+        def filter(val):
+            if convert:
+                val = convert(val)
+            if val in self.all:
+                return val
+            else:
+                raise ValueError((
+                    'Invalid value ("%s") for configuration variable "%s". '
+                    'Valid options are %s'
+                    % (val, self.fullname, self.all)))
+        over = kwargs.get("allow_override", True)
+        super(EnumStr, self).__init__(default, filter, over)
+
+    def __str__(self):
+        return '%s (%s) ' % (self.fullname, self.all)
+
+
+class TypedParam(ConfigParam):
+    def __init__(self, default, mytype, is_valid=None, allow_override=True):
+        self.mytype = mytype
+
+        def filter(val):
+            cast_val = mytype(val)
+            if callable(is_valid):
+                if is_valid(cast_val):
+                    return cast_val
+                else:
+                    raise ValueError(
+                        'Invalid value (%s) for configuration variable '
+                        '"%s".'
+                        % (val, self.fullname), val)
+            return cast_val
+
+        super(TypedParam, self).__init__(default, filter,
+                                         allow_override=allow_override)
+
+    def __str__(self):
+        return '%s (%s) ' % (self.fullname, self.mytype)
+
+
+def StrParam(default, is_valid=None, allow_override=True):
+    return TypedParam(default, str, is_valid, allow_override=allow_override)
+
+
+def IntParam(default, is_valid=None, allow_override=True):
+    return TypedParam(default, int, is_valid, allow_override=allow_override)
+
+
+def FloatParam(default, is_valid=None, allow_override=True):
+    return TypedParam(default, float, is_valid, allow_override=allow_override)
+
+
+def BoolParam(default, is_valid=None, allow_override=True):
+    # see comment at the beginning of this file.
+
+    def booltype(s):
+        if s in ['False', 'false', '0', False]:
+            return False
+        elif s in ['True', 'true', '1', True]:
+            return True
+
+    def is_valid_bool(s):
+        if s in ['False', 'false', '0', 'True', 'true', '1', False, True]:
+            return True
+        else:
+            return False
+
+    if is_valid is None:
+        is_valid = is_valid_bool
+
+    return TypedParam(default, booltype, is_valid,
+                      allow_override=allow_override)
