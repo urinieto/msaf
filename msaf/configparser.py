@@ -2,6 +2,9 @@
 MSAF.
 A bunch of it is basically shamefully copy pasted from the almighty theano."""
 
+import os
+import warnings
+
 import msaf
 
 

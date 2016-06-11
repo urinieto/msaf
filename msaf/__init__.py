@@ -33,6 +33,9 @@ MSAFRC_WIN_FILE = "~/.msafrc.txt"
 DEFAULT_BOUND_ID = "sf"
 DEFAULT_LABEL_ID = None
 
+# Get config
+from msaf.configdefaults import config
+
 # Import all submodules
 from . import features
 from . import input_output as io
