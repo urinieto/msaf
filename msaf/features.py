@@ -12,6 +12,7 @@ import numpy as np
 # Local stuff
 import msaf
 from msaf import utils
+from msaf import config
 from msaf.input_output import FileStruct
 from msaf.base import Features
 
@@ -42,7 +43,7 @@ class CQT(Features):
         n_bins: int > 0
             Number of frequency bins for the CQT.
         norm: float
-            The normalization coefficient.
+            Type of norm to use for basis function normalization.
         filter_scale: float
             The scale of the filter for the CQT.
         ref_power: function

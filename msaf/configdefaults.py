@@ -18,3 +18,7 @@ AddConfigVar('sample_rate',
 AddConfigVar('cqt.bins',
              "Number of frequency bins for the CQT features.",
              IntParam(84))
+
+AddConfigVar('cqt.norm',
+             "Type of norm to use for basis function normalization.",
+             FloatParam(1.0))
