@@ -2,7 +2,13 @@
 MSAF.
 A bunch of it is basically shamefully copy pasted from the almighty theano."""
 
+from __future__ import absolute_import, print_function, division
+from configparser import (ConfigParser, NoOptionError, NoSectionError,
+                          InterpolationError)
 import os
+import shlex
+from six import StringIO
+import sys
 import warnings
 
 import msaf
@@ -13,10 +19,12 @@ MSAF_FLAGS = os.getenv(msaf.MSAF_FLAGS_VAR, "")
 # [section.]option=value entries. If the section part is omitted, there should
 # be only one section that contains the given option.
 
+
 class MsafConfigWarning(Warning):
     def warn(cls, message, stacklevel=0):
         warnings.warn(message, cls, stacklevel=stacklevel + 3)
         warn = classmethod(warn)
+
 
 def parse_config_string(config_string, issue_warnings=True):
     """
@@ -34,8 +42,8 @@ def parse_config_string(config_string, issue_warnings=True):
         if len(kv_tuple) == 1:
             if issue_warnings:
                 MsafConfigWarning.warn(
-                    ("Config key '%s' has no value, ignoring it" % kv_tuple[0]),
-                    stacklevel=1)
+                    ("Config key '%s' has no value, ignoring it" %
+                     kv_tuple[0]), stacklevel=1)
         else:
             k, v = kv_tuple
             # subsequent values for k will override earlier ones
@@ -59,7 +67,7 @@ def config_files_from_msafrc():
 
 
 config_files = config_files_from_msafrc()
-msaf_cfg = ConfigParser.SafeConfigParser(
+msaf_cfg = ConfigParser(
     {'USER': os.getenv("USER", os.path.split(os.path.expanduser('~'))[-1]),
      'LSCRATCH': os.getenv("LSCRATCH", ""),
      'TMPDIR': os.getenv("TMPDIR", ""),
@@ -72,8 +80,9 @@ msaf_cfg.read(config_files)
 # Having a raw version of the config around as well enables us to pass
 # through config values that contain format strings.
 # The time required to parse the config twice is negligible.
-msaf_raw_cfg = ConfigParser.RawConfigParser()
+msaf_raw_cfg = ConfigParser()
 msaf_raw_cfg.read(config_files)
+
 
 def fetch_val_for_key(key, delete_key=False):
     """Return the overriding config value for a key.
@@ -106,12 +115,13 @@ def fetch_val_for_key(key, delete_key=False):
     try:
         try:
             return msaf_cfg.get(section, option)
-        except ConfigParser.InterpolationError:
+        except InterpolationError:
             return msaf_raw_cfg.get(section, option)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+    except (NoOptionError, NoSectionError):
         raise KeyError(key)
 
 _config_var_list = []
+
 
 def _config_print(thing, buf, print_doc=True):
     for cv in _config_var_list:
@@ -120,6 +130,7 @@ def _config_print(thing, buf, print_doc=True):
             print("    Doc: ", cv.doc, file=buf)
         print("    Value: ", cv.__get__(True, None), file=buf)
         print("", file=buf)
+
 
 class MsafConfigParser(object):
     # properties are installed by AddConfigVar
@@ -146,7 +157,7 @@ config = MsafConfigParser()
 # - The subtrees provide the same interface as the root
 # - ConfigParser subclasses control get/set of config properties to guard
 #   against craziness.
-def AddConfigVar(name, doc, configparam, root=config/):
+def AddConfigVar(name, doc, configparam, root=config):
     """Add a new variable to msaf.config
 
     Parameters
