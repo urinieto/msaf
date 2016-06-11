@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-#
-# Run me as follows:
-# cd tests/
-# nosetests
 
 import json
 import librosa

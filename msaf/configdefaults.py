@@ -8,8 +8,7 @@ from msaf.configparser import (AddConfigVar, BoolParam, ConfigParam, EnumStr,
 
 _logger = logging.getLogger('msaf.configdefaults')
 
-config = TheanoConfigParser()
-
+config = MsafConfigParser()
 
 
 AddConfigVar('sample_rate',
