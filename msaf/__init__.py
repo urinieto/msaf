@@ -23,6 +23,12 @@ class Anal(object):
     cqt_filter_scale = 1
     win_length = 192    # Tempogram
 
+# Default configuration files and environment variables
+MSAFRC_VAR = "MSAFRC"
+MSAF_FLAGS_VAR = "MSAF_FLAGS"
+MSAFRC_FILE = "~/.msafrc"
+MSAFRC_WIN_FILE = "~/.msafrc.txt"
+
 # Default algorithms for msaf
 DEFAULT_BOUND_ID = "sf"
 DEFAULT_LABEL_ID = None
