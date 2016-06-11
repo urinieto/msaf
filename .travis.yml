@@ -33,8 +33,7 @@ install:
 
 script:
     - python --version
-    - cd tests
-    - nosetests --with-coverage --cover-package=msaf test_*.py -v -s
+    - nosetests --with-coverage --cover-package=msaf test_*.py -v -w tests/
 
 after_success:
       coveralls
