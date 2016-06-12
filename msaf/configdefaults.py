@@ -12,6 +12,11 @@ _logger = logging.getLogger('msaf.configdefaults')
 
 config = MsafConfigParser()
 
+# Globals
+AddConfigVar('default_bound_id', "Default boundary detection algorithm",
+             StrParam("sf"))
+AddConfigVar('default_label_id', "Default label detection algorithm",
+             StrParam(None))
 
 # Global analysis parameters
 AddConfigVar('sample_rate', "Default Sample Rate to be used.", IntParam(22050))
