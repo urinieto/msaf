@@ -108,13 +108,13 @@ def features(file_struct, annot_beats=False, framesync=False):
     dur = pcp_obj.dur
 
     # Sampling Rate
-    sr = msaf.Anal.sample_rate
+    sr = msaf.config.sample_rate
 
     ##########
     #print '\treading beats'
     B = beats[:chroma.shape[0]]
     #beat_frames = librosa.time_to_frames(B, sr=sr,
-                                         #hop_length=msaf.Anal.hop_size)
+                                         #hop_length=msaf.config.hop_size)
     #print beat_frames, len(beat_frames), uidx
 
     #########
