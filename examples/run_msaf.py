@@ -32,14 +32,14 @@ def main():
                         action="store",
                         help="Boundary algorithm identifier",
                         dest="boundaries_id",
-                        default="sf",
+                        default=msaf.config.default_bound_id,
                         choices=["gt"] +
                         msaf.io.get_all_boundary_algorithms())
     parser.add_argument("-lid",
                         action="store",
                         help="Label algorithm identifier",
                         dest="labels_id",
-                        default=None,
+                        default=msaf.config.default_label_id,
                         choices=msaf.io.get_all_label_algorithms())
     parser.add_argument("-s",
                         action="store_true",

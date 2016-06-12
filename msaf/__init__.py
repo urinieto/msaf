@@ -14,10 +14,6 @@ MSAF_FLAGS_VAR = "MSAF_FLAGS"
 MSAFRC_FILE = "~/.msafrc"
 MSAFRC_WIN_FILE = "~/.msafrc.txt"
 
-# Default algorithms for msaf
-DEFAULT_BOUND_ID = "sf"
-DEFAULT_LABEL_ID = None
-
 # Get config
 from msaf.configdefaults import config
 

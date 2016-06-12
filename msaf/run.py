@@ -255,10 +255,10 @@ def process_track(file_struct, boundaries_id, labels_id, config,
 
 
 def process(in_path, annot_beats=False, feature="pcp", framesync=False,
-            boundaries_id=msaf.DEFAULT_BOUND_ID,
-            labels_id=msaf.DEFAULT_LABEL_ID, hier=False, sonify_bounds=False,
-            plot=False, n_jobs=4, annotator_id=0, config=None,
-            out_bounds="out_bounds.wav", out_sr=22050):
+            boundaries_id=msaf.config.default_bound_id,
+            labels_id=msaf.config.default_label_id, hier=False,
+            sonify_bounds=False, plot=False, n_jobs=4, annotator_id=0,
+            config=None, out_bounds="out_bounds.wav", out_sr=22050):
     """Main process to segment a file or a collection of files.
 
     Parameters

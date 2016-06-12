@@ -316,8 +316,8 @@ def get_results_file_name(boundaries_id, labels_id, config, annotator_id):
     return file_name + msaf.results_ext
 
 
-def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
-            labels_id=msaf.DEFAULT_LABEL_ID, annot_beats=False,
+def process(in_path, boundaries_id=msaf.config.default_bound_id,
+            labels_id=msaf.config.default_label_id, annot_beats=False,
             framesync=False, feature="pcp", hier=False, save=False,
             n_jobs=4, annotator_id=0, config=None):
     """Main process.
