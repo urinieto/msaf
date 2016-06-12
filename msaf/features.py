@@ -15,6 +15,7 @@ from msaf import utils
 from msaf import config
 from msaf.input_output import FileStruct
 from msaf.base import Features
+from msaf.exceptions import FeatureParamsError
 
 
 class CQT(Features):
@@ -23,10 +24,10 @@ class CQT(Features):
     These features contain both harmonic and timbral content of the given
     audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
-                 hop_length=msaf.Anal.hop_size, n_bins=msaf.Anal.cqt_bins,
-                 norm=msaf.Anal.cqt_norm,
-                 filter_scale=msaf.Anal.cqt_filter_scale, ref_power=np.max):
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size, n_bins=config.cqt.bins,
+                 norm=config.cqt.norm, filter_scale=config.cqt.filter_scale,
+                 ref_power=config.cqt.ref_power):
         """Constructor of the class.
 
         Parameters
@@ -46,8 +47,9 @@ class CQT(Features):
             Type of norm to use for basis function normalization.
         filter_scale: float
             The scale of the filter for the CQT.
-        ref_power: function
+        ref_power: str
             The reference power for logarithmic scaling.
+            See `configdefaults.py` for the possible values.
         """
         # Init the parent
         super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
@@ -56,7 +58,14 @@ class CQT(Features):
         self.n_bins = n_bins
         self.norm = norm
         self.filter_scale = filter_scale
-        self.ref_power = ref_power
+        if ref_power == "max":
+            self.ref_power = np.max
+        elif ref_power == "min":
+            self.ref_power = np.min
+        elif ref_power == "median":
+            self.ref_power = np.median
+        else:
+            raise FeatureParamsError("Wrong value for ref_power")
 
     @classmethod
     def get_id(self):
@@ -86,10 +95,10 @@ class MFCC(Features):
     The Mel-Frequency Cepstral Coefficients contain timbral content of a
     given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
-                 hop_length=msaf.Anal.hop_size, n_fft=msaf.Anal.n_fft,
-                 n_mels=msaf.Anal.n_mels, n_mfcc=msaf.Anal.n_mfcc,
-                 ref_power=np.max):
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size, n_fft=config.n_fft,
+                 n_mels=config.mfcc.n_mels, n_mfcc=config.mfcc.n_mfcc,
+                 ref_power=config.mfcc.ref_power):
         """Constructor of the class.
 
         Parameters
@@ -119,7 +128,14 @@ class MFCC(Features):
         self.n_fft = n_fft
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
-        self.ref_power = ref_power
+        if ref_power == "max":
+            self.ref_power = np.max
+        elif ref_power == "min":
+            self.ref_power = np.min
+        elif ref_power == "median":
+            self.ref_power = np.median
+        else:
+            raise FeatureParamsError("Wrong value for ref_power")
 
     @classmethod
     def get_id(self):
@@ -150,10 +166,10 @@ class PCP(Features):
 
     The PCPs contain harmonic content of a given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
-                 hop_length=msaf.Anal.hop_size, n_bins=msaf.Anal.cqt_bins,
-                 norm=msaf.Anal.cqt_norm, f_min=msaf.Anal.f_min,
-                 n_octaves=msaf.Anal.n_octaves):
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size, n_bins=config.pcp.bins,
+                 norm=config.pcp.norm, f_min=config.pcp.f_min,
+                 n_octaves=config.pcp.n_octaves):
         """Constructor of the class.
 
         Parameters
@@ -220,10 +236,10 @@ class Tonnetz(Features):
     The Tonal Centroids (or Tonnetz) contain harmonic content of a given audio
     signal.
     """
-    def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
-                 hop_length=msaf.Anal.hop_size, n_bins=msaf.Anal.cqt_bins,
-                 norm=msaf.Anal.cqt_norm, f_min=msaf.Anal.f_min,
-                 n_octaves=msaf.Anal.n_octaves):
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size, n_bins=config.tonnetz.bins,
+                 norm=config.tonnetz.norm, f_min=config.tonnetz.f_min,
+                 n_octaves=config.tonnetz.n_octaves):
         """Constructor of the class.
 
         Parameters
@@ -280,9 +296,9 @@ class Tempogram(Features):
 
     The Tempogram contains rhythmic content of a given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=msaf.Anal.sample_rate,
-                 hop_length=msaf.Anal.hop_size,
-                 win_length=msaf.Anal.win_length):
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size,
+                 win_length=config.tempogram.win_length):
         """Constructor of the class.
 
         Parameters

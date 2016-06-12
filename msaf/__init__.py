@@ -1,27 +1,12 @@
 """Top-level module for MSAF."""
 
+from .version import version as __version__
+import numpy as np
+
 __author__ = "Oriol Nieto"
 __copyright__ = "Copyright 2016, Music and Audio Research Lab (MARL)"
 __license__ = "MIT"
 __email__ = "oriol.nieto@gmail.com"
-
-from .version import version as __version__
-import numpy as np
-
-# Analysis Params
-class Anal(object):
-    sample_rate = 22050
-    n_fft = 4096
-    hop_size = 1024
-    n_mfcc = 14
-    n_mels = 128
-    window_type = "blackmanharris62"
-    n_octaves = 6
-    f_min = 27.5   # Minimum frequency for chroma
-    cqt_bins = 84
-    cqt_norm = np.inf
-    cqt_filter_scale = 1
-    win_length = 192    # Tempogram
 
 # Default configuration files and environment variables
 MSAFRC_VAR = "MSAFRC"
