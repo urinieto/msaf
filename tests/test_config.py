@@ -30,9 +30,15 @@ def test_no_var():
     _ = msaf.config.wrong_variable_name
 
 
+@raises(ValueError)
+def test_wrong_value():
+    """Raises error if the variable type is wrong."""
+    msaf.config.cqt.ref_power = 10
+
+
 def test_config():
     """All the features should be in the features register."""
     print(msaf.config)
     print(msaf.config.sample_rate)
     print(msaf.config.cqt.bins)
-
+    print(str(msaf.config.cqt.ref_power))

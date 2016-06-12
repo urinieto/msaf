@@ -8,6 +8,7 @@ from configparser import (ConfigParser, NoOptionError, NoSectionError,
 import os
 import shlex
 from six import StringIO
+from six import string_types
 import sys
 import warnings
 
