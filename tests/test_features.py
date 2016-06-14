@@ -10,7 +10,7 @@ import os
 # Msaf imports
 import msaf
 from msaf.base import FeatureTypes
-from msaf.exceptions import NoAudioFileError
+from msaf.exceptions import NoAudioFileError, FeatureParamsError
 from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram
 from msaf.input_output import FileStruct
 
@@ -52,9 +52,32 @@ def run_framesync(features_class):
     assert(np.array_equal(feats, read_feats))
 
 
+def run_ref_power(features_class):
+    feats = features_class(file_struct, FeatureTypes.framesync,
+                           ref_power="max")
+    assert(feats.ref_power.__code__.co_code == np.max.__code__.co_code)
+    feats = features_class(file_struct, FeatureTypes.framesync,
+                           ref_power="min")
+    assert(feats.ref_power.__code__.co_code == np.min.__code__.co_code)
+    feats = features_class(file_struct, FeatureTypes.framesync,
+                           ref_power="median")
+    assert(feats.ref_power.__code__.co_code == np.median.__code__.co_code)
+
+
 def test_standard_cqt():
     """CQT features should run and create the proper entry in the json file."""
     run_framesync(CQT)
+
+
+def test_ref_power_cqt():
+    """Test for different possible parameters for the ref_power of the cqt."""
+    run_ref_power(CQT)
+
+
+@raises(FeatureParamsError)
+def test_wrong_ref_power_cqt():
+    """Test for wrong parameters for ref_power of the cqt."""
+    feats = CQT(file_struct, FeatureTypes.framesync, ref_power="caca")
 
 
 def test_standard_pcp():
@@ -72,6 +95,17 @@ def test_standard_tonnetz():
     """Tonnetz features should run and create the proper entry in the json
     file."""
     run_framesync(Tonnetz)
+
+
+def test_ref_power_mfcc():
+    """Test for different possible parameters for the ref_power of the mfcc."""
+    run_ref_power(MFCC)
+
+
+@raises(FeatureParamsError)
+def test_wrong_ref_power_mfcc():
+    """Test for wrong parameters for ref_power of the mfcc."""
+    feats = MFCC(file_struct, FeatureTypes.framesync, ref_power="caca")
 
 
 def test_standard_tempogram():
