@@ -36,6 +36,12 @@ def test_wrong_value():
     msaf.config.cqt.ref_power = 10
 
 
+def test_warnings():
+    """Tests that warnings are raised when needed."""
+    MSAF_FLAGS = "what is this"
+    msaf.configparser.parse_config_string(MSAF_FLAGS, issue_warnings=True)
+
+
 def test_config():
     """All the features should be in the features register."""
     print(msaf.config)
