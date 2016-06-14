@@ -24,7 +24,7 @@ MSAF_FLAGS = os.getenv(msaf.MSAF_FLAGS_VAR, "")
 class MsafConfigWarning(Warning):
     def warn(cls, message, stacklevel=0):
         warnings.warn(message, cls, stacklevel=stacklevel + 3)
-        warn = classmethod(warn)
+    warn = classmethod(warn)
 
 
 def parse_config_string(config_string, issue_warnings=True):
