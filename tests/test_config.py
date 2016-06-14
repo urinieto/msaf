@@ -42,6 +42,13 @@ def test_warnings():
     msaf.configparser.parse_config_string(MSAF_FLAGS, issue_warnings=True)
 
 
+def test_bool_var():
+    """Adds a boolean variable."""
+    AddConfigVar('test.my_new_bool', "Test bool variable only for testing",
+                 BoolParam(True))
+    assert msaf.config.test.my_new_bool
+
+
 def test_config():
     """All the features should be in the features register."""
     print(msaf.config)
