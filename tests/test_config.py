@@ -50,7 +50,7 @@ def test_bool_var():
 
 
 def test_none_str():
-    """Adds a boolean variable."""
+    """Adds a None String variable."""
     AddConfigVar('test.my_none_str', "Test None string",
                  StrParam(None))
     assert msaf.config.test.my_none_str is None
