@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 import glob
+import librosa
 import os
 import sys
 import time
@@ -11,7 +12,7 @@ from joblib import Parallel, delayed
 import cPickle as pickle
 
 import msaf
-import librosa
+from msaf.base import Features
 
 from segmenter import features
 
@@ -81,33 +82,40 @@ def get_annotation(song, rootpath):
     return '%s/annotations/%s.jams' % (rootpath, os.path.basename(song)[:-4])
 
 
-def import_data(song, rootpath, output_path, annot_beats):
+def import_data(file_struct, rootpath, output_path, annot_beats):
     msaf.utils.ensure_dir(output_path)
     msaf.utils.ensure_dir(os.path.join(output_path, "features"))
     data_file = '%s/features/%s_annotbeatsE%d.pickle' % \
-        (output_path, os.path.splitext(os.path.basename(song))[0], annot_beats)
+        (output_path, os.path.splitext(
+            os.path.basename(file_struct.audio_file))[0], annot_beats)
 
     if os.path.exists(data_file):
         with open(data_file, 'r') as f:
             Data = pickle.load(f)
-            print song, 'cached!'
+            print file_struct.audio_file, 'cached!'
     else:
-        X, B, dur = features(song, annot_beats)
+        X, dur = features(file_struct, annot_beats)
+        pcp_obj = Features.select_features("pcp", file_struct, annot_beats,
+                                           framesync=False)
+        B = pcp_obj.frame_times[:pcp_obj.features.shape[0]]
+
         if X is None:
             return X
 
-        Y, T, L = align_segmentation(get_annotation(song, rootpath), B, song)
+        Y, T, L = align_segmentation(
+            get_annotation(file_struct.audio_file, rootpath), B,
+            file_struct.audio_file)
 
         if Y is None:
             return Y
 
         Data = {'features': X,
                 'beats': B,
-                'filename': song,
+                'filename': file_struct.audio_file,
                 'segment_times': T,
                 'segment_labels': L,
                 'segments': Y}
-        print song, 'processed!'
+        print file_struct.audio_file, 'processed!'
 
         with open(data_file, 'w') as f:
             pickle.dump(Data, f)
@@ -124,8 +132,8 @@ def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
         n = len(audio_files)
 
     data = Parallel(n_jobs=n_jobs)(delayed(import_data)(
-        song.audio_file, rootpath, output_path, annot_beats)
-        for song in audio_files[:n])
+        file_struct, rootpath, output_path, annot_beats)
+        for file_struct in audio_files[:n])
 
     X, Y, B, T, F, L = [], [], [], [], [], []
     for d in data:
@@ -176,11 +184,15 @@ if __name__ == '__main__':
                                     output_path=args.output_path,
                                     annot_beats=args.annot_beats)
 
+    ds_path = args.ds_path
+    if ds_path[-1] == "/":
+        ds_path = ds_path[:-1]
+
     if args.annot_beats:
-        out_path = '%s/AnnotBeats_%s_data.pickle' % (args.output_path,
-                                                     os.path.basename(ds_path))
+        out_path = '%s/AnnotBeats_%s_data.pickle' % (
+            args.output_path, os.path.basename(ds_path))
     else:
-        out_path = '%s/EstBeats_%s_data.pickle' % (args.output_path,
-                                                   os.path.basename(ds_path))
+        out_path = '%s/EstBeats_%s_data.pickle' % (
+            args.output_path, os.path.basename(ds_path))
     with open(out_path, 'w') as f:
         pickle.dump((X, Y, B, T, F, L), f)

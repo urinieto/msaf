@@ -49,6 +49,13 @@ def test_bool_var():
     assert msaf.config.test.my_new_bool
 
 
+def test_none_str():
+    """Adds a boolean variable."""
+    AddConfigVar('test.my_none_str', "Test None string",
+                 StrParam(None))
+    assert msaf.config.test.my_none_str is None
+
+
 def test_config():
     """All the features should be in the features register."""
     print(msaf.config)
