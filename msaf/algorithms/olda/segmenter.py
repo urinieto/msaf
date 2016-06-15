@@ -45,10 +45,6 @@ def features(file_struct, annot_beats=False, framesync=False):
             Time index
             Beat index
 
-        - beat_times -- array
-            mapping of beat index => timestamp
-            includes start and end markers (0, dur)
-
         - dur -- float
             duration of the track in seconds
 
@@ -135,15 +131,11 @@ def features(file_struct, annot_beats=False, framesync=False):
     #########
     #print '\tgenerating structure features'
 
-    # TODO: Handle the exceptions correctly
-    # try:
-        # This might fail if audio file (or number of beats) is too small
+    # TODO:  This might fail if audio file (or number of beats) is too small
     R_timbre = repetition(librosa.feature.stack_memory(M))
     R_chroma = repetition(librosa.feature.stack_memory(C))
-    # except:
-        # return None, None, dur
     if R_timbre is None or R_chroma is None:
-        return None, None, dur
+        return None, dur
 
     R_timbre += R_timbre.min()
     R_timbre /= R_timbre.max()

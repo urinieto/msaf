@@ -305,6 +305,9 @@ class TypedParam(ConfigParam):
         self.mytype = mytype
 
         def filter(val):
+            # uri: We want to keep None values
+            if val is None:
+                return val
             cast_val = mytype(val)
             if callable(is_valid):
                 if is_valid(cast_val):
