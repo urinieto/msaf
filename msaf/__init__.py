@@ -30,27 +30,7 @@ from .run import process
 from .input_output import get_all_boundary_algorithms
 from .input_output import get_all_label_algorithms
 
-results_dir = "results"
-results_ext = ".csv"
-out_boundaries_ext = "-bounds.wav"
-minimum__frames = 10
-features_tmp_file = ".features_msaf_tmp.json"
-
-
-class Dataset():
-    # Directories
-    audio_dir = "audio"
-    estimations_dir = "estimations"
-    features_dir = "features"
-    references_dir = "references"
-
-    # Extensions
-    estimations_ext = ".jams"
-    features_ext = ".json"
-    references_ext = ".jams"
-    audio_exts = [".wav", ".mp3", ".aif"]
-
-
+# TODO: Include this in algorithms
 feat_dict = {
     'sf': 'pcp',
     'levy': 'pcp',

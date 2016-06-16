@@ -77,7 +77,7 @@ def test_run_algorithms():
     annot_beats = False
     framesync = False
     file_struct = msaf.io.FileStruct(audio_file)
-    file_struct.features_file = msaf.features_tmp_file
+    file_struct.features_file = msaf.config.features_tmp_file
 
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
@@ -97,7 +97,7 @@ def test_run_algorithms():
 
     # Commpute and save features for long audio file
     file_struct = msaf.io.FileStruct(long_audio_file)
-    file_struct.features_file = msaf.features_tmp_file
+    file_struct.features_file = msaf.config.features_tmp_file
 
     def _test_run_msaf(bound_id, label_id):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,

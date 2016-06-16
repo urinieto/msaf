@@ -18,6 +18,37 @@ AddConfigVar('default_bound_id', "Default boundary detection algorithm",
 AddConfigVar('default_label_id', "Default label detection algorithm",
              StrParam(None))
 
+# Files and dirs
+AddConfigVar('results_dir', "Default directory to store results.",
+             StrParam("results"))
+AddConfigVar('results_ext', "Default extension for the results file.",
+             StrParam(".csv"))
+AddConfigVar('out_boundaries_ext', "Default extension for output audio "
+             "bounds.", StrParam("-bounds.wav"))
+AddConfigVar('minimum_frames', "Minimum number of frames to activate "
+             "algorithms.", IntParam(10))
+AddConfigVar('features_tmp_file', "Default temporary file for features.",
+             StrParam(".features_msaf_tmp.json"))
+
+# Dataset files and dirs
+AddConfigVar('dataset.audio_dir', "Default audio directory.",
+             StrParam("audio"))
+AddConfigVar('dataset.estimations_dir', "Default estimations directory.",
+             StrParam("estimations"))
+AddConfigVar('dataset.features_dir', "Default features directory.",
+             StrParam("features"))
+AddConfigVar('dataset.references_dir', "Default references directory.",
+             StrParam("references"))
+AddConfigVar('dataset.audio_exts', "Available audio files.",
+             EnumStr(".wav", ".mp3", ".aif"))
+AddConfigVar('dataset.estimations_ext', "Extension for the estimation files.",
+             StrParam(".jams"))
+AddConfigVar('dataset.features_ext', "Extension for the features files.",
+             StrParam(".json"))
+AddConfigVar('dataset.references_ext', "Extension for the reference files.",
+             StrParam(".jams"))
+
+
 # Global analysis parameters
 AddConfigVar('sample_rate', "Default Sample Rate to be used.", IntParam(22050))
 AddConfigVar('n_fft', "FFT size", IntParam(4096))
