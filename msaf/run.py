@@ -188,7 +188,7 @@ def run_algorithms(file_struct, boundaries_id, labels_id, config,
         layer.
     """
     # Check that there are enough audio frames
-    if config["features"].features.shape[0] <= msaf.minimum__frames:
+    if config["features"].features.shape[0] <= msaf.config.minimum_frames:
         logging.warning("Audio file too short, or too many few beats "
                         "estimated. Returning empty estimations.")
         return np.asarray([0, config["features"].dur]), \

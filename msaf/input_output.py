@@ -16,18 +16,21 @@ import msaf
 from msaf.exceptions import FeatureTypeNotFound
 from msaf import utils
 
+# Put dataset config in a global var
+ds_config = msaf.config.dataset
+
 
 class FileStruct:
     def __init__(self, audio_file):
         """Creates the entire file structure given the audio file."""
         self.ds_path = os.path.dirname(os.path.dirname(audio_file))
         self.audio_file = audio_file
-        self.est_file = self._get_dataset_file(msaf.Dataset.estimations_dir,
-                                               msaf.Dataset.estimations_ext)
-        self.features_file = self._get_dataset_file(msaf.Dataset.features_dir,
-                                                    msaf.Dataset.features_ext)
-        self.ref_file = self._get_dataset_file(msaf.Dataset.references_dir,
-                                               msaf.Dataset.references_ext)
+        self.est_file = self._get_dataset_file(ds_config.estimations_dir,
+                                               ds_config.estimations_ext)
+        self.features_file = self._get_dataset_file(ds_config.features_dir,
+                                                    ds_config.features_ext)
+        self.ref_file = self._get_dataset_file(ds_config.references_dir,
+                                               ds_config.references_ext)
 
     def _get_dataset_file(self, dir, ext):
         """Gets the desired dataset file."""
@@ -136,9 +139,9 @@ def read_references(audio_path, annotator_id=0):
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
     # Read references
-    jam_path = os.path.join(ds_path, msaf.Dataset.references_dir,
+    jam_path = os.path.join(ds_path, ds_config.references_dir,
                             os.path.basename(audio_path)[:-4] +
-                            msaf.Dataset.references_ext)
+                            ds_config.references_ext)
 
     try:
         jam = jams.load(jam_path, validate=False)
@@ -362,7 +365,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
 
     # Get GT boundaries
     jam_file = os.path.join(os.path.dirname(est_file), "..",
-                            msaf.Dataset.references_dir,
+                            ds_config.references_dir,
                             os.path.basename(est_file))
     jam = jams.load(jam_file, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
@@ -411,7 +414,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
 
     # Get GT boundaries and labels
     jam_file = os.path.join(os.path.dirname(est_file), "..",
-                            msaf.Dataset.references_dir,
+                            ds_config.references_dir,
                             os.path.basename(est_file))
     jam = jams.load(jam_file, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
@@ -520,14 +523,14 @@ def get_dataset_files(in_path):
     """
     # Get audio files
     audio_files = []
-    for ext in msaf.Dataset.audio_exts:
+    for ext in ds_config.audio_exts:
         audio_files += glob.glob(
-            os.path.join(in_path, msaf.Dataset.audio_dir, "*" + ext))
+            os.path.join(in_path, ds_config.audio_dir, "*" + ext))
 
     # Make sure directories exist
-    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.features_dir))
-    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.estimations_dir))
-    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.references_dir))
+    utils.ensure_dir(os.path.join(in_path, ds_config.features_dir))
+    utils.ensure_dir(os.path.join(in_path, ds_config.estimations_dir))
+    utils.ensure_dir(os.path.join(in_path, ds_config.references_dir))
 
     # Get the file structs
     file_structs = []
