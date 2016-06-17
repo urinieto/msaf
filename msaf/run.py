@@ -328,7 +328,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         file_struct = msaf.io.FileStruct(in_path)
 
         # Use temporary file in single mode
-        file_struct.features_file = msaf.features_tmp_file
+        file_struct.features_file = msaf.config.features_tmp_file
 
         # Get features
         config["features"] = Features.select_features(
