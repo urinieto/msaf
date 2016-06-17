@@ -11,7 +11,6 @@ Features to be computed:
 
 import collections
 import datetime
-from builtins import super
 from enum import Enum
 import librosa
 import jams
@@ -22,8 +21,6 @@ import six
 
 # Local stuff
 import msaf
-from msaf import utils
-from msaf.input_output import FileStruct
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
     FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError
 
@@ -420,7 +417,7 @@ class Features(six.with_metaclass(MetaFeatures)):
                 raise FeatureTypeNotFound(
                     "Feature type %s is not valid because no annotated beats "
                     "were found" % self.feat_type)
-            self_features = self._ann_beatsync_features
+            self._features = self._ann_beatsync_features
         else:
             raise FeatureTypeNotFound("Feature type %s is not valid." %
                                       self.feat_type)
