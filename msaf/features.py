@@ -10,10 +10,7 @@ import librosa
 import numpy as np
 
 # Local stuff
-import msaf
-from msaf import utils
 from msaf import config
-from msaf.input_output import FileStruct
 from msaf.base import Features
 from msaf.exceptions import FeatureParamsError
 
