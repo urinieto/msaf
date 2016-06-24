@@ -1,11 +1,5 @@
 #!/usr/bin/env python
-
-import json
-import librosa
-from nose.tools import assert_equals, raises
-import numpy as np
-import numpy.testing as npt
-import os
+from nose.tools import raises
 
 # Msaf imports
 import msaf
@@ -27,7 +21,7 @@ def test_add_var():
 @raises(AttributeError)
 def test_no_var():
     """Raises an AttributeError if the variable doesn't exist in the config."""
-    _ = msaf.config.wrong_variable_name
+    msaf.config.wrong_variable_name
 
 
 @raises(ValueError)
@@ -54,6 +48,30 @@ def test_none_str():
     AddConfigVar('test.my_none_str', "Test None string",
                  StrParam(None))
     assert msaf.config.test.my_none_str is None
+
+
+def test_empty_config_val():
+    """Tests an empty config value in the string."""
+    MSAF_FLAGS = "param1=3, ,param2=10"
+    conf = msaf.configparser.parse_config_string(MSAF_FLAGS,
+                                                 issue_warnings=True)
+    assert "param1" in conf.keys()
+    assert "param2" in conf.keys()
+
+
+def test_override_config_val():
+    """Tests overriding value in the string."""
+    MSAF_FLAGS = "param1=3,param1=10"
+    conf = msaf.configparser.parse_config_string(MSAF_FLAGS,
+                                                 issue_warnings=True)
+    assert len(conf.keys()) == 1
+    assert conf["param1"] == "10"
+
+
+@raises(KeyError)
+def test_fetch_nonexisting_config_val():
+    """Tests fetching non-existing value in the conf."""
+    msaf.configparser.fetch_val_for_key("caca", delete_key=False)
 
 
 def test_config():
