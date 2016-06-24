@@ -4,7 +4,7 @@ from nose.tools import raises
 # Msaf imports
 import msaf
 
-from msaf.configparser import (AddConfigVar, BoolParam, ConfigParam, EnumStr,
+from msaf.configparser import (AddConfigVar, BoolParam, EnumStr,
                                FloatParam, IntParam, StrParam,
                                MsafConfigParser, MSAF_FLAGS_DICT)
 
@@ -72,6 +72,27 @@ def test_override_config_val():
 def test_fetch_nonexisting_config_val():
     """Tests fetching non-existing value in the conf."""
     msaf.configparser.fetch_val_for_key("caca", delete_key=False)
+
+
+@raises(KeyError)
+def test_fetch_too_many_sections():
+    """Tests fetching a key with too many sections."""
+    msaf.configparser.fetch_val_for_key("caca.puteta.merdeta",
+                                        delete_key=False)
+
+
+@raises(AttributeError)
+def test_add_existing_config_var():
+    """Tests adding a var that already exists."""
+    AddConfigVar('sample_rate', "doc", IntParam(1))
+
+
+def test_add_filter_config_var():
+    """Tests adding a var that already exists."""
+    configparam = EnumStr(".wav", ".mp3", ".aif",
+                          convert=lambda x: x.replace("wav", "aif"))
+    AddConfigVar('new_var', "doc", configparam)
+    assert msaf.config.new_var == ".aif"
 
 
 def test_config():
