@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from nose.tools import raises
+from collections import namedtuple
 
 # Msaf imports
 import msaf
@@ -87,10 +88,27 @@ def test_wrong_addconfig_root():
     AddConfigVar('sample_rate', "doc", IntParam(1), root=msaf.config)
 
 
+@raises(TypeError)
+def test_wrong_addconfig_root_multsections():
+    """Tests adding a var that already exists in the root with
+    multiple sections and wrong root."""
+    conf = namedtuple('conf', ['cqt'])
+    AddConfigVar('cqt.bins', "doc", IntParam(1), root=conf)
+
+
 @raises(AttributeError)
 def test_add_existing_config_var():
     """Tests adding a var that already exists."""
     AddConfigVar('sample_rate', "doc", IntParam(1))
+
+
+@raises(TypeError)
+def test_wrong_callable_arg():
+    """Tests adding a var with a wrong callable default param."""
+    # We can add it
+    AddConfigVar('my_int', "doc", IntParam(sorted))
+    # but it should fail when retrieving it
+    msaf.config.my_int
 
 
 def test_add_filter_config_var():
