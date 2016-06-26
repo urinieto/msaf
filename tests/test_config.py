@@ -119,9 +119,17 @@ def test_add_filter_config_var():
     assert msaf.config.new_var == ".aif"
 
 
-def test_config():
-    """All the features should be in the features register."""
-    print(msaf.config)
-    print(msaf.config.sample_rate)
-    print(msaf.config.cqt.bins)
-    print(str(msaf.config.cqt.ref_power))
+@raises(Exception)
+def test_allowoverride_fail():
+    """Tests overriding a variable that can't be overridden."""
+    configparam = EnumStr("caca", "merda", allow_override=False)
+    AddConfigVar('new_var2', "doc", configparam)
+    msaf.config.new_var2 = "caca2"  # Raise Exception
+
+
+def test_allowoverride():
+    """Tests overriding a variable that can be overridden."""
+    configparam = EnumStr("caca", "merda", allow_override=True)
+    AddConfigVar('new_var3', "doc", configparam)
+    msaf.config.new_var3 = "merda"
+    assert msaf.config.new_var3 == "merda"
