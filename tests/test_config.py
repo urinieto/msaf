@@ -10,6 +10,11 @@ from msaf.configparser import (AddConfigVar, BoolParam, EnumStr,
                                MsafConfigParser, MSAF_FLAGS_DICT)
 
 
+def test_print_config():
+    """Tests that we can print the main config."""
+    print(msaf.config)
+
+
 def test_add_var():
     """Adds a config variable and checks that it's correctly stored."""
     val = 10
@@ -133,3 +138,21 @@ def test_allowoverride():
     AddConfigVar('new_var3', "doc", configparam)
     msaf.config.new_var3 = "merda"
     assert msaf.config.new_var3 == "merda"
+
+
+@raises(ValueError)
+def test_invalid_enumstr():
+    """Tests invalid enumstrings."""
+    AddConfigVar('new_var4', "doc", EnumStr("caca", 42, "merda"))
+
+
+def test_false_boolparam():
+    """Tests a false boolean param."""
+    AddConfigVar('new_var4', "doc", BoolParam("false"))
+    assert not msaf.config.new_var4
+
+
+@raises(ValueError)
+def test_wrong_boolparam():
+    """Tests a wrong boolean param."""
+    AddConfigVar('new_var5', "doc", BoolParam("falsitto"))
