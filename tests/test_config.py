@@ -77,7 +77,7 @@ def test_fetch_nonexisting_config_val():
 @raises(KeyError)
 def test_fetch_too_many_sections():
     """Tests fetching a key with too many sections."""
-    msaf.configparser.fetch_val_for_key("caca.puteta.merdeta",
+    msaf.configparser.fetch_val_for_key("caca.merda.merdeta",
                                         delete_key=False)
 
 
