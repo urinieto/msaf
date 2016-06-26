@@ -211,16 +211,36 @@ def test_ann_features():
 def test_wrong_ann_features():
     """Trying to get annotated features when no annotated beats are found."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
-    file_struct.features_file = os.path.join("features", "no_file.json")
+    my_file_struct.features_file = os.path.join("features", "no_file.json")
+    cqt = CQT(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    cqt.features
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_ann_frame_times():
+    """Trying to get annotated frametimes when no annotated beats are found."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.features_file = os.path.join("features", "no_file.json")
     cqt = CQT(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
     cqt.frame_times
 
 
 @raises(FeatureTypeNotFound)
-def test_wrong_features_type():
-    """Trying to use custom features type."""
+def test_wrong_type_features():
+    """Trying to use custom type for features."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
-    file_struct.features_file = os.path.join("features", "no_file.json")
+    my_file_struct.features_file = os.path.join("features", "no_file.json")
+    FeatureTypes2 = Enum('FeatureTypes',
+                         'framesync1 est_beatsync ann_beatsync')
+    cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
+    cqt.features
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_type_frame_times():
+    """Trying to use custom type for frame times."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.features_file = os.path.join("features", "no_file.json")
     FeatureTypes2 = Enum('FeatureTypes',
                          'framesync1 est_beatsync ann_beatsync')
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
