@@ -82,6 +82,12 @@ def test_fetch_too_many_sections():
 
 
 @raises(AttributeError)
+def test_wrong_addconfig_root():
+    """Tests adding a var that already exists in the root."""
+    AddConfigVar('sample_rate', "doc", IntParam(1), root=msaf.config)
+
+
+@raises(AttributeError)
 def test_add_existing_config_var():
     """Tests adding a var that already exists."""
     AddConfigVar('sample_rate', "doc", IntParam(1))
