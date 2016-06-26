@@ -6,8 +6,7 @@ from collections import namedtuple
 import msaf
 
 from msaf.configparser import (AddConfigVar, BoolParam, EnumStr,
-                               FloatParam, IntParam, StrParam,
-                               MsafConfigParser, MSAF_FLAGS_DICT)
+                               IntParam, StrParam)
 
 
 def test_print_config():
@@ -20,7 +19,6 @@ def test_add_var():
     val = 10
     AddConfigVar('test.new_var', "Test Variable only for unit testing",
                  IntParam(val))
-
     assert msaf.config.test.new_var == val
 
 
