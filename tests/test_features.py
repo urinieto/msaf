@@ -2,15 +2,15 @@
 
 import json
 import librosa
-from nose.tools import assert_equals, raises
+from nose.tools import raises
 import numpy as np
-import numpy.testing as npt
 import os
 
 # Msaf imports
 import msaf
 from msaf.base import FeatureTypes
-from msaf.exceptions import NoAudioFileError, FeatureParamsError
+from msaf.exceptions import (NoAudioFileError, FeatureParamsError,
+                             FeatureTypeNotFound)
 from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram
 from msaf.input_output import FileStruct
 
@@ -78,7 +78,7 @@ def test_ref_power_cqt():
 @raises(FeatureParamsError)
 def test_wrong_ref_power_cqt():
     """Test for wrong parameters for ref_power of the cqt."""
-    feats = CQT(file_struct, FeatureTypes.framesync, ref_power="caca")
+    CQT(file_struct, FeatureTypes.framesync, ref_power="caca")
 
 
 def test_standard_pcp():
@@ -106,7 +106,7 @@ def test_ref_power_mfcc():
 @raises(FeatureParamsError)
 def test_wrong_ref_power_mfcc():
     """Test for wrong parameters for ref_power of the mfcc."""
-    feats = MFCC(file_struct, FeatureTypes.framesync, ref_power="caca")
+    MFCC(file_struct, FeatureTypes.framesync, ref_power="caca")
 
 
 def test_standard_tempogram():
@@ -132,7 +132,7 @@ def test_change_local_cqt_paramaters():
     """The features should be correctly updated if parameters of CQT are
     updated."""
     feat_type = FeatureTypes.framesync
-    feats = CQT(file_struct, feat_type, n_bins=70).features
+    CQT(file_struct, feat_type, n_bins=70).features
     assert (os.path.isfile(file_struct.features_file))
     with open(file_struct.features_file) as f:
         data = json.load(f)
@@ -174,7 +174,7 @@ def test_no_audio():
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
     feat_type = FeatureTypes.framesync
-    feats = CQT(no_audio_file_struct, feat_type, sr=22050).features
+    CQT(no_audio_file_struct, feat_type, sr=22050).features
     assert (os.path.isfile(no_audio_file_struct.features_file))
     with open(no_audio_file_struct.features_file) as f:
         data = json.load(f)
@@ -188,7 +188,7 @@ def test_no_audio_no_params():
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
     feat_type = FeatureTypes.framesync
-    feats = CQT(no_audio_file_struct, feat_type, sr=11025).features
+    CQT(no_audio_file_struct, feat_type, sr=11025).features
 
 
 @raises(NoAudioFileError)
@@ -198,4 +198,18 @@ def test_no_audio_no_features():
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/caca.mp3")
     feat_type = FeatureTypes.framesync
-    feats = CQT(no_audio_file_struct, feat_type, sr=11025).features
+    CQT(no_audio_file_struct, feat_type, sr=11025).features
+
+
+def test_ann_features():
+    """Testing the annotated beat synchornized features."""
+    CQT(file_struct, FeatureTypes.ann_beatsync, sr=11025).features
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_ann_features():
+    audio_file = os.path.join("fixtures", "chirp.mp3")
+    my_file_struct = FileStruct(audio_file)
+    file_struct.features_file = os.path.join("features", "no_file.json")
+    cqt = CQT(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    cqt.frame_times
