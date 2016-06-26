@@ -106,9 +106,6 @@ def fetch_val_for_key(key, delete_key=False):
 
     # config file keys can be of form option, or section.option
     key_tokens = key.rsplit('.', 1)
-    if len(key_tokens) > 2:
-        raise KeyError(key)
-
     if len(key_tokens) == 2:
         section, option = key_tokens
     else:
