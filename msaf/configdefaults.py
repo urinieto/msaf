@@ -2,10 +2,9 @@
 import logging
 import numpy as np
 
-import msaf
-from msaf.configparser import (AddConfigVar, BoolParam, ConfigParam, EnumStr,
-                               FloatParam, IntParam, StrParam,
-                               MsafConfigParser, MSAF_FLAGS_DICT)
+from msaf.configparser import \
+    (AddConfigVar, BoolParam, ConfigParam, EnumStr, FloatParam,
+     IntParam, StrParam, MsafConfigParser)
 
 
 _logger = logging.getLogger('msaf.configdefaults')

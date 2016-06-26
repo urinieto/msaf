@@ -17,6 +17,7 @@ from msaf.input_output import FileStruct
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
 file_struct = FileStruct(audio_file)
+file_struct.ref_file = os.path.join("fixtures", "chirp.jams")
 msaf.utils.ensure_dir("features")
 features_file = os.path.join("features", "chirp.json")
 file_struct.features_file = features_file
@@ -47,7 +48,7 @@ def run_framesync(features_class):
     assert(features_class.get_id() in data.keys())
     assert("framesync" in data[features_class.get_id()].keys())
     assert("est_beatsync" in data[features_class.get_id()].keys())
-    assert("ann_beatsync" not in data[features_class.get_id()].keys())
+    assert("ann_beatsync" in data[features_class.get_id()].keys())
     read_feats = np.array(data[features_class.get_id()]["framesync"])
     assert(np.array_equal(feats, read_feats))
 
@@ -144,14 +145,14 @@ def test_change_local_cqt_paramaters():
     assert(PCP.get_id() in data.keys())
     assert("framesync" in data[CQT.get_id()].keys())
     assert("est_beatsync" in data[CQT.get_id()].keys())
-    assert("ann_beatsync" not in data[CQT.get_id()].keys())
+    assert("ann_beatsync" in data[CQT.get_id()].keys())
 
 
 def test_change_global_paramaters():
     """The features should be correctly updated if global parameters
     updated."""
     feat_type = FeatureTypes.framesync
-    feats = CQT(file_struct, feat_type, sr=11025).features
+    CQT(file_struct, feat_type, sr=11025).features
     assert (os.path.isfile(file_struct.features_file))
     with open(file_struct.features_file) as f:
         data = json.load(f)
@@ -164,7 +165,7 @@ def test_change_global_paramaters():
     assert(PCP.get_id() not in data.keys())
     assert("framesync" in data[CQT.get_id()].keys())
     assert("est_beatsync" in data[CQT.get_id()].keys())
-    assert("ann_beatsync" not in data[CQT.get_id()].keys())
+    assert("ann_beatsync" in data[CQT.get_id()].keys())
 
 
 def test_no_audio():
