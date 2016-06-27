@@ -27,6 +27,8 @@ def print_results(results):
     results: pd.DataFrame
         Dataframe with all the results
     """
+    if len(results) == 0:
+        return
     res = results.mean()
     logging.info(results["HitRate_3F"])
     logging.info(results["track_id"])
