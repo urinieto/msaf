@@ -520,7 +520,6 @@ def get_dataset_files(in_path):
     file_structs: list
         List of file structs containing the dataset files.
     """
-    import pdb; pdb.set_trace()
     # Get audio files
     audio_files = []
     for ext in ds_config.audio_exts:
