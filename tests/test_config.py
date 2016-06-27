@@ -6,7 +6,7 @@ from collections import namedtuple
 import msaf
 
 from msaf.configparser import (AddConfigVar, BoolParam, EnumStr,
-                               IntParam, StrParam)
+                               IntParam, StrParam, ListParam)
 
 
 def test_print_config():
@@ -154,3 +154,15 @@ def test_false_boolparam():
 def test_wrong_boolparam():
     """Tests a wrong boolean param."""
     AddConfigVar('new_var5', "doc", BoolParam("falsitto"))
+
+
+@raises(ValueError)
+def test_empty_list_param():
+    """Tests an empty list param."""
+    AddConfigVar('new_var6', "doc", ListParam([]))
+
+
+@raises(ValueError)
+def test_wrong_list_param():
+    """Tests a wrong list param."""
+    AddConfigVar('new_var7', "doc", ListParam(42))
