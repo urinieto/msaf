@@ -605,3 +605,24 @@ def get_duration(features_file):
     with open(features_file) as f:
         feats = json.load(f)
     return float(feats["globals"]["dur"])
+
+
+def write_mirex(times, labels, out_file):
+    """Writes results to file using the standard MIREX format.
+
+    Parameters
+    ----------
+    times: np.array
+        Times in seconds of the boundaries.
+    labels: np.array
+        Labels associated to the segments defined by the boundaries.
+    out_file: str
+        Output file path to save the results.
+    """
+    inters = msaf.utils.times_to_intervals(times)
+    assert len(inters) == len(labels)
+    out_str = ""
+    for inter, label in zip(inters, labels):
+        out_str += "%.3f\t%.3f\t%s\n" % (inter[0], inter[1], label)
+    with open(out_file, "w") as f:
+        f.write(out_str[:-1])
