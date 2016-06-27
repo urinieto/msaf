@@ -112,7 +112,8 @@ def main():
         if os.path.isfile(args.in_path):
             # Print estimations for single file mode
             logging.info("Estimated times: %s" % res[0])
-            logging.info("Estimated labels: %s" % res[1])
+            if -1 not in res[1]:
+                logging.info("Estimated labels: %s" % res[1])
         else:
             # Evaluate results for collection mode
             params.pop("sonify_bounds", None)
