@@ -31,20 +31,13 @@ Quickstart
     from __future__ import print_function
     import msaf
 
-    # 1. Get the file path to the included audio example
-    filename = librosa.util.example_audio_file()
+    # 1. Select audio file
+    audio_file = "../datasets/Sargon/audio/01-Sargon-Mindless.mp3"
 
-    # 2. Load the audio as a waveform `y`
-    #    Store the sampling rate as `sr`
-    y, sr = librosa.load(filename)
+    # 2. Segment the file using the default MSAF parameters
+    boundaries, labels = msaf.process(audio_file)
 
-    # 3. Run the default beat tracker
-    tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
-
-    print('Estimated tempo: {:.2f} beats per minute'.format(tempo))
-
-    # 4. Convert the frame indices of beat events into timestamps
-    beat_times = librosa.frames_to_time(beat_frames, sr=sr)
+    print('Estimated boundaries:', boundaries)
 
     print('Saving output to beat_times.csv')
     librosa.output.times_csv('beat_times.csv', beat_times)
