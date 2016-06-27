@@ -1,7 +1,6 @@
 """
 This module contains multiple functions in order to run MSAF algorithms.
 """
-import jams
 import librosa
 import logging
 import numpy as np
@@ -13,7 +12,6 @@ import msaf
 from msaf import input_output as io
 from msaf import utils
 from msaf import plotting
-from msaf.input_output import FileStruct
 from msaf.features import Features
 import msaf.algorithms as algorithms
 

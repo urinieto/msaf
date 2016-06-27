@@ -297,6 +297,23 @@ class EnumStr(ConfigParam):
         return '%s (%s) ' % (self.fullname, self.all)
 
 
+class ListParam(ConfigParam):
+    def __init__(self, default, *options, **kwargs):
+        self.default = default
+        try:
+            assert len(default) > 0
+        except AssertionError:
+            raise ValueError("List is empty")
+        except TypeError:
+            raise ValueError("The parameter is not a list.")
+
+        over = kwargs.get("allow_override", True)
+        super(ListParam, self).__init__(default, None, over)
+
+    def __str__(self):
+        return '%s (%s) ' % (self.fullname, self.default)
+
+
 class TypedParam(ConfigParam):
     def __init__(self, default, mytype, is_valid=None, allow_override=True):
         self.mytype = mytype

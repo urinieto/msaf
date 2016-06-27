@@ -4,7 +4,7 @@ import numpy as np
 
 from msaf.configparser import \
     (AddConfigVar, BoolParam, ConfigParam, EnumStr, FloatParam,
-     IntParam, StrParam, MsafConfigParser)
+     IntParam, StrParam, ListParam, MsafConfigParser)
 
 
 _logger = logging.getLogger('msaf.configdefaults')
@@ -39,7 +39,7 @@ AddConfigVar('dataset.features_dir', "Default features directory.",
 AddConfigVar('dataset.references_dir', "Default references directory.",
              StrParam("references"))
 AddConfigVar('dataset.audio_exts', "Available audio files.",
-             EnumStr(".wav", ".mp3", ".aif"))
+             ListParam([".wav", ".mp3", ".aif"]))
 AddConfigVar('dataset.estimations_ext', "Extension for the estimation files.",
              StrParam(".jams"))
 AddConfigVar('dataset.features_ext', "Extension for the features files.",
