@@ -129,7 +129,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         ann_inter, est_inter, trim=True)
 
     # --Labels-- #
-    if est_labels is not None and "-1" in est_labels:
+    if est_labels is not None and ("-1" in est_labels or "@" in est_labels):
         est_labels = None
 
     if est_labels is not None and len(est_labels) != 0:
