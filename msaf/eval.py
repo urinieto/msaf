@@ -30,7 +30,6 @@ def print_results(results):
     if len(results) == 0:
         return
     res = results.mean()
-    logging.info(results["HitRate_3F"])
     logging.info(results["track_id"])
     logging.info("Results:\n%s" % res)
 
