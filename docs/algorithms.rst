@@ -1,0 +1,6 @@
+.. _algorithms:
+
+Algorithms
+==========
+
+TODO

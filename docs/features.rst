@@ -1,4 +1,6 @@
-FEATURES
+.. _features:
+
+Features
 ========
 
 TODO
