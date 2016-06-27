@@ -1,7 +1,7 @@
 MSAF
 ====
 MSAF is a python package for the analysis of music structural segmentation algorithms.
-It includes a set of evaluation metrics, features, algorithms, and datasets to experiment with.
+It includes a set of features, algorithms, evaluation metrics, and datasets to experiment with.
 
 For a quick introduction to using MSAF, please refer to the :doc:`tutorial`.
 For more advanced examples of the potential of MSAF, please refer to the `MSAF paper <http://marl.smusic.nyu.edu/nieto/publications/ISMIR2016-NietoBello.pdf>`_ at `ISMIR 2016 <https://wp.nyu.edu/ismir2016/>`_.
@@ -30,6 +30,7 @@ Main documentation
     config
     features
     algorithms
+    eval
     datasets
 
 Reference

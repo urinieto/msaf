@@ -1,0 +1,6 @@
+.. _config:
+
+Configuration
+=============
+
+TODO
