@@ -11,17 +11,6 @@ import time
 import msaf
 
 
-def write_mirex(times, labels, out_file):
-    """Writes results to file."""
-    inters = msaf.utils.times_to_intervals(times)
-    assert len(inters) == len(labels)
-    out_str = ""
-    for inter, label in zip(inters, labels):
-        out_str += "%.3f\t%.3f\t%s\n" % (inter[0], inter[1], label)
-    with open(out_file, "w") as f:
-        f.write(out_str[:-1])
-
-
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(
@@ -71,7 +60,7 @@ def main():
         "plot": False
     }
     res = msaf.run.process(args.in_file, **params)
-    write_mirex(res[0], res[1], args.out_file)
+    msaf.io.write_mirex(res[0], res[1], args.out_file)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
