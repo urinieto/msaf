@@ -284,7 +284,7 @@ class Tonnetz(Features):
         """
         pcp = PCP(self.file_struct, self.feat_type, self.sr, self.hop_length,
                   self.n_bins, self.norm, self.f_min, self.n_octaves).features
-        tonnetz = librosa.feature.tonnetz(chroma=pcp)
+        tonnetz = librosa.feature.tonnetz(chroma=pcp.T).T
         return tonnetz
 
 
