@@ -15,6 +15,7 @@ Examples:
 """
 
 import argparse
+from joblib import Parallel, delayed
 import logging
 import os
 import time
@@ -43,7 +44,7 @@ def process(in_path, out_file, n_jobs):
         compute_all_features(file_struct)
     else:
         # Collection mode
-        file_structs = io.get_dataset_files(in_path)
+        file_structs = msaf.io.get_dataset_files(in_path)
 
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
