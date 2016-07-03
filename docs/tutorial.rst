@@ -17,7 +17,7 @@ MSAF is divided into the four different moving blocks that compose the music str
 		Common evaluation metrics available from _mir\_eval_ and gathered
 		in this module of MSAF.
 	- :ref:`Datasets <datasets>`:
-		A series of human-annotated dataset to use to benchmark algorithms.
+		A series of human-annotated datasets to benchmark algorithms.
 		Note: these data must be downloaded separately from here: 
 		`<https://github.com/urinieto/msaf-data>`_
 
@@ -27,19 +27,20 @@ Quickstart
 .. code-block:: python
     :linenos:
 
-    # Beat tracking example
+    # Simple MSAF example
     from __future__ import print_function
     import msaf
 
     # 1. Select audio file
     audio_file = "../datasets/Sargon/audio/01-Sargon-Mindless.mp3"
 
-    # 2. Segment the file using the default MSAF parameters
+    # 2. Segment the file using the default MSAF parameters (this might take a few seconds)
     boundaries, labels = msaf.process(audio_file)
-
     print('Estimated boundaries:', boundaries)
 
-    print('Saving output to beat_times.csv')
-    librosa.output.times_csv('beat_times.csv', beat_times)
+    # 3. Save segments using the MIREX format
+    out_file = 'segments.txt'
+    print('Saving output to %s' % out_file)
+    msaf.io.write_mirex(boundaries, labels, out_file)
 
 First steps
