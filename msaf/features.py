@@ -1,8 +1,18 @@
 """
-MSAF module with the available features.
-
-Each feature must inherit from the base class `Features` to be
+Each feature must inherit from the base class :class:`msaf.base.Features` to be
 included in the whole framework.
+
+Here is a list of all the available features:
+
+.. autosummary::
+    :toctree: generated/
+
+    CQT
+    MFCC
+    PCP
+    Tonnetz
+    Tempogram
+    Features
 """
 
 from builtins import super

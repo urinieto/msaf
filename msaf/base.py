@@ -1,12 +1,7 @@
 """
-MSAF module to extract the audio features and track beats.
-
-Features to be computed:
-
-- MFCC: Mel Frequency Cepstral Coefficients
-- PCP: Harmonic Pithc Class Profile
-- CQT: Constant-Q Transform
-- Tempogram: Rhythmic features
+Base module containing parent classes for the Features.
+In following versions, base classes for algorithms should also be included
+here.
 """
 
 import collections
