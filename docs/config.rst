@@ -103,3 +103,30 @@ import MSAF and print the config variable, as in:
     This is the identifier for the label algorithm to use.
     If ``None`` is used, no label algorithm will be applied.
     See the :doc:`algorithms` section for more information.
+
+.. attribute:: sample_rate
+
+    Positive int value, default: 22050
+
+    The sampling rate to apply to the actual audio. Resampling will be applied
+    as needed.
+
+.. attribute:: n_fft
+
+    Positive power of two int value, default: 4096
+
+    The size of the Fast Fourier Transform, in number of samples.
+
+.. attribute:: hop_size
+
+    Positive power of two int value, default: 1024
+
+    The size of the hop size, which should be smaller than the ``n_fft`` value,
+    such that overlap is allowed.
+
+.. attribute:: features_tmp_file
+
+    String value, default ``'.features_msaf_tmp.json'``
+
+    The file name in which temporary feature files will be stored when working in
+    *single file* mode.

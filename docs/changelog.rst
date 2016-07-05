@@ -4,9 +4,16 @@ Changes
 v0.1.0
 ------
 
+* New features: Tempogram
+* Added proper configuration module (à la Theano)
+* Added coveralls
+* More thorough unit testing
+* Proper documentation in Sphinx
+* Features code more modular: easier to manage and to include new features 
+* Fixed a bunch of bugs
 
 
 v0.0.1
 ------
 
-Initial release.
+* Initial release
