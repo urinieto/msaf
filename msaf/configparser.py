@@ -274,13 +274,17 @@ class EnumStr(ConfigParam):
 
         # All options should be strings
         for val in self.all:
-            if not isinstance(val, string_types):
+            if not isinstance(val, string_types) and val is not None:
                 raise ValueError('Valid values for an EnumStr parameter '
-                                 'should be strings', val, type(val))
+                                 'should be strings or `None`', val, type(val))
 
         convert = kwargs.get("convert", None)
 
         def filter(val):
+            # uri: We want to keep None values
+            if val is None:
+                return val
+
             if convert:
                 val = convert(val)
             if val in self.all:
