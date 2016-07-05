@@ -90,7 +90,16 @@ import MSAF and print the config variable, as in:
 .. attribute:: default_bound_id
 
     String value: either ``'sf'``, ``'cnmf'``, ``'foote'``, ``'olda'``,
-    ``'scluster'``
+    ``'scluster'``, ``'gt'``
 
     This is the identifier for the boundary algorithm to use.
+    If ``'gt'`` is used the reference boundaries will be read instead of computed.
+    See the :doc:`algorithms` section for more information.
+
+.. attribute:: default_label_id
+
+    String value: either ``None``, ``'cnmf'``, ``'fmc2d'``, ``'scluster'``
+
+    This is the identifier for the label algorithm to use.
+    If ``None`` is used, no label algorithm will be applied.
     See the :doc:`algorithms` section for more information.

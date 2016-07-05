@@ -13,9 +13,15 @@ config = MsafConfigParser()
 
 # Globals
 AddConfigVar('default_bound_id', "Default boundary detection algorithm",
-             StrParam("sf"))
+             EnumStr("sf", "cnmf", "foote", "olda", "scluster", "gt"))
 AddConfigVar('default_label_id', "Default label detection algorithm",
-             StrParam(None))
+             EnumStr(None, "cnmf", "fmc2d", "scluster"))
+
+# Global analysis parameters
+AddConfigVar('sample_rate', "Default Sample Rate to be used.", IntParam(22050))
+AddConfigVar('n_fft', "FFT size", IntParam(4096))
+AddConfigVar('hop_size', "Hop length in samples", IntParam(1024))
+
 
 # Files and dirs
 AddConfigVar('results_dir', "Default directory to store results.",
@@ -46,12 +52,6 @@ AddConfigVar('dataset.features_ext', "Extension for the features files.",
              StrParam(".json"))
 AddConfigVar('dataset.references_ext', "Extension for the reference files.",
              StrParam(".jams"))
-
-
-# Global analysis parameters
-AddConfigVar('sample_rate', "Default Sample Rate to be used.", IntParam(22050))
-AddConfigVar('n_fft', "FFT size", IntParam(4096))
-AddConfigVar('hop_size', "Hop length in samples", IntParam(1024))
 
 
 # CQT Features
