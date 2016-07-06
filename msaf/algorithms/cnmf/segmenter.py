@@ -1,13 +1,4 @@
 # coding: utf-8
-"""
-This script identifies the structure of a given track using a modified version
-of the C-NMF method described here:
-
-    Nieto, O., Jehan, T., Convex Non-negative Matrix Factorization For Automatic
-    Music Structure Identification. Proc. of the 38th IEEE International
-    Conference on Acoustics, Speech, and Signal Processing (ICASSP).
-    Vancouver, Canada, 2013
-"""
 import logging
 import numpy as np
 import pylab as plt
@@ -177,6 +168,20 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This script identifies the structure of a given track using a modified version
+    of the C-NMF method described here:
+
+    Nieto, O., Jehan, T., Convex Non-negative Matrix Factorization For Automatic
+    Music Structure Identification. Proc. of the 38th IEEE International
+    Conference on Acoustics, Speech, and Signal Processing (ICASSP).
+    Vancouver, Canada, 2013 (`PDF`_).
+
+    The modified version can be found in Oriol Nieto's `PhD Thesis`_.
+
+    .. _PDF: http://marl.smusic.nyu.edu/nieto/publications/Nieto-ICASSP13.pdf
+    .. _PhD Thesis: http://marl.smusic.nyu.edu/nieto/publications/Nieto-Dissertation.pdf
+    """
     def processFlat(self):
         """Main process.
         Returns

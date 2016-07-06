@@ -1,17 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-"""
-This script identifies the boundaries of a given track using the Spectral
-Clustering method published here:
-
-    Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with Spectral
-    Clustering. In Proc. of the 15th International Society for Music
-    Information Retrieval Conference (pp. 405–410). Taipei, Taiwan.
-
-Original code by Brian McFee from:
-    https://github.com/bmcfee/laplacian_segmentation
-"""
-
 import numpy as np
 
 import msaf
@@ -21,6 +9,17 @@ from . import main
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This script identifies the boundaries of a given track using the Spectral
+    Clustering method published here:
+
+    Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with Spectral
+    Clustering. In Proc. of the 15th International Society for Music
+    Information Retrieval Conference (pp. 405–410). Taipei, Taiwan.
+
+    Original code by Brian McFee from:
+        https://github.com/bmcfee/laplacian_segmentation
+    """
     def process(self):
         """Main process.
         Returns

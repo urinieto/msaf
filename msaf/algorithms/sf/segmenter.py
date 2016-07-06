@@ -1,15 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-"""
-This script identifies the boundaries of a given track using the Serrà
-method:
-
-Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2012). Unsupervised
-Detection of Music Boundaries by Time Series Structure Features.
-In Proc. of the 26th AAAI Conference on Artificial Intelligence
-(pp. 1613–1619).Toronto, Canada.
-"""
-
 import librosa
 import logging
 import matplotlib.pyplot as plt
@@ -111,6 +101,15 @@ def embedded_space(X, m, tau=1):
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This script identifies the boundaries of a given track using the Serrà
+    method:
+
+    Serrà, J., Müller, M., Grosche, P., & Arcos, J. L. (2012). Unsupervised
+    Detection of Music Boundaries by Time Series Structure Features.
+    In Proc. of the 26th AAAI Conference on Artificial Intelligence
+    (pp. 1613–1619).Toronto, Canada.
+    """
     def processFlat(self):
         """Main process.
         Returns

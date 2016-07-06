@@ -1,18 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
-"""
-This method labels segments using the 2D-FMC method described here:
-
-Nieto, O., Bello, J.P., Music Segment Similarity Using 2D-Fourier Magnitude
-    Coefficients. Proc. of the 39th IEEE International Conference on Acoustics,
-    Speech, and Signal Processing (ICASSP). Florence, Italy, 2014.
-"""
-
 import logging
-
 import numpy as np
-#import pylab as plt
-
 import scipy.cluster.vq as vq
 from sklearn import mixture
 
@@ -119,6 +108,15 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This method labels segments using the 2D-FMC method described here:
+
+    Nieto, O., Bello, J.P., Music Segment Similarity Using 2D-Fourier Magnitude
+    Coefficients. Proc. of the 39th IEEE International Conference on Acoustics,
+    Speech, and Signal Processing (ICASSP). Florence, Italy, 2014 (`PDF`_).
+
+    .. _PDF: http://marl.smusic.nyu.edu/nieto/publications/NietoBello-ICASSP14.pdf
+    """
     def processFlat(self):
         """Main process.
         Returns
