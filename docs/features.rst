@@ -77,3 +77,18 @@ Available Features
 ------------------
 
 .. automodule:: msaf.features
+
+Adding New Features to MSAF
+---------------------------
+
+MSAF is written such that adding new features should be relatively painless.
+Follow these steps:
+
+    1. Add a new class that inherits from ``Features`` in the file `features.py <https://github.com/urinieto/msaf/blob/master/msaf/features.py>`_.
+    2. Implement the following methods: ``__init``, ``get_id``, and ``compute_features``:
+
+        * ``__init__``: The constructor should accept the necessary parameters for the computation of the features, plus the ``file_struct`` (the audio file encapsulated in the `FileStruct` class), and ``feat_type`` (the type of features).
+        * ``get_id``: Class method that returns the identifier of the new type of features.
+        * ``compute_features``: The actual implementation of the features. Here the parameters of the constructor should be read.
+
+In the `features.py <https://github.com/urinieto/msaf/blob/master/msaf/features.py>`_ file the existing features of MSAF are found, which can be used as examples.
