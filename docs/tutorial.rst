@@ -176,6 +176,8 @@ More Examples
 
 In the `examples <https://github.com/urinieto/msaf/tree/master/examples>`_ folder, more examples of using MSAF can be found.
 
+Included in that folder you can find a `Jupyter Notebook <https://github.com/urinieto/msaf/blob/master/examples/Run%20MSAF.ipynb>`_ with further interactive MSAF usage.
+
 For more information about MSAF, please refer to the original publication:
     
     Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 (`PDF <http://marl.smusic.nyu.edu/nieto/publications/ISMIR2016-NietoBello.pdf>`_).
