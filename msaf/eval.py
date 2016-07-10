@@ -1,6 +1,11 @@
 """
 Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
+
+.. autosummary::
+    :toctree: generated/
+
+    process
 """
 import jams
 from joblib import Parallel, delayed
@@ -320,7 +325,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
             labels_id=msaf.config.default_label_id, annot_beats=False,
             framesync=False, feature="pcp", hier=False, save=False,
             n_jobs=4, annotator_id=0, config=None):
-    """Main process.
+    """Main process to evaluate algorithms' results.
 
     Parameters
     ----------
