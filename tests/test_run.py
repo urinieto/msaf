@@ -108,6 +108,12 @@ def test_run_algorithms():
             feature, file_struct, annot_beats, framesync)
         est_times, est_labels = msaf.run.run_algorithms(
             file_struct, bound_id, label_id, config)
+
+        # Take the first level if hierarchy algorithm
+        if hier:
+            est_times = est_times[0]
+            est_labels = est_labels[0]
+
         npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
         assert len(est_times) - 1 == len(est_labels)
         npt.assert_almost_equal(est_times[-1], config["features"].dur,
@@ -117,14 +123,14 @@ def test_run_algorithms():
     for bound_id in bound_ids:
         if bound_id == "gt":
             continue
-        yield (_test_run_msaf, bound_id, None)
+        yield (_test_run_msaf, bound_id, None, False)
 
     # Combining boundaries with labels
     for bound_id in bound_ids:
         if bound_id == "gt":
             continue
         for label_id in label_ids:
-            yield (_test_run_msaf, bound_id, label_id)
+            yield (_test_run_msaf, bound_id, label_id, False)
 
     # Test the hierarchical algorithms
     hier_ids = ["olda", "scluster"]
