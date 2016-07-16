@@ -22,13 +22,13 @@ setup(
     """different large-scale sections and label them based on their """
     """acoustic similarity""",
     classifiers=[
-        "License :: OSI Approved :: MIT",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: Multimedia :: Sound/Audio :: Analysis",
         "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7"
+        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4"
     ],
