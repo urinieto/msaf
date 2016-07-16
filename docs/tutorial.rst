@@ -11,7 +11,7 @@ MSAF is divided into the four different moving blocks that compose the music str
 	- :ref:`Features <features>`:
 		Set of audio feature extraction utilities that serve
 		as input to the algorithms.
-	- :ref:`Algorithms <algorithms>`:
+	- :ref:`Algorithms <allalgorithms>`:
 		Implementations of multiple boundary and label algorithms.
 	- :ref:`Evaluations <eval>`:
 		Common evaluation metrics available from _mir\_eval_ and gathered

@@ -135,7 +135,7 @@ The output contains the following evaluation metrics:
 
 Please, note that before you can use the `-e` flag (i.e., evaluate some results) on a specific feature and set of algorithms, you **must** have run the `run_msaf.py` script first without this flag.
 
-For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2014:Structural_Segmentation).
+For more information about the metrics read the segmentation metrics in the [MIREX website](http://www.music-ir.org/mirex/wiki/2016:Structural_Segmentation).
 
 ###As a Python module###
 
@@ -164,7 +164,7 @@ For more examples, please explore the `examples` folder.
 * jams
 * joblib
 * [mir\_eval](https://github.com/craffel/mir_eval)
-* [librosa](https://github.com/bmcfee/librosa/) (>=0.4.0)
+* [librosa](https://github.com/librosa/librosa/) (>=0.4.0)
 * BLAS and LAPACK (Linux Only, OSX will use Accelerate by default)
 * ffmpeg (to read mp3 files only)
 
