@@ -153,7 +153,6 @@ est_labels = estimations[1]
 For more parameters, please read the function's docstring.
 For more examples, please explore the `examples` folder.
 
-
 ## Requirements ##
 
 * Python 2.7 or 3.4

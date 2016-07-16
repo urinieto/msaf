@@ -96,7 +96,7 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
         est_level_times, est_level_labels = \
             utils.process_segmentation_level(
                 est_idxs[level], est_labels[level], features.shape[0],
-                frame_times, features.dur)
+                frame_times, config["features"].dur)
         est_times.append(est_level_times)
         cleaned_est_labels.append(est_level_labels)
     est_labels = cleaned_est_labels

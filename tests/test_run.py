@@ -63,6 +63,7 @@ def test_get_labels_module():
 
 
 def test_run_algorithms():
+    """Test running all the algorithms."""
     bound_ids = msaf.io.get_all_boundary_algorithms()
     label_ids = msaf.io.get_all_label_algorithms()
 
@@ -99,10 +100,10 @@ def test_run_algorithms():
     file_struct = msaf.io.FileStruct(long_audio_file)
     file_struct.features_file = msaf.config.features_tmp_file
 
-    def _test_run_msaf(bound_id, label_id):
+    def _test_run_msaf(bound_id, label_id, hier=False):
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
-        config["hier"] = False
+        config["hier"] = hier
         config["features"] = Features.select_features(
             feature, file_struct, annot_beats, framesync)
         est_times, est_labels = msaf.run.run_algorithms(
@@ -124,3 +125,8 @@ def test_run_algorithms():
             continue
         for label_id in label_ids:
             yield (_test_run_msaf, bound_id, label_id)
+
+    # Test the hierarchical algorithms
+    hier_ids = ["olda", "scluster"]
+    for hier_id in hier_ids:
+        yield (_test_run_msaf, hier_id, None, True)
