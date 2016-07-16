@@ -5,6 +5,8 @@ Evaluations
 
 MSAF includes the standard evaluation metrics used in `MIREX <http://www.music-ir.org/mirex/wiki/2016:Structural_Segmentation>`_. Here we describe how to evaluate the algorithms' results and discuss each of these metrics, classified based on the subtask they aim to assess.
 
+These metrics are computed using the external and fantastic framework `mir_eval <https://github.com/craffel/mir_eval>`_.
+
 How To Evaluate Results
 -----------------------
 
