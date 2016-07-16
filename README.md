@@ -24,7 +24,6 @@ You can follow a thorough example on this titanic [Jupyter Notebook](https://git
 
 ## Citing MSAF ##
 
-Nieto, O., & Bello, J. P. (2015). MSAF: Music Structure Analytis Framework. International Society for Music Information Retrieval Conference. Málaga, Spain. ([PDF](http://ismir2015.uma.es/LBD/LBD30.pdf))
 Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 ([PDF](http://marl.smusic.nyu.edu/nieto/publications/ISMIR2016-NietoBello.pdf)).
 
 ## Credits ##
