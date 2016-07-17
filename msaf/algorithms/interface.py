@@ -1,6 +1,5 @@
 """Interface for all the algorithms in MSAF."""
 import numpy as np
-import msaf.input_output as io
 import msaf.utils as U
 
 
@@ -41,19 +40,19 @@ class SegmenterInterface:
 
     In these cases, est_times or est_labels will be empty (None).
     """
-    def __init__(self, audio_file, in_bound_idxs=None, feature="hpcp",
+    def __init__(self, file_struct, in_bound_idxs=None, feature="pcp",
                  annot_beats=False, framesync=False, features=None, **config):
         """Inits the Segmenter.
 
         Parameters
         ----------
-        audio_file: str
-            Path to the audio file.
+        file_struct: `msaf.io.FileStruct`
+            Object with the file paths.
         in_bound_idxs: np.array
             Array containing the frame indeces of the previously find
             boundaries. `None` for computing them.
         feature: str
-            Identifier of the features (e.g., hpcp, mfcc)
+            Identifier of the features (e.g., pcp, mfcc)
         annot_beats: boolean
             Whether to use annotated beats or estimated ones.
         framesync: boolean
@@ -63,7 +62,8 @@ class SegmenterInterface:
         config: dict
             Configuration for the given algorithm (see module's __config.py__).
         """
-        self.audio_file = audio_file
+        self.file_struct = file_struct
+        self.audio_file = file_struct.audio_file
         self.in_bound_idxs = in_bound_idxs
         self.feature_str = feature
         self.annot_beats = annot_beats
@@ -82,15 +82,10 @@ class SegmenterInterface:
         raise NotImplementedError("This method does not return hierarchical "
                                   "segmentations.")
 
-    def _preprocess(self, valid_features=["hpcp", "tonnetz", "mfcc", "cqt"],
-                    normalize=True):
+    def _preprocess(
+        self, valid_features=["pcp", "tonnetz", "mfcc", "cqt", "tempogram"],
+            normalize=True):
         """This method obtains the actual features."""
-        # Read features
-        if self.features is None:
-            self.features = io.get_features(self.audio_file,
-                                            annot_beats=self.annot_beats,
-                                            framesync=self.framesync)
-
         # Use specific feature
         if self.feature_str not in valid_features:
             raise RuntimeError("Feature %s in not valid for algorithm: %s "
@@ -98,7 +93,7 @@ class SegmenterInterface:
                                (self.feature_str, __name__, valid_features))
         else:
             try:
-                F = self.features[self.feature_str]
+                F = self.features.features
             except KeyError:
                 raise RuntimeError("Feature %s in not supported by MSAF" %
                                    (self.feature_str))

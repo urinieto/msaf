@@ -24,22 +24,22 @@ def main():
     parser.add_argument("-f",
                         action="store",
                         dest="feature",
-                        default="hpcp",
+                        default="pcp",
                         type=str,
                         help="Type of features",
-                        choices=["hpcp", "tonnetz", "mfcc", "cqt"])
+                        choices=msaf.features_registry.keys())
     parser.add_argument("-bid",
                         action="store",
                         help="Boundary algorithm identifier",
                         dest="boundaries_id",
-                        default="sf",
+                        default=msaf.config.default_bound_id,
                         choices=["gt"] +
                         msaf.io.get_all_boundary_algorithms())
     parser.add_argument("-lid",
                         action="store",
                         help="Label algorithm identifier",
                         dest="labels_id",
-                        default=None,
+                        default=msaf.config.default_label_id,
                         choices=msaf.io.get_all_label_algorithms())
     parser.add_argument("-s",
                         action="store_true",
@@ -119,7 +119,8 @@ def main():
         if os.path.isfile(args.in_path):
             # Print estimations for single file mode
             logging.info("Estimated times: %s" % res[0])
-            logging.info("Estimated labels: %s" % res[1])
+            if -1 not in res[1]:
+                logging.info("Estimated labels: %s" % res[1])
         else:
             # Evaluate results for collection mode
             params.pop("sonify_bounds", None)

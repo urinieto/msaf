@@ -29,9 +29,11 @@ before_install:
 install:
     # install your own package into the environment
     # pip install -e rather than setup.py, so that coverage can find the source
-    - pip install -e ./
+    - pip install -e .
 
 script:
     - python --version
-    - cd tests
-    - nosetests test_*.py -v -s
+    - nosetests --with-coverage --cover-package=msaf -v -w tests/
+
+after_success:
+      coveralls

@@ -1,13 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-"""
-This script identifies the boundaries of a given track using the Foote
-method:
-
-Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio
-Novelty. In Proc. of the IEEE International Conference of Multimedia and Expo
-(pp. 452–455). New York City, NY, USA.
-"""
 import librosa
 import logging
 import numpy as np
@@ -86,6 +78,14 @@ def pick_peaks(nc, L=16):
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This script identifies the boundaries of a given track using the Foote
+    method:
+
+    Foote, J. (2000). Automatic Audio Segmentation Using a Measure Of Audio
+    Novelty. In Proc. of the IEEE International Conference of Multimedia and
+    Expo (pp. 452–455). New York City, NY, USA.
+    """
     def processFlat(self):
         """Main process.
         Returns
