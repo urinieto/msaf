@@ -344,7 +344,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
 
         if plot:
             plotting.plot_one_track(file_struct, est_times, est_labels,
-                                    boundaries_id, labels_id)
+                                    boundaries_id, labels_id, ds_name)
 
         # Save estimations
         msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
@@ -354,7 +354,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         return est_times, est_labels
     else:
         # Collection mode
-        file_structs = io.get_dataset_files(in_path)
+        file_structs = io.get_dataset_files(in_path, ds_name)
 
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(

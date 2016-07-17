@@ -2,7 +2,6 @@
 # coding: utf-8
 import librosa
 import logging
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.spatial import distance
 from scipy import signal
@@ -65,6 +64,7 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
     offset = nc.mean() * float(offset_denom)
     th = filters.median_filter(nc, size=L) + offset
     #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    #import pylab as plt
     #plt.plot(nc)
     #plt.plot(th)
     #plt.show()
@@ -94,6 +94,8 @@ def embedded_space(X, m, tau=1):
     N = X.shape[0] - int(np.ceil(m))
     Y = np.zeros((N, int(np.ceil(X.shape[1] * m))))
     for i in range(N):
+        # print X[i:i+m,:].flatten().shape, w, X.shape
+        # print Y[i,:].shape
         rem = int((m % 1) * X.shape[1])  # Reminder for float m
         Y[i, :] = np.concatenate((X[i:i + int(m), :].flatten(),
                                  X[i + int(m), :rem]))
@@ -139,14 +141,11 @@ class Segmenter(SegmenterInterface):
             if self.framesync:
                 red = 0.1
                 F_copy = np.copy(F)
-                F = librosa.feature.sync(
-                    F.T,
-                    np.linspace(0, F.shape[0], num=F.shape[0] * red),
-                    pad=False).T
+                F = librosa.feature.sync(F.T, np.linspace(0, F.shape[0], num=F.shape[0] * red), pad=False).T
 
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
-            #plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
+            # plt.imshow(E.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Recurrence matrix
             R = librosa.segment.recurrence_matrix(
@@ -164,7 +163,8 @@ class Segmenter(SegmenterInterface):
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
             SF = gaussian_filter(L.T, M=1, axis=0)
-            #plt.imshow(SF.T, interpolation="nearest", aspect="auto"); #plt.show()
+            # plt.imshow(SF.T, interpolation="nearest", aspect="auto")
+            #plt.show()
 
             # Compute the novelty curve
             nc = compute_nc(SF)

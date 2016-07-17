@@ -1,6 +1,7 @@
 """
 Useful functions that are common in MSAF
 """
+
 import mir_eval
 import numpy as np
 import os
@@ -25,7 +26,8 @@ def normalize_chroma(C):
 
 
 def normalize_matrix(X):
-    """Nomalizes a matrix such that its maximum value is 1 and minimum is 0."""
+    """Nomalizes a matrix such that it's maximum value is 1 and
+    minimum is 0."""
     X += np.abs(X.min())
     X /= X.max()
     return X

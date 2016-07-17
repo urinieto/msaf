@@ -136,7 +136,6 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     # --Labels-- #
     if est_labels is not None and ("-1" in est_labels or "@" in est_labels):
         est_labels = None
-
     if est_labels is not None and len(est_labels) != 0:
         try:
             # Align labels with intervals
@@ -162,6 +161,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     # Names
     base = os.path.basename(est_file)
     res["track_id"] = base[:-5]
+    res["ds_name"] = base.split("_")[0]
 
     return res
 
@@ -303,7 +303,8 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config, annotator_id):
+def get_results_file_name(boundaries_id, labels_id, config, ds_name,
+                          annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
     utils.ensure_dir(msaf.config.results_dir)
@@ -335,6 +336,8 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
         Boundaries algorithm identifier (e.g. siplca, cnmf)
     labels_id : str
         Labels algorithm identifier (e.g. siplca, cnmf)
+    ds_name : str
+        Name of the dataset to be evaluated (e.g. SALAMI). * stands for all.
     annot_beats : boolean
         Whether to use the annotated beats or not.
     framesync: str
@@ -372,7 +375,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     config.pop("features", None)
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config,
+    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,
                                      annotator_id)
 
     # All evaluations
@@ -393,7 +396,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
             return results
 
         # Get files
-        file_structs = io.get_dataset_files(in_path)
+        file_structs = io.get_dataset_files(in_path, ds_name)
 
         logging.info("Evaluating %d tracks..." % len(file_structs))
 
