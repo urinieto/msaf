@@ -2,7 +2,7 @@ Contributors
 ------------
 
 * Oriol Nieto <https://github.com/urinieto>
-* Julius Smith <https://github.com/jblsmith>
+* Jordan Smith <https://github.com/jblsmith>
 * Eric Humphrey <https://github.com/ejhumphrey>
 * Stephan Balke <https://github.com/stefan-balke>
 * Keunwoo Choi <https://github.com/keunwoochoi>
