@@ -1,5 +1,4 @@
 """Top-level module for MSAF."""
-
 from .version import version as __version__
 import numpy as np
 
@@ -39,4 +38,3 @@ feat_dict = {
     'olda': '',
     'cnmf': 'pcp',
     '2dfmc': ''
-}
