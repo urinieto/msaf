@@ -15,18 +15,21 @@ import six
 import msaf
 from msaf import utils
 
+# Put dataset config in a global var
+ds_config = msaf.config.dataset
+
 
 class FileStruct:
     def __init__(self, audio_file):
         """Creates the entire file structure given the audio file."""
         self.ds_path = os.path.dirname(os.path.dirname(audio_file))
         self.audio_file = audio_file
-        self.est_file = self._get_dataset_file(msaf.Dataset.estimations_dir,
-                                               msaf.Dataset.estimations_ext)
-        self.features_file = self._get_dataset_file(msaf.Dataset.features_dir,
-                                                    msaf.Dataset.features_ext)
-        self.ref_file = self._get_dataset_file(msaf.Dataset.references_dir,
-                                               msaf.Dataset.references_ext)
+        self.est_file = self._get_dataset_file(ds_config.estimations_dir,
+                                               ds_config.estimations_ext)
+        self.features_file = self._get_dataset_file(ds_config.features_dir,
+                                                    ds_config.features_ext)
+        self.ref_file = self._get_dataset_file(ds_config.references_dir,
+                                               ds_config.references_ext)
 
     def _get_dataset_file(self, dir, ext):
         """Gets the desired dataset file."""
@@ -56,7 +59,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     labels_id : str
         Identifier of the algorithm used to compute the labels.
     params : dict
-        Additional search parameters. E.g. {"feature" : "hpcp"}.
+        Additional search parameters. E.g. {"feature" : "pcp"}.
 
     Returns
     -------
@@ -135,9 +138,9 @@ def read_references(audio_path, annotator_id=0):
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
     # Read references
-    jam_path = os.path.join(ds_path, msaf.Dataset.references_dir,
+    jam_path = os.path.join(ds_path, ds_config.references_dir,
                             os.path.basename(audio_path)[:-4] +
-                            msaf.Dataset.references_ext)
+                            ds_config.references_ext)
 
     try:
         jam = jams.load(jam_path, validate=False)
@@ -193,91 +196,6 @@ def read_ref_bound_frames(audio_path, beats):
     return bound_frames
 
 
-def get_features(audio_path, annot_beats=False, framesync=False):
-    """
-    Gets the features of an audio file given the audio_path.
-
-    Parameters
-    ----------
-    audio_path: str
-        Path to the audio file.
-    annot_beats: bool
-        Whether to use annotated beats or not.
-    framesync: bool
-        Whether to use framesync features or not.
-
-    Return
-    ------
-    features : dict
-        A dictionary with the following keys:
-            "hpcp": np.array((N, 12)), Chromagram
-            "mfcc": np.array((N, 13)), MFCC
-            "tonnetz": np.array((N, 6)), Tonnetz
-            "cqt": np.array((N, msaf.Anal.cqt_bins)), Constant-Q transform
-            "beats": np.array(T), Beats in seconds
-            "anal" : dict, Parameters of analysis of track (e.g. sampling rate)
-    """
-    # Dataset path
-    ds_path = os.path.dirname(os.path.dirname(audio_path))
-
-    # Read Estimations
-    features_path = os.path.join(
-        ds_path, msaf.Dataset.features_dir,
-        os.path.basename(audio_path)[:-4] + msaf.Dataset.features_ext)
-    with open(features_path, "r") as f:
-        feats = json.load(f)
-
-    # Beat Synchronous Feats
-    if framesync:
-        feat_str = "framesync"
-        beats = None
-    else:
-        if annot_beats:
-            # Read references
-            try:
-                annotation_path = os.path.join(
-                    ds_path, msaf.Dataset.references_dir,
-                    os.path.basename(audio_path)[:-4] +
-                    msaf.Dataset.references_ext)
-                # TODO: Better exception handling
-                jam = jams.load(annotation_path, validate=False)
-            except:
-                raise RuntimeError("No references found in file %s" %
-                                   annotation_path)
-
-            feat_str = "ann_beatsync"
-            beats = []
-            beat_data = jam.beats[0].data
-            if beat_data == []:
-                raise ValueError
-            for data in beat_data:
-                beats.append(data.time.value)
-            beats = np.unique(beats)
-        else:
-            feat_str = "est_beatsync"
-            beats = np.asarray(feats["beats"]["times"])
-
-    # Build actual features dictionary
-    features = {}
-    features["hpcp"] = np.asarray(feats[feat_str]["hpcp"])
-    features["mfcc"] = np.asarray(feats[feat_str]["mfcc"])
-    features["tonnetz"] = np.asarray(feats[feat_str]["tonnetz"])
-    features["cqt"] = np.asarray(feats[feat_str]["cqt"])
-    features["beats"] = np.asarray(feats["beats"]["times"])
-    features["anal"] = feats["analysis"]
-
-    # Frame times might be shorter than the actual number of features.
-    if framesync:
-        frame_times = utils.get_time_frames(features["anal"]["dur"],
-                                            features["anal"])
-        features["hpcp"] = features["hpcp"][:len(frame_times)]
-        features["mfcc"] = features["mfcc"][:len(frame_times)]
-        features["tonnetz"] = features["tonnetz"][:len(frame_times)]
-        features["cqt"] = features["cqt"][:len(frame_times)]
-
-    return features
-
-
 def find_estimation(jam, boundaries_id, labels_id, params):
     """Finds the correct estimation from all the estimations contained in a
     JAMS file given the specified arguments.
@@ -291,7 +209,7 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     labels_id : str
         Identifier of the algorithm used to compute the labels.
     params : dict
-        Additional search parameters. E.g. {"feature" : "hpcp"}.
+        Additional search parameters. E.g. {"feature" : "pcp"}.
 
     Returns
     -------
@@ -446,7 +364,7 @@ def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
 
     # Get GT boundaries
     jam_file = os.path.join(os.path.dirname(est_file), "..",
-                            msaf.Dataset.references_dir,
+                            ds_config.references_dir,
                             os.path.basename(est_file))
     jam = jams.load(jam_file, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
@@ -495,7 +413,7 @@ def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
 
     # Get GT boundaries and labels
     jam_file = os.path.join(os.path.dirname(est_file), "..",
-                            msaf.Dataset.references_dir,
+                            ds_config.references_dir,
                             os.path.basename(est_file))
     jam = jams.load(jam_file, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
@@ -611,21 +529,14 @@ def get_dataset_files(in_path, ds_name="*"):
 
     # Get audio files
     audio_files = []
-    for ext in msaf.Dataset.audio_exts:
-        audio_files += glob.glob(os.path.join(in_path, msaf.Dataset.audio_dir,
-                                              ("%s_*" + ext) % prefix))
-
-    # Check for datasets with different prefix
-    if len(audio_files) == 0:
-        for ext in msaf.Dataset.audio_exts:
-            audio_files += glob.glob(os.path.join(in_path,
-                                                  msaf.Dataset.audio_dir,
-                                                  "*" + ext))
+    for ext in ds_config.audio_exts:
+        audio_files += glob.glob(
+            os.path.join(in_path, ds_config.audio_dir, "*" + ext))
 
     # Make sure directories exist
-    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.features_dir))
-    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.estimations_dir))
-    utils.ensure_dir(os.path.join(in_path, msaf.Dataset.references_dir))
+    utils.ensure_dir(os.path.join(in_path, ds_config.features_dir))
+    utils.ensure_dir(os.path.join(in_path, ds_config.estimations_dir))
+    utils.ensure_dir(os.path.join(in_path, ds_config.references_dir))
 
     # Get the file structs
     file_structs = []
@@ -708,4 +619,25 @@ def get_duration(features_file):
     """
     with open(features_file) as f:
         feats = json.load(f)
-    return float(feats["analysis"]["dur"])
+    return float(feats["globals"]["dur"])
+
+
+def write_mirex(times, labels, out_file):
+    """Writes results to file using the standard MIREX format.
+
+    Parameters
+    ----------
+    times: np.array
+        Times in seconds of the boundaries.
+    labels: np.array
+        Labels associated to the segments defined by the boundaries.
+    out_file: str
+        Output file path to save the results.
+    """
+    inters = msaf.utils.times_to_intervals(times)
+    assert len(inters) == len(labels)
+    out_str = ""
+    for inter, label in zip(inters, labels):
+        out_str += "%.3f\t%.3f\t%s\n" % (inter[0], inter[1], label)
+    with open(out_file, "w") as f:
+        f.write(out_str[:-1])

@@ -9,11 +9,10 @@ Training OLDA
 Follow these steps:
 
 * Create the training data using the script `make_train.py`. E.g.
-    ./make_train.py ~/datasets/Segments/ out_salami -d SALAMI -j 8
+    ./make_train.py ~/datasets/BeatlesTUT/ out_beatles -j 8
 
 * Train the olda model using the script `fit_olda_model.py`. E.g.
-    ./fit_olda_model.py ~/datasets/Segments/ out_salami/EstBeats_SALAMI-i_data.pickle models/EstBeats_SALAMI-i.npy -d SALAMI-i
+    ./fit_olda_model.py ~/datasets/BeatlesTUT/ out_beatles/EstBeats_BeatlesTUT_data.pickle models/EstBeats_BeatlesTUT.npy
 
-
-* Use the `models/EstBeats_SALAMI-i.npy` model to estimate new data, by
+* Use the `models/EstBeats_BeatlesTUT.npy` model to estimate new data, by
     setting it up in the `config.py` file.

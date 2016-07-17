@@ -39,43 +39,6 @@ def ensure_dir(directory):
         os.makedirs(directory)
 
 
-def chroma_to_tonnetz(C):
-    """Transforms chromagram to Tonnetz (Harte, Sandler, 2006)."""
-    N = C.shape[0]
-    T = np.zeros((N, 6))
-
-    r1 = 1      # Fifths
-    r2 = 1      # Minor
-    r3 = 0.5    # Major
-
-    # Generate Transformation matrix
-    phi = np.zeros((6, 12))
-    for i in range(6):
-        for j in range(12):
-            if i % 2 == 0:
-                fun = np.sin
-            else:
-                fun = np.cos
-
-            if i < 2:
-                phi[i, j] = r1 * fun(j * 7 * np.pi / 6.)
-            elif i >= 2 and i < 4:
-                phi[i, j] = r2 * fun(j * 3 * np.pi / 2.)
-            else:
-                phi[i, j] = r3 * fun(j * 2 * np.pi / 3.)
-
-    # Do the transform to tonnetz
-    for i in range(N):
-        for d in range(6):
-            denom = float(C[i, :].sum())
-            if denom == 0:
-                T[i, d] = 0
-            else:
-                T[i, d] = 1 / denom * (phi[d, :] * C[i, :]).sum()
-
-    return T
-
-
 def times_to_intervals(times):
     """Given a set of times, convert them into intervals.
 

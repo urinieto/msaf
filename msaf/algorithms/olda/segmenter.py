@@ -2,8 +2,6 @@
 # CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
 '''Music segmentation using timbre, pitch, repetition and time.
 '''
-
-
 import argparse
 import logging
 import sys
@@ -16,6 +14,7 @@ import librosa
 import msaf
 
 from msaf.algorithms.interface import SegmenterInterface
+from msaf.base import Features
 
 REP_WIDTH = 3
 REP_FILTER = 7
@@ -27,11 +26,11 @@ N_REP = 32
 __DIMENSION = N_MFCC + N_CHROMA + 2 * N_REP + 4
 
 
-def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
+def features(file_struct, annot_beats=False, framesync=False):
     '''Feature-extraction for audio segmentation
     Arguments:
-        audio_path -- str
-        path to the input song in the Segmentation dataset
+        file_struct -- msaf.io.FileStruct
+        paths to the input files in the Segmentation dataset
 
     Returns:
         - X -- ndarray
@@ -43,10 +42,6 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
             Latent chroma repetition
             Time index
             Beat index
-
-        - beat_times -- array
-            mapping of beat index => timestamp
-            includes start and end markers (0, dur)
 
         - dur -- float
             duration of the track in seconds
@@ -81,41 +76,39 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
 
     # Latent factor repetition features
     def repetition(X, metric='euclidean'):
-        R = librosa.segment.recurrence_matrix(X,
-                                            k=2 * int(np.ceil(np.sqrt(X.shape[1]))),
-                                            width=REP_WIDTH,
-                                            metric=metric,
-                                            sym=False).astype(np.float32)
+        R = librosa.segment.recurrence_matrix(
+            X, k=2 * int(np.ceil(np.sqrt(X.shape[1]))),
+            width=REP_WIDTH, metric=metric, sym=False).astype(np.float32)
 
-        P = scipy.signal.medfilt2d(librosa.segment.structure_feature(R), [1, REP_FILTER])
+        P = scipy.signal.medfilt2d(librosa.segment.structure_feature(R),
+                                   [1, REP_FILTER])
 
         # Discard empty rows.
-        # This should give an equivalent SVD, but resolves some numerical instabilities.
+        # This should give an equivalent SVD, but resolves some numerical
+        # instabilities.
         P = P[P.any(axis=1)]
 
         return compress_data(P, N_REP)
 
     #########
-    #print '\tloading annotations and features of ', audio_path
-    if pre_features is None:
-        features = msaf.io.get_features(audio_path, annot_beats, framesync)
-    else:
-        features = pre_features
-    chroma = features["hpcp"]
-    mfcc = features["mfcc"]
-    tonnetz = features["tonnetz"]
-    cqt = features["cqt"]
-    beats = features["beats"]
-    dur = features["anal"]["dur"]
+    # '\tloading annotations and features of ', audio_path
+    pcp_obj = Features.select_features("pcp", file_struct, annot_beats,
+                                       framesync)
+    mfcc_obj = Features.select_features("mfcc", file_struct, annot_beats,
+                                        framesync)
+    chroma = pcp_obj.features
+    mfcc = mfcc_obj.features
+    beats = pcp_obj.frame_times
+    dur = pcp_obj.dur
 
     # Sampling Rate
-    sr = msaf.Anal.sample_rate
+    sr = msaf.config.sample_rate
 
     ##########
     #print '\treading beats'
     B = beats[:chroma.shape[0]]
     #beat_frames = librosa.time_to_frames(B, sr=sr,
-                                         #hop_length=msaf.Anal.hop_size)
+                                         #hop_length=msaf.config.hop_size)
     #print beat_frames, len(beat_frames), uidx
 
     #########
@@ -136,15 +129,11 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
     #########
     #print '\tgenerating structure features'
 
-    # TODO: Handle the exceptions correctly
-    # try:
-        # This might fail if audio file (or number of beats) is too small
+    # TODO:  This might fail if audio file (or number of beats) is too small
     R_timbre = repetition(librosa.feature.stack_memory(M))
     R_chroma = repetition(librosa.feature.stack_memory(C))
-    # except:
-        # return None, None, dur
     if R_timbre is None or R_chroma is None:
-        return None, None, dur
+        return None, dur
 
     R_timbre += R_timbre.min()
     R_timbre /= R_timbre.max()
@@ -159,7 +148,7 @@ def features(audio_path, annot_beats=False, pre_features=None, framesync=False):
 
     #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
 
-    return X, B, dur
+    return X, dur
 
 
 def gaussian_cost(X):
@@ -224,16 +213,6 @@ def get_segments(X, kmin=8, kmax=32):
     return S_best
 
 
-def save_segments(outfile, S, beats):
-
-    times = beats[S]
-    with open(outfile, 'w') as f:
-        for idx, (start, end) in enumerate(zip(times[:-1], times[1:]), 1):
-            f.write('%.3f\t%.3f\tSeg#%03d\n' % (start, end, idx))
-
-    pass
-
-
 def process_arguments():
     parser = argparse.ArgumentParser(description='Music segmentation')
 
@@ -274,6 +253,15 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This class implements the algorithm described here:
+
+    McFee, B. and Ellis, D.P.W., Learning to segment songs with ordinal linear
+    discriminant analysis. International conference on acoustics, speech and
+    signal processing (ICASSP). 2014 (`PDF`_).
+
+    .. _PDF: https://bmcfee.github.io/papers/icassp2014_segments.pdf
+    """
     def processFlat(self):
         """Main process for flat segmentation.
         Returns
@@ -283,13 +271,8 @@ class Segmenter(SegmenterInterface):
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        # print(self.audio_file,
-              # self.annot_beats,
-              # self.features,
-              # self.framesync)
-        # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur = features(self.audio_file, self.annot_beats,
-                                       self.features, self.framesync)
+        # Preprocess to obtain features and duration
+        F, dur = features(self.file_struct, self.annot_beats, self.framesync)
 
         try:
             # Load and apply transform
@@ -316,7 +299,6 @@ class Segmenter(SegmenterInterface):
 
         return est_idxs, est_labels
 
-
     def processHierarchical(self):
         """Main process for hierarchical segmentation.
         Returns
@@ -329,8 +311,7 @@ class Segmenter(SegmenterInterface):
             as np.arrays
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        F, frame_times, dur = features(self.audio_file, self.annot_beats,
-                                       self.features, self.framesync)
+        F, dur = features(self.file_struct, self.annot_beats, self.framesync)
 
         try:
             # Load and apply transform

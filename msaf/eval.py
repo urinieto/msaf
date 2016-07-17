@@ -1,6 +1,11 @@
 """
 Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
+
+.. autosummary::
+    :toctree: generated/
+
+    process
 """
 import jams
 from joblib import Parallel, delayed
@@ -27,14 +32,14 @@ def print_results(results):
     results: pd.DataFrame
         Dataframe with all the results
     """
+    if len(results) == 0:
+        return
     res = results.mean()
-    logging.info(results["HitRate_3F"])
-    logging.info(results["track_id"])
     logging.info("Results:\n%s" % res)
 
 
 def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
-                    est_file):
+                    est_file, weight=0.58):
     """Compute the results using all the available evaluations.
 
     Parameters
@@ -51,48 +56,72 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         Number of bins for the information gain.
     est_file : str
         Path to the output file to store results.
+    weight: float
+        Weight the Precision and Recall values of the hit rate boundaries
+        differently (<1 will weight Precision higher, >1 will weight Recall
+        higher).
+        The default parameter (0.58) is the one proposed in (Nieto et al. 2014)
 
     Return
     ------
     results : dict
         Contains the results of all the evaluations for the given file.
         Keys are the following:
-            track_id  : Name of the track
-            ds_name :   Name of the data set
-            HitRate_3F  :   F-measure of hit rate at 3 seconds
-            HitRate_3P  :   Precision of hit rate at 3 seconds
-            HitRate_3R  :   Recall of hit rate at 3 seconds
-            HitRate_0.5F  :   F-measure of hit rate at 0.5 seconds
-            HitRate_0.5P  :   Precision of hit rate at 0.5 seconds
-            HitRate_0.5R  :   Recall of hit rate at 0.5 seconds
-            HitRate_t3F  :   F-measure of hit rate at 3 seconds (trimmed)
-            HitRate_t3P  :   Precision of hit rate at 3 seconds (trimmed)
-            HitRate_t3F  :   Recall of hit rate at 3 seconds (trimmed)
-            HitRate_t0.5F  :   F-measure of hit rate at 0.5 seconds (trimmed)
-            HitRate_t0.5P  :   Precision of hit rate at 0.5 seconds (trimmed)
-            HitRate_t0.5R  :   Recall of hit rate at 0.5 seconds (trimmed)
-            DevA2E  :   Median deviation of annotation to estimation
-            DevE2A  :   Median deviation of estimation to annotation
-            D   :   Information gain
-            PWF : F-measure of pair-wise frame clustering
-            PWP : Precision of pair-wise frame clustering
-            PWR : Recall of pair-wise frame clustering
-            Sf  : F-measure normalized entropy score
-            So  : Oversegmentation normalized entropy score
-            Su  : Undersegmentation normalized entropy score
+            track_id: Name of the track
+            HitRate_3F: F-measure of hit rate at 3 seconds
+            HitRate_3P: Precision of hit rate at 3 seconds
+            HitRate_3R: Recall of hit rate at 3 seconds
+            HitRate_0.5F: F-measure of hit rate at 0.5 seconds
+            HitRate_0.5P: Precision of hit rate at 0.5 seconds
+            HitRate_0.5R: Recall of hit rate at 0.5 seconds
+            HitRate_w3F: F-measure of hit rate at 3 seconds weighted
+            HitRate_w0.5F: F-measure of hit rate at 0.5 seconds weighted
+            HitRate_wt3F: F-measure of hit rate at 3 seconds weighted and
+                          trimmed
+            HitRate_wt0.5F: F-measure of hit rate at 0.5 seconds weighted
+                            and trimmed
+            HitRate_t3F: F-measure of hit rate at 3 seconds (trimmed)
+            HitRate_t3P: Precision of hit rate at 3 seconds (trimmed)
+            HitRate_t3F: Recall of hit rate at 3 seconds (trimmed)
+            HitRate_t0.5F: F-measure of hit rate at 0.5 seconds (trimmed)
+            HitRate_t0.5P: Precision of hit rate at 0.5 seconds (trimmed)
+            HitRate_t0.5R: Recall of hit rate at 0.5 seconds (trimmed)
+            DevA2E: Median deviation of annotation to estimation
+            DevE2A: Median deviation of estimation to annotation
+            D: Information gain
+            PWF: F-measure of pair-wise frame clustering
+            PWP: Precision of pair-wise frame clustering
+            PWR: Recall of pair-wise frame clustering
+            Sf: F-measure normalized entropy score
+            So: Oversegmentation normalized entropy score
+            Su: Undersegmentation normalized entropy score
     """
     res = {}
 
-    # ## Boundaries ## #
-    # Hit Rate
+    # --Boundaries-- #
+    # Hit Rate standard
     res["HitRate_3P"], res["HitRate_3R"], res["HitRate_3F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
     res["HitRate_0.5P"], res["HitRate_0.5R"], res["HitRate_0.5F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=False)
+
+    # Hit rate trimmed
     res["HitRate_t3P"], res["HitRate_t3R"], res["HitRate_t3F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
     res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
+
+    # Hit rate weighted
+    res["HitRate_w3P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=3, trim=False, beta=weight)
+    res["HitRate_w0.5P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=.5, trim=False, beta=weight)
+
+    # Hit rate weighted and trimmed
+    res["HitRate_wt3P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=3, trim=True, beta=weight)
+    res["HitRate_wt0.5P"], _, _ = mir_eval.segment.detection(
+        ann_inter, est_inter, window=.5, trim=True, beta=weight)
 
     # Information gain
     res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
@@ -104,8 +133,8 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     res["DevtR2E"], res["DevtE2R"] = mir_eval.segment.deviation(
         ann_inter, est_inter, trim=True)
 
-    # ## Labels ## #
-    if est_labels is not None and "-1" in est_labels:
+    # --Labels-- #
+    if est_labels is not None and ("-1" in est_labels or "@" in est_labels):
         est_labels = None
     if est_labels is not None and len(est_labels) != 0:
         try:
@@ -278,10 +307,8 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name,
                           annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
-    if ds_name == "*":
-        ds_name = "All"
-    utils.ensure_dir(msaf.results_dir)
-    file_name = os.path.join(msaf.results_dir, "results_%s" % ds_name)
+    utils.ensure_dir(msaf.config.results_dir)
+    file_name = os.path.join(msaf.config.results_dir, "results")
     file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
     file_name += "_annotatorE%d" % (annotator_id)
     sorted_keys = sorted(config.keys(), key=str.lower)
@@ -289,17 +316,17 @@ def get_results_file_name(boundaries_id, labels_id, config, ds_name,
         file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
 
     # Check for max file length
-    if len(file_name) > 255 - len(msaf.results_ext):
-        file_name = file_name[:255 - len(msaf.results_ext)]
+    if len(file_name) > 255 - len(msaf.config.results_ext):
+        file_name = file_name[:255 - len(msaf.config.results_ext)]
 
-    return file_name + msaf.results_ext
+    return file_name + msaf.config.results_ext
 
 
-def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
-            labels_id=msaf.DEFAULT_LABEL_ID, ds_name="*", annot_beats=False,
-            framesync=False, feature="hpcp", hier=False, save=False,
+def process(in_path, boundaries_id=msaf.config.default_bound_id,
+            labels_id=msaf.config.default_label_id, annot_beats=False,
+            framesync=False, feature="pcp", hier=False, save=False,
             n_jobs=4, annotator_id=0, config=None):
-    """Main process.
+    """Main process to evaluate algorithms' results.
 
     Parameters
     ----------
@@ -316,7 +343,7 @@ def process(in_path, boundaries_id=msaf.DEFAULT_BOUND_ID,
     framesync: str
         Whether to use framesync features or not (default: False -> beatsync)
     feature: str
-        String representing the feature to be used (e.g. hpcp, mfcc, tonnetz)
+        String representing the feature to be used (e.g. pcp, mfcc, tonnetz)
     hier : bool
         Whether to compute a hierarchical or flat segmentation.
     save: boolean
