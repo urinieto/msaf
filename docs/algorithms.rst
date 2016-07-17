@@ -7,6 +7,9 @@ MSAF comes with two types of algorithms: *boundary detection* and *label cluster
 Below, the included algorithms are discussed and classified based on these two categories.
 Note that some algorithms can actually approach both subproblems.
 
+Additionally, two other algorithms published under a GPL license can be obtained from
+the `msaf-gpl repo <https://github.com/urinieto/msaf-gpl>`_.
+
 Boundary Algorithms
 -------------------
 
