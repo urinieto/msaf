@@ -16,6 +16,7 @@ setup(
     url='https://github.com/urinieto/msaf',
     download_url='https://github.com/urinieto/msaf/releases',
     packages=find_packages(),
+    package_data={'msaf': ['algorithms/olda/models/*.npy']},
     data_files=[('msaf/algorithms/olda/models',
                  glob.glob('msaf/algorithms/olda/models/*.npy'))],
     long_description="""A python module to segment audio into all its """
