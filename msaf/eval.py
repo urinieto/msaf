@@ -375,7 +375,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     config.pop("features", None)
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,
+    out_file = get_results_file_name(boundaries_id, labels_id, config,
                                      annotator_id)
 
     # All evaluations
