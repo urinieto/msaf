@@ -396,7 +396,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
             return results
 
         # Get files
-        file_structs = io.get_dataset_files(in_path, ds_name)
+        file_structs = io.get_dataset_files(in_path)
 
         logging.info("Evaluating %d tracks..." % len(file_structs))
 
