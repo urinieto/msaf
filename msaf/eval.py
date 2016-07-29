@@ -303,7 +303,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config, ds_name,
+def get_results_file_name(boundaries_id, labels_id, config,
                           annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
