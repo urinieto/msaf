@@ -67,12 +67,6 @@ def main():
                         dest="plot",
                         help="Plots the current boundaries",
                         default=False)
-    parser.add_argument("-d",
-                        action="store",
-                        dest="ds_name",
-                        default="*",
-                        help="The prefix of the dataset to use "
-                        "(e.g. Isophonics, SALAMI)")
     parser.add_argument("-hier",
                         action="store_true",
                         dest="hier",
@@ -99,7 +93,6 @@ def main():
     params = {
         "annot_beats": args.annot_beats,
         "feature": args.feature,
-        "ds_name": args.ds_name,
         "framesync": args.framesync,
         "boundaries_id": args.boundaries_id,
         "labels_id": args.labels_id,
