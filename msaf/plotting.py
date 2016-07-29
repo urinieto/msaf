@@ -143,7 +143,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
 
 
 def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
-                   ds_prefix, title=None):
+                   title=None):
     """Plots the results of one track, with ground truth if it exists."""
     # Set up the boundaries id
     bid_lid = boundaries_id
