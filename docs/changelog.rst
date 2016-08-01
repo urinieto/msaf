@@ -1,6 +1,12 @@
 Changes
 =======
 
+v0.1.1
+------
+
+* Fixed plotting issues
+* Fixed bug regarding old variable `ds_name`
+
 v0.1.0
 ------
 
