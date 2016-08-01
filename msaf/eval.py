@@ -303,7 +303,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config, ds_name,
+def get_results_file_name(boundaries_id, labels_id, config,
                           annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
@@ -375,7 +375,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     config.pop("features", None)
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config, ds_name,
+    out_file = get_results_file_name(boundaries_id, labels_id, config,
                                      annotator_id)
 
     # All evaluations
@@ -396,7 +396,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
             return results
 
         # Get files
-        file_structs = io.get_dataset_files(in_path, ds_name)
+        file_structs = io.get_dataset_files(in_path)
 
         logging.info("Evaluating %d tracks..." % len(file_structs))
 
