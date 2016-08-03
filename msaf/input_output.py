@@ -509,24 +509,6 @@ def get_SALAMI_internet(file_structs):
 
 def get_dataset_files(in_path, ds_name="*"):
     """Gets the files of the dataset with a prefix of ds_name."""
-
-    # All datasets
-    ds_dict = {
-        "Beatles": "Isophonics",
-        "Cerulean": "Cerulean",
-        "Epiphyte": "Epiphyte",
-        "Isophonics": "Isophonics",
-        "SALAMI": "SALAMI",
-        "SALAMI-i": "SALAMI",
-        "*": "*"
-    }
-
-    try:
-        prefix = ds_dict[ds_name]
-    except KeyError:
-        raise RuntimeError("Dataset %s is not valid. Valid datasets are: %s" %
-                           (ds_name, ds_dict.keys()))
-
     # Get audio files
     audio_files = []
     for ext in ds_config.audio_exts:
