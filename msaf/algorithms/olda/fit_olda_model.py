@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 
-import os
 import sys
 import argparse
 import numpy as np
-import glob
 
 import mir_eval
 import jams
 import cPickle as pickle
-
-from joblib import Parallel, delayed
 
 import OLDA
 import segmenter
@@ -101,8 +97,6 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
     best_score = -np.inf
     best_sigma = None
     model = None
-
-    print len(X)
 
     for sig in SIGMA:
         O = OLDA.OLDA(sigma=sig)

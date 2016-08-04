@@ -2,10 +2,8 @@
 
 import argparse
 import numpy as np
-import glob
 import librosa
 import os
-import sys
 import time
 
 from joblib import Parallel, delayed
@@ -92,7 +90,7 @@ def import_data(file_struct, rootpath, output_path, annot_beats):
     if os.path.exists(data_file):
         with open(data_file, 'r') as f:
             Data = pickle.load(f)
-            print file_struct.audio_file, 'cached!'
+            print(file_struct.audio_file, 'cached!')
     else:
         X, dur = features(file_struct, annot_beats)
         pcp_obj = Features.select_features("pcp", file_struct, annot_beats,
@@ -115,7 +113,7 @@ def import_data(file_struct, rootpath, output_path, annot_beats):
                 'segment_times': T,
                 'segment_labels': L,
                 'segments': Y}
-        print file_struct.audio_file, 'processed!'
+        print(file_struct.audio_file, 'processed!')
 
         with open(data_file, 'w') as f:
             pickle.dump(Data, f)
