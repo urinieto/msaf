@@ -111,27 +111,27 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
                 jam = jams.load(f)
                 ann = jam.search(namespace="beat")[0]
                 beats = ann.data.to_interval_values()[0][:, 0]
-            print "\t\tProcessing ", f
+            print("\t\tProcessing ", f)
             scores.append(score_model(O.components_, z[0], beats, z[2]))
 
         mean_score = np.mean(scores)
-        print 'Sigma=%.2e, score=%.3f' % (sig, mean_score)
+        print('Sigma=%.2e, score=%.3f' % (sig, mean_score))
 
         if mean_score > best_score:
             best_score = mean_score
             best_sigma = sig
             model = O.components_
 
-    print 'Best sigma: %.2e' % best_sigma
+    print('Best sigma: %.2e' % best_sigma)
     return model
 
 if __name__ == '__main__':
     parameters = process_arguments()
 
-    print "Loading data from %s ..." % parameters["input_file"]
+    print("Loading data from %s ..." % parameters["input_file"])
     X, Y, B, T = load_data(parameters['input_file'])[:4]
 
-    print "Fitting model..."
+    print("Fitting model...")
     model = fit_model(X, Y, B, T, parameters['num_jobs'],
                       parameters['annot_beats'], parameters['ds_path'])
 
