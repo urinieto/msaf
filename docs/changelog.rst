@@ -1,6 +1,12 @@
 Changes
 =======
 
+v0.1.2
+------
+
+* Removed old notebooks that were either useless or belonged to `msaf-data`
+* Removed old `ds-name` references, improving code health
+
 v0.1.1
 ------
 
