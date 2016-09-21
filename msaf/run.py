@@ -1,12 +1,12 @@
 """
 This module contains multiple functions in order to run MSAF algorithms.
 """
+from copy import deepcopy
+from joblib import Parallel, delayed
 import librosa
 import logging
 import numpy as np
 import os
-
-from joblib import Parallel, delayed
 
 import msaf
 from msaf import input_output as io
@@ -78,15 +78,24 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     # Get features to make code nicer
     features = config["features"].features
 
+    # Compute boundaries
     if bounds_module is None:
         raise RuntimeError("A boundary algorithm is needed when using "
                            "hierarchical segmentation.")
-    if labels_module is not None and \
-            bounds_module.__name__ != labels_module.__name__:
-        raise RuntimeError("The same algorithm for boundaries and labels is "
-                           "needed when using hierarchical segmentation.")
     S = bounds_module.Segmenter(audio_file, **config)
     est_idxs, est_labels = S.processHierarchical()
+
+    # Compute labels if needed
+    if labels_module is not None and \
+            bounds_module.__name__ != labels_module.__name__:
+        # Compute labels for each level in the hierarchy
+        flat_config = deepcopy(config)
+        flat_config["hier"] = False
+        for i, level_idxs in enumerate(est_idxs):
+            S = labels_module.Segmenter(audio_file,
+                                        in_bound_idxs=level_idxs,
+                                        **flat_config)
+            est_labels[i] = S.processFlat()[1]
 
     # Make sure the first and last boundaries are included for each
     # level in the hierarchy

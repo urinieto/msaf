@@ -134,5 +134,8 @@ def test_run_algorithms():
 
     # Test the hierarchical algorithms
     hier_ids = ["olda", "scluster"]
-    for hier_id in hier_ids:
-        yield (_test_run_msaf, hier_id, None, True)
+    for hier_bounds_id in hier_ids:
+        for hier_labels_id in hier_ids:
+            if hier_labels_id == "olda":
+                hier_labels_id = "fmc2d"
+            yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
