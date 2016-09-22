@@ -39,3 +39,8 @@ class FeatureParamsError(MSAFError):
 class NoAudioFileError(MSAFError):
     '''Exception class for audio file not found'''
     pass
+
+
+class NoHierBoundaryError(MSAFError):
+    '''Exception class for missing hierarchical boundary algorithm'''
+    pass
