@@ -163,3 +163,25 @@ def test_no_gt_flat_bounds():
                                               None, config, 0)
     assert(not est_times)
     assert(not est_labels)
+
+
+def test_process_track():
+    feature = "pcp"
+    annot_beats = False
+    framesync = False
+    bounds_id = "foote"
+    labels_id = None
+    file_struct = msaf.io.FileStruct(audio_file)
+    file_struct.features_file = msaf.config.features_tmp_file
+    file_struct.est_file = "tmp.json"
+
+    config = {}
+    config["feature"] = "pcp"
+    config["annot_beats"] = False
+    config["framesync"] = False
+    config["hier"] = False
+    est_times, est_labels = msaf.run.process_track(
+        file_struct, bounds_id, labels_id, config)
+
+    assert os.path.isfile(file_struct.est_file)
+    os.remove(file_struct.est_file)
