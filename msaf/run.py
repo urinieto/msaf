@@ -13,6 +13,7 @@ from msaf import input_output as io
 from msaf import utils
 from msaf import plotting
 from msaf.features import Features
+from msaf.exceptions import NoHierBoundaryError
 import msaf.algorithms as algorithms
 
 
@@ -75,13 +76,15 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     """Runs hierarchical algorithms with the specified identifiers on the
     audio_file. See run_algorithm for more information.
     """
+    # Sanity check
+    if bounds_module is None:
+        raise NoHierBoundaryError("A boundary algorithm is needed when using "
+                                  "hierarchical segmentation.")
+
     # Get features to make code nicer
     features = config["features"].features
 
     # Compute boundaries
-    if bounds_module is None:
-        raise RuntimeError("A boundary algorithm is needed when using "
-                           "hierarchical segmentation.")
     S = bounds_module.Segmenter(audio_file, **config)
     est_idxs, est_labels = S.processHierarchical()
 

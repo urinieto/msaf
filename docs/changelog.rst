@@ -4,6 +4,7 @@ Changes
 v0.1.2
 ------
 
+* Allowing computation of label algorithms for each layer of hierarchical boundaries
 * Removed old notebooks that were either useless or belonged to `msaf-data`
 * Removed old `ds-name` references, improving code health
 

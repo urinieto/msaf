@@ -5,13 +5,15 @@
 # nosetests
 
 from nose.tools import assert_raises
-from types import ModuleType
+from nose.tools import raises
 import numpy.testing as npt
 import os
+from types import ModuleType
 
 # Msaf imports
 import msaf
 from msaf.features import Features
+from msaf.exceptions import (NoHierBoundaryError)
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
@@ -139,3 +141,8 @@ def test_run_algorithms():
             if hier_labels_id == "olda":
                 hier_labels_id = "fmc2d"
             yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
+
+
+@raises(NoHierBoundaryError)
+def test_run_wrong_hierarchical():
+    msaf.run.run_hierarchical(None, None, None, None, None)
