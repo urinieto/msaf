@@ -144,5 +144,22 @@ def test_run_algorithms():
 
 
 @raises(NoHierBoundaryError)
-def test_run_wrong_hierarchical():
+def test_no_bound_hierarchical():
     msaf.run.run_hierarchical(None, None, None, None, None)
+
+
+def test_no_gt_flat_bounds():
+    """Make sure the results are empty if there is not ground truth found."""
+    feature = "pcp"
+    annot_beats = False
+    framesync = False
+    file_struct = msaf.io.FileStruct(audio_file)
+    file_struct.features_file = msaf.config.features_tmp_file
+
+    config = {}
+    config["features"] = Features.select_features(
+        feature, file_struct, annot_beats, framesync)
+    est_times, est_labels = msaf.run.run_flat(file_struct, None, None,
+                                              None, config, 0)
+    assert(not est_times)
+    assert(not est_labels)
