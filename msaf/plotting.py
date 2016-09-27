@@ -7,21 +7,21 @@ import logging
 import mir_eval
 import numpy as np
 import os
-import pylab as plt
+import matplotlib.pyplot as plt
 
 # Local stuff
 from msaf import io
 from msaf import utils
 
 translate_ids = {
-    "2dfmc" : "2D-FMC",
-    "cnmf3" : "C-NMF",
-    "foote" : "Ckboard",
-    "levy"  : "CC",
-    "cc"    : "CC",
-    "olda"  : "OLDA",
-    "serra" : "SF",
-    "sf"    : "SF",
+    "2dfmc": "2D-FMC",
+    "cnmf3": "C-NMF",
+    "foote": "Ckboard",
+    "levy": "CC",
+    "cc": "CC",
+    "olda": "OLDA",
+    "serra": "SF",
+    "sf": "SF",
     "siplca": "SI-PLCA"
 }
 
