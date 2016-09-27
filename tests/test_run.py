@@ -4,6 +4,15 @@
 # cd tests/
 # nosetests
 
+# For plotting and testing
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+import matplotlib.style
+matplotlib.style.use('seaborn-ticks')
+
+from mpl_ic import image_comparison
+
 from nose.tools import assert_raises
 from nose.tools import raises
 import numpy.testing as npt
@@ -13,7 +22,9 @@ from types import ModuleType
 # Msaf imports
 import msaf
 from msaf.features import Features
-from msaf.exceptions import (NoHierBoundaryError, FeaturesNotFound)
+from msaf.exceptions import (NoHierBoundaryError, FeaturesNotFound,
+                             NoAudioFileError)
+
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
@@ -193,7 +204,27 @@ def test_process_wrong_feature():
     est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
 
 
-@raises(RuntimeError)
+@raises(NoAudioFileError)
 def test_process_wrong_path():
     wrong_path = "caca.mp3"
     est_times, est_labels = msaf.run.process(wrong_path)
+
+
+def test_process():
+    est_times, est_labels = msaf.run.process(long_audio_file)
+    assert est_times[0] == 0
+    assert len(est_times) == len(est_labels) + 1
+
+
+def test_process_sonify():
+    out_wav = "out_wav.wav"
+    est_times, est_labels = msaf.run.process(long_audio_file,
+                                             sonify_bounds=True,
+                                             out_bounds=out_wav)
+    assert os.path.isfile(out_wav)
+    os.remove(out_wav)
+
+
+@image_comparison(baseline_images=['run_bounds'], extensions=['png'])
+def test_process_plot():
+    est_times, est_labels = msaf.run.process(long_audio_file, plot=True)
