@@ -6,7 +6,7 @@
 
 import glob
 import json
-import librosa
+#import librosa
 from nose.tools import raises, assert_equals
 import os
 
@@ -16,8 +16,8 @@ import msaf
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
 sr = msaf.config.sample_rate
-audio, fs = librosa.load(audio_file, sr=sr)
-y_harmonic, y_percussive = librosa.effects.hpss(audio)
+#audio, fs = librosa.load(audio_file, sr=sr)
+#y_harmonic, y_percussive = librosa.effects.hpss(audio)
 
 
 def test_read_hier_references():
