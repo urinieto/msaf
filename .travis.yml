@@ -41,4 +41,8 @@ script:
     - nosetests --with-coverage --cover-package=msaf -v -w tests/
 
 after_success:
-      coveralls
+    - coveralls
+    - pip uninstall -y msaf
+
+after_failure:
+    - pip uninstall -y msaf
