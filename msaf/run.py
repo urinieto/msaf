@@ -13,7 +13,7 @@ from msaf import input_output as io
 from msaf import utils
 from msaf import plotting
 from msaf.features import Features
-from msaf.exceptions import NoHierBoundaryError
+from msaf.exceptions import NoHierBoundaryError, NoAudioFileError
 import msaf.algorithms as algorithms
 
 
@@ -327,8 +327,8 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
     # Save multi-segment (hierarchical) configuration
     config["hier"] = hier
     if not os.path.exists(in_path):
-        raise RuntimeError("File or directory does not exists, %s" %
-                           in_path)
+        raise NoAudioFileError("File or directory does not exists, %s" %
+                               in_path)
     if os.path.isfile(in_path):
         # Single file mode
         # Get (if they exitst) or compute features
