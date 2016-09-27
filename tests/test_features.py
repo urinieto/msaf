@@ -68,6 +68,7 @@ def run_ref_power(features_class):
 
 def test_standard_cqt():
     """CQT features should run and create the proper entry in the json file."""
+    import pdb; pdb.set_trace()  # XXX BREAKPOINT
     run_framesync(CQT)
 
 
