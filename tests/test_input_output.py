@@ -4,10 +4,6 @@
 # cd tests/
 # nosetests
 
-import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-
 import glob
 import json
 import librosa
