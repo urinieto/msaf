@@ -17,8 +17,8 @@ from msaf.exceptions import (NoHierBoundaryError)
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
-long_audio_file = os.path.join("..", "datasets", "Sargon", "audio",
-                               "01-Sargon-Mindless.mp3")
+long_audio_file = os.path.join("fixtures", "Sargon_test", "audio",
+                               "Mindless_cut.mp3")
 fake_module_name = "fake_name_module"
 
 
