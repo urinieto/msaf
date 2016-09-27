@@ -32,8 +32,6 @@ install:
     - pip install -e .
 
 script:
-    - rm -rf ~/.matplotlib
-    - rm -rf ~/cache/.matplotlib
     - python --version
     - nosetests --with-coverage --cover-package=msaf -v -w tests/
 
