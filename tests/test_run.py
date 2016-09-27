@@ -228,3 +228,11 @@ def test_process_sonify():
 @image_comparison(baseline_images=['run_bounds'], extensions=['png'])
 def test_process_plot():
     est_times, est_labels = msaf.run.process(long_audio_file, plot=True)
+
+
+def test_process_dataset():
+    ds_path = os.path.join("fixtures", "Sargon_test")
+    res = msaf.run.process(ds_path)
+    est_times, est_labels = res[0]
+    assert est_times[0] == 0
+    assert len(est_times) == len(est_labels) + 1
