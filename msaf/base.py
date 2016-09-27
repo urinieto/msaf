@@ -450,6 +450,12 @@ class Features(six.with_metaclass(MetaFeatures)):
             raise FeatureTypeNotFound("Type of features not valid.")
 
         # Select features with default parameters
+
+        if features_id not in features_registry.keys():
+            raise FeaturesNotFound(
+                "The features '%s' are invalid (valid features are %s)"
+                % (features_id, features_registry.keys()))
+
         return features_registry[features_id](file_struct, feat_type)
 
     def compute_features(self):

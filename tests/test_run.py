@@ -13,7 +13,7 @@ from types import ModuleType
 # Msaf imports
 import msaf
 from msaf.features import Features
-from msaf.exceptions import (NoHierBoundaryError)
+from msaf.exceptions import (NoHierBoundaryError, FeaturesNotFound)
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
@@ -185,3 +185,15 @@ def test_process_track():
 
     assert os.path.isfile(file_struct.est_file)
     os.remove(file_struct.est_file)
+
+
+@raises(FeaturesNotFound)
+def test_process_wrong_feature():
+    feature = "caca"
+    est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
+
+
+@raises(RuntimeError)
+def test_process_wrong_path():
+    wrong_path = "caca.mp3"
+    est_times, est_labels = msaf.run.process(wrong_path)

@@ -318,9 +318,6 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
     # Seed random to reproduce results
     np.random.seed(123)
 
-    # Make sure that the features used are correct
-    assert feature in msaf.features_registry.keys()
-
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
