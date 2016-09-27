@@ -198,6 +198,15 @@ def test_process_track():
     os.remove(file_struct.est_file)
 
 
+def test_process_with_gt():
+    bounds_id = "gt"
+    labels_id = "fmc2d"
+    est_times, est_labels = msaf.run.process(
+        long_audio_file, boundaries_id=bounds_id, labels_id=labels_id)
+    assert est_times[0] == 0
+    assert len(est_times) == len(est_labels) + 1
+
+
 @raises(FeaturesNotFound)
 def test_process_wrong_feature():
     feature = "caca"
