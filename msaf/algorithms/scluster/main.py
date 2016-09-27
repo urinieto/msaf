@@ -112,8 +112,8 @@ def features(filename):
     times = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_LENGTH)
 
     times = np.concatenate([times, [float(len(y)) / sr]])
-    M1 = librosa.feature.sync(M1, beats, aggregate=np.median)
-    M2 = librosa.feature.sync(M2, beats, aggregate=np.mean)
+    M1 = librosa.util.utils.sync(M1, beats, aggregate=np.median)
+    M2 = librosa.util.utils.sync(M2, beats, aggregate=np.mean)
     return (M1, M2), times
 
 def save_segments(outfile, boundaries, beats, labels=None):
@@ -275,16 +275,18 @@ def factorize(L, k=20):
 
     return e_vecs[:, :k].T, e_vals[k] - e_vals[k-1]
 
+
 def label_rep_sections(X, boundaries, n_types):
     # Classify each segment centroid
-    Xs = librosa.feature.sync(X, boundaries)
+    Xs = librosa.util.utils.sync(X, boundaries)
 
     C = sklearn.cluster.KMeans(n_clusters=n_types, tol=1e-8)
 
     labels = C.fit_predict(Xs.T)
     intervals = list(zip(boundaries[:-1], boundaries[1:]))
 
-    return  intervals, labels[:len(intervals)]
+    return intervals, labels[:len(intervals)]
+
 
 def cond_entropy(y_old, y_new):
     ''' Compute the conditional entropy of y_old given y_new'''
