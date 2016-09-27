@@ -6,7 +6,7 @@
 
 import glob
 import json
-#import librosa
+import librosa
 from nose.tools import raises, assert_equals
 import os
 
@@ -16,8 +16,8 @@ import msaf
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
 sr = msaf.config.sample_rate
-#audio, fs = librosa.load(audio_file, sr=sr)
-#y_harmonic, y_percussive = librosa.effects.hpss(audio)
+audio, fs = librosa.load(audio_file, sr=sr)
+y_harmonic, y_percussive = librosa.effects.hpss(audio)
 
 
 def test_read_hier_references():
@@ -27,15 +27,15 @@ def test_read_hier_references():
                               "SALAMI_200.jams")
 
     # One level file
-    #hier_bounds, hier_labels, hier_levels = \
-        #msaf.io.read_hier_references(one_jams)
-    #assert len(hier_bounds) == len(hier_labels) and \
-        #len(hier_labels) == len(hier_levels)
-    #assert len(hier_levels) == 1
+    hier_bounds, hier_labels, hier_levels = \
+        msaf.io.read_hier_references(one_jams)
+    assert len(hier_bounds) == len(hier_labels) and \
+        len(hier_labels) == len(hier_levels)
+    assert len(hier_levels) == 1
 
-    ## Three level file
-    #hier_bounds, hier_labels, hier_levels = \
-        #msaf.io.read_hier_references(three_jams)
-    #assert len(hier_bounds) == len(hier_labels) and \
-        #len(hier_labels) == len(hier_levels)
-    #assert len(hier_levels) == 3
+    # Three level file
+    hier_bounds, hier_labels, hier_levels = \
+        msaf.io.read_hier_references(three_jams)
+    assert len(hier_bounds) == len(hier_labels) and \
+        len(hier_labels) == len(hier_levels)
+    assert len(hier_levels) == 3
