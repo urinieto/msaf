@@ -128,11 +128,13 @@ def save_segments(outfile, boundaries, beats, labels=None):
 
     pass
 
+
 def get_num_segs(duration):
     kmin = max(2, np.floor(duration / MAX_SEG).astype(int))
     kmax = max(3, np.ceil(duration / MIN_SEG).astype(int))
 
     return kmin, kmax
+
 
 def clean_reps(S):
     # Median filter with reflected padding
@@ -140,6 +142,7 @@ def clean_reps(S):
     Sf = scipy.signal.medfilt2d(Sf, kernel_size=(1, FILTER_WIDTH))
     Sf = Sf[:, FILTER_WIDTH:-FILTER_WIDTH]
     return Sf
+
 
 def expand_transitionals(R, local=True):
     '''Sometimes, a frame does not repeat.
@@ -515,15 +518,15 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     L = np.nan
     #while np.any(np.isnan(L)):
     # Get the raw recurrence plot
-    Xpad = np.pad(X_rep, [(0,0), (N_STEPS, 0)], mode='edge')
+    Xpad = np.pad(X_rep, [(0, 0), (N_STEPS, 0)], mode='edge')
     Xs = librosa.feature.stack_memory(Xpad, n_steps=N_STEPS)[:, N_STEPS:]
 
     k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
     R = librosa.segment.recurrence_matrix(Xs,
-                                        k=k_link,
-                                        width=REP_WIDTH,
-                                        metric=METRIC,
-                                        sym=True).astype(np.float32)
+                                          k=k_link,
+                                          width=REP_WIDTH,
+                                          metric=METRIC,
+                                          sym=True).astype(np.float32)
     # Generate the repetition kernel
     A_rep = self_similarity(Xs, k=k_link)
 
@@ -531,12 +534,11 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     A_loc = self_similarity(X_loc, k=k_link)
 
     # Mask the self-similarity matrix by recurrence
-    S = librosa.segment.structure_feature(R)
-
+    S = librosa.segment.recurrence_to_lag(R)
     Sf = clean_reps(S)
 
     # De-skew
-    Rf = librosa.segment.structure_feature(Sf, inverse=True)
+    Rf = librosa.segment.lag_to_recurrence(Sf)
 
     # Symmetrize by force
     Rf = np.maximum(Rf, Rf.T)
@@ -546,8 +548,10 @@ def do_segmentation(X, beats, parameters, bound_idxs):
 
     # We can jump to a random neighbor, or +- 1 step in time
     # Call it the infinite jukebox matrix
-    T = weighted_ridge(Rf * A_rep,
-                       (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+    T = weighted_ridge(
+        Rf * A_rep,
+        (np.eye(len(A_loc), k=1) + np.eye(len(A_loc), k=-1)) * A_loc)
+
     # Get the graph laplacian
     try:
         L = sym_laplacian(T)
