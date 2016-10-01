@@ -80,7 +80,7 @@ def features(file_struct, annot_beats=False, framesync=False):
             X, k=2 * int(np.ceil(np.sqrt(X.shape[1]))),
             width=REP_WIDTH, metric=metric, sym=False).astype(np.float32)
 
-        P = scipy.signal.medfilt2d(librosa.segment.structure_feature(R),
+        P = scipy.signal.medfilt2d(librosa.segment.recurrence_to_lag(R),
                                    [1, REP_FILTER])
 
         # Discard empty rows.
@@ -105,9 +105,9 @@ def features(file_struct, annot_beats=False, framesync=False):
     sr = msaf.config.sample_rate
 
     ##########
-    #print '\treading beats'
+    # print '\treading beats'
     B = beats[:chroma.shape[0]]
-    #beat_frames = librosa.time_to_frames(B, sr=sr,
+    # beat_frames = librosa.time_to_frames(B, sr=sr,
                                          #hop_length=msaf.config.hop_size)
     #print beat_frames, len(beat_frames), uidx
 
