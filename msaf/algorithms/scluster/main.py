@@ -112,8 +112,8 @@ def features(filename):
     times = librosa.frames_to_time(beats, sr=sr, hop_length=HOP_LENGTH)
 
     times = np.concatenate([times, [float(len(y)) / sr]])
-    M1 = librosa.feature.sync(M1, beats, aggregate=np.median)
-    M2 = librosa.feature.sync(M2, beats, aggregate=np.mean)
+    M1 = librosa.util.utils.sync(M1, beats, aggregate=np.median)
+    M2 = librosa.util.utils.sync(M2, beats, aggregate=np.mean)
     return (M1, M2), times
 
 def save_segments(outfile, boundaries, beats, labels=None):
@@ -128,11 +128,13 @@ def save_segments(outfile, boundaries, beats, labels=None):
 
     pass
 
+
 def get_num_segs(duration):
     kmin = max(2, np.floor(duration / MAX_SEG).astype(int))
     kmax = max(3, np.ceil(duration / MIN_SEG).astype(int))
 
     return kmin, kmax
+
 
 def clean_reps(S):
     # Median filter with reflected padding
@@ -140,6 +142,7 @@ def clean_reps(S):
     Sf = scipy.signal.medfilt2d(Sf, kernel_size=(1, FILTER_WIDTH))
     Sf = Sf[:, FILTER_WIDTH:-FILTER_WIDTH]
     return Sf
+
 
 def expand_transitionals(R, local=True):
     '''Sometimes, a frame does not repeat.
@@ -275,16 +278,18 @@ def factorize(L, k=20):
 
     return e_vecs[:, :k].T, e_vals[k] - e_vals[k-1]
 
+
 def label_rep_sections(X, boundaries, n_types):
     # Classify each segment centroid
-    Xs = librosa.feature.sync(X, boundaries)
+    Xs = librosa.util.utils.sync(X, boundaries)
 
     C = sklearn.cluster.KMeans(n_clusters=n_types, tol=1e-8)
 
     labels = C.fit_predict(Xs.T)
     intervals = list(zip(boundaries[:-1], boundaries[1:]))
 
-    return  intervals, labels[:len(intervals)]
+    return intervals, labels[:len(intervals)]
+
 
 def cond_entropy(y_old, y_new):
     ''' Compute the conditional entropy of y_old given y_new'''
@@ -513,15 +518,15 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     L = np.nan
     #while np.any(np.isnan(L)):
     # Get the raw recurrence plot
-    Xpad = np.pad(X_rep, [(0,0), (N_STEPS, 0)], mode='edge')
+    Xpad = np.pad(X_rep, [(0, 0), (N_STEPS, 0)], mode='edge')
     Xs = librosa.feature.stack_memory(Xpad, n_steps=N_STEPS)[:, N_STEPS:]
 
     k_link = 1 + int(np.ceil(2 * np.log2(X_rep.shape[1])))
     R = librosa.segment.recurrence_matrix(Xs,
-                                        k=k_link,
-                                        width=REP_WIDTH,
-                                        metric=METRIC,
-                                        sym=True).astype(np.float32)
+                                          k=k_link,
+                                          width=REP_WIDTH,
+                                          metric=METRIC,
+                                          sym=True).astype(np.float32)
     # Generate the repetition kernel
     A_rep = self_similarity(Xs, k=k_link)
 
@@ -529,12 +534,11 @@ def do_segmentation(X, beats, parameters, bound_idxs):
     A_loc = self_similarity(X_loc, k=k_link)
 
     # Mask the self-similarity matrix by recurrence
-    S = librosa.segment.structure_feature(R)
-
+    S = librosa.segment.recurrence_to_lag(R)
     Sf = clean_reps(S)
 
     # De-skew
-    Rf = librosa.segment.structure_feature(Sf, inverse=True)
+    Rf = librosa.segment.lag_to_recurrence(Sf)
 
     # Symmetrize by force
     Rf = np.maximum(Rf, Rf.T)
@@ -544,8 +548,10 @@ def do_segmentation(X, beats, parameters, bound_idxs):
 
     # We can jump to a random neighbor, or +- 1 step in time
     # Call it the infinite jukebox matrix
-    T = weighted_ridge(Rf * A_rep,
-                       (np.eye(len(A_loc),k=1) + np.eye(len(A_loc),k=-1)) * A_loc)
+    T = weighted_ridge(
+        Rf * A_rep,
+        (np.eye(len(A_loc), k=1) + np.eye(len(A_loc), k=-1)) * A_loc)
+
     # Get the graph laplacian
     try:
         L = sym_laplacian(T)

@@ -141,7 +141,9 @@ class Segmenter(SegmenterInterface):
             if self.framesync:
                 red = 0.1
                 F_copy = np.copy(F)
-                F = librosa.feature.sync(F.T, np.linspace(0, F.shape[0], num=F.shape[0] * red), pad=False).T
+                F = librosa.util.utils.sync(
+                    F.T, np.linspace(0, F.shape[0], num=F.shape[0] * red),
+                    pad=False).T
 
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)

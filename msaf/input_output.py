@@ -133,6 +133,10 @@ def read_references(audio_path, annotator_id=0):
         List of boundary times
     ref_labels : list
         List of labels
+
+    Raises
+    ------
+    IOError: if `audio_path` doesn't exist.
     """
     # Dataset path
     ds_path = os.path.dirname(os.path.dirname(audio_path))
@@ -142,14 +146,9 @@ def read_references(audio_path, annotator_id=0):
                             os.path.basename(audio_path)[:-4] +
                             ds_config.references_ext)
 
-    try:
-        jam = jams.load(jam_path, validate=False)
-        ann = jam.search(namespace='segment_.*')[annotator_id]
-        ref_inters, ref_labels = ann.data.to_interval_values()
-    except:
-        # TODO: better exception handling
-        logging.warning("Reference not found in %s" % jam_path)
-        return []
+    jam = jams.load(jam_path, validate=False)
+    ann = jam.search(namespace='segment_.*')[annotator_id]
+    ref_inters, ref_labels = ann.data.to_interval_values()
 
     # Intervals to times
     ref_times = utils.intervals_to_times(ref_inters)
@@ -157,43 +156,11 @@ def read_references(audio_path, annotator_id=0):
     return ref_times, ref_labels
 
 
-def read_ref_labels(audio_path):
-    """Reads the annotated labels from the given audio path."""
-    ref_times, ref_labels = read_references(audio_path)
-    return ref_labels
-
-
-def read_ref_int_labels(audio_path):
-    """Reads the annotated labels using unique integers as identifiers
-    instead of strings."""
-    ref_labels = read_ref_labels(audio_path)
-    labels = []
-    label_dict = {}
-    k = 1
-    for ref_label in ref_labels:
-        if ref_label in label_dict.keys():
-            labels.append(label_dict[ref_label])
-        else:
-            label_dict[ref_label] = k
-            labels.append(k)
-            k += 1
-    return labels
-
-
 def align_times(times, frames):
     """Aligns the times to the closes frame times (e.g. beats)."""
     dist = np.minimum.outer(times, frames)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
     return np.unique(bound_frames)
-
-
-def read_ref_bound_frames(audio_path, beats):
-    """Reads the corresponding references file to retrieve the boundaries
-        in frames."""
-    ref_times, ref_labels = read_references(audio_path)
-    # align with beats
-    bound_frames = align_times(ref_times, beats)
-    return bound_frames
 
 
 def find_estimation(jam, boundaries_id, labels_id, params):
@@ -509,24 +476,6 @@ def get_SALAMI_internet(file_structs):
 
 def get_dataset_files(in_path, ds_name="*"):
     """Gets the files of the dataset with a prefix of ds_name."""
-
-    # All datasets
-    ds_dict = {
-        "Beatles": "Isophonics",
-        "Cerulean": "Cerulean",
-        "Epiphyte": "Epiphyte",
-        "Isophonics": "Isophonics",
-        "SALAMI": "SALAMI",
-        "SALAMI-i": "SALAMI",
-        "*": "*"
-    }
-
-    try:
-        prefix = ds_dict[ds_name]
-    except KeyError:
-        raise RuntimeError("Dataset %s is not valid. Valid datasets are: %s" %
-                           (ds_name, ds_dict.keys()))
-
     # Get audio files
     audio_files = []
     for ext in ds_config.audio_exts:

@@ -7,13 +7,11 @@
 import glob
 import json
 import librosa
-from nose.tools import nottest, eq_, raises, assert_equals
-import numpy.testing as npt
+from nose.tools import raises, assert_equals
 import os
 
 # Msaf imports
 import msaf
-from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
