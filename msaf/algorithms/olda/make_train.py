@@ -2,10 +2,8 @@
 
 import argparse
 import numpy as np
-import glob
 import librosa
 import os
-import sys
 import time
 
 from joblib import Parallel, delayed
@@ -17,12 +15,11 @@ from msaf.base import Features
 from segmenter import features
 
 
-def align_segmentation(filename, beat_times, song):
+def align_segmentation(beat_times, song):
     '''Load a ground-truth segmentation, and align times to the nearest
     detected beats.
 
     Arguments:
-        filename -- str
         beat_times -- array
         song -- path to the audio file
 
@@ -92,9 +89,9 @@ def import_data(file_struct, rootpath, output_path, annot_beats):
     if os.path.exists(data_file):
         with open(data_file, 'r') as f:
             Data = pickle.load(f)
-            print file_struct.audio_file, 'cached!'
+            print(file_struct.audio_file, 'cached!')
     else:
-        X, dur = features(file_struct, annot_beats)
+        X, _ = features(file_struct, annot_beats)
         pcp_obj = Features.select_features("pcp", file_struct, annot_beats,
                                            framesync=False)
         B = pcp_obj.frame_times[:pcp_obj.features.shape[0]]
@@ -115,7 +112,7 @@ def import_data(file_struct, rootpath, output_path, annot_beats):
                 'segment_times': T,
                 'segment_labels': L,
                 'segments': Y}
-        print file_struct.audio_file, 'processed!'
+        print(file_struct.audio_file, 'processed!')
 
         with open(data_file, 'w') as f:
             pickle.dump(Data, f)

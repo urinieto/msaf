@@ -4,19 +4,32 @@
 # cd tests/
 # nosetests
 
+# For plotting and testing
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+import matplotlib.style
+matplotlib.style.use('seaborn-ticks')
+
+from mpl_ic import image_comparison
+
 from nose.tools import assert_raises
-from types import ModuleType
+from nose.tools import raises
 import numpy.testing as npt
 import os
+from types import ModuleType
 
 # Msaf imports
 import msaf
 from msaf.features import Features
+from msaf.exceptions import (NoHierBoundaryError, FeaturesNotFound,
+                             NoAudioFileError)
+
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
-long_audio_file = os.path.join("..", "datasets", "Sargon", "audio",
-                               "01-Sargon-Mindless.mp3")
+long_audio_file = os.path.join("fixtures", "Sargon_test", "audio",
+                               "Mindless_cut.mp3")
 fake_module_name = "fake_name_module"
 
 
@@ -127,12 +140,111 @@ def test_run_algorithms():
 
     # Combining boundaries with labels
     for bound_id in bound_ids:
-        if bound_id == "gt":
+        if bound_id == "gt" or bound_id == "example":
             continue
         for label_id in label_ids:
+            print(bound_id, label_id)
+            #import pdb; pdb.set_trace()  # XXX BREAKPOINT
             yield (_test_run_msaf, bound_id, label_id, False)
 
     # Test the hierarchical algorithms
     hier_ids = ["olda", "scluster"]
-    for hier_id in hier_ids:
-        yield (_test_run_msaf, hier_id, None, True)
+    for hier_bounds_id in hier_ids:
+        for hier_labels_id in hier_ids:
+            if hier_labels_id == "olda":
+                hier_labels_id = "fmc2d"
+            yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
+
+
+@raises(NoHierBoundaryError)
+def test_no_bound_hierarchical():
+    msaf.run.run_hierarchical(None, None, None, None, None)
+
+
+def test_no_gt_flat_bounds():
+    """Make sure the results are empty if there is not ground truth found."""
+    feature = "pcp"
+    annot_beats = False
+    framesync = False
+    file_struct = msaf.io.FileStruct(audio_file)
+    file_struct.features_file = msaf.config.features_tmp_file
+
+    config = {}
+    config["features"] = Features.select_features(
+        feature, file_struct, annot_beats, framesync)
+    est_times, est_labels = msaf.run.run_flat(file_struct, None, None,
+                                              None, config, 0)
+    assert(not est_times)
+    assert(not est_labels)
+
+
+def test_process_track():
+    feature = "pcp"
+    annot_beats = False
+    framesync = False
+    bounds_id = "foote"
+    labels_id = None
+    file_struct = msaf.io.FileStruct(audio_file)
+    file_struct.features_file = msaf.config.features_tmp_file
+    file_struct.est_file = "tmp.json"
+
+    config = {}
+    config["feature"] = "pcp"
+    config["annot_beats"] = False
+    config["framesync"] = False
+    config["hier"] = False
+    est_times, est_labels = msaf.run.process_track(
+        file_struct, bounds_id, labels_id, config)
+
+    assert os.path.isfile(file_struct.est_file)
+    os.remove(file_struct.est_file)
+
+
+def test_process_with_gt():
+    bounds_id = "gt"
+    labels_id = "fmc2d"
+    est_times, est_labels = msaf.run.process(
+        long_audio_file, boundaries_id=bounds_id, labels_id=labels_id)
+    assert est_times[0] == 0
+    assert len(est_times) == len(est_labels) + 1
+
+
+@raises(FeaturesNotFound)
+def test_process_wrong_feature():
+    feature = "caca"
+    est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
+
+
+@raises(NoAudioFileError)
+def test_process_wrong_path():
+    wrong_path = "caca.mp3"
+    est_times, est_labels = msaf.run.process(wrong_path)
+
+
+def test_process():
+    est_times, est_labels = msaf.run.process(long_audio_file)
+    assert est_times[0] == 0
+    assert len(est_times) == len(est_labels) + 1
+
+
+def test_process_sonify():
+    out_wav = "out_wav.wav"
+    est_times, est_labels = msaf.run.process(long_audio_file,
+                                             sonify_bounds=True,
+                                             out_bounds=out_wav)
+    assert os.path.isfile(out_wav)
+    os.remove(out_wav)
+
+
+# TODO: Travis
+@image_comparison(baseline_images=['run_bounds'], extensions=['png'])
+def test_process_plot():
+    est_times, est_labels = msaf.run.process(long_audio_file, plot=True)
+
+
+def test_process_dataset():
+    ds_path = os.path.join("fixtures", "Sargon_test")
+    res = msaf.run.process(ds_path)
+    est_times, est_labels = res[0]
+    assert est_times[0] == 0
+    assert len(est_times) == len(est_labels) + 1

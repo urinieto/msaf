@@ -1,18 +1,19 @@
 """
 This module contains multiple functions in order to run MSAF algorithms.
 """
+from copy import deepcopy
+from joblib import Parallel, delayed
 import librosa
 import logging
 import numpy as np
 import os
-
-from joblib import Parallel, delayed
 
 import msaf
 from msaf import input_output as io
 from msaf import utils
 from msaf import plotting
 from msaf.features import Features
+from msaf.exceptions import NoHierBoundaryError, NoAudioFileError
 import msaf.algorithms as algorithms
 
 
@@ -75,18 +76,29 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
     """Runs hierarchical algorithms with the specified identifiers on the
     audio_file. See run_algorithm for more information.
     """
+    # Sanity check
+    if bounds_module is None:
+        raise NoHierBoundaryError("A boundary algorithm is needed when using "
+                                  "hierarchical segmentation.")
+
     # Get features to make code nicer
     features = config["features"].features
 
-    if bounds_module is None:
-        raise RuntimeError("A boundary algorithm is needed when using "
-                           "hierarchical segmentation.")
-    if labels_module is not None and \
-            bounds_module.__name__ != labels_module.__name__:
-        raise RuntimeError("The same algorithm for boundaries and labels is "
-                           "needed when using hierarchical segmentation.")
+    # Compute boundaries
     S = bounds_module.Segmenter(audio_file, **config)
     est_idxs, est_labels = S.processHierarchical()
+
+    # Compute labels if needed
+    if labels_module is not None and \
+            bounds_module.__name__ != labels_module.__name__:
+        # Compute labels for each level in the hierarchy
+        flat_config = deepcopy(config)
+        flat_config["hier"] = False
+        for i, level_idxs in enumerate(est_idxs):
+            S = labels_module.Segmenter(audio_file,
+                                        in_bound_idxs=level_idxs,
+                                        **flat_config)
+            est_labels[i] = S.processFlat()[1]
 
     # Make sure the first and last boundaries are included for each
     # level in the hierarchy
@@ -134,7 +146,7 @@ def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
                 if est_idxs[-1] != features.shape[0] - 1:
                     est_idxs = np.concatenate((
                         est_idxs, [features.shape[0] - 1]))
-            except:
+            except IOError:
                 logging.warning("No references found for file: %s" %
                                 file_struct.audio_file)
                 return [], []
@@ -306,9 +318,6 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
     # Seed random to reproduce results
     np.random.seed(123)
 
-    # Make sure that the features used are correct
-    assert feature in msaf.features_registry.keys()
-
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(feature, annot_beats, framesync,
@@ -318,8 +327,8 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
     # Save multi-segment (hierarchical) configuration
     config["hier"] = hier
     if not os.path.exists(in_path):
-        raise RuntimeError("File or directory does not exists, %s" %
-                           in_path)
+        raise NoAudioFileError("File or directory does not exists, %s" %
+                               in_path)
     if os.path.isfile(in_path):
         # Single file mode
         # Get (if they exitst) or compute features
@@ -346,10 +355,11 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
             plotting.plot_one_track(file_struct, est_times, est_labels,
                                     boundaries_id, labels_id)
 
+        # TODO: Only save if needed
         # Save estimations
-        msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
-        io.save_estimations(file_struct, est_times, est_labels,
-                            boundaries_id, labels_id, **config)
+        # msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
+        # io.save_estimations(file_struct, est_times, est_labels,
+                            # boundaries_id, labels_id, **config)
 
         return est_times, est_labels
     else:

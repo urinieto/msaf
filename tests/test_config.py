@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# For plotting and testing
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+
 from nose.tools import raises
 from collections import namedtuple
 

@@ -7,21 +7,20 @@ import logging
 import mir_eval
 import numpy as np
 import os
-import pylab as plt
 
 # Local stuff
 from msaf import io
 from msaf import utils
 
 translate_ids = {
-    "2dfmc" : "2D-FMC",
-    "cnmf3" : "C-NMF",
-    "foote" : "Ckboard",
-    "levy"  : "CC",
-    "cc"    : "CC",
-    "olda"  : "OLDA",
-    "serra" : "SF",
-    "sf"    : "SF",
+    "2dfmc": "2D-FMC",
+    "cnmf3": "C-NMF",
+    "foote": "Ckboard",
+    "levy": "CC",
+    "cc": "CC",
+    "olda": "OLDA",
+    "serra": "SF",
+    "sf": "SF",
     "siplca": "SI-PLCA"
 }
 
@@ -29,6 +28,7 @@ translate_ids = {
 def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
     """Formats the plot with the correct axis labels, title, ticks, and
     so on."""
+    import matplotlib.pyplot as plt
     if title is None:
         title = os.path.basename(est_file).split(".")[0]
     plt.title(title)
@@ -60,6 +60,7 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
     title : str
         Title of the plot. If None, the name of the file is printed instead.
     """
+    import matplotlib.pyplot as plt
     N = len(all_boundaries)  # Number of lists of boundaries
     if algo_ids is None:
         algo_ids = io.get_algo_ids(est_file)
@@ -103,6 +104,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
     title : str
         Title of the plot. If None, the name of the file is printed instead.
     """
+    import matplotlib.pyplot as plt
     N = len(all_labels)  # Number of lists of labels
     if algo_ids is None:
         algo_ids = io.get_algo_ids(est_file)
@@ -145,6 +147,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
 def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
                    title=None):
     """Plots the results of one track, with ground truth if it exists."""
+    import matplotlib.pyplot as plt
     # Set up the boundaries id
     bid_lid = boundaries_id
     if labels_id is not None:
@@ -213,6 +216,7 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
     cmap_id: str
         Color Map ID
     """
+    import matplotlib.pyplot as plt
     def round_time(t, res=0.1):
         v = int(t / float(res)) * res
         return v

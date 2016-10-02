@@ -44,7 +44,7 @@ setup(
         'scipy >= 0.13.0',
         'scikit-learn >= 0.17.0',
         'seaborn',  # For notebook example (but everyone should have this :-))
-        'matplotlib',
+        'matplotlib >= 1.5',
         'joblib',
         'decorator',
         'cvxopt',

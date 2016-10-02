@@ -182,11 +182,11 @@ class Features(six.with_metaclass(MetaFeatures)):
             return None
 
         # Make beat synchronous
-        beatsync = librosa.feature.sync(self._framesync_features.T,
-                                        beat_frames, pad=pad).T
+        beatsync = librosa.util.utils.sync(self._framesync_features.T,
+                                           beat_frames, pad=pad).T
 
         # TODO: Make sure we have the right size (remove last frame if needed)
-        #beatsync = beatsync[:len(beat_frames), :]
+        # beatsync = beatsync[:len(beat_frames), :]
         return beatsync
 
     def read_features(self, tol=1e-3):
@@ -450,6 +450,12 @@ class Features(six.with_metaclass(MetaFeatures)):
             raise FeatureTypeNotFound("Type of features not valid.")
 
         # Select features with default parameters
+
+        if features_id not in features_registry.keys():
+            raise FeaturesNotFound(
+                "The features '%s' are invalid (valid features are %s)"
+                % (features_id, features_registry.keys()))
+
         return features_registry[features_id](file_struct, feat_type)
 
     def compute_features(self):
