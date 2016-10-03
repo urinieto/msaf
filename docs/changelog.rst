@@ -4,6 +4,7 @@ Changes
 v0.1.2
 ------
 
+* Fixed bug of annotator id not correctly passed to hierarchical evaluation function
 * More unit tests
 * Added script to upload to Pypi
 

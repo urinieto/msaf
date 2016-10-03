@@ -95,3 +95,8 @@ def test_print_results():
         {"HitRate_3F": 0.5, "HitRate_3P": 0.5, "HitRate_3R": 0.5},
         {"HitRate_3F": 0.32, "HitRate_3P": 0.8, "HitRate_3R": 0.2}]
     E.print_results(pd.DataFrame(results))
+
+
+def test_compute_gt_results():
+    config = {"hier": True}
+    E.compute_gt_results("wrong.json", "wrong.jams", "sf", "fmc2d", config)

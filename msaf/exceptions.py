@@ -44,3 +44,8 @@ class NoAudioFileError(MSAFError):
 class NoHierBoundaryError(MSAFError):
     '''Exception class for missing hierarchical boundary algorithm'''
     pass
+
+
+class NoEstimationsError(MSAFError):
+    '''Exception class for missing estimations'''
+    pass
