@@ -3,7 +3,7 @@
 Unit tests for eval.
 """
 
-from nose.tools import assert_raises
+from nose.tools import raises
 from types import ModuleType
 import numpy.testing as npt
 import numpy as np
@@ -91,6 +91,9 @@ def test_compute_label_results_wrong():
 
 
 def test_print_results():
+    # Empty results shouldn't crash
+    E.print_results([])
+
     results = [
         {"HitRate_3F": 0.5, "HitRate_3P": 0.5, "HitRate_3R": 0.5},
         {"HitRate_3F": 0.32, "HitRate_3P": 0.8, "HitRate_3R": 0.2}]
@@ -98,5 +101,15 @@ def test_print_results():
 
 
 def test_compute_gt_results():
+    @raises(FileNotFoundError)
+    def __compute_gt_results_wrong_file(est_file, ref_file, boundaries_id,
+                                        labels_id, config):
+        E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
+                             config)
+
     config = {"hier": True}
-    E.compute_gt_results("wrong.json", "wrong.jams", "sf", "fmc2d", config)
+    yield (__compute_gt_results_wrong_file, "wrong.json", "wrong.jams", "sf",
+           "fmc2d", config)
+    config = {"hier": False}
+    yield (__compute_gt_results_wrong_file, "wrong.json", "wrong.jams", "sf",
+           "fmc2d", config)
