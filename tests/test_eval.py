@@ -101,7 +101,7 @@ def test_print_results():
 
 
 def test_compute_gt_results():
-    @raises(FileNotFoundError)
+    @raises(IOError)
     def __compute_gt_results_wrong_file(est_file, ref_file, boundaries_id,
                                         labels_id, config):
         E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
