@@ -19,7 +19,7 @@ import sys
 
 # Local stuff
 import msaf
-from msaf.exceptions import NoReferencesError
+from msaf.exceptions import NoReferencesError, NoEstimationsError
 import msaf.input_output as io
 from msaf import utils
 
@@ -141,7 +141,7 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         ann_labels = list(ann_labels)
         est_labels = list(est_labels)
         ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                                ann_labels)
+                                                               ann_labels)
         est_inter, est_labels = mir_eval.util.adjust_intervals(
             est_inter, est_labels, t_min=0.0, t_max=ann_inter.max())
 
@@ -171,26 +171,21 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     results : dict
         Dictionary of the results (see function compute_results).
     """
-    try:
-        if config["hier"]:
-            ref_times, ref_labels, ref_levels = \
-                msaf.io.read_hier_references(
-                    ref_file, annotation_id=annotator_id,
-                    exclude_levels=["segment_salami_function"])
-        else:
-            jam = jams.load(ref_file, validate=False)
-            ann = jam.search(namespace='segment_.*')[annotator_id]
-            ref_inter, ref_labels = ann.data.to_interval_values()
-    except:
-        logging.warning("No references for file: %s" % ref_file)
-        return {}
+    if config["hier"]:
+        ref_times, ref_labels, ref_levels = \
+            msaf.io.read_hier_references(
+                ref_file, annotation_id=annotator_id,
+                exclude_levels=["segment_salami_function"])
+    else:
+        jam = jams.load(ref_file, validate=False)
+        ann = jam.search(namespace='segment_.*')[annotator_id]
+        ref_inter, ref_labels = ann.data.to_interval_values()
 
     # Read estimations with correct configuration
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
                                                 labels_id, **config)
     if len(est_inter) == 0:
-        logging.warning("No estimations for file: %s" % est_file)
-        return {}
+        NoEstimationsError("No estimations for file: %s" % est_file)
 
     # Compute the results and return
     logging.info("Evaluating %s" % os.path.basename(est_file))
