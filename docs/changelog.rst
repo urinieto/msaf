@@ -1,9 +1,10 @@
 Changes
 =======
 
-v0.1.2
+v0.1.3
 ------
 
+* Reporting proper weighted F-measure for the perceptual Hit Rate
 * Fixed bug of annotator id not correctly passed to hierarchical evaluation function
 * More unit tests
 * Added script to upload to Pypi
