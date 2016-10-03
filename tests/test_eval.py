@@ -7,6 +7,7 @@ from nose.tools import assert_raises
 from types import ModuleType
 import numpy.testing as npt
 import numpy as np
+import pandas as pd
 
 import msaf.eval as E
 
@@ -20,3 +21,10 @@ def test_compute_results():
     npt.assert_almost_equal(res["HitRate_3F"], 0.5714285714285715, decimal=6)
     npt.assert_almost_equal(res["HitRate_3P"], 0.6666666666666666, decimal=6)
     npt.assert_almost_equal(res["HitRate_3R"], 0.5, decimal=6)
+
+
+def test_print_results():
+    results = [
+        {"HitRate_3F": 0.5, "HitRate_3P": 0.5, "HitRate_3R": 0.5},
+        {"HitRate_3F": 0.32, "HitRate_3P": 0.8, "HitRate_3R": 0.2}]
+    E.print_results(pd.DataFrame(results))

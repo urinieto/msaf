@@ -4,6 +4,12 @@ Changes
 v0.1.2
 ------
 
+* More unit tests
+* Added script to upload to Pypi
+
+v0.1.2
+------
+
 * Adapting code to librosa 0.5
 * Improved coveralls (starting testing plots)
 * Allowing computation of label algorithms for each layer of hierarchical boundaries
