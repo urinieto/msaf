@@ -175,7 +175,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         if config["hier"]:
             ref_times, ref_labels, ref_levels = \
                 msaf.io.read_hier_references(
-                    ref_file, annotation_id=0,
+                    ref_file, annotation_id=annotator_id,
                     exclude_levels=["segment_salami_function"])
         else:
             jam = jams.load(ref_file, validate=False)
