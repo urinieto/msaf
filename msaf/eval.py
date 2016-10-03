@@ -113,15 +113,15 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
 
     # Hit rate weighted
-    res["HitRate_w3P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_w3F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=3, trim=False, beta=weight)
-    res["HitRate_w0.5P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_w0.5F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=.5, trim=False, beta=weight)
 
     # Hit rate weighted and trimmed
-    res["HitRate_wt3P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_wt3F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=3, trim=True, beta=weight)
-    res["HitRate_wt0.5P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_wt0.5F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=.5, trim=True, beta=weight)
 
     # Information gain
