@@ -132,6 +132,6 @@ def test_compute_gt_results():
 
     est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
     ref_file = os.path.join("fixtures", "01-Sargon-Mindless-refs.jams")
-    yield (__compute_gt_results, est_file, ref_file, "foote", None, config)
-    config["feature"] = "caca"
+    yield (__compute_gt_results, est_file, ref_file, "sf", None, config)
+    config["feature"] = "wrong"
     yield (__compute_gt_results_no_ests, est_file, ref_file, "foote", None, config)
