@@ -33,6 +33,7 @@ def print_results(results):
         Dataframe with all the results
     """
     if len(results) == 0:
+        logging.warning("No results to print!")
         return
     res = results.mean()
     logging.info("Results:\n%s" % res)
