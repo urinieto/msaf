@@ -455,17 +455,6 @@ def filter_by_artist(file_structs, artist_name="The Beatles"):
     return new_file_structs
 
 
-def get_SALAMI_internet(file_structs):
-    """Gets the SALAMI Internet subset from SALAMI (bit of a hack...)"""
-    new_file_structs = []
-    for file_struct in file_structs:
-        num = int(os.path.basename(file_struct.est_file).split("_")[1].
-                  split(".")[0])
-        if num >= 956 and num <= 1498:
-            new_file_structs.append(file_struct)
-    return new_file_structs
-
-
 def get_dataset_files(in_path):
     """Gets the files of the given dataset."""
     # Get audio files
