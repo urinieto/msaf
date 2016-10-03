@@ -185,8 +185,6 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     # Read estimations with correct configuration
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
                                                 labels_id, **config)
-    if len(est_inter) == 0:
-        NoEstimationsError("No estimations for file: %s" % est_file)
 
     # Compute the results and return
     logging.info("Evaluating %s" % os.path.basename(est_file))

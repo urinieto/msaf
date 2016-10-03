@@ -7,9 +7,11 @@ from nose.tools import raises
 from types import ModuleType
 import numpy.testing as npt
 import numpy as np
+import os
 import pandas as pd
 
 import msaf.eval as E
+from msaf.exceptions import NoEstimationsError
 
 
 def test_compute_boundary_results():
@@ -101,6 +103,20 @@ def test_print_results():
 
 
 def test_compute_gt_results():
+    def __compute_gt_results(est_file, ref_file, boundaries_id,
+                             labels_id, config):
+        res = E.compute_gt_results(est_file, ref_file, boundaries_id,
+                                   labels_id, config)
+        assert "HitRate_3F" in res.keys()
+        assert "HitRate_3P" in res.keys()
+        assert "HitRate_3R" in res.keys()
+
+    @raises(NoEstimationsError)
+    def __compute_gt_results_no_ests(est_file, ref_file, boundaries_id,
+                                     labels_id, config):
+        E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
+                             config)
+
     @raises(IOError)
     def __compute_gt_results_wrong_file(est_file, ref_file, boundaries_id,
                                         labels_id, config):
@@ -113,3 +129,9 @@ def test_compute_gt_results():
     config = {"hier": False}
     yield (__compute_gt_results_wrong_file, "wrong.json", "wrong.jams", "sf",
            "fmc2d", config)
+
+    est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
+    ref_file = os.path.join("fixtures", "01-Sargon-Mindless-refs.jams")
+    yield (__compute_gt_results, est_file, ref_file, "foote", None, config)
+    config["feature"] = "caca"
+    yield (__compute_gt_results_no_ests, est_file, ref_file, "foote", None, config)
