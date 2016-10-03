@@ -13,6 +13,7 @@ import six
 
 # Local stuff
 import msaf
+from msaf.exceptions import NoEstimationsError
 from msaf import utils
 
 # Put dataset config in a global var
@@ -75,8 +76,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     # Find correct estimation
     est = find_estimation(jam, boundaries_id, labels_id, params)
     if est is None:
-        logging.error("Could not find estimation in %s" % est_file)
-        return np.array([]), np.array([])
+        raise NoEstimationsError("No estimations for file: %s" % est_file)
 
     # Get data values
     all_boundaries, all_labels = est.data.to_interval_values()
