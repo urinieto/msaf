@@ -70,15 +70,7 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         Empty array if labels_id is None.
     """
     # Open file and read jams
-    try:
-        jam = jams.load(est_file)
-    except FileNotFoundError:
-        logging.error("JAMS file doesn't exist %s" % est_file)
-        return np.array([]), np.array([])
-    except Exception as e:
-        logging.error("Could not open JAMS file %s. Exception: %s" %
-                      (est_file, e))
-        return np.array([]), np.array([])
+    jam = jams.load(est_file)
 
     # Find correct estimation
     est = find_estimation(jam, boundaries_id, labels_id, params)
