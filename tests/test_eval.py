@@ -111,6 +111,17 @@ def test_compute_gt_results():
         assert "HitRate_3P" in res.keys()
         assert "HitRate_3R" in res.keys()
 
+    def __compute_gt_results_hier(est_file, ref_file, boundaries_id,
+                                  labels_id, config):
+        res = E.compute_gt_results(est_file, ref_file, boundaries_id,
+                                   labels_id, config)
+        assert "t_measure10" in res.keys()
+        assert "t_measure15" in res.keys()
+        assert "t_precision10" in res.keys()
+        assert "t_precision15" in res.keys()
+        assert "t_recall10" in res.keys()
+        assert "t_recall15" in res.keys()
+
     @raises(NoEstimationsError)
     def __compute_gt_results_no_ests(est_file, ref_file, boundaries_id,
                                      labels_id, config):
@@ -132,6 +143,14 @@ def test_compute_gt_results():
 
     est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
     ref_file = os.path.join("fixtures", "01-Sargon-Mindless-refs.jams")
-    yield (__compute_gt_results, est_file, ref_file, "sf", None, config)
     config["feature"] = "wrong"
-    yield (__compute_gt_results_no_ests, est_file, ref_file, "foote", None, config)
+    yield (__compute_gt_results_no_ests, est_file, ref_file, "foote", None,
+           config)
+
+    # Correct Flat
+    config["feature"] = "pcp"
+    yield (__compute_gt_results, est_file, ref_file, "sf", None, config)
+    # Correct Hierarchical
+    config["hier"] = True
+    yield (__compute_gt_results_hier, est_file, ref_file, "olda", None,
+           config)
