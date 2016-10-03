@@ -137,26 +137,21 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     if est_labels is not None and ("-1" in est_labels or "@" in est_labels):
         est_labels = None
     if est_labels is not None and len(est_labels) != 0:
-        try:
-            # Align labels with intervals
-            ann_labels = list(ann_labels)
-            est_labels = list(est_labels)
-            ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                                   ann_labels)
-            est_inter, est_labels = mir_eval.util.adjust_intervals(
-                est_inter, est_labels, t_min=0, t_max=ann_inter.max())
+        # Align labels with intervals
+        ann_labels = list(ann_labels)
+        est_labels = list(est_labels)
+        ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
+                                                                ann_labels)
+        est_inter, est_labels = mir_eval.util.adjust_intervals(
+            est_inter, est_labels, t_min=0.0, t_max=ann_inter.max())
 
-            # Pair-wise frame clustering
-            res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
-                ann_inter, ann_labels, est_inter, est_labels)
+        # Pair-wise frame clustering
+        res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
+            ann_inter, ann_labels, est_inter, est_labels)
 
-            # Normalized Conditional Entropies
-            res["So"], res["Su"], res["Sf"] = mir_eval.segment.nce(
-                ann_inter, ann_labels, est_inter, est_labels)
-        except:
-            logging.warning("Labeling evaluation failed in file: %s" %
-                            est_file)
-            return {}
+        # Normalized Conditional Entropies
+        res["So"], res["Su"], res["Sf"] = mir_eval.segment.nce(
+            ann_inter, ann_labels, est_inter, est_labels)
 
     # Names
     base = os.path.basename(est_file)
@@ -242,13 +237,7 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     intervals and the estimated intervals."""
     ann_times = utils.intervals_to_times(ann_inter)
     est_times = utils.intervals_to_times(est_inter)
-    try:
-        D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
-    except:
-        logging.warning("Couldn't compute the Information Gain for file "
-                        "%s" % est_file)
-        D = 0
-    return D
+    return mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
 
 
 def process_track(file_struct, boundaries_id, labels_id, config,
