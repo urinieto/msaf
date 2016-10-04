@@ -11,7 +11,8 @@ import os
 import pandas as pd
 
 import msaf.eval as E
-from msaf.exceptions import NoEstimationsError
+from msaf.exceptions import NoEstimationsError, NoReferencesError
+from msaf.input_output import FileStruct
 
 
 def test_compute_boundary_results():
@@ -154,3 +155,34 @@ def test_compute_gt_results():
     config["hier"] = True
     yield (__compute_gt_results_hier, est_file, ref_file, "olda", None,
            config)
+
+
+def test_process_track():
+    @raises(AssertionError)
+    def __process_track_wrong_names(file_struct):
+        E.process_track(file_struct, None, None, None)
+
+    @raises(NoReferencesError)
+    def __process_track_no_refs(file_struct):
+        E.process_track(file_struct, None, None, None)
+
+    def __process_track_correct(file_struct, bounds_id, labels_id, config):
+        res = E.process_track(file_struct, bounds_id, labels_id, config)
+        assert "HitRate_3F" in res.keys()
+
+    # Wrong match
+    no_match_fs = FileStruct("udontexist.mp3")
+    no_match_fs.ref_file = "idontexist.mp3"
+    yield (__process_track_wrong_names, no_match_fs)
+
+    # No References
+    no_ref_fs = FileStruct("udontexist.mp3")
+    no_ref_fs.ref_file = "udontexist.jams"
+    yield (__process_track_no_refs, no_ref_fs)
+
+    # Correct
+    audio_path = "fixtures/Sargon_test/audio/Mindless_cut.mp3"
+    correct_fs = FileStruct(audio_path)
+    config = {"hier": False}
+    yield (__process_track_correct, correct_fs, "sf", None, config)
+    yield (__process_track_correct, audio_path, "sf", None, config)
