@@ -9,7 +9,9 @@ import numpy.testing as npt
 import numpy as np
 import os
 import pandas as pd
+import shutil
 
+import msaf
 import msaf.eval as E
 from msaf.exceptions import NoEstimationsError, NoReferencesError
 from msaf.input_output import FileStruct
@@ -186,3 +188,25 @@ def test_process_track():
     config = {"hier": False}
     yield (__process_track_correct, correct_fs, "sf", None, config)
     yield (__process_track_correct, audio_path, "sf", None, config)
+
+
+def test_get_results_file_name():
+    config = {"hier": False}
+    file_name = E.get_results_file_name("sf", None, config, 0)
+    print(file_name)
+    assert file_name == os.path.join(
+        msaf.config.results_dir,
+        "results_boundsEsf_labelsENone_annotatorE0_hierEFalse.csv")
+
+    # Try with a file that's too long
+    config["thisIsWayTooLongForCertainOSs"] = "I am Sargon, king of Akkad"
+    config["thisIsWayTooLongForCertainOSspart2"] = "I am Sargon, the mighty " \
+        "one"
+    config["thisIsWayTooLongForCertainOSspart3"] = "You Are a Titan"
+    config["thisIsWayTooLongForCertainOSspart4"] = "This is silly"
+    file_name = E.get_results_file_name("sf", None, config, 0)
+    assert len(file_name) == 255
+
+    # Make sure the results folder was created
+    assert os.path.isdir(msaf.config.results_dir)
+    shutil.rmtree(msaf.config.results_dir)
