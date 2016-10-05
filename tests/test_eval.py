@@ -222,3 +222,23 @@ def test_process():
     res = E.process("fixtures/Sargon_test/")
     assert isinstance(res, pd.DataFrame)
     assert len(res) == 2
+
+    # Saving results to default file
+    config = {"feature": "pcp",
+              "framesync": False,
+              "annot_beats": False}
+    res = E.process("fixtures/Sargon_test/", config=config, save=True)
+    out_file = E.get_results_file_name("sf", None, config, 0)
+    assert isinstance(res, pd.DataFrame)
+    assert len(res) == 2
+    assert os.path.isfile(out_file)
+    os.remove(out_file)
+
+    # Saving results to custom file
+    out_file = "my_fancy_file.csv"
+    res = E.process("fixtures/Sargon_test/", config=config, save=True,
+                    out_file=out_file)
+    assert isinstance(res, pd.DataFrame)
+    assert len(res) == 2
+    assert os.path.isfile(out_file)
+    os.remove(out_file)

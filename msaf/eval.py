@@ -301,7 +301,7 @@ def get_results_file_name(boundaries_id, labels_id, config,
 def process(in_path, boundaries_id=msaf.config.default_bound_id,
             labels_id=msaf.config.default_label_id, annot_beats=False,
             framesync=False, feature="pcp", hier=False, save=False,
-            n_jobs=4, annotator_id=0, config=None):
+            out_file=None, n_jobs=4, annotator_id=0, config=None):
     """Main process to evaluate algorithms' results.
 
     Parameters
@@ -323,7 +323,11 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     hier : bool
         Whether to compute a hierarchical or flat segmentation.
     save: boolean
-        Whether to save the results into the SQLite database.
+        Whether to save the results into the `out_file` csv file.
+    out_file: str
+        Path to the csv file to save the results (if `None` and `save = True`
+        it will save the results in the default file name obtained by
+        calling `get_results_file_name`).
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
@@ -351,37 +355,36 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     config.pop("features", None)
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config,
-                                     annotator_id)
+    if out_file is None:
+        out_file = get_results_file_name(boundaries_id, labels_id, config,
+                                         annotator_id)
 
-    # All evaluations
-    results = pd.DataFrame()
+    # If out_file already exists, read and return them
+    if os.path.exists(out_file):
+        logging.warning("Results already exists, reading from file %s" %
+                        out_file)
+        results = pd.read_csv(out_file)
+        print_results(results)
+        return results
 
+    # Perform actual evaluations
     if os.path.isfile(in_path):
         # Single File mode
         evals = [process_track(in_path, boundaries_id, labels_id, config,
                                annotator_id=annotator_id)]
     else:
         # Collection mode
-        # If out_file already exists, do not compute new results
-        if os.path.exists(out_file):
-            logging.info("Results already exists, reading from file %s" %
-                         out_file)
-            results = pd.read_csv(out_file)
-            print_results(results)
-            return results
-
         # Get files
         file_structs = io.get_dataset_files(in_path)
 
-        logging.info("Evaluating %d tracks..." % len(file_structs))
-
         # Evaluate in parallel
+        logging.info("Evaluating %d tracks..." % len(file_structs))
         evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
             annotator_id=annotator_id) for file_struct in file_structs[:])
 
     # Aggregate evaluations in pandas format
+    results = pd.DataFrame()
     for e in evals:
         if e != []:
             results = results.append(e, ignore_index=True)
