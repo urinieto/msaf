@@ -241,4 +241,8 @@ def test_process():
     assert isinstance(res, pd.DataFrame)
     assert len(res) == 2
     assert os.path.isfile(out_file)
+
+    # Do it again, this time it shouldn't compute anything, simply read file
+    res = E.process("fixtures/Sargon_test/", config=config, save=True,
+                    out_file=out_file)
     os.remove(out_file)
