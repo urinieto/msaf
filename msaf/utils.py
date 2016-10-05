@@ -21,7 +21,7 @@ def lognormalize_chroma(C, floor=0.1, min_db=-80):
 def normalize_chroma(C, floor=0.0):
     """Normalizes chroma such that each vector is between floor to 1."""
     C += -C.min() + floor
-    C = C / float(C.max(axis=0))
+    C = C / C.max(axis=0)
     return C
 
 
