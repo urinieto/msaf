@@ -10,18 +10,18 @@ import scipy.io.wavfile
 import msaf
 
 
-def lognormalize_chroma(C):
-    """Log-normalizes chroma such that each vector is between -80 to 0."""
-    C += np.abs(C.min()) + 0.1
-    C = C / C.max(axis=0)
-    C = 80 * np.log10(C)  # Normalize from -80 to 0
+def lognormalize_chroma(C, floor=0.1, min_db=-80):
+    """Log-normalizes chroma such that each vector is between min_db to 0."""
+    assert min_db < 0
+    C = normalize_chroma(C, floor=floor)
+    C = np.abs(min_db) * np.log10(C)  # Normalize from min_db to 0
     return C
 
 
-def normalize_chroma(C):
-    """Normalizes chroma such that each vector is between 0 to 1."""
-    C += np.abs(C.min())
-    C = C/C.max(axis=0)
+def normalize_chroma(C, floor=0.0):
+    """Normalizes chroma such that each vector is between floor to 1."""
+    C += -C.min() + floor
+    C = C / float(C.max(axis=0))
     return C
 
 
