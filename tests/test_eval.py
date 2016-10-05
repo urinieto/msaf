@@ -210,3 +210,15 @@ def test_get_results_file_name():
     # Make sure the results folder was created
     assert os.path.isdir(msaf.config.results_dir)
     shutil.rmtree(msaf.config.results_dir)
+
+
+def test_process():
+    # Single File Mode
+    res = E.process("fixtures/Sargon_test/audio/Mindless_cut.mp3")
+    assert isinstance(res, pd.DataFrame)
+    assert len(res) == 1
+
+    # Collection Mode
+    res = E.process("fixtures/Sargon_test/")
+    assert isinstance(res, pd.DataFrame)
+    assert len(res) == 2
