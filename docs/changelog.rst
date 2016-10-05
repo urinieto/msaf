@@ -4,6 +4,7 @@ Changes
 v0.1.3
 ------
 
+* Adding `out_file` variable in main process function of the eval module
 * Reporting proper weighted F-measure for the perceptual Hit Rate
 * Fixed bug of annotator id not correctly passed to hierarchical evaluation function
 * More unit tests
