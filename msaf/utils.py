@@ -25,14 +25,6 @@ def normalize_chroma(C, floor=0.0):
     return C
 
 
-def normalize_matrix(X):
-    """Nomalizes a matrix such that it's maximum value is 1 and
-    minimum is 0."""
-    X += np.abs(X.min())
-    X /= X.max()
-    return X
-
-
 def ensure_dir(directory):
     """Makes sure that the given directory exists."""
     if not os.path.exists(directory):
