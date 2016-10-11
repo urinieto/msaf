@@ -25,7 +25,7 @@ def min_max_normalize(F, floor=0.0):
     return F
 
 
-def normalize(self, X, norm_type, floor=0.0, min_db=-80):
+def normalize(X, norm_type, floor=0.0, min_db=-80):
     """Normalizes the given matrix of features.
 
     Parameters
