@@ -99,7 +99,7 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Normalize
-        F = msaf.utils.normalize(F, norm_type=self.config["norm_feats"])
+        F = msaf.utils.normalize(F, norm_type=self.config["bound_norm_feats"])
 
         # Make sure that the M_gaussian is even
         if self.config["M_gaussian"] % 2 == 1:
