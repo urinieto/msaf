@@ -2,10 +2,12 @@
 Useful functions that are common in MSAF
 """
 
+import librosa
 import mir_eval
 import numpy as np
 import os
 import scipy.io.wavfile
+import six
 
 import msaf
 
