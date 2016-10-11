@@ -137,7 +137,6 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Normalize
-        import pdb; pdb.set_trace()  # XXX BREAKPOINT
         F = U.normalize(F, norm_type=self.config["norm_feats"])
 
         # Check size in case the track is too short
