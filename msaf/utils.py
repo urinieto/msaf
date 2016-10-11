@@ -20,7 +20,7 @@ def lognormalize(F, floor=0.1, min_db=-80):
     return F
 
 
-def min_max_normalize(F, floor=0.0):
+def min_max_normalize(F, floor=0.001):
     """Normalizes features such that each vector is between floor to 1."""
     F += -F.min() + floor
     F = F / F.max(axis=0)
