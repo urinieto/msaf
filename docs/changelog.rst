@@ -4,6 +4,8 @@ Changes
 v0.1.3
 ------
 
+* If two algorithms used at the same time have the same name, and AssertionError is raised
+* Fixed normalization problem: now algorithms have independent normalization parameters
 * Adding `out_file` variable in main process function of the eval module
 * Reporting proper weighted F-measure for the perceptual Hit Rate
 * Fixed bug of annotator id not correctly passed to hierarchical evaluation function
