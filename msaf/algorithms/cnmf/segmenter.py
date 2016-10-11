@@ -4,6 +4,7 @@ import numpy as np
 import pylab as plt
 from scipy.ndimage import filters
 
+import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 from msaf import pymf
 
@@ -192,10 +193,13 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # C-NMF params
-        niter = 500     # Iterations for the matrix factorization and clustering
+        niter = self.config["niters"]  # Iterations for the MF and clustering
 
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
+
+        # Normalize
+        F = U.normalize(F, norm_type=self.config["norm_feats"])
 
         if F.shape[0] >= self.config["h"]:
             # Median filter
