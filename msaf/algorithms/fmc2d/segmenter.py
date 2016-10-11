@@ -132,9 +132,9 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Normalize
-        F = U.normalize(F, norm_type=self.config["norm_feats"],
-                        floor=self.config["norm_floor"],
-                        min_db=self.config["norm_min_db"])
+        F = U.normalize(F, norm_type=self.config["label_norm_feats"],
+                        floor=self.config["label_norm_floor"],
+                        min_db=self.config["label_norm_min_db"])
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, self.in_bound_idxs,

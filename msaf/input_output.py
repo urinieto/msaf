@@ -434,6 +434,7 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     config["annot_beats"] = annot_beats
     config["feature"] = feature
     config["framesync"] = framesync
+    bound_config = {}
     if boundaries_id != "gt":
         bound_config = \
             eval(msaf.algorithms.__name__ + "." + boundaries_id).config
@@ -441,6 +442,10 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     if labels_id is not None:
         label_config = \
             eval(msaf.algorithms.__name__ + "." + labels_id).config
+
+        # Make sure we don't have parameter name duplicates
+        assert len(set(bound_config.keys()).
+                   intersection(set(label_config.keys()))) == 0
         config.update(label_config)
     return config
 
