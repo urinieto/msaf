@@ -137,7 +137,7 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Normalize
-        F = U.normalize(F, norm_type=self.config["norm_feats"])
+        F = U.normalize(F, norm_type=self.config["bound_norm_feats"])
 
         # Check size in case the track is too short
         if F.shape[0] > 20:

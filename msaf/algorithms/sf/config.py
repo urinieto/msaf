@@ -9,8 +9,8 @@ config = {
     "k_nearest": 0.04,
     "Mp_adaptive": 28,
     "offset_thres": 0.05,
-    "norm_feats": np.inf  # min_max, log, np.inf,
-                             # -np.inf, float >= 0, None
+    "bound_norm_feats": np.inf  # min_max, log, np.inf,
+                                # -np.inf, float >= 0, None
 
     # For framesync features
     # "M_gaussian"    : 100,
