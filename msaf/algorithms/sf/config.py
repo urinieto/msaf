@@ -1,12 +1,16 @@
 """Config for the Structural Features algorithm."""
 
+import numpy as np
+
 # Serra params
 config = {
     "M_gaussian"    : 27,
     "m_embedded"    : 3,
     "k_nearest"     : 0.04,
     "Mp_adaptive"   : 28,
-    "offset_thres"  : 0.05
+    "offset_thres"  : 0.05,
+    "norm_feats"    : np.inf  # min_max, log, np.inf,
+                              # -np.inf, float >= 0, None
 
     # For framesync features
     #"M_gaussian"    : 100,

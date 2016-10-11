@@ -8,6 +8,7 @@ from scipy import signal
 from scipy.ndimage import filters
 
 from msaf.algorithms.interface import SegmenterInterface
+import msaf.utils as U
 
 
 def median_filter(X, M=8):
@@ -134,6 +135,9 @@ class Segmenter(SegmenterInterface):
 
         # Preprocess to obtain features, times, and input boundary indeces
         F = self._preprocess()
+
+        # Normalize
+        F = U.normalize(F, norm_type=self.config["norm_feats"])
 
         # Check size in case the track is too short
         if F.shape[0] > 20:

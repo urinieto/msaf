@@ -25,9 +25,11 @@ def min_max_normalize(F, floor=0.0):
     return F
 
 
-def _normalize(self, X, norm_type):
+def normalize(self, X, norm_type, floor=0.0, min_db=-80):
     """Normalizes the given matrix of features.
 
+    Parameters
+    ----------
     X: np.array
         Each row represents a feature vector.
     norm_type: {"min_max", "log", np.inf, -np.inf, 0, float > 0, None}
@@ -38,11 +40,18 @@ def _normalize(self, X, norm_type):
         - `0`: Number of non-zeros
         - float: Corresponding l_p norm.
         - None : No normalization is performed
+
+    Returns
+    -------
+    norm_X: np.array
+        Normalized `X` according the the input parameters.
     """
     if isinstance(norm_type, six.string_types):
         if norm_type == "min_max":
-            pass
-    return X
+            return min_max_normalize(X, floor=floor)
+        if norm_type == "log":
+            return lognormalize(X, floor=floor, min_db=min_db)
+    return librosa.util.normalize(X, norm=norm_type, axis=1)
 
 
 def ensure_dir(directory):
