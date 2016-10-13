@@ -54,7 +54,7 @@ class Features(six.with_metaclass(MetaFeatures)):
     """
     def __init__(self, file_struct, sr, hop_length, feat_type):
         """Init function for the base class to make sure all features have
-        at least parameters as attributes.
+        at least these parameters as attributes.
 
         Parameters
         ----------

@@ -434,6 +434,7 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     config["annot_beats"] = annot_beats
     config["feature"] = feature
     config["framesync"] = framesync
+    bound_config = {}
     if boundaries_id != "gt":
         bound_config = \
             eval(msaf.algorithms.__name__ + "." + boundaries_id).config
@@ -441,6 +442,14 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     if labels_id is not None:
         label_config = \
             eval(msaf.algorithms.__name__ + "." + labels_id).config
+
+        # Make sure we don't have parameter name duplicates
+        if labels_id != boundaries_id:
+            overlap = set(bound_config.keys()). \
+                intersection(set(label_config.keys()))
+            assert len(overlap) == 0, \
+                "Parameter %s must not exist both in %s and %s algorithms" % \
+                (overlap, boundaries_id, labels_id)
         config.update(label_config)
     return config
 
