@@ -1,28 +1,58 @@
 """
 Useful functions that are common in MSAF
 """
-
+import librosa
 import mir_eval
 import numpy as np
 import os
 import scipy.io.wavfile
+import six
 
 import msaf
 
 
-def lognormalize_chroma(C, floor=0.1, min_db=-80):
-    """Log-normalizes chroma such that each vector is between min_db to 0."""
+def lognormalize(F, floor=0.1, min_db=-80):
+    """Log-normalizes features such that each vector is between min_db to 0."""
     assert min_db < 0
-    C = normalize_chroma(C, floor=floor)
-    C = np.abs(min_db) * np.log10(C)  # Normalize from min_db to 0
-    return C
+    F = min_max_normalize(F, floor=floor)
+    F = np.abs(min_db) * np.log10(F)  # Normalize from min_db to 0
+    return F
 
 
-def normalize_chroma(C, floor=0.0):
-    """Normalizes chroma such that each vector is between floor to 1."""
-    C += -C.min() + floor
-    C = C / C.max(axis=0)
-    return C
+def min_max_normalize(F, floor=0.001):
+    """Normalizes features such that each vector is between floor to 1."""
+    F += -F.min() + floor
+    F = F / F.max(axis=0)
+    return F
+
+
+def normalize(X, norm_type, floor=0.0, min_db=-80):
+    """Normalizes the given matrix of features.
+
+    Parameters
+    ----------
+    X: np.array
+        Each row represents a feature vector.
+    norm_type: {"min_max", "log", np.inf, -np.inf, 0, float > 0, None}
+        - `"min_max"`: Min/max scaling is performed
+        - `"log"`: Logarithmic scaling is performed
+        - `np.inf`: Maximum absolute value
+        - `-np.inf`: Mininum absolute value
+        - `0`: Number of non-zeros
+        - float: Corresponding l_p norm.
+        - None : No normalization is performed
+
+    Returns
+    -------
+    norm_X: np.array
+        Normalized `X` according the the input parameters.
+    """
+    if isinstance(norm_type, six.string_types):
+        if norm_type == "min_max":
+            return min_max_normalize(X, floor=floor)
+        if norm_type == "log":
+            return lognormalize(X, floor=floor, min_db=min_db)
+    return librosa.util.normalize(X, norm=norm_type, axis=1)
 
 
 def ensure_dir(directory):
@@ -141,14 +171,14 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
 
     # Construct unfolded labels array
     unfold_labels = np.zeros(N)
-    for i, (bound_idx, label) in \
-            enumerate(zip(old_bound_idxs[:-1], old_labels)):
-        unfold_labels[bound_idx:old_bound_idxs[i+1]] = label
+    for i, (bound_idx, label) in enumerate(
+            zip(old_bound_idxs[:-1], old_labels)):
+        unfold_labels[bound_idx:old_bound_idxs[i + 1]] = label
 
     # Constuct new labels
     new_labels = np.zeros(len(new_bound_idxs) - 1)
     for i, bound_idx in enumerate(new_bound_idxs[:-1]):
-        new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i+1]])
+        new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i + 1]])
 
     return new_labels
 

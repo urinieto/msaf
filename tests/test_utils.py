@@ -1,14 +1,9 @@
-#!/usr/bin/env python
-#
 # Run me as follows:
 # cd tests/
-# nosetests
+# nosetests -v -s test_utils.py
 
-import glob
-import json
 import librosa
-from nose.tools import nottest, eq_, raises, assert_equals
-import numpy.testing as npt
+from nose.tools import nottest, raises
 import os
 
 # Msaf imports
@@ -32,3 +27,19 @@ def test_synchronize_labels():
                                                labels,
                                                N)
     assert len(new_labels) == len(new_bound_idxs) - 1
+
+
+def test_get_num_frames():
+    dur = 320.2
+    anal = {"sample_rate": 22050, "hop_size": 512}
+    n_frames = msaf.utils.get_num_frames(dur, anal)
+    assert n_frames == int(dur * anal["sample_rate"] / anal["hop_size"])
+
+
+def test_get_time_frames():
+    dur = 1
+    anal = {"sample_rate": 22050, "hop_size": 512}
+    n_frames = msaf.utils.get_time_frames(dur, anal)
+    assert n_frames.shape[0] == 43
+    assert n_frames[0] == 0.0
+    assert n_frames[-1] == 1.0
