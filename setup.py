@@ -3,7 +3,6 @@ import glob
 import imp
 import numpy.distutils.misc_util
 
-
 version = imp.load_source('msaf.version', 'msaf/version.py')
 
 # MSAF configuration

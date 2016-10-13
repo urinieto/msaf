@@ -19,7 +19,6 @@ import msaf
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
     FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError
 
-
 # Three types of features at the moment:
 #   - framesync: Frame-wise synchronous.
 #   - est_beatsync: Beat-synchronous using estimated beats with librosa
