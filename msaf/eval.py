@@ -15,11 +15,10 @@ import numpy as np
 import os
 import pandas as pd
 import six
-import sys
 
 # Local stuff
 import msaf
-from msaf.exceptions import NoReferencesError, NoEstimationsError
+from msaf.exceptions import NoReferencesError
 import msaf.input_output as io
 from msaf import utils
 

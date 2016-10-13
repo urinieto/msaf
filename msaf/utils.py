@@ -1,7 +1,6 @@
 """
 Useful functions that are common in MSAF
 """
-
 import librosa
 import mir_eval
 import numpy as np
@@ -172,14 +171,14 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
 
     # Construct unfolded labels array
     unfold_labels = np.zeros(N)
-    for i, (bound_idx, label) in \
-            enumerate(zip(old_bound_idxs[:-1], old_labels)):
-        unfold_labels[bound_idx:old_bound_idxs[i+1]] = label
+    for i, (bound_idx, label) in enumerate(
+            zip(old_bound_idxs[:-1], old_labels)):
+        unfold_labels[bound_idx:old_bound_idxs[i + 1]] = label
 
     # Constuct new labels
     new_labels = np.zeros(len(new_bound_idxs) - 1)
     for i, bound_idx in enumerate(new_bound_idxs[:-1]):
-        new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i+1]])
+        new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i + 1]])
 
     return new_labels
 
