@@ -253,25 +253,6 @@ def align_end_hierarchies(hier1, hier2, thres=0.5):
         hier[-1] = dur_h2
 
 
-def segment_labels_to_floats(segments):
-    """Converts the string labels to floats.
-
-    Parameters
-    ----------
-    segments: list
-        List of mir_eval.segment.tree.Segment
-    """
-    labels = []
-    for segment in segments:
-        labels.append(segment.label)
-
-    unique_labels = set(labels)
-    unique_labels = list(unique_labels)
-
-    return [unique_labels.index(label) / float(len(unique_labels))
-            for label in labels]
-
-
 def seconds_to_frames(seconds):
     """Converts seconds to frames based on MSAF parameters.
 
@@ -285,4 +266,4 @@ def seconds_to_frames(seconds):
     frames: int
         Seconds converted to frames
     """
-    return int(seconds * msaf.Anal.sample_rate / msaf.Anal.hop_size)
+    return int(seconds * msaf.config.sample_rate / msaf.config.hop_size)

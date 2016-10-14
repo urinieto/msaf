@@ -1,9 +1,8 @@
 # Run me as follows:
 # cd tests/
 # nosetests -v -s test_utils.py
-
+import copy
 import librosa
-from nose.tools import nottest, raises
 import os
 
 # Msaf imports
@@ -43,3 +42,19 @@ def test_get_time_frames():
     assert n_frames.shape[0] == 43
     assert n_frames[0] == 0.0
     assert n_frames[-1] == 1.0
+
+
+def test_align_end_hierarchies():
+    def _test_equal_hier(hier_orig, hier_new):
+        for layer_orig, layer_new in zip(hier_orig, hier_new):
+            assert layer_orig == layer_new
+
+    hier1 = [[0, 10, 20, 30], [0, 30]]
+    hier2 = [[0, 5, 40, 30], [0, 30]]
+    hier1_orig = copy.deepcopy(hier1)
+    hier2_orig = copy.deepcopy(hier2)
+
+    msaf.utils.align_end_hierarchies(hier1, hier2)
+
+    yield (_test_equal_hier, hier1_orig, hier1)
+    yield (_test_equal_hier, hier2_orig, hier2)
