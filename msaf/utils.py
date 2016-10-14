@@ -251,19 +251,3 @@ def align_end_hierarchies(hier1, hier2, thres=0.5):
     # Align h1 with h2
     for hier in hier1:
         hier[-1] = dur_h2
-
-
-def seconds_to_frames(seconds):
-    """Converts seconds to frames based on MSAF parameters.
-
-    Parameters
-    ----------
-    seconds: float
-        Seconds to be converted to frames.
-
-    Returns
-    -------
-    frames: int
-        Seconds converted to frames
-    """
-    return int(seconds * msaf.config.sample_rate / msaf.config.hop_size)

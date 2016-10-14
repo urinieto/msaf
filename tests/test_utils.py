@@ -50,7 +50,7 @@ def test_align_end_hierarchies():
             assert layer_orig == layer_new
 
     hier1 = [[0, 10, 20, 30], [0, 30]]
-    hier2 = [[0, 5, 40, 30], [0, 30]]
+    hier2 = [[0, 5, 40, 50], [0, 50]]
     hier1_orig = copy.deepcopy(hier1)
     hier2_orig = copy.deepcopy(hier2)
 
