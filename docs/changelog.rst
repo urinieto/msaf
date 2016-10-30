@@ -4,6 +4,7 @@ Changes
 v0.1.3
 ------
 
+* Warning message is displayed if jams file exists but can't be read during features computation
 * If two algorithms used at the same time have the same name, and AssertionError is raised
 * Fixed normalization problem: now algorithms have independent normalization parameters
 * Adding `out_file` variable in main process function of the eval module
