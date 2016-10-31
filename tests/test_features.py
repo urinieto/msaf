@@ -292,3 +292,17 @@ def test_select_features():
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     feature = Features.select_features("pcp", my_file_struct, False, True)
     assert isinstance(feature, PCP)
+    assert feature.feat_type == FeatureTypes.framesync
+
+    feature = Features.select_features("mfcc", my_file_struct, False, False)
+    assert isinstance(feature, MFCC)
+    assert feature.feat_type == FeatureTypes.est_beatsync
+
+    feature = Features.select_features("cqt", my_file_struct, True, False)
+    assert isinstance(feature, CQT)
+    assert feature.feat_type == FeatureTypes.ann_beatsync
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_select_features():
+    Features.select_features("cqt", None, True, True)

@@ -447,8 +447,8 @@ class Features(six.with_metaclass(MetaFeatures)):
         features: obj
             The actual features object that inherits from `msaf.Features`
         """
-        if framesync:
-            feat_type = FeatureTypes.est_beatsync
+        if not annot_beats and framesync:
+            feat_type = FeatureTypes.framesync
         elif annot_beats and not framesync:
             feat_type = FeatureTypes.ann_beatsync
         elif not annot_beats and not framesync:
