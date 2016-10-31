@@ -1,14 +1,8 @@
-#!/usr/bin/env python
-#
 # Run me as follows:
 # cd tests/
-# nosetests
-
-import glob
-import json
+# nosetests -v -s test_utils.py
+import copy
 import librosa
-from nose.tools import nottest, eq_, raises, assert_equals
-import numpy.testing as npt
 import os
 
 # Msaf imports
@@ -32,3 +26,35 @@ def test_synchronize_labels():
                                                labels,
                                                N)
     assert len(new_labels) == len(new_bound_idxs) - 1
+
+
+def test_get_num_frames():
+    dur = 320.2
+    anal = {"sample_rate": 22050, "hop_size": 512}
+    n_frames = msaf.utils.get_num_frames(dur, anal)
+    assert n_frames == int(dur * anal["sample_rate"] / anal["hop_size"])
+
+
+def test_get_time_frames():
+    dur = 1
+    anal = {"sample_rate": 22050, "hop_size": 512}
+    n_frames = msaf.utils.get_time_frames(dur, anal)
+    assert n_frames.shape[0] == 43
+    assert n_frames[0] == 0.0
+    assert n_frames[-1] == 1.0
+
+
+def test_align_end_hierarchies():
+    def _test_equal_hier(hier_orig, hier_new):
+        for layer_orig, layer_new in zip(hier_orig, hier_new):
+            assert layer_orig == layer_new
+
+    hier1 = [[0, 10, 20, 30], [0, 30]]
+    hier2 = [[0, 5, 40, 50], [0, 50]]
+    hier1_orig = copy.deepcopy(hier1)
+    hier2_orig = copy.deepcopy(hier2)
+
+    msaf.utils.align_end_hierarchies(hier1, hier2)
+
+    yield (_test_equal_hier, hier1_orig, hier1)
+    yield (_test_equal_hier, hier2_orig, hier2)

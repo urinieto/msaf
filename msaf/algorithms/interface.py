@@ -82,9 +82,8 @@ class SegmenterInterface:
         raise NotImplementedError("This method does not return hierarchical "
                                   "segmentations.")
 
-    def _preprocess(
-        self, valid_features=["pcp", "tonnetz", "mfcc", "cqt", "tempogram"],
-            normalize=True):
+    def _preprocess(self, valid_features=["pcp", "tonnetz", "mfcc",
+                                          "cqt", "tempogram"]):
         """This method obtains the actual features."""
         # Use specific feature
         if self.feature_str not in valid_features:
@@ -97,10 +96,6 @@ class SegmenterInterface:
             except KeyError:
                 raise RuntimeError("Feature %s in not supported by MSAF" %
                                    (self.feature_str))
-
-        # Normalize if needed
-        if normalize:
-            F = U.lognormalize_chroma(F)
 
         return F
 

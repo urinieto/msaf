@@ -1,6 +1,20 @@
 Changes
 =======
 
+v0.1.3
+------
+
+* Fixed bug of selecting framesync features
+* OLDA and Scluster hierarchies are consistent now (first element in hierarchy in the highest in both algorithms; this was also true for Scluster before this fix)
+* Warning message is displayed if jams file exists but can't be read during features computation
+* If two algorithms used at the same time have the same name, and AssertionError is raised
+* Fixed normalization problem: now algorithms have independent normalization parameters
+* Adding `out_file` variable in main process function of the eval module
+* Reporting proper weighted F-measure for the perceptual Hit Rate
+* Fixed bug of annotator id not correctly passed to hierarchical evaluation function
+* More unit tests
+* Added script to upload to Pypi
+
 v0.1.2
 ------
 

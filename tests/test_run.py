@@ -143,8 +143,6 @@ def test_run_algorithms():
         if bound_id == "gt" or bound_id == "example":
             continue
         for label_id in label_ids:
-            print(bound_id, label_id)
-            #import pdb; pdb.set_trace()  # XXX BREAKPOINT
             yield (_test_run_msaf, bound_id, label_id, False)
 
     # Test the hierarchical algorithms

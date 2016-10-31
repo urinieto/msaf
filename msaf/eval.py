@@ -15,7 +15,6 @@ import numpy as np
 import os
 import pandas as pd
 import six
-import sys
 
 # Local stuff
 import msaf
@@ -33,6 +32,7 @@ def print_results(results):
         Dataframe with all the results
     """
     if len(results) == 0:
+        logging.warning("No results to print!")
         return
     res = results.mean()
     logging.info("Results:\n%s" % res)
@@ -112,15 +112,15 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
 
     # Hit rate weighted
-    res["HitRate_w3P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_w3F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=3, trim=False, beta=weight)
-    res["HitRate_w0.5P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_w0.5F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=.5, trim=False, beta=weight)
 
     # Hit rate weighted and trimmed
-    res["HitRate_wt3P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_wt3F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=3, trim=True, beta=weight)
-    res["HitRate_wt0.5P"], _, _ = mir_eval.segment.detection(
+    _, _, res["HitRate_wt0.5F"] = mir_eval.segment.detection(
         ann_inter, est_inter, window=.5, trim=True, beta=weight)
 
     # Information gain
@@ -137,26 +137,21 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     if est_labels is not None and ("-1" in est_labels or "@" in est_labels):
         est_labels = None
     if est_labels is not None and len(est_labels) != 0:
-        try:
-            # Align labels with intervals
-            ann_labels = list(ann_labels)
-            est_labels = list(est_labels)
-            ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                                   ann_labels)
-            est_inter, est_labels = mir_eval.util.adjust_intervals(
-                est_inter, est_labels, t_min=0, t_max=ann_inter.max())
+        # Align labels with intervals
+        ann_labels = list(ann_labels)
+        est_labels = list(est_labels)
+        ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
+                                                               ann_labels)
+        est_inter, est_labels = mir_eval.util.adjust_intervals(
+            est_inter, est_labels, t_min=0.0, t_max=ann_inter.max())
 
-            # Pair-wise frame clustering
-            res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
-                ann_inter, ann_labels, est_inter, est_labels)
+        # Pair-wise frame clustering
+        res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
+            ann_inter, ann_labels, est_inter, est_labels)
 
-            # Normalized Conditional Entropies
-            res["So"], res["Su"], res["Sf"] = mir_eval.segment.nce(
-                ann_inter, ann_labels, est_inter, est_labels)
-        except:
-            logging.warning("Labeling evaluation failed in file: %s" %
-                            est_file)
-            return {}
+        # Normalized Conditional Entropies
+        res["So"], res["Su"], res["Sf"] = mir_eval.segment.nce(
+            ann_inter, ann_labels, est_inter, est_labels)
 
     # Names
     base = os.path.basename(est_file)
@@ -176,26 +171,19 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     results : dict
         Dictionary of the results (see function compute_results).
     """
-    try:
-        if config["hier"]:
-            ref_times, ref_labels, ref_levels = \
-                msaf.io.read_hier_references(
-                    ref_file, annotation_id=0,
-                    exclude_levels=["segment_salami_function"])
-        else:
-            jam = jams.load(ref_file, validate=False)
-            ann = jam.search(namespace='segment_.*')[annotator_id]
-            ref_inter, ref_labels = ann.data.to_interval_values()
-    except:
-        logging.warning("No references for file: %s" % ref_file)
-        return {}
+    if config["hier"]:
+        ref_times, ref_labels, ref_levels = \
+            msaf.io.read_hier_references(
+                ref_file, annotation_id=annotator_id,
+                exclude_levels=["segment_salami_function"])
+    else:
+        jam = jams.load(ref_file, validate=False)
+        ann = jam.search(namespace='segment_.*')[annotator_id]
+        ref_inter, ref_labels = ann.data.to_interval_values()
 
     # Read estimations with correct configuration
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
                                                 labels_id, **config)
-    if len(est_inter) == 0:
-        logging.warning("No estimations for file: %s" % est_file)
-        return {}
 
     # Compute the results and return
     logging.info("Evaluating %s" % os.path.basename(est_file))
@@ -242,13 +230,7 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     intervals and the estimated intervals."""
     ann_times = utils.intervals_to_times(ann_inter)
     est_times = utils.intervals_to_times(est_inter)
-    try:
-        D = mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
-    except:
-        logging.warning("Couldn't compute the Information Gain for file "
-                        "%s" % est_file)
-        D = 0
-    return D
+    return mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
 
 
 def process_track(file_struct, boundaries_id, labels_id, config,
@@ -290,15 +272,8 @@ def process_track(file_struct, boundaries_id, labels_id, config,
                                 "have annotated references to run "
                                 "evaluations." % ref_file)
 
-    # TODO: Better exception handling
-    try:
-        one_res = compute_gt_results(est_file, ref_file, boundaries_id,
-                                     labels_id, config,
-                                     annotator_id=annotator_id)
-    except:
-        logging.warning("Could not compute evaluations for %s. Error: %s" %
-                        (est_file, sys.exc_info()[1]))
-        one_res = []
+    one_res = compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
+                                 config, annotator_id=annotator_id)
 
     return one_res
 
@@ -325,7 +300,7 @@ def get_results_file_name(boundaries_id, labels_id, config,
 def process(in_path, boundaries_id=msaf.config.default_bound_id,
             labels_id=msaf.config.default_label_id, annot_beats=False,
             framesync=False, feature="pcp", hier=False, save=False,
-            n_jobs=4, annotator_id=0, config=None):
+            out_file=None, n_jobs=4, annotator_id=0, config=None):
     """Main process to evaluate algorithms' results.
 
     Parameters
@@ -347,7 +322,11 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     hier : bool
         Whether to compute a hierarchical or flat segmentation.
     save: boolean
-        Whether to save the results into the SQLite database.
+        Whether to save the results into the `out_file` csv file.
+    out_file: str
+        Path to the csv file to save the results (if `None` and `save = True`
+        it will save the results in the default file name obtained by
+        calling `get_results_file_name`).
     n_jobs: int
         Number of processes to run in parallel. Only available in collection
         mode.
@@ -375,37 +354,36 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     config.pop("features", None)
 
     # Get out file in case we want to save results
-    out_file = get_results_file_name(boundaries_id, labels_id, config,
-                                     annotator_id)
+    if out_file is None:
+        out_file = get_results_file_name(boundaries_id, labels_id, config,
+                                         annotator_id)
 
-    # All evaluations
-    results = pd.DataFrame()
+    # If out_file already exists, read and return them
+    if os.path.exists(out_file):
+        logging.warning("Results already exists, reading from file %s" %
+                        out_file)
+        results = pd.read_csv(out_file)
+        print_results(results)
+        return results
 
+    # Perform actual evaluations
     if os.path.isfile(in_path):
         # Single File mode
         evals = [process_track(in_path, boundaries_id, labels_id, config,
                                annotator_id=annotator_id)]
     else:
         # Collection mode
-        # If out_file already exists, do not compute new results
-        if os.path.exists(out_file):
-            logging.info("Results already exists, reading from file %s" %
-                         out_file)
-            results = pd.read_csv(out_file)
-            print_results(results)
-            return results
-
         # Get files
         file_structs = io.get_dataset_files(in_path)
 
-        logging.info("Evaluating %d tracks..." % len(file_structs))
-
         # Evaluate in parallel
+        logging.info("Evaluating %d tracks..." % len(file_structs))
         evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
             annotator_id=annotator_id) for file_struct in file_structs[:])
 
     # Aggregate evaluations in pandas format
+    results = pd.DataFrame()
     for e in evals:
         if e != []:
             results = results.append(e, ignore_index=True)

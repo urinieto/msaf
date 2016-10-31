@@ -13,6 +13,7 @@ import six
 
 # Local stuff
 import msaf
+from msaf.exceptions import NoEstimationsError
 from msaf import utils
 
 # Put dataset config in a global var
@@ -70,21 +71,12 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         Empty array if labels_id is None.
     """
     # Open file and read jams
-    try:
-        jam = jams.load(est_file)
-    except FileNotFoundError:
-        logging.error("JAMS file doesn't exist %s" % est_file)
-        return np.array([]), np.array([])
-    except Exception as e:
-        logging.error("Could not open JAMS file %s. Exception: %s" %
-                      (est_file, e))
-        return np.array([]), np.array([])
+    jam = jams.load(est_file)
 
     # Find correct estimation
     est = find_estimation(jam, boundaries_id, labels_id, params)
     if est is None:
-        logging.error("Could not find estimation in %s" % est_file)
-        return np.array([]), np.array([])
+        raise NoEstimationsError("No estimations for file: %s" % est_file)
 
     # Get data values
     all_boundaries, all_labels = est.data.to_interval_values()
@@ -442,6 +434,7 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     config["annot_beats"] = annot_beats
     config["feature"] = feature
     config["framesync"] = framesync
+    bound_config = {}
     if boundaries_id != "gt":
         bound_config = \
             eval(msaf.algorithms.__name__ + "." + boundaries_id).config
@@ -449,6 +442,14 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     if labels_id is not None:
         label_config = \
             eval(msaf.algorithms.__name__ + "." + labels_id).config
+
+        # Make sure we don't have parameter name duplicates
+        if labels_id != boundaries_id:
+            overlap = set(bound_config.keys()). \
+                intersection(set(label_config.keys()))
+            assert len(overlap) == 0, \
+                "Parameter %s must not exist both in %s and %s algorithms" % \
+                (overlap, boundaries_id, labels_id)
         config.update(label_config)
     return config
 
@@ -463,19 +464,8 @@ def filter_by_artist(file_structs, artist_name="The Beatles"):
     return new_file_structs
 
 
-def get_SALAMI_internet(file_structs):
-    """Gets the SALAMI Internet subset from SALAMI (bit of a hack...)"""
-    new_file_structs = []
-    for file_struct in file_structs:
-        num = int(os.path.basename(file_struct.est_file).split("_")[1].
-                  split(".")[0])
-        if num >= 956 and num <= 1498:
-            new_file_structs.append(file_struct)
-    return new_file_structs
-
-
-def get_dataset_files(in_path, ds_name="*"):
-    """Gets the files of the dataset with a prefix of ds_name."""
+def get_dataset_files(in_path):
+    """Gets the files of the given dataset."""
     # Get audio files
     audio_files = []
     for ext in ds_config.audio_exts:
@@ -491,14 +481,6 @@ def get_dataset_files(in_path, ds_name="*"):
     file_structs = []
     for audio_file in audio_files:
         file_structs.append(FileStruct(audio_file))
-
-    # Filter by the beatles
-    if ds_name == "Beatles":
-        file_structs = filter_by_artist(file_structs, "The Beatles")
-
-    # Salami Internet hack
-    if ds_name == "SALAMI-i":
-        file_structs = get_SALAMI_internet(file_structs)
 
     # Sort by audio file name
     file_structs = sorted(file_structs,

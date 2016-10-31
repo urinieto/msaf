@@ -324,7 +324,7 @@ class Segmenter(SegmenterInterface):
             # Run algorithm layer by layer
             est_idxs = []
             est_labels = []
-            for k in range(kmax, kmin, -1):
+            for k in range(kmin, kmax):
                 S, cost = get_k_segments(F, k)
                 est_idxs.append(S)
                 est_labels.append(np.ones(len(S) - 1) * -1)
