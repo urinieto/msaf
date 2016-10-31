@@ -270,10 +270,8 @@ def test_frame_times_framesync():
     """Checking frame times of framesync type of features"""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     pcp = PCP(my_file_struct, FeatureTypes.framesync, sr=11025)
-    pcp.features
     times = pcp.frame_times
-    # assert len(times) == 108
-    print(times)
+    assert(isinstance(times, np.ndarray))
 
 
 @raises(FeatureTypeNotFound)
@@ -282,10 +280,7 @@ def test_frame_times_no_annotations():
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
     pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
-    pcp.features
-    times = pcp.frame_times
-    # assert len(times) == 108
-    print(times)
+    pcp.frame_times
 
 
 @raises(NotImplementedError)
