@@ -255,3 +255,12 @@ def test_read_ann_beats_old_jams():
     times, frames = pcp.read_ann_beats()
     assert times is None
     assert frames is None
+
+
+@raises(FeatureTypeNotFound)
+def test_frame_times_old_jams():
+    """Trying to use invalid jams file."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    pcp.frame_times()
