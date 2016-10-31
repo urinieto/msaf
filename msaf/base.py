@@ -370,14 +370,8 @@ class Features(six.with_metaclass(MetaFeatures)):
         elif self.feat_type is FeatureTypes.est_beatsync:
             frame_times = self._est_beats_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
-            if self._ann_beatsync_features is None:
-                raise FeatureTypeNotFound(
-                    "Feature type %s is not valid because no annotated beats "
-                    "were found" % self.feat_type)
             frame_times = self._ann_beats_times
-        else:
-            raise FeatureTypeNotFound("Feature type %s is not valid"
-                                      % self.feat_type)
+
         return frame_times
 
     @property
