@@ -245,3 +245,13 @@ def test_wrong_type_frame_times():
                          'framesync1 est_beatsync ann_beatsync')
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
     cqt.frame_times
+
+
+def test_read_ann_beats_old_jams():
+    """Trying to read an old jams file."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    times, frames = pcp.read_ann_beats()
+    assert times is None
+    assert frames is None
