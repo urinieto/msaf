@@ -12,7 +12,7 @@ import msaf
 from msaf.base import FeatureTypes
 from msaf.exceptions import (NoAudioFileError, FeatureParamsError,
                              FeatureTypeNotFound)
-from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram
+from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram, Features
 from msaf.input_output import FileStruct
 
 # Global vars
@@ -273,3 +273,15 @@ def test_frame_times_framesync():
     pcp.features
     times = pcp.frame_times
     assert len(times) == 108
+
+
+@raises(NotImplementedError)
+def test_global_get_id():
+    Features.get_id()
+
+
+@raises(NotImplementedError)
+def test_global_compute_features():
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    feats = Features(my_file_struct, 11025, 1024, FeatureTypes.framesync)
+    feats.compute_features()
