@@ -8,6 +8,7 @@ import collections
 import datetime
 from enum import Enum
 import librosa
+import logging
 import jams
 import json
 import numpy as np
@@ -153,9 +154,10 @@ class Features(six.with_metaclass(MetaFeatures)):
             try:
                 jam = jams.load(self.file_struct.ref_file)
             except TypeError:
-                logging.warning("Can't read JAMS file %s. Maybe it's not "
-                        "compatible with current JAMS version?" %
-                        self.file_struct.ref_file)
+                logging.warning(
+                    "Can't read JAMS file %s. Maybe it's not "
+                    "compatible with current JAMS version?" %
+                    self.file_struct.ref_file)
                 return times, frames
             beat_annot = jam.search(namespace="beat.*")
 
