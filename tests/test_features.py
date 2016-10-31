@@ -276,10 +276,18 @@ def test_frame_times_framesync():
 
 @raises(FeatureTypeNotFound)
 def test_frame_times_no_annotations():
-    """Checking frame times of framesync type of features"""
+    """Checking frame times when there are no beat annotations."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
     pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    pcp.frame_times
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_frame_times():
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    pcp.feat_types = "wrong"
     pcp.frame_times
 
 
