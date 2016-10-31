@@ -231,6 +231,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             for param_name in self.get_param_names():
                 value = getattr(self, param_name)
                 if hasattr(value, '__call__'):
+                    # Special case of functions
                     if value.__name__ != \
                             feats[self.get_id()]["params"][param_name]:
                         raise feat_params_err

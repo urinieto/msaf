@@ -321,3 +321,13 @@ def test_select_features():
 @raises(FeatureTypeNotFound)
 def test_wrong_select_features():
     Features.select_features("cqt", None, True, True)
+
+
+@raises(FeatureParamsError)
+def test_read_features_wrong_fun():
+    my_file_struct = FileStruct("01_-_Come_Together.wav")
+    my_file_struct.features_file = os.path.join(
+        "fixtures", "01_-_Come_Together.json")
+    mfcc = MFCC(my_file_struct, FeatureTypes.est_beatsync, sr=22050)
+    mfcc.ref_power = np.mean
+    mfcc.read_features()
