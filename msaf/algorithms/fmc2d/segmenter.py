@@ -9,6 +9,7 @@ from sklearn import mixture
 from . import utils_2dfmc as utils2d
 from .xmeans import XMeans
 
+import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 
 MIN_LEN = 4
@@ -127,8 +128,13 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        #F = self._preprocess(valid_features=["pcp", "cqt"])
+        # F = self._preprocess(valid_features=["pcp", "cqt"])
         F = self._preprocess()
+
+        # Normalize
+        F = U.normalize(F, norm_type=self.config["label_norm_feats"],
+                        floor=self.config["label_norm_floor"],
+                        min_db=self.config["label_norm_min_db"])
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, self.in_bound_idxs,

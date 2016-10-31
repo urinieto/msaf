@@ -12,7 +12,7 @@ import msaf
 from msaf.base import FeatureTypes
 from msaf.exceptions import (NoAudioFileError, FeatureParamsError,
                              FeatureTypeNotFound)
-from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram
+from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram, Features
 from msaf.input_output import FileStruct
 
 # Global vars
@@ -245,3 +245,89 @@ def test_wrong_type_frame_times():
                          'framesync1 est_beatsync ann_beatsync')
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
     cqt.frame_times
+
+
+def test_read_ann_beats_old_jams():
+    """Trying to read an old jams file."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    times, frames = pcp.read_ann_beats()
+    assert times is None
+    assert frames is None
+
+
+@raises(FeatureTypeNotFound)
+def test_frame_times_old_jams():
+    """Trying to use invalid jams file."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    pcp.frame_times
+
+
+def test_frame_times_framesync():
+    """Checking frame times of framesync type of features"""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    pcp = PCP(my_file_struct, FeatureTypes.framesync, sr=11025)
+    times = pcp.frame_times
+    assert(isinstance(times, np.ndarray))
+
+
+@raises(FeatureTypeNotFound)
+def test_frame_times_no_annotations():
+    """Checking frame times when there are no beat annotations."""
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    pcp.frame_times
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_frame_times():
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
+    pcp.feat_types = "wrong"
+    pcp.frame_times
+
+
+@raises(NotImplementedError)
+def test_global_get_id():
+    Features.get_id()
+
+
+@raises(NotImplementedError)
+def test_global_compute_features():
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    feats = Features(my_file_struct, 11025, 1024, FeatureTypes.framesync)
+    feats.compute_features()
+
+
+def test_select_features():
+    my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
+    feature = Features.select_features("pcp", my_file_struct, False, True)
+    assert isinstance(feature, PCP)
+    assert feature.feat_type == FeatureTypes.framesync
+
+    feature = Features.select_features("mfcc", my_file_struct, False, False)
+    assert isinstance(feature, MFCC)
+    assert feature.feat_type == FeatureTypes.est_beatsync
+
+    feature = Features.select_features("cqt", my_file_struct, True, False)
+    assert isinstance(feature, CQT)
+    assert feature.feat_type == FeatureTypes.ann_beatsync
+
+
+@raises(FeatureTypeNotFound)
+def test_wrong_select_features():
+    Features.select_features("cqt", None, True, True)
+
+
+@raises(FeatureParamsError)
+def test_read_features_wrong_fun():
+    my_file_struct = FileStruct("01_-_Come_Together.wav")
+    my_file_struct.features_file = os.path.join(
+        "fixtures", "01_-_Come_Together.json")
+    mfcc = MFCC(my_file_struct, FeatureTypes.est_beatsync, sr=22050)
+    mfcc.ref_power = np.mean
+    mfcc.read_features()

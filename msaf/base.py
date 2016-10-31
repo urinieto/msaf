@@ -8,6 +8,7 @@ import collections
 import datetime
 from enum import Enum
 import librosa
+import logging
 import jams
 import json
 import numpy as np
@@ -18,7 +19,6 @@ import six
 import msaf
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
     FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError
-
 
 # Three types of features at the moment:
 #   - framesync: Frame-wise synchronous.
@@ -55,7 +55,7 @@ class Features(six.with_metaclass(MetaFeatures)):
     """
     def __init__(self, file_struct, sr, hop_length, feat_type):
         """Init function for the base class to make sure all features have
-        at least parameters as attributes.
+        at least these parameters as attributes.
 
         Parameters
         ----------
@@ -151,7 +151,14 @@ class Features(six.with_metaclass(MetaFeatures)):
 
         # Read annotations if they exist in correct folder
         if os.path.isfile(self.file_struct.ref_file):
-            jam = jams.load(self.file_struct.ref_file)
+            try:
+                jam = jams.load(self.file_struct.ref_file)
+            except TypeError:
+                logging.warning(
+                    "Can't read JAMS file %s. Maybe it's not "
+                    "compatible with current JAMS version?" %
+                    self.file_struct.ref_file)
+                return times, frames
             beat_annot = jam.search(namespace="beat.*")
 
             # If beat annotations exist, get times and frames
@@ -224,6 +231,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             for param_name in self.get_param_names():
                 value = getattr(self, param_name)
                 if hasattr(value, '__call__'):
+                    # Special case of functions
                     if value.__name__ != \
                             feats[self.get_id()]["params"][param_name]:
                         raise feat_params_err
@@ -362,14 +370,8 @@ class Features(six.with_metaclass(MetaFeatures)):
         elif self.feat_type is FeatureTypes.est_beatsync:
             frame_times = self._est_beats_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
-            if self._ann_beatsync_features is None:
-                raise FeatureTypeNotFound(
-                    "Feature type %s is not valid because no annotated beats "
-                    "were found" % self.feat_type)
             frame_times = self._ann_beats_times
-        else:
-            raise FeatureTypeNotFound("Feature type %s is not valid"
-                                      % self.feat_type)
+
         return frame_times
 
     @property
@@ -440,8 +442,8 @@ class Features(six.with_metaclass(MetaFeatures)):
         features: obj
             The actual features object that inherits from `msaf.Features`
         """
-        if framesync:
-            feat_type = FeatureTypes.est_beatsync
+        if not annot_beats and framesync:
+            feat_type = FeatureTypes.framesync
         elif annot_beats and not framesync:
             feat_type = FeatureTypes.ann_beatsync
         elif not annot_beats and not framesync:
