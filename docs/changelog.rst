@@ -4,7 +4,8 @@ Changes
 v0.1.3
 ------
 
-* OLDA and Scluster hierarchies are consistent now (first element in hierarchy in the highest in both algorithms; this was also true for Scluster before this fix).
+* Fixed bug of selecting framesync features
+* OLDA and Scluster hierarchies are consistent now (first element in hierarchy in the highest in both algorithms; this was also true for Scluster before this fix)
 * Warning message is displayed if jams file exists but can't be read during features computation
 * If two algorithms used at the same time have the same name, and AssertionError is raised
 * Fixed normalization problem: now algorithms have independent normalization parameters
