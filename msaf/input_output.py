@@ -230,6 +230,7 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
 
     # Convert to intervals and sanity check
     if 'numpy' in str(type(times)):
+        # Flat check
         inters = utils.times_to_intervals(times)
         assert len(inters) == len(labels), "Number of boundary intervals " \
             "(%d) and labels (%d) do not match" % (len(inters), len(labels))
@@ -237,13 +238,14 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
         inters = [inters]
         labels = [labels]
     else:
+        # Hierarchical check
         inters = []
         for level in range(len(times)):
             est_inters = utils.times_to_intervals(times[level])
             inters.append(est_inters)
             assert len(inters[level]) == len(labels[level]), \
                 "Number of boundary intervals (%d) and labels (%d) do not " \
-                "match" % (len(inters[level]), len(labels[level]))
+                "match in level %d" % (len(inters[level]), len(labels[level]), level)
 
     # Create new estimation
     namespace = "multi_segment" if params["hier"] else "segment_open"
