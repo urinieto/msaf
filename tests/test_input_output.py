@@ -40,3 +40,4 @@ def test_read_hier_references():
     assert len(hier_bounds) == len(hier_labels) and \
         len(hier_labels) == len(hier_levels)
     assert len(hier_levels) == 3
+
