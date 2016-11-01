@@ -280,8 +280,6 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
 
     # Save actual data
     for i, (level_inters, level_labels) in enumerate(zip(inters, labels)):
-        if level_labels is None:
-            label = np.ones(len(inters)) * -1
         for bound_inter, label in zip(level_inters, level_labels):
             dur = float(bound_inter[1]) - float(bound_inter[0])
             label = chr(int(label) + 65)
