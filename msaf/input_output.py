@@ -103,14 +103,6 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     return all_boundaries, all_labels
 
 
-def get_algo_ids(est_file):
-    """Gets the algorithm ids that are contained in the est_file."""
-    with open(est_file, "r") as f:
-        est_data = json.load(f)
-        algo_ids = est_data["boundaries"].keys()
-    return algo_ids
-
-
 def read_references(audio_path, annotator_id=0):
     """Reads the boundary times and the labels.
 
