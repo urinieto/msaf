@@ -7,11 +7,13 @@
 import jams
 import librosa
 from nose.tools import raises
+import numpy as np
 import os
 
 # Msaf imports
 import msaf
 from msaf.exceptions import WrongAlgorithmID
+from msaf.input_output import FileStruct
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
@@ -64,3 +66,17 @@ def test_find_estimation_multiple():
     params = {"hier": True}
     ann = msaf.io.find_estimation(jam, "sf", None, params)
     assert len(ann.data) == 86
+
+
+@raises(AssertionError)
+def test_save_estimations_hier_wrong():
+    file_struct = FileStruct("dummy")
+    file_struct.features_file = os.path.join("fixtures", "01_-_Come_Together.json")
+
+    # Wrong times and labels (don't match)
+    times = [np.arange(0, 10, 2), np.arange(0, 10, 1)]
+    labels = [['A', 'B'], ['a', 'a', 'b']]
+
+    # Should raise assertion error
+    msaf.io.save_estimations(file_struct, times, labels, None, None)
+
