@@ -4,14 +4,14 @@
 # cd tests/
 # nosetests
 
-import glob
-import json
+import jams
 import librosa
-from nose.tools import raises, assert_equals
+from nose.tools import raises
 import os
 
 # Msaf imports
 import msaf
+from msaf.exceptions import WrongAlgorithmID
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
@@ -41,3 +41,26 @@ def test_read_hier_references():
         len(hier_labels) == len(hier_levels)
     assert len(hier_levels) == 3
 
+
+def test_find_estimation():
+    est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
+    jam = jams.load(est_file)
+    params = {"hier": False}
+    ann = msaf.io.find_estimation(jam, "sf", None, params)
+    assert len(ann.data) == 21
+
+
+@raises(WrongAlgorithmID)
+def test_find_estimation_wrong():
+    est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
+    jam = jams.load(est_file)
+    params = {"hier": False}
+    msaf.io.find_estimation(jam, "sf", "caca", params)
+
+
+def test_find_estimation_multiple():
+    est_file = os.path.join("fixtures", "01-Sargon-Mindless-est-multiple.jams")
+    jam = jams.load(est_file)
+    params = {"hier": True}
+    ann = msaf.io.find_estimation(jam, "sf", None, params)
+    assert len(ann.data) == 86

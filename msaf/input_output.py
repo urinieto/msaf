@@ -13,7 +13,7 @@ import six
 
 # Local stuff
 import msaf
-from msaf.exceptions import NoEstimationsError
+from msaf.exceptions import NoEstimationsError, WrongAlgorithmID
 from msaf import utils
 
 # Put dataset config in a global var
@@ -167,6 +167,10 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     ann : jams.Annotation
         Found estimation.
         `None` if it couldn't be found.
+
+    Raises
+    ------
+    WrongAlgorithmID: in case these algorithms were not found in jams.
     """
     # Use handy JAMS search interface
     namespace = "multi_segment" if params["hier"] else "segment_open"
@@ -175,9 +179,8 @@ def find_estimation(jam, boundaries_id, labels_id, params):
             search(**{"Sandbox.boundaries_id": boundaries_id}).\
             search(**{"Sandbox.labels_id": labels_id})
     except TypeError:
-        # In case no label exists
-        ann = jam.search(namespace=namespace).\
-            search(**{"Sandbox.boundaries_id": boundaries_id})
+        raise WrongAlgorithmID("Algorithm {} or {} couldn't be found in jams".format(
+            boundaries_id, labels_id))
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, six.string_types):
             ann = ann.search(**{"Sandbox.%s" % key: val})
@@ -289,101 +292,6 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
 
     # Write results
     jam.save(file_struct.est_file)
-
-
-def get_all_est_boundaries(est_file, annot_beats, algo_ids=None,
-                           annotator_id=0):
-    """Gets all the estimated boundaries for all the algorithms.
-
-    Parameters
-    ----------
-    est_file: str
-        Path to the estimated JAMS file.
-    annot_beats: bool
-        Whether to use the annotated beats or not.
-    algo_ids : list
-        List of algorithm ids to to read boundaries from.
-        If None, all algorithm ids are read.
-
-    Returns
-    -------
-    all_boundaries: list
-        A list of np.arrays containing the times of the boundaries, one array
-        for each algorithm
-    """
-    all_boundaries = []
-
-    # Get GT boundaries
-    jam_file = os.path.join(os.path.dirname(est_file), "..",
-                            ds_config.references_dir,
-                            os.path.basename(est_file))
-    jam = jams.load(jam_file, validate=False)
-    ann = jam.search(namespace='segment_.*')[annotator_id]
-    ann_inter, ann_labels = ann.data.to_interval_values()
-    ann_times = utils.intervals_to_times(ann_inter)
-    all_boundaries.append(ann_times)
-
-    # Estimations
-    if algo_ids is None:
-        algo_ids = get_algo_ids(est_file)
-    for algo_id in algo_ids:
-        est_inters, est_labels = read_estimations(
-            est_file, algo_id, annot_beats, feature=msaf.feat_dict[algo_id])
-        if len(est_inters) == 0:
-            logging.warning("no estimations for algorithm: %s" % algo_id)
-            continue
-        boundaries = utils.intervals_to_times(est_inters)
-        all_boundaries.append(boundaries)
-    return all_boundaries
-
-
-def get_all_est_labels(est_file, annot_beats, algo_ids=None, annotator_id=0):
-    """Gets all the estimated boundaries for all the algorithms.
-
-    Parameters
-    ----------
-    est_file: str
-        Path to the estimated file (JSON file)
-    annot_beats: bool
-        Whether to use the annotated beats or not.
-    algo_ids : list
-        List of algorithm ids to to read boundaries from.
-        If None, all algorithm ids are read.
-    annotator_id : int
-        Identifier of the annotator.
-
-    Returns
-    -------
-    gt_times:  np.array
-        Ground Truth boundaries in times.
-    all_labels: list
-        A list of np.arrays containing the labels corresponding to the ground
-        truth boundaries.
-    """
-    all_labels = []
-
-    # Get GT boundaries and labels
-    jam_file = os.path.join(os.path.dirname(est_file), "..",
-                            ds_config.references_dir,
-                            os.path.basename(est_file))
-    jam = jams.load(jam_file, validate=False)
-    ann = jam.search(namespace='segment_.*')[annotator_id]
-    ann_inter, ann_labels = ann.data.to_interval_values()
-    gt_times = utils.intervals_to_times(ann_inter)
-    all_labels.append(ann_labels)
-
-    # Estimations
-    if algo_ids is None:
-        algo_ids = get_algo_ids(est_file)
-    for algo_id in algo_ids:
-        est_inters, est_labels = read_estimations(
-            est_file, algo_id, annot_beats, annot_bounds=True, bounds=False,
-            feature=msaf.feat_dict[algo_id])
-        if len(est_labels) == 0:
-            logging.warning("no estimations for algorithm: %s" % algo_id)
-            continue
-        all_labels.append(est_labels)
-    return gt_times, all_labels
 
 
 def get_all_boundary_algorithms():
