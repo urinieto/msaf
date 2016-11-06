@@ -1,6 +1,11 @@
 Changes
 =======
 
+v0.1.5
+------
+
+* The member variable `_framesync_times` in the `Features` was never updated. Fixed it
+
 v0.1.4
 ------
 
