@@ -9,6 +9,7 @@ import librosa
 from nose.tools import raises
 import numpy as np
 import os
+import shutil
 
 # Msaf imports
 import msaf
@@ -80,3 +81,43 @@ def test_save_estimations_hier_wrong():
     # Should raise assertion error
     msaf.io.save_estimations(file_struct, times, labels, None, None)
 
+
+def test_save_estimations_existing():
+    # Copy estimations file temporarily
+    est_file = "tmp.jams"
+    shutil.copy(os.path.join("fixtures", "01-Sargon-Mindless-ests.jams"), est_file)
+
+    # First, find estimation
+    jam = jams.load(est_file)
+    params = {"hier": False}
+    ann = msaf.io.find_estimation(jam, "sf", None, params)
+    assert len(ann.data) == 21
+
+    # Add to estimation which will replace it
+    file_struct = FileStruct("dummy")
+    file_struct.est_file = est_file
+    file_struct.features_file = os.path.join("fixtures", "01_-_Come_Together.json")
+    times = np.array([0, 10, 20, 30])
+    labels = np.array([-1] * (len(times) - 1))
+    msaf.io.save_estimations(file_struct, times, labels, "sf", None, **params)
+    jam = jams.load(est_file)
+    ann = msaf.io.find_estimation(jam, "sf", None, params)
+    assert len(ann.data) == len(times) - 1
+
+    # Add to estimation which will add a new one
+    times2 = np.array([0, 10, 20, 30, 40])
+    labels2 = np.array([-1] * (len(times2) - 1))
+    params2 = {"sf_param": 0.1, "hier": False}
+    msaf.io.save_estimations(file_struct, times2, labels2, "sf", None, **params2)
+
+    # Make sure the old one is the same
+    jam = jams.load(est_file)
+    ann = msaf.io.find_estimation(jam, "sf", None, params)
+    assert len(ann.data) == len(times) - 1
+
+    # Make sure the new one is the same
+    ann = msaf.io.find_estimation(jam, "sf", None, params2)
+    assert len(ann.data) == len(times2) - 1
+
+    # Cleanup
+    os.remove(est_file)
