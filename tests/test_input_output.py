@@ -119,5 +119,11 @@ def test_save_estimations_existing():
     ann = msaf.io.find_estimation(jam, "sf", None, params2)
     assert len(ann.data) == len(times2) - 1
 
+    # Add hierarchical
+    times3 = [np.array([0, 40]), np.array([0, 10, 20, 30, 40])]
+    labels3 = [np.array([-1] * (len(times3[0]) - 1)), np.array([-1] * (len(times3[1]) - 1))]
+    params3 = {"sf_param": 0.1, "hier": True}
+    msaf.io.save_estimations(file_struct, times3, labels3, "sf", None, **params3)
+
     # Cleanup
     os.remove(est_file)
