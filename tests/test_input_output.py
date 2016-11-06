@@ -126,7 +126,13 @@ def test_save_estimations_existing():
     msaf.io.save_estimations(file_struct, times3, labels3, "sf", None, **params3)
     jam = jams.load(est_file)
     ann = msaf.io.find_estimation(jam, "sf", None, params3)
-    print(ann.data)
+    values = ann.data["value"]
+    assert len(values) == 5
+    assert values[0]["level"] == 0
+    assert values[1]["level"] == 1
+    assert values[2]["level"] == 1
+    assert values[3]["level"] == 1
+    assert values[4]["level"] == 1
 
     # Cleanup
     os.remove(est_file)
