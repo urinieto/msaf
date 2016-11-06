@@ -354,16 +354,6 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     return config
 
 
-def filter_by_artist(file_structs, artist_name="The Beatles"):
-    """Filters data set files by artist name."""
-    new_file_structs = []
-    for file_struct in file_structs:
-        jam = jams.load(file_struct.ref_file, validate=False)
-        if jam.file_metadata.artist == artist_name:
-            new_file_structs.append(file_struct)
-    return new_file_structs
-
-
 def get_dataset_files(in_path):
     """Gets the files of the given dataset."""
     # Get audio files
