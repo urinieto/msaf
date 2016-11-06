@@ -4,7 +4,10 @@ Changes
 v0.1.4
 ------
 
-* Included Python 3.5 in the metadata.
+* Included Python 3.5 in the metadata
+* Removed old functions from i/o module that nobody should be using
+* cleanued up code for reading/writing estimations (just a tiny bit)
+* Unit tested i/o module
 
 v0.1.3
 ------
