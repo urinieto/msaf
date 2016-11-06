@@ -3,6 +3,7 @@
 # nosetests -v -s test_utils.py
 import copy
 import librosa
+import numpy as np
 import os
 
 # Msaf imports
@@ -58,3 +59,17 @@ def test_align_end_hierarchies():
 
     yield (_test_equal_hier, hier1_orig, hier1)
     yield (_test_equal_hier, hier2_orig, hier2)
+
+
+def test_lognormalize():
+    # Just check that we're not overwriting data
+    X = np.random.random((300, 10))
+    Y = msaf.utils.lognormalize(X)
+    assert not np.array_equal(X, Y)
+
+
+def test_min_max_normalize():
+    # Just check that we're not overwriting data
+    X = np.random.random((300, 10))
+    Y = msaf.utils.min_max_normalize(X)
+    assert not np.array_equal(X, Y)

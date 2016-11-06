@@ -49,3 +49,8 @@ class NoHierBoundaryError(MSAFError):
 class NoEstimationsError(MSAFError):
     '''Exception class for missing estimations'''
     pass
+
+
+class WrongAlgorithmID(MSAFError):
+    '''This algorithm was not found in msaf'''
+    pass
