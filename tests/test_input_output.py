@@ -136,3 +136,25 @@ def test_save_estimations_existing():
 
     # Cleanup
     os.remove(est_file)
+
+
+def test_write_mirex():
+    times = np.array([0, 10, 20, 30])
+    labels = np.array([0, 1, 2])
+    out_file = "out_mirex.txt"
+    msaf.io.write_mirex(times, labels, out_file)
+
+    # Check that results is correct
+    inters = msaf.utils.times_to_intervals(times)
+    with open(out_file, "r") as f:
+        lines = f.readlines()
+    assert len(lines) == 3
+    for line, inter, label in zip(lines, inters, labels):
+        saved_inter = [0, 0]
+        saved_inter[0], saved_inter[1], saved_label = line.split('\t')
+        assert float(saved_inter[0]) == inter[0]
+        assert float(saved_inter[1]) == inter[1]
+        assert float(saved_label) == label
+
+    # Cleanup
+    os.remove(out_file)
