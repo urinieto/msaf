@@ -124,6 +124,9 @@ def test_save_estimations_existing():
     labels3 = [np.array([-1] * (len(times3[0]) - 1)), np.array([-1] * (len(times3[1]) - 1))]
     params3 = {"sf_param": 0.1, "hier": True}
     msaf.io.save_estimations(file_struct, times3, labels3, "sf", None, **params3)
+    jam = jams.load(est_file)
+    ann = msaf.io.find_estimation(jam, "sf", None, params3)
+    print(ann.data)
 
     # Cleanup
     os.remove(est_file)
