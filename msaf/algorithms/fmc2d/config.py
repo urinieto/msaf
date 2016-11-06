@@ -4,7 +4,7 @@
 config = {
     "dirichlet": False,
     "xmeans": False,
-    "k": 6,
+    "k": 5,
     "label_norm_feats": "log",  # "min_max", "log", np.inf,
                                 # -np.inf, float >= 0, None
     "label_norm_floor": 0.1,
