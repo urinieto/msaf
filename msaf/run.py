@@ -141,7 +141,8 @@ def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
                 # Ground-truth boundaries
                 est_times, est_labels = io.read_references(
                     file_struct.audio_file, annotator_id=annotator_id)
-                est_idxs = io.align_times(est_times, frame_times[:-1])
+                est_idxs = io.align_times(est_times, frame_times)
+                import pdb; pdb.set_trace()
                 if est_idxs[0] != 0:
                     est_idxs = np.concatenate(([0], est_idxs))
                 if est_idxs[-1] != features.shape[0] - 1:
@@ -162,6 +163,7 @@ def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
                                             **config)
                 est_labels = S.processFlat()[1]
 
+    import pdb; pdb.set_trace()
     # Make sure the first and last boundaries are included
     est_times, est_labels = utils.process_segmentation_level(
         est_idxs, est_labels, features.shape[0], frame_times,
@@ -212,6 +214,7 @@ def run_algorithms(file_struct, boundaries_id, labels_id, config,
     # Get the correct frame times
     frame_times = config["features"].frame_times
 
+    import pdb; pdb.set_trace()
     # Segment audio based on type of segmentation
     run_fun = run_hierarchical if config["hier"] else run_flat
     est_times, est_labels = run_fun(file_struct, bounds_module, labels_module,

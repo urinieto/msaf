@@ -153,12 +153,11 @@ def align_times(times, frames):
     Returns
     -------
     aligned_times: np.ndarray
-        Aligned times, same size as `times`.
+        Aligned times.
     """
     dist = np.minimum.outer(times, frames)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
     aligned_times = np.unique(bound_frames)
-    assert len(aligned_times) == len(times)
     return aligned_times
 
 

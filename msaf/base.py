@@ -84,7 +84,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         self._audio = None  # Actual audio signal
         self._audio_harmonic = None  # Harmonic audio signal
         self._audio_percussive = None  # Percussive audio signal
-        self._framesync_times = None  # The frame synced times
+        self._framesync_times = None  # The times of the framesync features
         self._est_beats_times = None  # Estimated beat times
         self._est_beats_frames = None  # Estimated beats in frames
         self._ann_beats_times = None  # Annotated beat times
@@ -192,7 +192,8 @@ class Features(six.with_metaclass(MetaFeatures)):
         beatsync = librosa.util.utils.sync(self._framesync_features.T,
                                            beat_frames, pad=pad).T
 
-        # TODO: Make sure we have the right size (remove last frame if needed)
+        # TODO: Make sure we have the right size
+        # (remove last frame if needed, when using padding may happen)
         # beatsync = beatsync[:len(beat_frames), :]
         return beatsync
 
@@ -334,6 +335,12 @@ class Features(six.with_metaclass(MetaFeatures)):
         return [name for name in vars(self) if not name.startswith('_') and
                 name not in self._global_param_names]
 
+    def _compute_framesync_times(self):
+        """Computes the framesync times based on the framesync features."""
+        self._framesync_times = librosa.core.frames_to_time(
+            np.arange(self._framesync_features.shape[0]), self.sr,
+            self.hop_length)
+
     def _compute_all_features(self):
         """Computes all the features (beatsync, framesync) from the audio."""
         # Read actual audio waveform
@@ -345,6 +352,9 @@ class Features(six.with_metaclass(MetaFeatures)):
 
         # Compute actual features
         self._framesync_features = self.compute_features()
+
+        # Compute framesync times
+        self._compute_framesync_times()
 
         # Compute/Read beats
         self._est_beats_times, self._est_beats_frames = self.estimate_beats()
@@ -363,10 +373,9 @@ class Features(six.with_metaclass(MetaFeatures)):
         features."""
         frame_times = None
         # Make sure we have already computed the features
-        features = self.features
+        self.features
         if self.feat_type is FeatureTypes.framesync:
-            frame_times = np.array([i * self.hop_length / float(self.sr) for
-                                    i in np.arange(features.shape[0])])
+            frame_times = self._framesync_times
         elif self.feat_type is FeatureTypes.est_beatsync:
             frame_times = self._est_beats_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
