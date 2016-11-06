@@ -1,6 +1,11 @@
 Changes
 =======
 
+v0.1.4
+------
+
+* Included Python 3.5 in the metadata.
+
 v0.1.3
 ------
 
