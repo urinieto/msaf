@@ -8,8 +8,6 @@ import os
 import scipy.io.wavfile
 import six
 
-import msaf
-
 
 def lognormalize(F, floor=0.1, min_db=-80):
     """Log-normalizes features such that each vector is between min_db to 0."""
