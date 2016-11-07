@@ -175,7 +175,6 @@ def test_no_audio():
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
     no_audio_file_struct.features_file = "features/chirp_noaudio.json"
-    import pdb; pdb.set_trace()
     feat_type = FeatureTypes.framesync
     CQT(no_audio_file_struct, feat_type, sr=22050).features
     assert (os.path.isfile(no_audio_file_struct.features_file))
