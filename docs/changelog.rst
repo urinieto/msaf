@@ -4,6 +4,8 @@ Changes
 v0.1.5
 ------
 
+* Padding beat-sync features now, seems to fix potential misalignment of boundaries. Some algorithms (2D-FMC, CNMF) seem to yield better results now.
+* Modified features file: two new fields may be addeed: `est_beatsync_times` and `ann_beatsync_times`.
 * The member variable `_framesync_times` in the `Features` was never updated. Fixed it
 
 v0.1.4
