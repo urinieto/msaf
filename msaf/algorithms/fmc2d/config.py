@@ -6,7 +6,7 @@ import numpy as np
 config = {
     "dirichlet": False,
     "xmeans": False,
-    "k": 5,
+    "k": 4,
     "2dfmc_offset": 4,
     "label_norm_feats": np.inf,  # "min_max", "log", np.inf,
                                  # -np.inf, float >= 0, None
