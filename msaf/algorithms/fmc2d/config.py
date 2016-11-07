@@ -1,12 +1,14 @@
 """Config for the 2D-FMC."""
 
+import numpy as np
+
 # 2D-FMC Params
 config = {
     "dirichlet": False,
     "xmeans": False,
     "k": 5,
-    "label_norm_feats": "log",  # "min_max", "log", np.inf,
-                                # -np.inf, float >= 0, None
+    "label_norm_feats": np.inf,  # "min_max", "log", np.inf,
+                                 # -np.inf, float >= 0, None
     "label_norm_floor": 0.1,
     "label_norm_min_db": -80
 }
