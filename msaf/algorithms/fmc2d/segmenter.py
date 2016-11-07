@@ -14,34 +14,59 @@ from msaf.algorithms.interface import SegmenterInterface
 
 import matplotlib.pyplot as plt
 
-def get_pcp_segments(PCP, bound_idxs):
-    """Returns a set of segments defined by the bound_idxs."""
-    pcp_segments = []
+
+def get_feat_segments(F, bound_idxs):
+    """Returns a set of segments defined by the bound_idxs.
+
+    Parameters
+    ----------
+    F: np.ndarray
+        Matrix containing the features, one feature vector per row.
+    bound_idxs: np.ndarray
+        Array with boundary indeces.
+
+    Returns
+    -------
+    feat_segments: list
+        List of segments, one for each boundary interval.
+    """
+    # Make sure bound_idxs are not empty
+    assert len(bound_idxs) > 0, "Boundaries can't be empty"
+
+    # Make sure that boundaries are sorted
+    bound_idxs = np.sort(bound_idxs)
+
+    # Make sure we're not out of bounds
+    assert bound_idxs[0] >= 0 and bound_idxs[-1] < F.shape[0], \
+        "Boundaries are not correct for the given feature dimensions."
+
+    # Obtain the segments
+    feat_segments = []
     for i in range(len(bound_idxs) - 1):
-        pcp_segments.append(PCP[bound_idxs[i]:bound_idxs[i + 1], :])
-    return pcp_segments
+        feat_segments.append(F[bound_idxs[i]:bound_idxs[i + 1], :])
+    return feat_segments
 
 
-def pcp_segments_to_2dfmc_max(pcp_segments):
+def feat_segments_to_2dfmc_max(feat_segments):
     """From a list of PCP segments, return a list of 2D-Fourier Magnitude
         Coefs using the maximumg segment size and zero pad the rest."""
-    if len(pcp_segments) == 0:
+    if len(feat_segments) == 0:
         return []
 
     # Get maximum segment size
-    max_len = max([pcp_segment.shape[0] for pcp_segment in pcp_segments])
+    max_len = max([feat_segment.shape[0] for feat_segment in feat_segments])
 
     OFFSET = 4
     fmcs = []
-    for pcp_segment in pcp_segments:
+    for feat_segment in feat_segments:
         # Zero pad if needed
-        X = np.zeros((max_len, pcp_segment.shape[1]))
-        # X[:pcp_segment.shape[0],:] = pcp_segment
-        if pcp_segment.shape[0] <= OFFSET:
-            X[:pcp_segment.shape[0], :] = pcp_segment
+        X = np.zeros((max_len, feat_segment.shape[1]))
+        # X[:feat_segment.shape[0],:] = feat_segment
+        if feat_segment.shape[0] <= OFFSET:
+            X[:feat_segment.shape[0], :] = feat_segment
         else:
-            X[:pcp_segment.shape[0] - OFFSET, :] = \
-                pcp_segment[OFFSET // 2:-OFFSET // 2, :]
+            X[:feat_segment.shape[0] - OFFSET, :] = \
+                feat_segment[OFFSET // 2:-OFFSET // 2, :]
 
         # 2D-FMC
         try:
@@ -69,14 +94,32 @@ def compute_labels_kmeans(fmcs, k=6):
     return labels
 
 
-def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
-    """Main function to compute the segment similarity of file file_struct."""
+def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5):
+    """Main function to compute the segment similarity of file file_struct.
+    
+    Parameters
+    ----------
+    F: np.ndarray
+        Matrix containing one feature vector per row.
+    bound_idxs: np.ndarray
+        Array with the indeces of the segment boundaries.
+    dirichlet: boolean
+        Whether to use the dirichlet estimator of the number of unique labels.
+    xmeans: boolean
+        Whether to use the xmeans estimator of the number of unique labels.
+    k: int > 0
+        If the other two predictors are `False`, use fixed number of labels.
 
-    # Get PCP segments
-    pcp_segments = get_pcp_segments(PCP, bound_idxs)
+    Returns
+    -------
+    labels_est: np.ndarray
+        Estimated labels, containing integer identifiers.
+    """
+    # Get the feature segments
+    feat_segments = get_feat_segments(F, bound_idxs)
 
     # Get the 2d-FMCs segments
-    fmcs = pcp_segments_to_2dfmc_max(pcp_segments)
+    fmcs = feat_segments_to_2dfmc_max(feat_segments)
     if len(fmcs) == 0:
         return np.arange(len(bound_idxs) - 1)
 
@@ -130,7 +173,6 @@ class Segmenter(SegmenterInterface):
         F = U.normalize(F, norm_type=self.config["label_norm_feats"],
                         floor=self.config["label_norm_floor"],
                         min_db=self.config["label_norm_min_db"])
-        # plt.imshow(F.T, interpolation="nearest", aspect="auto", cmap="viridis"); plt.show()
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, self.in_bound_idxs,
