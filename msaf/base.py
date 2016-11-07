@@ -390,6 +390,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         # Make sure we have already computed the features
         self.features
         if self.feat_type is FeatureTypes.framesync:
+            self._compute_framesync_times()
             frame_times = self._framesync_times
         elif self.feat_type is FeatureTypes.est_beatsync:
             frame_times = self._est_beatsync_times
