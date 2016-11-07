@@ -85,8 +85,10 @@ class Features(six.with_metaclass(MetaFeatures)):
         self._audio_harmonic = None  # Harmonic audio signal
         self._audio_percussive = None  # Percussive audio signal
         self._framesync_times = None  # The times of the framesync features
+        self._est_beatsync_times = None  # Estimated beat-sync times
         self._est_beats_times = None  # Estimated beat times
         self._est_beats_frames = None  # Estimated beats in frames
+        self._ann_beatsync_times = None  # Annotated beat-sync times
         self._ann_beats_times = None  # Annotated beat times
         self._ann_beats_frames = None  # Annotated beats in frames
 
@@ -169,33 +171,40 @@ class Features(six.with_metaclass(MetaFeatures)):
                                                 hop_length=self.hop_length)
         return times, frames
 
-    def compute_beat_sync_features(self, beat_frames, pad):
+    def compute_beat_sync_features(self, beat_frames, beat_times, pad):
         """Make the features beat-synchronous.
 
         Parameters
         ----------
         beat_frames: np.array
             The frame indeces of the beat positions.
+        beat_times: np.array
+            The time points of the beat positions (in seconds).
         pad: boolean
             If `True`, `beat_frames` is padded to span the full range.
 
         Returns
         -------
-        beatsync: np.array
+        beatsync_feats: np.array
             The beat-synchronized features.
+            `None` if the beat_frames was `None`.
+        beatsync_times: np.array
+            The beat-synchronized times.
             `None` if the beat_frames was `None`.
         """
         if beat_frames is None:
-            return None
+            return None, None
 
         # Make beat synchronous
-        beatsync = librosa.util.utils.sync(self._framesync_features.T,
-                                           beat_frames, pad=pad).T
+        beatsync_feats = librosa.util.utils.sync(self._framesync_features.T,
+                                                 beat_frames, pad=pad).T
 
-        # TODO: Make sure we have the right size
-        # (remove last frame if needed, when using padding may happen)
-        # beatsync = beatsync[:len(beat_frames), :]
-        return beatsync
+        # Assign times (and add last time if padded)
+        beatsync_times = np.copy(beat_times)
+        if beatsync_times.shape[0] != beatsync_feats.shape[0]:
+            beatsync_times = np.concatenate((beatsync_times,
+                                             [self._framesync_times[-1]]))
+        return beatsync_feats, beatsync_times
 
     def read_features(self, tol=1e-3):
         """Reads the features from a file and stores them in the current
@@ -243,6 +252,7 @@ class Features(six.with_metaclass(MetaFeatures)):
 
             # Store actual features
             self._est_beats_times = np.array(feats["est_beats"])
+            self._est_beatsync_times = np.array(feats["est_beatsync_times"])
             self._est_beats_frames = librosa.core.time_to_frames(
                 self._est_beats_times, sr=self.sr, hop_length=self.hop_length)
             self._framesync_features = \
@@ -253,6 +263,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             # Read annotated beats if available
             if "ann_beats" in feats.keys():
                 self._ann_beats_times = np.array(feats["ann_beats"])
+                self._ann_beatsync_times = np.array(feats["ann_beatsync_times"])
                 self._ann_beats_frames = librosa.core.time_to_frames(
                     self._ann_beats_times, sr=self.sr,
                     hop_length=self.hop_length)
@@ -297,8 +308,10 @@ class Features(six.with_metaclass(MetaFeatures)):
 
             # Beats
             out_json["est_beats"] = self._est_beats_times.tolist()
+            out_json["est_beatsync_times"] = self._est_beatsync_times.tolist()
             if self._ann_beats_times is not None:
                 out_json["ann_beats"] = self._ann_beats_times.tolist()
+                out_json["ann_beatsync_times"] = self._ann_beatsync_times.tolist()
         except FeatureParamsError:
             # We have other features in the file, simply add these ones
             with open(self.file_struct.features_file) as f:
@@ -361,11 +374,13 @@ class Features(six.with_metaclass(MetaFeatures)):
         self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
 
         # Beat-Synchronize
-        pad = False  # Always append to the end of the features
-        self._est_beatsync_features = \
-            self.compute_beat_sync_features(self._est_beats_frames, pad)
-        self._ann_beatsync_features = \
-            self.compute_beat_sync_features(self._ann_beats_frames, pad)
+        pad = True  # Always append to the end of the features
+        self._est_beatsync_features, self._est_beatsync_times = \
+            self.compute_beat_sync_features(self._est_beats_frames,
+                                            self._est_beats_times, pad)
+        self._ann_beatsync_features, self._ann_beatsync_times = \
+            self.compute_beat_sync_features(self._ann_beats_frames,
+                                            self._ann_beats_times, pad)
 
     @property
     def frame_times(self):
@@ -377,9 +392,9 @@ class Features(six.with_metaclass(MetaFeatures)):
         if self.feat_type is FeatureTypes.framesync:
             frame_times = self._framesync_times
         elif self.feat_type is FeatureTypes.est_beatsync:
-            frame_times = self._est_beats_times
+            frame_times = self._est_beatsync_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
-            frame_times = self._ann_beats_times
+            frame_times = self._ann_beatsync_times
 
         return frame_times
 

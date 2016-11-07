@@ -174,6 +174,8 @@ def test_no_audio():
     they have been previously been computed."""
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
+    no_audio_file_struct.features_file = "features/chirp_noaudio.json"
+    import pdb; pdb.set_trace()
     feat_type = FeatureTypes.framesync
     CQT(no_audio_file_struct, feat_type, sr=22050).features
     assert (os.path.isfile(no_audio_file_struct.features_file))
@@ -188,6 +190,7 @@ def test_no_audio_no_params():
     want to be explored and no audio file is found."""
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
+    no_audio_file_struct.features_file = "features/chirp_noaudio.json"
     feat_type = FeatureTypes.framesync
     CQT(no_audio_file_struct, feat_type, sr=11025).features
 
