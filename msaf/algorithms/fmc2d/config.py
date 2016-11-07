@@ -7,6 +7,7 @@ config = {
     "dirichlet": False,
     "xmeans": False,
     "k": 5,
+    "2dfmc_offset": 4,
     "label_norm_feats": np.inf,  # "min_max", "log", np.inf,
                                  # -np.inf, float >= 0, None
     "label_norm_floor": 0.1,

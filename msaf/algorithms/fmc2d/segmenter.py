@@ -47,28 +47,41 @@ def get_feat_segments(F, bound_idxs):
     return feat_segments
 
 
-def feat_segments_to_2dfmc_max(feat_segments):
-    """From a list of PCP segments, return a list of 2D-Fourier Magnitude
-        Coefs using the maximumg segment size and zero pad the rest."""
+def feat_segments_to_2dfmc_max(feat_segments, offset=4):
+    """From a list of feature segments, return a list of 2D-Fourier Magnitude
+    Coefs using the maximum segment size as main size and zero pad the rest.
+
+    Parameters
+    ----------
+    feat_segments: list
+        List of segments, one for each boundary interval.
+    offset: int >= 0
+        Number of frames to ignore from beginning and end of each segment.
+
+    Returns
+    -------
+    fmcs: np.ndarray
+        Tensor containing the 2D-FMC matrices, one matrix per segment.
+    """
     if len(feat_segments) == 0:
         return []
 
     # Get maximum segment size
     max_len = max([feat_segment.shape[0] for feat_segment in feat_segments])
 
-    OFFSET = 4
     fmcs = []
     for feat_segment in feat_segments:
         # Zero pad if needed
         X = np.zeros((max_len, feat_segment.shape[1]))
-        # X[:feat_segment.shape[0],:] = feat_segment
-        if feat_segment.shape[0] <= OFFSET:
+
+        # Remove a set of frames in the beginning an end of the segment
+        if feat_segment.shape[0] <= offset or offset == 0:
             X[:feat_segment.shape[0], :] = feat_segment
         else:
-            X[:feat_segment.shape[0] - OFFSET, :] = \
-                feat_segment[OFFSET // 2:-OFFSET // 2, :]
+            X[:feat_segment.shape[0] - offset, :] = \
+                feat_segment[offset // 2:-offset // 2, :]
 
-        # 2D-FMC
+        # Compute the 2D-FMC
         try:
             fmcs.append(utils2d.compute_ffmc2d(X))
         except:
@@ -81,7 +94,7 @@ def feat_segments_to_2dfmc_max(feat_segments):
     return np.asarray(fmcs)
 
 
-def compute_labels_kmeans(fmcs, k=6):
+def compute_labels_kmeans(fmcs, k):
     # Removing the higher frequencies seem to yield better results
     fmcs = fmcs[:, fmcs.shape[1] // 2:]
 
@@ -94,9 +107,10 @@ def compute_labels_kmeans(fmcs, k=6):
     return labels
 
 
-def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5):
+def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
+                       offset=4):
     """Main function to compute the segment similarity of file file_struct.
-    
+
     Parameters
     ----------
     F: np.ndarray
@@ -109,6 +123,8 @@ def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5):
         Whether to use the xmeans estimator of the number of unique labels.
     k: int > 0
         If the other two predictors are `False`, use fixed number of labels.
+    offset: int >= 0
+        Number of frames to ignore from beginning and end of each segment.
 
     Returns
     -------
@@ -118,8 +134,8 @@ def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5):
     # Get the feature segments
     feat_segments = get_feat_segments(F, bound_idxs)
 
-    # Get the 2d-FMCs segments
-    fmcs = feat_segments_to_2dfmc_max(feat_segments)
+    # Get the 2D-FMCs segments
+    fmcs = feat_segments_to_2dfmc_max(feat_segments, offset)
     if len(fmcs) == 0:
         return np.arange(len(bound_idxs) - 1)
 
@@ -178,7 +194,8 @@ class Segmenter(SegmenterInterface):
         est_labels = compute_similarity(F, self.in_bound_idxs,
                                         dirichlet=self.config["dirichlet"],
                                         xmeans=self.config["xmeans"],
-                                        k=self.config["k"])
+                                        k=self.config["k"],
+                                        offset=self.config["2dfmc_offset"])
 
         # Post process estimations
         self.in_bound_idxs, est_labels = self._postprocess(self.in_bound_idxs,
