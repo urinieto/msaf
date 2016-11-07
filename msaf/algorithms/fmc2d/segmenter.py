@@ -12,8 +12,7 @@ from .xmeans import XMeans
 import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 
-MIN_LEN = 4
-
+import matplotlib.pyplot as plt
 
 def get_pcp_segments(PCP, bound_idxs):
     """Returns a set of segments defined by the bound_idxs."""
@@ -37,11 +36,11 @@ def pcp_segments_to_2dfmc_max(pcp_segments):
     for pcp_segment in pcp_segments:
         # Zero pad if needed
         X = np.zeros((max_len, pcp_segment.shape[1]))
-        #X[:pcp_segment.shape[0],:] = pcp_segment
+        # X[:pcp_segment.shape[0],:] = pcp_segment
         if pcp_segment.shape[0] <= OFFSET:
             X[:pcp_segment.shape[0], :] = pcp_segment
         else:
-            X[:pcp_segment.shape[0]-OFFSET, :] = \
+            X[:pcp_segment.shape[0] - OFFSET, :] = \
                 pcp_segment[OFFSET // 2:-OFFSET // 2, :]
 
         # 2D-FMC
@@ -52,7 +51,7 @@ def pcp_segments_to_2dfmc_max(pcp_segments):
             fmcs.append(np.zeros((X.shape[0] * X.shape[1]) // 2 + 1))
 
         # Normalize
-        #fmcs[-1] = fmcs[-1] / float(fmcs[-1].max())
+        # fmcs[-1] = fmcs[-1] / float(fmcs[-1].max())
 
     return np.asarray(fmcs)
 
@@ -89,21 +88,18 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
             labels_est = compute_labels_kmeans(fmcs, k=k)
         else:
             dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
-            #dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
+            # dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
             dpgmm.fit(fmcs)
             k = len(dpgmm.means_)
             labels_est = dpgmm.predict(fmcs)
-            #print "Estimated with Dirichlet Process:", k
+            # print("Estimated with Dirichlet Process:", k)
     if xmeans:
         xm = XMeans(fmcs, plot=False)
         k = xm.estimate_K_knee(th=0.01, maxK=8)
         labels_est = compute_labels_kmeans(fmcs, k=k)
-        #print "Estimated with Xmeans:", k
+        # print("Estimated with Xmeans:", k)
     else:
         labels_est = compute_labels_kmeans(fmcs, k=k)
-
-    # Plot results
-    #plot_pcp_wgt(PCP, bound_idxs)
 
     return labels_est
 
@@ -128,13 +124,13 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        # F = self._preprocess(valid_features=["pcp", "cqt"])
         F = self._preprocess()
 
         # Normalize
         F = U.normalize(F, norm_type=self.config["label_norm_feats"],
                         floor=self.config["label_norm_floor"],
                         min_db=self.config["label_norm_min_db"])
+        # plt.imshow(F.T, interpolation="nearest", aspect="auto", cmap="viridis"); plt.show()
 
         # Find the labels using 2D-FMCs
         est_labels = compute_similarity(F, self.in_bound_idxs,
