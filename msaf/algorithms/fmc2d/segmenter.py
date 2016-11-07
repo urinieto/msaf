@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import scipy.cluster.vq as vq
 from sklearn import mixture
+from sklearn.cluster import KMeans
 
 # Local stuff
 from . import utils_2dfmc as utils2d
@@ -98,13 +99,19 @@ def compute_labels_kmeans(fmcs, k):
     # Removing the higher frequencies seem to yield better results
     fmcs = fmcs[:, fmcs.shape[1] // 2:]
 
+    # Pre-process
     fmcs = np.log1p(fmcs)
     wfmcs = vq.whiten(fmcs)
 
-    dic, dist = vq.kmeans(wfmcs, k, iter=100)
-    labels, dist = vq.vq(wfmcs, dic)
+    # Make sure we are not using more clusters than existing segments
+    if k > fmcs.shape[0]:
+        k = fmcs.shape[0]
 
-    return labels
+    # K-means
+    kmeans = KMeans(n_clusters=k, n_init=100)
+    kmeans.fit(wfmcs)
+
+    return kmeans.labels_
 
 
 def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
