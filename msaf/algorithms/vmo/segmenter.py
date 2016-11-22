@@ -21,7 +21,6 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         F = librosa.feature.stack_memory(F.T).T
-        print F.shape
         ideal_t = vmo.find_threshold(F, dim=F.shape[1])
         oracle = vmo.build_oracle(F,flag='a', threshold=ideal_t[0][1], dim=F.shape[1])
 
@@ -29,6 +28,5 @@ class Segmenter(SegmenterInterface):
                                             connectivity=self.config['connectivity'])
         # Post process estimations
         est_idxs, est_labels = self._postprocess(my_bounds, my_labels)
-        print est_idxs
         # We're done!
         return est_idxs, est_labels
