@@ -51,7 +51,8 @@ setup(
         'joblib',
         'librosa >= 0.4.2',
         'mir_eval',
-        'pandas'
+        'pandas',
+        'vmo'
     ],
     extras_require={
         'resample': 'scikits.samplerate>=0.3'
