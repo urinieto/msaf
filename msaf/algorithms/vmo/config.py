@@ -3,7 +3,7 @@
 # Algorithm Params
 config = {
     "method": 'symbol_spectral',
-    "connectivity": 'lrs'
+    "connectivity": 'sfx'
 }
 
 algo_id = "vmo"  # Identifier of the algorithm
