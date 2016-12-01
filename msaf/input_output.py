@@ -141,10 +141,24 @@ def read_references(audio_path, annotator_id=0):
 
 
 def align_times(times, frames):
-    """Aligns the times to the closes frame times (e.g. beats)."""
+    """Aligns the times to the closest frame times (e.g. beats).
+
+    Parameters
+    ----------
+    times: np.ndarray
+        Times in seconds to be aligned.
+    frames: np.ndarray
+        Frame times in seconds.
+
+    Returns
+    -------
+    aligned_times: np.ndarray
+        Aligned times.
+    """
     dist = np.minimum.outer(times, frames)
     bound_frames = np.argmax(np.maximum(0, dist), axis=1)
-    return np.unique(bound_frames)
+    aligned_times = np.unique(bound_frames)
+    return aligned_times
 
 
 def find_estimation(jam, boundaries_id, labels_id, params):

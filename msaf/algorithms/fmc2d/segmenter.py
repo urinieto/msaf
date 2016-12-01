@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import scipy.cluster.vq as vq
 from sklearn import mixture
+from sklearn.cluster import KMeans
 
 # Local stuff
 from . import utils_2dfmc as utils2d
@@ -12,39 +13,76 @@ from .xmeans import XMeans
 import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 
-MIN_LEN = 4
+import matplotlib.pyplot as plt
 
 
-def get_pcp_segments(PCP, bound_idxs):
-    """Returns a set of segments defined by the bound_idxs."""
-    pcp_segments = []
+def get_feat_segments(F, bound_idxs):
+    """Returns a set of segments defined by the bound_idxs.
+
+    Parameters
+    ----------
+    F: np.ndarray
+        Matrix containing the features, one feature vector per row.
+    bound_idxs: np.ndarray
+        Array with boundary indeces.
+
+    Returns
+    -------
+    feat_segments: list
+        List of segments, one for each boundary interval.
+    """
+    # Make sure bound_idxs are not empty
+    assert len(bound_idxs) > 0, "Boundaries can't be empty"
+
+    # Make sure that boundaries are sorted
+    bound_idxs = np.sort(bound_idxs)
+
+    # Make sure we're not out of bounds
+    assert bound_idxs[0] >= 0 and bound_idxs[-1] < F.shape[0], \
+        "Boundaries are not correct for the given feature dimensions."
+
+    # Obtain the segments
+    feat_segments = []
     for i in range(len(bound_idxs) - 1):
-        pcp_segments.append(PCP[bound_idxs[i]:bound_idxs[i + 1], :])
-    return pcp_segments
+        feat_segments.append(F[bound_idxs[i]:bound_idxs[i + 1], :])
+    return feat_segments
 
 
-def pcp_segments_to_2dfmc_max(pcp_segments):
-    """From a list of PCP segments, return a list of 2D-Fourier Magnitude
-        Coefs using the maximumg segment size and zero pad the rest."""
-    if len(pcp_segments) == 0:
+def feat_segments_to_2dfmc_max(feat_segments, offset=4):
+    """From a list of feature segments, return a list of 2D-Fourier Magnitude
+    Coefs using the maximum segment size as main size and zero pad the rest.
+
+    Parameters
+    ----------
+    feat_segments: list
+        List of segments, one for each boundary interval.
+    offset: int >= 0
+        Number of frames to ignore from beginning and end of each segment.
+
+    Returns
+    -------
+    fmcs: np.ndarray
+        Tensor containing the 2D-FMC matrices, one matrix per segment.
+    """
+    if len(feat_segments) == 0:
         return []
 
     # Get maximum segment size
-    max_len = max([pcp_segment.shape[0] for pcp_segment in pcp_segments])
+    max_len = max([feat_segment.shape[0] for feat_segment in feat_segments])
 
-    OFFSET = 4
     fmcs = []
-    for pcp_segment in pcp_segments:
+    for feat_segment in feat_segments:
         # Zero pad if needed
-        X = np.zeros((max_len, pcp_segment.shape[1]))
-        #X[:pcp_segment.shape[0],:] = pcp_segment
-        if pcp_segment.shape[0] <= OFFSET:
-            X[:pcp_segment.shape[0], :] = pcp_segment
-        else:
-            X[:pcp_segment.shape[0]-OFFSET, :] = \
-                pcp_segment[OFFSET // 2:-OFFSET // 2, :]
+        X = np.zeros((max_len, feat_segment.shape[1]))
 
-        # 2D-FMC
+        # Remove a set of frames in the beginning an end of the segment
+        if feat_segment.shape[0] <= offset or offset == 0:
+            X[:feat_segment.shape[0], :] = feat_segment
+        else:
+            X[:feat_segment.shape[0] - offset, :] = \
+                feat_segment[offset // 2:-offset // 2, :]
+
+        # Compute the 2D-FMC
         try:
             fmcs.append(utils2d.compute_ffmc2d(X))
         except:
@@ -52,32 +90,59 @@ def pcp_segments_to_2dfmc_max(pcp_segments):
             fmcs.append(np.zeros((X.shape[0] * X.shape[1]) // 2 + 1))
 
         # Normalize
-        #fmcs[-1] = fmcs[-1] / float(fmcs[-1].max())
+        # fmcs[-1] = fmcs[-1] / float(fmcs[-1].max())
 
     return np.asarray(fmcs)
 
 
-def compute_labels_kmeans(fmcs, k=6):
+def compute_labels_kmeans(fmcs, k):
     # Removing the higher frequencies seem to yield better results
     fmcs = fmcs[:, fmcs.shape[1] // 2:]
 
+    # Pre-process
     fmcs = np.log1p(fmcs)
     wfmcs = vq.whiten(fmcs)
 
-    dic, dist = vq.kmeans(wfmcs, k, iter=100)
-    labels, dist = vq.vq(wfmcs, dic)
+    # Make sure we are not using more clusters than existing segments
+    if k > fmcs.shape[0]:
+        k = fmcs.shape[0]
 
-    return labels
+    # K-means
+    kmeans = KMeans(n_clusters=k, n_init=100)
+    kmeans.fit(wfmcs)
+
+    return kmeans.labels_
 
 
-def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
-    """Main function to compute the segment similarity of file file_struct."""
+def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
+                       offset=4):
+    """Main function to compute the segment similarity of file file_struct.
 
-    # Get PCP segments
-    pcp_segments = get_pcp_segments(PCP, bound_idxs)
+    Parameters
+    ----------
+    F: np.ndarray
+        Matrix containing one feature vector per row.
+    bound_idxs: np.ndarray
+        Array with the indeces of the segment boundaries.
+    dirichlet: boolean
+        Whether to use the dirichlet estimator of the number of unique labels.
+    xmeans: boolean
+        Whether to use the xmeans estimator of the number of unique labels.
+    k: int > 0
+        If the other two predictors are `False`, use fixed number of labels.
+    offset: int >= 0
+        Number of frames to ignore from beginning and end of each segment.
 
-    # Get the 2d-FMCs segments
-    fmcs = pcp_segments_to_2dfmc_max(pcp_segments)
+    Returns
+    -------
+    labels_est: np.ndarray
+        Estimated labels, containing integer identifiers.
+    """
+    # Get the feature segments
+    feat_segments = get_feat_segments(F, bound_idxs)
+
+    # Get the 2D-FMCs segments
+    fmcs = feat_segments_to_2dfmc_max(feat_segments, offset)
     if len(fmcs) == 0:
         return np.arange(len(bound_idxs) - 1)
 
@@ -89,21 +154,18 @@ def compute_similarity(PCP, bound_idxs, dirichlet=False, xmeans=False, k=5):
             labels_est = compute_labels_kmeans(fmcs, k=k)
         else:
             dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
-            #dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
+            # dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
             dpgmm.fit(fmcs)
             k = len(dpgmm.means_)
             labels_est = dpgmm.predict(fmcs)
-            #print "Estimated with Dirichlet Process:", k
+            # print("Estimated with Dirichlet Process:", k)
     if xmeans:
         xm = XMeans(fmcs, plot=False)
         k = xm.estimate_K_knee(th=0.01, maxK=8)
         labels_est = compute_labels_kmeans(fmcs, k=k)
-        #print "Estimated with Xmeans:", k
+        # print("Estimated with Xmeans:", k)
     else:
         labels_est = compute_labels_kmeans(fmcs, k=k)
-
-    # Plot results
-    #plot_pcp_wgt(PCP, bound_idxs)
 
     return labels_est
 
@@ -128,7 +190,6 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features, times, and input boundary indeces
-        # F = self._preprocess(valid_features=["pcp", "cqt"])
         F = self._preprocess()
 
         # Normalize
@@ -140,7 +201,8 @@ class Segmenter(SegmenterInterface):
         est_labels = compute_similarity(F, self.in_bound_idxs,
                                         dirichlet=self.config["dirichlet"],
                                         xmeans=self.config["xmeans"],
-                                        k=self.config["k"])
+                                        k=self.config["k"],
+                                        offset=self.config["2dfmc_offset"])
 
         # Post process estimations
         self.in_bound_idxs, est_labels = self._postprocess(self.in_bound_idxs,
