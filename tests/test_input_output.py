@@ -158,3 +158,10 @@ def test_write_mirex():
 
     # Cleanup
     os.remove(out_file)
+
+
+def test_align_times():
+    times = np.array([0, 10, 20, 30])
+    frames = np.array([0, 12, 19, 25, 31])
+    aligned_times = msaf.io.align_times(times, frames)
+    assert len(times) == len(aligned_times)

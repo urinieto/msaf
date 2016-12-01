@@ -1,6 +1,17 @@
 Changes
 =======
 
+v0.1.5
+------
+
+* Using KMeans from sklearn instead of scipy for 2D-FMC. Results are better
+* Making sure we are never using more number of clusters than number of segments for 2D-FMC
+* Added new parameter `2dfmc_offset` in the 2D-FMC method
+* Using np.inf normalization for 2D-FMC now, since it seems to yield better results (at least for Beatles TUT)
+* Padding beat-sync features now, seems to fix potential misalignment of boundaries. Some algorithms (2D-FMC, CNMF) seem to yield better results now
+* Modified features file: two new fields may be addeed: `est_beatsync_times` and `ann_beatsync_times`.
+* The member variable `_framesync_times` in the `Features` was never updated. Fixed it
+
 v0.1.4
 ------
 
