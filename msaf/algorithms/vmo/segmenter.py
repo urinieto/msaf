@@ -32,5 +32,7 @@ class Segmenter(SegmenterInterface):
                                             connectivity=self.config['connectivity'])
         # Post process estimations
         est_idxs, est_labels = self._postprocess(my_bounds, my_labels)
+
+        assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
         # We're done!
         return est_idxs, est_labels
