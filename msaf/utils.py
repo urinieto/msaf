@@ -139,7 +139,7 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     click = np.sin(2 * np.pi * np.arange(fs * .1) * 1000 / (1. * fs))
     # Exponential decay
     click *= np.exp(-np.arange(fs * .1) / (fs * .01))
-    length = int(times * fs + click.shape[0] + 1)
+    length = int(times.max() * fs + click.shape[0] + 1)
     audio_clicks = mir_eval.sonify.clicks(times, fs, length=length)
 
     # Create array to store the audio plus the clicks
