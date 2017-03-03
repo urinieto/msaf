@@ -5,6 +5,7 @@
 # nosetests
 
 # For plotting and testing
+from __future__ import print_function
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update(matplotlib.rcParamsDefault)
@@ -96,6 +97,7 @@ def test_run_algorithms():
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
         for label_id in label_ids:
+            print("bound_id: %s,\tlabel_id: %s" % (bound_id, label_id))
             config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                                bound_id, label_id)
             config["hier"] = False
@@ -114,6 +116,7 @@ def test_run_algorithms():
     file_struct.features_file = msaf.config.features_tmp_file
 
     def _test_run_msaf(bound_id, label_id, hier=False):
+        print("bound_id: %s,\tlabel_id: %s" % (bound_id, label_id))
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
         config["hier"] = hier
