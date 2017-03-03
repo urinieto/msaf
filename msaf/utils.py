@@ -218,7 +218,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     silence_label = np.max(est_labels) + 1
     est_labels = np.concatenate(([silence_label], est_labels, [silence_label]))
 
-    print(est_times, est_labels)
+    print(est_times, est_labels, dur)
     # Remove empty segments if needed
     est_times, est_labels = remove_empty_segments(est_times, est_labels)
 
