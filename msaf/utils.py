@@ -222,6 +222,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     est_times, est_labels = remove_empty_segments(est_times, est_labels)
 
     # Make sure that the first and last times are 0 and duration, respectively
+    print(est_times, est_labels)
     assert np.allclose([est_times[0]], [0]) and \
         np.allclose([est_times[-1]], [dur])
 
