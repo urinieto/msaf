@@ -12,7 +12,7 @@ import time
 import msaf
 
 
-def main():
+if __name__ == '__main__':
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(
         description="Runs the speficied algorithm(s) on the input file or MSAF"
@@ -123,7 +123,3 @@ def main():
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
-
-
-if __name__ == '__main__':
-    main()
