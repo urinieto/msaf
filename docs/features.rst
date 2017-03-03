@@ -53,16 +53,20 @@ The format of the ``json`` file is as follows:
                 "..."
             } 
         }
-        "est_beatsync": [ 0.0, 1.0, "..." ],
-        "ann_beatsync": [ 0.0, 1.0, "..." ]
+        "est_beatsync_times": [ 0.0, 1.0, "..." ],
+        "ann_beatsync_times": [ 0.0, 1.0, "..." ],
+        "est_beats": [ 0.0, 1.0, "..." ],
+        "ann_beats": [ 0.0, 1.0, "..." ]
     }
 
 A brief description for the main keys of this ``json`` file follows:
 
 * ``globals``: contains a set of global parameters used to compute the features.
 * ``metadata``: contains a set of meta-parameters that might become useful for debugging purposes.
-* ``est_beats``: contains the set of estimated beats (using librosa).
-* ``ann_beats``: contains the set of reference beats (only exists if reference beats are available).
+* ``est_beats``: contains the set of estimated beats, in seconds (using librosa).
+* ``ann_beats``: contains the set of reference beats, in seconds (only exists if reference beats are available).
+* ``est_beatsync_times``: contains the set times associated with each (estimated-)beat-synchronous feature (might differ with `est_beats` in the beginning or end).
+* ``ann_beatsync_times``: contains the set times associated with each (annotated-)beat-synchronous feature (might differ with `ann_beats` in the beginning or end).
 * ``<feature_id>`` (e.g., ``pcp``, ``mfcc``): contains the actual features of the given audio file. Inside this key the following sub-keys can be found:
 
     * ``framesync``: Actual frame-wise features.
