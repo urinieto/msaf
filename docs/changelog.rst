@@ -4,6 +4,7 @@ Changes
 v0.1.5
 ------
 
+* Adapting sonify function to latest numpy.
 * Using KMeans from sklearn instead of scipy for 2D-FMC. Results are better
 * Making sure we are never using more number of clusters than number of segments for 2D-FMC
 * Added new parameter `2dfmc_offset` in the 2D-FMC method
