@@ -13,8 +13,6 @@ from .xmeans import XMeans
 import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
 
-import matplotlib.pyplot as plt
-
 
 def get_feat_segments(F, bound_idxs):
     """Returns a set of segments defined by the bound_idxs.
