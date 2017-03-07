@@ -106,6 +106,7 @@ def get_time_frames(dur, anal):
 
 def remove_empty_segments(times, labels):
     """Removes empty segments if needed."""
+    assert len(times) - 1 == len(labels)
     inters = times_to_intervals(times)
     new_inters = []
     new_labels = []
@@ -212,18 +213,17 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
         Estimated labels for each segment.
     """
     assert est_idxs[0] == 0 and est_idxs[-1] == N - 1
+    assert len(est_idxs) - 1 == len(est_labels)
 
     # Add silences, if needed
     est_times = np.concatenate(([0], frame_times[est_idxs], [dur]))
     silence_label = np.max(est_labels) + 1
     est_labels = np.concatenate(([silence_label], est_labels, [silence_label]))
 
-    print(est_times, est_labels, dur)
     # Remove empty segments if needed
     est_times, est_labels = remove_empty_segments(est_times, est_labels)
 
     # Make sure that the first and last times are 0 and duration, respectively
-    print(est_times, est_labels)
     assert np.allclose([est_times[0]], [0]) and \
         np.allclose([est_times[-1]], [dur])
 
