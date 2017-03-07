@@ -103,6 +103,13 @@ class SegmenterInterface:
         """Post processes the estimations from the algorithm, removing empty
         segments and making sure the lenghts of the boundaries and labels
         match."""
+        # Make sure we are using the previously input bounds, if any
+        if self.in_bound_idxs is not None:
+            F = self._preprocess()
+            est_labels = U.synchronize_labels(self.in_bound_idxs, est_idxs,
+                                              est_labels, F.shape[0])
+            est_idxs = self.in_bound_idxs
+
         # Remove empty segments if needed
         est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)
 

@@ -1,4 +1,4 @@
-"""Example of a configuration file for a new algorithm"""
+"""Configuration file for the Variable Markov Oracle method"""
 
 # Algorithm Params
 config = {
