@@ -82,7 +82,7 @@ def test_run_algorithms():
     label_ids = msaf.io.get_all_label_algorithms()
 
     # Add ground truth to boundary id
-    bound_ids += ["gt"]
+    bound_ids += ["gt", "example"]
 
     # Add None to labels
     label_ids += [None]

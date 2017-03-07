@@ -1,5 +1,5 @@
 """
-Example of algorithm for MSAF
+Variable Markov Oracle algorithm
 """
 from msaf.algorithms.interface import SegmenterInterface
 from vmo.analysis.segmentation import segmentation
@@ -9,6 +9,17 @@ import librosa
 
 
 class Segmenter(SegmenterInterface):
+    """
+    This script identifies the structure of a given track using the Variable
+    Markov Oracle technique described here:
+
+    Wang, C., Mysore, J. G., Structural Segmentation With The Variable Markov
+    Oracle And Boundary Adjustment. Proc. of the 41st IEEE International
+    Conference on Acoustics, Speech, and Signal Processing (ICASSP).
+    Shanghai, China, 2016 (`PDF`_).
+
+    .. _PDF: https://ccrma.stanford.edu/~gautham/Site/Publications_files/segmentation-icassp_2016.pdf
+    """
     def processFlat(self):
         """Main process.
         Returns
