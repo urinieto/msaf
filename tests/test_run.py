@@ -143,14 +143,13 @@ def test_run_algorithms():
         for label_id in label_ids:
             yield (_test_run_msaf, bound_id, label_id, False)
 
-    # TODO
     # Test the hierarchical algorithms
-    # hier_ids = ["olda", "scluster"]
-    # for hier_bounds_id in hier_ids:
-        # for hier_labels_id in hier_ids:
-            # if hier_labels_id == "olda":
-                # hier_labels_id = "fmc2d"
-            # yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
+    hier_ids = ["olda", "scluster"]
+    for hier_bounds_id in hier_ids:
+        for hier_labels_id in hier_ids:
+            if hier_labels_id == "olda":
+                hier_labels_id = "fmc2d"
+            yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
 
 
 @raises(NoHierBoundaryError)
@@ -176,9 +175,6 @@ def test_no_gt_flat_bounds():
 
 
 def test_process_track():
-    feature = "pcp"
-    annot_beats = False
-    framesync = False
     bounds_id = "foote"
     labels_id = None
     file_struct = msaf.io.FileStruct(audio_file)
