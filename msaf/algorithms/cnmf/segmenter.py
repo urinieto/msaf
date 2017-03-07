@@ -1,7 +1,5 @@
 # coding: utf-8
-import logging
 import numpy as np
-import pylab as plt
 from scipy.ndimage import filters
 
 import msaf.utils as U
@@ -212,7 +210,8 @@ class Segmenter(SegmenterInterface):
                 self.config["rank_labels"], self.config["R_labels"],
                 niter=niter, bound_idxs=self.in_bound_idxs, in_labels=None)
 
-            est_idxs = np.unique(np.asarray(est_idxs, dtype=int))
+            # Remove empty segments if needed
+            est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)
         else:
             # The track is too short. We will only output the first and last
             # time stamps

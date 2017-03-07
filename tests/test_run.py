@@ -87,11 +87,6 @@ def test_run_algorithms():
     # Add None to labels
     label_ids += [None]
 
-    # bound_ids = ["cnmf", "scluster"]
-    # label_ids = ["vmo"]
-    bound_ids = ["olda"]
-    label_ids = ["cnmf"]
-
     # Config params
     feature = "pcp"
     annot_beats = False
