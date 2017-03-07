@@ -82,7 +82,7 @@ def test_run_algorithms():
     label_ids = msaf.io.get_all_label_algorithms()
 
     # Add ground truth to boundary id
-    bound_ids += ["gt", "example"]
+    bound_ids += ["gt"]
 
     # Add None to labels
     label_ids += [None]
@@ -138,7 +138,7 @@ def test_run_algorithms():
     # Running all boundary algorithms on a relatively long file
     # Combining boundaries with labels
     for bound_id in bound_ids:
-        if bound_id == "gt" or bound_id == "example":
+        if bound_id == "gt":
             continue
         for label_id in label_ids:
             yield (_test_run_msaf, bound_id, label_id, False)
