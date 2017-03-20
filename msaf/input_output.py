@@ -9,11 +9,12 @@ import json
 import logging
 import numpy as np
 import os
+import re
 import six
 
 # Local stuff
 import msaf
-from msaf.exceptions import NoEstimationsError, WrongAlgorithmID
+from msaf.exceptions import NoEstimationsError
 from msaf import utils
 
 # Put dataset config in a global var
@@ -181,20 +182,16 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     ann : jams.Annotation
         Found estimation.
         `None` if it couldn't be found.
-
-    Raises
-    ------
-    WrongAlgorithmID: in case these algorithms were not found in jams.
     """
     # Use handy JAMS search interface
     namespace = "multi_segment" if params["hier"] else "segment_open"
-    try:
-        ann = jam.search(namespace=namespace).\
-            search(**{"Sandbox.boundaries_id": boundaries_id}).\
-            search(**{"Sandbox.labels_id": labels_id})
-    except TypeError:
-        raise WrongAlgorithmID("Algorithm {} or {} couldn't be found in jams".format(
-            boundaries_id, labels_id))
+    # TODO: This is a workaround to issue in JAMS. Should be
+    # resolved in JAMS 0.2.3, but for now, this works too.
+    ann = jam.search(namespace=namespace).\
+        search(**{"Sandbox.boundaries_id": boundaries_id}).\
+        search(**{"Sandbox.labels_id": lambda x:
+                  isinstance(x, six.string_types) and
+                  re.match(labels_id, x) is not None})
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, six.string_types):
             ann = ann.search(**{"Sandbox.%s" % key: val})
