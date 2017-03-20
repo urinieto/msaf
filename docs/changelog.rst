@@ -4,8 +4,9 @@ Changes
 v0.1.5
 ------
 
+* Fixed bug tha threw a `TypeError` if multiple algorithms were run in a single JAMS file with `None` and other label_ids in it
 * Added new `vmo` oracle segmentation method (by Cheng-i Wang, thanks!)
-* Adapting sonify function to latest numpy.
+* Adapting sonify function to latest numpy
 * Using KMeans from sklearn instead of scipy for 2D-FMC. Results are better
 * Making sure we are never using more number of clusters than number of segments for 2D-FMC
 * Added new parameter `2dfmc_offset` in the 2D-FMC method
