@@ -25,30 +25,30 @@ import msaf
 from msaf.features import Features
 
 
-def compute_all_features(file_struct):
+def compute_all_features(file_struct, framesync):
     """Computes all features for the given file."""
     for feature_id in msaf.features_registry:
         logging.info("Computing %s for file %s" % (feature_id,
                                                    file_struct.audio_file))
-        feats = Features.select_features(feature_id, file_struct, False, False)
+        feats = Features.select_features(feature_id, file_struct, False, framesync)
         feats.features
 
 
-def process(in_path, out_file, n_jobs):
+def process(in_path, out_file, n_jobs, framesync):
     """Computes the features for the selected dataset or file."""
     if os.path.isfile(in_path):
         # Single file mode
         # Get (if they exitst) or compute features
         file_struct = msaf.io.FileStruct(in_path)
         file_struct.features_file = out_file
-        compute_all_features(file_struct)
+        compute_all_features(file_struct, framesync)
     else:
         # Collection mode
         file_structs = msaf.io.get_dataset_files(in_path)
 
         # Call in parallel
         return Parallel(n_jobs=n_jobs)(delayed(compute_all_features)(
-            file_struct) for file_struct in file_structs)
+            file_struct, framesync) for file_struct in file_structs)
 
 
 def main():
@@ -79,6 +79,11 @@ def main():
                         default="*",
                         help="The prefix of the dataset to use "
                         "(e.g. Isophonics, SALAMI)")
+    parser.add_argument("-fs",
+                        action="store_true",
+                        dest="framesync",
+                        help="Use frame-synchronous features",
+                        default=False)
     args = parser.parse_args()
     start_time = time.time()
 
@@ -87,7 +92,7 @@ def main():
         level=logging.INFO)
 
     # Run the main process
-    process(args.in_path, out_file=args.out_file, n_jobs=args.n_jobs)
+    process(args.in_path, out_file=args.out_file, n_jobs=args.n_jobs, framesync=args.framesync)
 
     # Done!
     logging.info("Done! Took %.2f seconds." % (time.time() - start_time))
