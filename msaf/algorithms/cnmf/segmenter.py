@@ -1,7 +1,5 @@
 # coding: utf-8
-import logging
 import numpy as np
-import pylab as plt
 from scipy.ndimage import filters
 
 import msaf.utils as U
@@ -212,19 +210,20 @@ class Segmenter(SegmenterInterface):
                 self.config["rank_labels"], self.config["R_labels"],
                 niter=niter, bound_idxs=self.in_bound_idxs, in_labels=None)
 
-            est_idxs = np.unique(np.asarray(est_idxs, dtype=int))
+            # Remove empty segments if needed
+            est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)
         else:
             # The track is too short. We will only output the first and last
             # time stamps
             if self.in_bound_idxs is None:
-                est_idxs = np.array([0, F.shape[0]-1])
+                est_idxs = np.array([0, F.shape[0] - 1])
                 est_labels = [1]
             else:
                 est_idxs = self.in_bound_idxs
                 est_labels = [1] * (len(est_idxs) + 1)
 
         # Make sure that the first and last boundaries are included
-        assert est_idxs[0] == 0  and est_idxs[-1] == F.shape[0] - 1
+        assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(est_idxs, est_labels)

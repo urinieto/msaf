@@ -138,14 +138,12 @@ def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
             est_idxs, est_labels = S.processFlat()
         else:
             try:
+                # Ground-truth boundaries
                 est_times, est_labels = io.read_references(
                     file_struct.audio_file, annotator_id=annotator_id)
-                est_idxs = io.align_times(est_times, frame_times[:-1])
+                est_idxs = io.align_times(est_times, frame_times)
                 if est_idxs[0] != 0:
                     est_idxs = np.concatenate(([0], est_idxs))
-                if est_idxs[-1] != features.shape[0] - 1:
-                    est_idxs = np.concatenate((
-                        est_idxs, [features.shape[0] - 1]))
             except IOError:
                 logging.warning("No references found for file: %s" %
                                 file_struct.audio_file)
@@ -369,4 +367,3 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         return Parallel(n_jobs=n_jobs)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
             annotator_id=annotator_id) for file_struct in file_structs[:])
-

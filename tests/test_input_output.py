@@ -13,7 +13,6 @@ import shutil
 
 # Msaf imports
 import msaf
-from msaf.exceptions import WrongAlgorithmID
 from msaf.input_output import FileStruct
 
 # Global vars
@@ -51,14 +50,6 @@ def test_find_estimation():
     params = {"hier": False}
     ann = msaf.io.find_estimation(jam, "sf", None, params)
     assert len(ann.data) == 21
-
-
-@raises(WrongAlgorithmID)
-def test_find_estimation_wrong():
-    est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
-    jam = jams.load(est_file)
-    params = {"hier": False}
-    msaf.io.find_estimation(jam, "sf", "caca", params)
 
 
 def test_find_estimation_multiple():
@@ -158,3 +149,10 @@ def test_write_mirex():
 
     # Cleanup
     os.remove(out_file)
+
+
+def test_align_times():
+    times = np.array([0, 10, 20, 30])
+    frames = np.array([0, 12, 19, 25, 31])
+    aligned_times = msaf.io.align_times(times, frames)
+    assert len(times) == len(aligned_times)

@@ -18,6 +18,7 @@ Boundary Algorithms
 .. automodule:: msaf.algorithms.olda
 .. automodule:: msaf.algorithms.scluster
 .. automodule:: msaf.algorithms.sf
+.. automodule:: msaf.algorithms.vmo
 
 Label Algorithms
 ----------------
@@ -25,6 +26,7 @@ Label Algorithms
 .. automodule:: msaf.algorithms.fmc2d
 .. automodule:: msaf.algorithms.cnmf
 .. automodule:: msaf.algorithms.scluster
+.. automodule:: msaf.algorithms.vmo
 
 Adding A New Algorithm to MSAF
 ------------------------------

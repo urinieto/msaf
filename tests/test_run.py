@@ -5,6 +5,7 @@
 # nosetests
 
 # For plotting and testing
+from __future__ import print_function
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update(matplotlib.rcParamsDefault)
@@ -96,6 +97,7 @@ def test_run_algorithms():
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
         for label_id in label_ids:
+            print("bound_id: %s,\tlabel_id: %s" % (bound_id, label_id))
             config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                                bound_id, label_id)
             config["hier"] = False
@@ -114,6 +116,7 @@ def test_run_algorithms():
     file_struct.features_file = msaf.config.features_tmp_file
 
     def _test_run_msaf(bound_id, label_id, hier=False):
+        print("bound_id: %s,\tlabel_id: %s" % (bound_id, label_id))
         config = msaf.io.get_configuration(feature, annot_beats, framesync,
                                            bound_id, label_id)
         config["hier"] = hier
@@ -133,14 +136,9 @@ def test_run_algorithms():
                                 decimal=2)
 
     # Running all boundary algorithms on a relatively long file
-    for bound_id in bound_ids:
-        if bound_id == "gt":
-            continue
-        yield (_test_run_msaf, bound_id, None, False)
-
     # Combining boundaries with labels
     for bound_id in bound_ids:
-        if bound_id == "gt" or bound_id == "example":
+        if bound_id == "gt":
             continue
         for label_id in label_ids:
             yield (_test_run_msaf, bound_id, label_id, False)
@@ -177,9 +175,6 @@ def test_no_gt_flat_bounds():
 
 
 def test_process_track():
-    feature = "pcp"
-    annot_beats = False
-    framesync = False
     bounds_id = "foote"
     labels_id = None
     file_struct = msaf.io.FileStruct(audio_file)
@@ -235,9 +230,9 @@ def test_process_sonify():
 
 
 # TODO: Travis
-@image_comparison(baseline_images=['run_bounds'], extensions=['png'])
-def test_process_plot():
-    est_times, est_labels = msaf.run.process(long_audio_file, plot=True)
+# @image_comparison(baseline_images=['run_bounds'], extensions=['png'])
+# def test_process_plot():
+    # est_times, est_labels = msaf.run.process(long_audio_file, plot=True)
 
 
 def test_process_dataset():

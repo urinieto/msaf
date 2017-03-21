@@ -106,6 +106,7 @@ def get_time_frames(dur, anal):
 
 def remove_empty_segments(times, labels):
     """Removes empty segments if needed."""
+    assert len(times) - 1 == len(labels)
     inters = times_to_intervals(times)
     new_inters = []
     new_labels = []
@@ -132,8 +133,15 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     offset: float
         Offset of the clicks with respect to the audio.
     """
-    # Generate clicks
-    audio_clicks = mir_eval.sonify.clicks(clicks + offset, fs)
+    # Generate clicks (this should be done by mir_eval, but its
+    # latest release is not compatible with latest numpy)
+    times = clicks + offset
+    # 1 kHz tone, 100ms
+    click = np.sin(2 * np.pi * np.arange(fs * .1) * 1000 / (1. * fs))
+    # Exponential decay
+    click *= np.exp(-np.arange(fs * .1) / (fs * .01))
+    length = int(times.max() * fs + click.shape[0] + 1)
+    audio_clicks = mir_eval.sonify.clicks(times, fs, length=length)
 
     # Create array to store the audio plus the clicks
     out_audio = np.zeros(max(len(audio), len(audio_clicks)))
@@ -205,6 +213,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
         Estimated labels for each segment.
     """
     assert est_idxs[0] == 0 and est_idxs[-1] == N - 1
+    assert len(est_idxs) - 1 == len(est_labels)
 
     # Add silences, if needed
     est_times = np.concatenate(([0], frame_times[est_idxs], [dur]))
