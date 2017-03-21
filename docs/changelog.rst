@@ -1,6 +1,11 @@
 Changes
 =======
 
+v0.1.6
+------
+
+* Updated PyPi docs strings such that it shows that MSAF if Python 3.56 compatible
+
 v0.1.51
 -------
 
