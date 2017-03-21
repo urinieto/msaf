@@ -1,6 +1,11 @@
 Changes
 =======
 
+v0.1.51
+-------
+
+* JAMS bug supposedly fixed in v0.1.5 was not really fixed. Fixed now. Alrighten.
+
 v0.1.5
 ------
 
