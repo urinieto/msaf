@@ -49,7 +49,6 @@ setup(
         'joblib',
         'decorator',
         'cvxopt',
-        'joblib',
         'librosa >= 0.4.2',
         'mir_eval',
         'pandas',
