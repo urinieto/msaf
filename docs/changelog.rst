@@ -4,6 +4,7 @@ Changes
 v0.1.6
 ------
 
+* Added `framesync` parameter to `compute_features.py` script example
 * `joblib` was repeated in the requirements. Fixed
 * Updated PyPi docs strings such that it shows that MSAF if Python 3.56 compatible
 
