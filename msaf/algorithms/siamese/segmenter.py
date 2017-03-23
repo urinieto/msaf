@@ -1,5 +1,5 @@
 """
-Example of algorithm for MSAF
+Siamese Network Similarity Algorithm.
 """
 from msaf.algorithms.interface import SegmenterInterface
 import numpy as np
