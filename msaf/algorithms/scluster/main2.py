@@ -138,7 +138,7 @@ def do_segmentation(C, M, config, in_bound_idxs=None):
             est_labels.append(np.asarray(est_label, dtype=np.int))
 
     else:
-        est_idxs, est_labels = cluster(embedding, Cnorm, config["k"])
+        est_idxs, est_labels = cluster(embedding, Cnorm, config["scluster_k"])
         est_labels = np.asarray(est_labels, dtype=np.int)
 
     return est_idxs, est_labels, Cnorm
