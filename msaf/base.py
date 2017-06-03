@@ -154,7 +154,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         # Read annotations if they exist in correct folder
         if os.path.isfile(self.file_struct.ref_file):
             try:
-                jam = jams.load(self.file_struct.ref_file)
+                jam = jams.load(self.file_struct.ref_file, validate=False)
             except TypeError:
                 logging.warning(
                     "Can't read JAMS file %s. Maybe it's not "
