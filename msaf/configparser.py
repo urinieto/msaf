@@ -3,8 +3,12 @@ MSAF.
 A bunch of it is basically shamefully copy pasted from the almighty theano."""
 
 from __future__ import absolute_import, print_function, division
-from configparser import (ConfigParser, NoOptionError, NoSectionError,
-                          InterpolationError)
+try:
+    from configparser import (ConfigParser, NoOptionError, NoSectionError,
+                              InterpolationError)
+except ImportError:
+    from six.moves.configparser import (ConfigParser, NoOptionError, NoSectionError,
+                                        InterpolationError)
 import os
 import shlex
 from six import StringIO
