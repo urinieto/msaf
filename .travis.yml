@@ -1,10 +1,5 @@
 sudo: true
 
-addons:
-  apt:
-    packages:
-    - ffmpeg
-
 cache:
   directories:
   - $HOME/env
