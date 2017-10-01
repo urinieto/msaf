@@ -4,18 +4,20 @@ of the Segmentation Dataset.
 """
 import datetime
 import glob
-import jams
 import json
 import logging
-import numpy as np
 import os
 import re
+from collections import defaultdict
+
+import jams
+import numpy as np
 import six
 
 # Local stuff
 import msaf
-from msaf.exceptions import NoEstimationsError
 from msaf import utils
+from msaf.exceptions import NoEstimationsError
 
 # Put dataset config in a global var
 ds_config = msaf.config.dataset
@@ -81,25 +83,20 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
 
     # Get data values
     all_boundaries, all_labels = est.to_interval_values()
+
     if params["hier"]:
-        hier_bounds = []
-        hier_labels = []
-        curr_bounds = []
-        curr_labels = []
-        curr_level = all_labels[0]["level"]
-        for bounds, value in zip(all_boundaries, all_labels):
-            if curr_level != value["level"]:
-                hier_bounds.append(np.asarray(curr_bounds))
-                hier_labels.append(np.asarray(curr_labels))
-                curr_bounds = []
-                curr_labels = []
-            curr_bounds.append(bounds)
-            curr_labels.append(value["label"])
-            curr_level = value["level"]
-        hier_bounds.append(np.asarray(curr_bounds))
-        hier_labels.append(np.asarray(curr_labels))
-        all_boundaries = hier_bounds
-        all_labels = hier_labels
+        hier_bounds = defaultdict(list)
+        hier_labels = defaultdict(list)
+        for bounds, labels in zip(all_boundaries, all_labels):
+            level = labels["level"]
+            hier_bounds[level].append(bounds)
+            hier_labels[level].append(labels["label"])
+        # Order
+        all_boundaries = []
+        all_labels = []
+        for key in sorted(list(hier_bounds.keys())):
+            all_boundaries.append(np.asarray(hier_bounds[key]))
+            all_labels.append(np.asarray(hier_labels[key]))
 
     return all_boundaries, all_labels
 
