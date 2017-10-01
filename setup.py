@@ -40,7 +40,7 @@ setup(
         'audioread',
         'enum34',
         'future',
-        'jams',
+        'jams >= 0.3.0',
         'numpy >= 1.8.0',
         'scipy >= 0.13.0',
         'scikit-learn >= 0.17.0',
