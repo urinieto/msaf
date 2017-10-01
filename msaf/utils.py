@@ -184,7 +184,8 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
     # Constuct new labels
     new_labels = np.zeros(len(new_bound_idxs) - 1)
     for i, bound_idx in enumerate(new_bound_idxs[:-1]):
-        new_labels[i] = np.median(unfold_labels[bound_idx:new_bound_idxs[i + 1]])
+        new_labels[i] = np.median(
+            unfold_labels[bound_idx:new_bound_idxs[i + 1]])
 
     return new_labels
 
@@ -246,7 +247,8 @@ def align_end_hierarchies(hier1, hier2, thres=0.5):
     # Make sure we have correctly formatted hierarchies
     dur_h1 = hier1[0][-1]
     for hier in hier1:
-        assert hier[-1] == dur_h1, "hier1 is not correctly formatted"
+        assert hier[-1] == dur_h1, "hier1 is not correctly " \
+            "formatted {} {}".format(hier[-1], dur_h1)
     dur_h2 = hier2[0][-1]
     for hier in hier2:
         assert hier[-1] == dur_h2, "hier2 is not correctly formatted"
