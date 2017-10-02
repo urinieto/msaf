@@ -4,18 +4,20 @@ of the Segmentation Dataset.
 """
 import datetime
 import glob
-import jams
 import json
 import logging
-import numpy as np
 import os
 import re
+from collections import defaultdict
+
+import jams
+import numpy as np
 import six
 
 # Local stuff
 import msaf
-from msaf.exceptions import NoEstimationsError
 from msaf import utils
+from msaf.exceptions import NoEstimationsError
 
 # Put dataset config in a global var
 ds_config = msaf.config.dataset
@@ -80,26 +82,21 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
         raise NoEstimationsError("No estimations for file: %s" % est_file)
 
     # Get data values
-    all_boundaries, all_labels = est.data.to_interval_values()
+    all_boundaries, all_labels = est.to_interval_values()
+
     if params["hier"]:
-        hier_bounds = []
-        hier_labels = []
-        curr_bounds = []
-        curr_labels = []
-        curr_level = all_labels[0]["level"]
-        for bounds, value in zip(all_boundaries, all_labels):
-            if curr_level != value["level"]:
-                hier_bounds.append(np.asarray(curr_bounds))
-                hier_labels.append(np.asarray(curr_labels))
-                curr_bounds = []
-                curr_labels = []
-            curr_bounds.append(bounds)
-            curr_labels.append(value["label"])
-            curr_level = value["level"]
-        hier_bounds.append(np.asarray(curr_bounds))
-        hier_labels.append(np.asarray(curr_labels))
-        all_boundaries = hier_bounds
-        all_labels = hier_labels
+        hier_bounds = defaultdict(list)
+        hier_labels = defaultdict(list)
+        for bounds, labels in zip(all_boundaries, all_labels):
+            level = labels["level"]
+            hier_bounds[level].append(bounds)
+            hier_labels[level].append(labels["label"])
+        # Order
+        all_boundaries = []
+        all_labels = []
+        for key in sorted(list(hier_bounds.keys())):
+            all_boundaries.append(np.asarray(hier_bounds[key]))
+            all_labels.append(np.asarray(hier_labels[key]))
 
     return all_boundaries, all_labels
 
@@ -133,7 +130,7 @@ def read_references(audio_path, annotator_id=0):
 
     jam = jams.load(jam_path, validate=False)
     ann = jam.search(namespace='segment_.*')[annotator_id]
-    ref_inters, ref_labels = ann.data.to_interval_values()
+    ref_inters, ref_labels = ann.to_interval_values()
 
     # Intervals to times
     ref_times = utils.intervals_to_times(ref_inters)
@@ -191,7 +188,7 @@ def find_estimation(jam, boundaries_id, labels_id, params):
         search(**{"Sandbox.boundaries_id": boundaries_id}).\
         search(**{"Sandbox.labels_id": lambda x:
                   (isinstance(x, six.string_types) and
-                  re.match(labels_id, x) is not None) or x is None})
+                   re.match(labels_id, x) is not None) or x is None})
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, six.string_types):
             ann = ann.search(**{"Sandbox.%s" % key: val})
@@ -256,7 +253,8 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
             inters.append(est_inters)
             assert len(inters[level]) == len(labels[level]), \
                 "Number of boundary intervals (%d) and labels (%d) do not " \
-                "match in level %d" % (len(inters[level]), len(labels[level]), level)
+                "match in level %d" % (len(inters[level]), len(labels[level]),
+                                       level)
 
     # Create new estimation
     namespace = "multi_segment" if params["hier"] else "segment_open"
@@ -428,7 +426,7 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
         ann = jam.search(namespace=ns)
         if not ann:
             continue
-        ref_inters, ref_labels = ann[annotation_id].data.to_interval_values()
+        ref_inters, ref_labels = ann[annotation_id].to_interval_values()
         hier_bounds.append(utils.intervals_to_times(ref_inters))
         hier_labels.append(ref_labels)
         hier_levels.append(ns)

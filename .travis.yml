@@ -1,10 +1,5 @@
 sudo: true
 
-addons:
-  apt:
-    packages:
-    - ffmpeg
-
 cache:
   directories:
   - $HOME/env
@@ -16,7 +11,6 @@ notifications:
 
 python:
     - "2.7"
-    - "3.4"
     - "3.5"
     - "3.6"
 
@@ -25,12 +19,6 @@ before_install:
     - export PATH="$HOME/env/miniconda$TRAVIS_PYTHON_VERSION/bin:$PATH";
     - hash -r
     - source activate test-environment
-    - sudo apt-get install liblapack-dev
-
-before_script: # configure a headless display to test plot generation
-    - "export DISPLAY=:99.0"
-    - "sh -e /etc/init.d/xvfb start"
-    - sleep 3 # give xvfb some time to start
 
 install:
     # install your own package into the environment

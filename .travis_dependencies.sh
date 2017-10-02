@@ -41,6 +41,7 @@ if [ ! -d "$src" ]; then
         source activate $ENV_NAME
 
         pip install git+https://github.com/bmcfee/samplerate.git
+        conda install -c conda-forge ffmpeg
         pip install python-coveralls
             
         source deactivate
