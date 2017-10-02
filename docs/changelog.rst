@@ -1,6 +1,11 @@
 Changes
 =======
 
+v0.1.61
+-------
+
+* Fixed hierarchical boundaries, which didn't work on JAMS 0.3.0.
+
 v0.1.6
 ------
 
