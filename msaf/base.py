@@ -165,7 +165,7 @@ class Features(six.with_metaclass(MetaFeatures)):
 
             # If beat annotations exist, get times and frames
             if len(beat_annot) > 0:
-                beats_inters, _ = beat_annot[0].data.to_interval_values()
+                beats_inters, _ = beat_annot[0].to_interval_values()
                 times = beats_inters[:, 0]
                 frames = librosa.time_to_frames(times, sr=self.sr,
                                                 hop_length=self.hop_length)

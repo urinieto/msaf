@@ -1,6 +1,21 @@
 Changes
 =======
 
+v0.1.6
+------
+
+* Added `framesync` parameter to `compute_features.py` script example
+* `joblib` was repeated in the requirements. Fixed
+* Updated PyPi docs strings such that it shows that MSAF if Python 3.56 compatible
+* Making `configparser` compatible with Python 2.7
+* Using latest `scluster` method, from McFee's code [here](https://github.com/bmcfee/lsd_viz)
+* Adopted code to JAMS 0.3.0.
+
+v0.1.51
+-------
+
+* JAMS bug supposedly fixed in v0.1.5 was not really fixed. Fixed now. Alrighten.
+
 v0.1.5
 ------
 

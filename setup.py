@@ -31,7 +31,8 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5"
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6"
     ],
     keywords='audio music sound',
     license='MIT',
@@ -39,7 +40,7 @@ setup(
         'audioread',
         'enum34',
         'future',
-        'jams',
+        'jams >= 0.3.0',
         'numpy >= 1.8.0',
         'scipy >= 0.13.0',
         'scikit-learn >= 0.17.0',
@@ -48,7 +49,6 @@ setup(
         'joblib',
         'decorator',
         'cvxopt',
-        'joblib',
         'librosa >= 0.4.2',
         'mir_eval',
         'pandas',

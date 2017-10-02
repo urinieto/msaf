@@ -179,7 +179,7 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
     else:
         jam = jams.load(ref_file, validate=False)
         ann = jam.search(namespace='segment_.*')[annotator_id]
-        ref_inter, ref_labels = ann.data.to_interval_values()
+        ref_inter, ref_labels = ann.to_interval_values()
 
     # Read estimations with correct configuration
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,

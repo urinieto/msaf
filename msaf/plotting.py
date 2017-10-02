@@ -156,7 +156,7 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
         # Read file
         jam = jams.load(file_struct.ref_file)
         ann = jam.search(namespace='segment_.*')[0]
-        ref_inters, ref_labels = ann.data.to_interval_values()
+        ref_inters, ref_labels = ann.to_interval_values()
 
         # To times
         ref_times = utils.intervals_to_times(ref_inters)
