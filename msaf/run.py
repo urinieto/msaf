@@ -355,9 +355,9 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
 
         # TODO: Only save if needed
         # Save estimations
-        # msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
-        # io.save_estimations(file_struct, est_times, est_labels,
-                            # boundaries_id, labels_id, **config)
+        msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
+        io.save_estimations(file_struct, est_times, est_labels,
+                            boundaries_id, labels_id, **config)
 
         return est_times, est_labels
     else:
