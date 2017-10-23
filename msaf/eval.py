@@ -268,7 +268,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
         % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
 
     if not os.path.isfile(ref_file):
-        raise NoReferencesError("Reference file %s does not exis. You must "
+        raise NoReferencesError("Reference file %s does not exist. You must "
                                 "have annotated references to run "
                                 "evaluations." % ref_file)
 
