@@ -275,8 +275,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         Input path. If a directory, MSAF will function in collection mode.
         If audio file, MSAF will be in single file mode.
     annot_beats: bool
-        Whether to use annotated beats or not. Only available in collection
-        mode.
+        Whether to use annotated beats or not.
     feature: str
         String representing the feature to be used (e.g. pcp, mfcc, tonnetz)
     framesync: str
