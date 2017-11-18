@@ -47,7 +47,7 @@ def scluster_segment(feature, config, in_bound_idxs=None):
             est_labels.append(np.asarray(est_label, dtype=np.int))
 
     else:
-        est_idxs, est_labels = cluster(embedding, Cnorm, config["k"], in_bound_idxs)
+        est_idxs, est_labels = cluster(embedding, Cnorm, config["vmo_k"], in_bound_idxs)
         est_labels = np.asarray(est_labels, dtype=np.int)
 
     return est_idxs, est_labels, Cnorm
