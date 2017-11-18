@@ -3,7 +3,7 @@ Variable Markov Oracle algorithm
 """
 from msaf.algorithms.interface import SegmenterInterface
 import librosa
-import main
+from . import main
 
 
 class Segmenter(SegmenterInterface):

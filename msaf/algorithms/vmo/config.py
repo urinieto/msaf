@@ -5,8 +5,8 @@ config = {
     # "method": 'scluster',
     "connectivity": 'lrs',
     "median_filter_width": 9,
-    "num_layers": 10,  # How many hierarchical layers to compute (only for the hierarchical case)
-    "scluster_k": 4,
+    "hier_num_layers": 10,  # How many hierarchical layers to compute (only for the hierarchical case)
+    "k": 4,
 }
 
 algo_id = "vmo"  # Identifier of the algorithm

@@ -34,20 +34,20 @@ def connectivity_from_vmo(oracle, config):
 def scluster_segment(feature, config, in_bound_idxs=None):
     v_oracle = vmo_routine(feature)
     connectivity_mat = connectivity_from_vmo(v_oracle, config)
-    embedding = eigen_decomposition(connectivity_mat, k=config["num_layers"])
+    embedding = eigen_decomposition(connectivity_mat, k=config["hier_num_layers"])
 
     Cnorm = np.cumsum(embedding ** 2, axis=1) ** 0.5
 
     if config["hier"]:
         est_idxs = []
         est_labels = []
-        for k in range(1, config["num_layers"] + 1):
+        for k in range(1, config["hier_num_layers"] + 1):
             est_idx, est_label = cluster(embedding, Cnorm, k)
             est_idxs.append(est_idx)
             est_labels.append(np.asarray(est_label, dtype=np.int))
 
     else:
-        est_idxs, est_labels = cluster(embedding, Cnorm, config["scluster_k"], in_bound_idxs)
+        est_idxs, est_labels = cluster(embedding, Cnorm, config["k"], in_bound_idxs)
         est_labels = np.asarray(est_labels, dtype=np.int)
 
     return est_idxs, est_labels, Cnorm
