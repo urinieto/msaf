@@ -6,7 +6,7 @@ config = {
     "connectivity": 'lrs',
     "median_filter_width": 9,
     "hier_num_layers": 10,  # How many hierarchical layers to compute (only for the hierarchical case)
-    "k": 4,
+    "vmo_k": 10,
 }
 
 algo_id = "vmo"  # Identifier of the algorithm
