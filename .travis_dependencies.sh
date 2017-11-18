@@ -43,7 +43,7 @@ if [ ! -d "$src" ]; then
         pip install git+https://github.com/bmcfee/samplerate.git
         conda install -c conda-forge ffmpeg
         pip install python-coveralls
-            
+        pip install vmo
         source deactivate
     popd
 else
