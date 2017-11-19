@@ -8,3 +8,4 @@ Variable Markov Oracle
 """
 from .config import *
 from .segmenter import *
+from .main import *
