@@ -33,7 +33,8 @@ class Segmenter(SegmenterInterface):
         F = librosa.util.normalize(F, axis=0)
         F = librosa.feature.stack_memory(F.T).T
 
-        my_bounds, my_labels = main.scluster_segment(F, self.config, self.in_bound_idxs)
+        self.config["hier"] = False
+        my_bounds, my_labels, _ = main.scluster_segment(F, self.config, self.in_bound_idxs)
 
         # my_bounds, my_labels = segmentation(oracle,
         #                                     method=self.config['method'],
@@ -43,4 +44,27 @@ class Segmenter(SegmenterInterface):
 
         assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
         # We're done!
+        return est_idxs, est_labels
+
+    def processHierarchical(self):
+        """Main process.for hierarchial segmentation.
+        Returns
+        -------
+        est_idxs : list
+            List with np.arrays for each layer of segmentation containing
+            the estimated indeces for the segment boundaries.
+        est_labels : list
+            List with np.arrays containing the labels for each layer of the
+            hierarchical segmentation.
+        """
+        F = self._preprocess()
+        F = librosa.util.normalize(F, axis=0)
+        F = librosa.feature.stack_memory(F.T).T
+        self.config["hier"] = True
+        est_idxs, est_labels, F = main.scluster_segment(F, self.config, self.in_bound_idxs)
+        for layer in range(len(est_idxs)):
+            assert est_idxs[layer][0] == 0 and \
+                est_idxs[layer][-1] == F.shape[1] - 1
+            est_idxs[layer], est_labels[layer] = \
+                self._postprocess(est_idxs[layer], est_labels[layer])
         return est_idxs, est_labels
