@@ -36,9 +36,6 @@ class Segmenter(SegmenterInterface):
         self.config["hier"] = False
         my_bounds, my_labels, _ = main.scluster_segment(F, self.config, self.in_bound_idxs)
 
-        # my_bounds, my_labels = segmentation(oracle,
-        #                                     method=self.config['method'],
-        #                                     connectivity=self.config['connectivity'])
         # Post process estimations
         est_idxs, est_labels = self._postprocess(my_bounds, my_labels)
 
@@ -60,6 +57,7 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
         F = librosa.util.normalize(F, axis=0)
         F = librosa.feature.stack_memory(F.T).T
+
         self.config["hier"] = True
         est_idxs, est_labels, F = main.scluster_segment(F, self.config, self.in_bound_idxs)
         for layer in range(len(est_idxs)):
