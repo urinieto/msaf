@@ -52,7 +52,7 @@ setup(
         'librosa >= 0.4.2',
         'mir_eval',
         'pandas',
-        'vmo'
+        'vmo >= 0.3.3'
     ],
     extras_require={
         'resample': 'scikits.samplerate>=0.3'
