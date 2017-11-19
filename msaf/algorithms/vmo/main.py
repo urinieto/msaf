@@ -62,6 +62,8 @@ def cluster(evecs, Cnorm, k, in_bound_idxs=None):
 
     else:
         bound_idxs = in_bound_idxs
+        if len(bound_idxs) <= k:
+            k = len(bound_idxs)+1
 
     X_sync = librosa.util.utils.sync(X.T, bound_idxs, aggregate=np.mean)
     c = sklearn.cluster.KMeans(n_clusters=k, n_init=50, max_iter=500)
