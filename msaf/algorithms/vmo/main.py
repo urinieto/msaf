@@ -1,9 +1,10 @@
 
+import sklearn
+import numpy as np
 import vmo
 import vmo.analysis as van
 import scipy.linalg
 import scipy.ndimage
-from ..scluster.main2 import *
 import librosa
 
 
@@ -44,6 +45,35 @@ def eigen_decomposition(mat, k=6):  # Changed from 11 to 8 then to 6(7/22)
         k = -1
     vecs = scipy.ndimage.median_filter(vecs, size=(5,1))
     return vecs[:, :k]
+
+
+def cluster(evecs, Cnorm, k, in_bound_idxs=None):
+    X = evecs[:, :k] / (Cnorm[:, k - 1:k] + 1e-5)
+    KM = sklearn.cluster.KMeans(n_clusters=k, n_init=50, max_iter=500)
+    seg_ids = KM.fit_predict(X)
+
+    ###############################################################
+    # Locate segment boundaries from the label sequence
+    if in_bound_idxs is None:
+        bound_beats = 1 + np.flatnonzero(seg_ids[:-1] != seg_ids[1:])
+
+        # Count beats 0 as a boundary
+        bound_idxs = librosa.util.fix_frames(bound_beats, x_min=0)
+
+    else:
+        bound_idxs = in_bound_idxs
+
+    X_sync = librosa.util.utils.sync(X.T, bound_idxs, aggregate=np.mean)
+    c = sklearn.cluster.KMeans(n_clusters=k, n_init=50, max_iter=500)
+    bound_segs = c.fit_predict(X_sync.T)
+
+    # Compute the segment label for each boundary
+    # bound_segs = list(seg_ids[bound_idxs])
+
+    # Tack on the end-time
+    bound_idxs = list(np.append(bound_idxs, len(Cnorm) - 1))
+
+    return bound_idxs, bound_segs
 
 
 def scluster_segment(feature, config, in_bound_idxs=None):
