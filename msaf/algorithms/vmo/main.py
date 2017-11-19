@@ -1,8 +1,8 @@
 
-
-from vmo.analysis.segmentation import eigen_decomposition
 import vmo
 import vmo.analysis as van
+import scipy.linalg
+import scipy.ndimage
 from ..scluster.main2 import *
 import librosa
 
@@ -29,6 +29,21 @@ def connectivity_from_vmo(oracle, config):
     connectivity[np.diag_indices(obs_len)] = 0
 
     return connectivity
+
+
+def eigen_decomposition(mat, k=6):  # Changed from 11 to 8 then to 6(7/22)
+    vals, vecs = scipy.linalg.eig(mat)
+    vals = vals.real
+    vecs = vecs.real
+    idx = np.argsort(vals)
+
+    vals = vals[idx]
+    vecs = vecs[:, idx]
+
+    if len(vals) < k + 1:
+        k = -1
+    vecs = scipy.ndimage.median_filter(vecs, size=(5,1))
+    return vecs[:, :k]
 
 
 def scluster_segment(feature, config, in_bound_idxs=None):
