@@ -2,8 +2,11 @@
 
 # Algorithm Params
 config = {
-    "method": 'symbol_spectral',
-    "connectivity": 'sfx'
+    # "method": 'scluster',
+    "connectivity": 'lrs',
+    "median_filter_width": 9,
+    "hier_num_layers": 10,  # How many hierarchical layers to compute (only for the hierarchical case)
+    "vmo_k": 10,
 }
 
 algo_id = "vmo"  # Identifier of the algorithm
