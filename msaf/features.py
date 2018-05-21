@@ -90,9 +90,9 @@ class CQT(Features):
         """
         linear_cqt = np.abs(librosa.cqt(
             self._audio, sr=self.sr, hop_length=self.hop_length,
-            n_bins=self.n_bins, norm=self.norm, filter_scale=self.filter_scale,
-            real=False)) ** 2
-        cqt = librosa.amplitude_to_db(linear_cqt, ref_power=self.ref_power).T
+            n_bins=self.n_bins, norm=self.norm, filter_scale=self.filter_scale)
+                            ) ** 2
+        cqt = librosa.amplitude_to_db(linear_cqt, ref=self.ref_power).T
         return cqt
 
 
@@ -163,7 +163,7 @@ class MFCC(Features):
                                            n_fft=self.n_fft,
                                            hop_length=self.hop_length,
                                            n_mels=self.n_mels)
-        log_S = librosa.amplitude_to_db(S, ref_power=self.ref_power)
+        log_S = librosa.amplitude_to_db(S, ref=self.ref_power)
         mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=self.n_mfcc).T
         return mfcc
 
