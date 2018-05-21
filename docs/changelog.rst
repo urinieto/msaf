@@ -1,6 +1,11 @@
 Changes
 =======
 
+v0.1.7
+-------
+
+* Compatibility with Librosa 0.6.0 when computing CQTs.
+
 v0.1.61
 -------
 
