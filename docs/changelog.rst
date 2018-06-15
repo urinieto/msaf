@@ -5,6 +5,7 @@ v0.1.7
 ------
 
 * Compatibility with Librosa 0.6.0 when computing CQTs.
+* Modified quick-guide with clearer example for evaluation.
 
 v0.1.61
 -------
