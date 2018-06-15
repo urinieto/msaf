@@ -48,8 +48,13 @@ Let's begin with a simple example program:
     msaf.io.write_mirex(boundaries, labels, out_file)
 
     # 4. Evaluate the results
-    evals = msaf.eval.process(audio_file)
-    print(evals)
+    try:
+        evals = msaf.eval.process(audio_file)
+        print(evals)
+    except msaf.exceptions.NoReferencesError:
+        file_struct = msaf.input_output.FileStruct(audio_file)
+        print("No references found in {}. No evaluation performed.".format(
+            file_struct.ref_file))
 
 In the first step we select the appropriate audio file. 
 The MSAF `datasets <https://github.com/urinieto/msaf-data>`_ contain the Sargon set, which has multiple audio files to play around. ::
