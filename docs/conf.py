@@ -54,8 +54,8 @@ else:
 
 if use_matplotlib_plot_directive:
     extensions.append('matplotlib.sphinxext.plot_directive')
-else:
-    raise RuntimeError("You need a recent enough version of matplotlib")
+# else:
+    # raise RuntimeError("You need a recent enough version of matplotlib")
 
 # Generate plots for example sections
 numpydoc_use_plots = True
