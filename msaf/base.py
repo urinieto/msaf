@@ -119,7 +119,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         frames: np.array
             Frame indeces of estimated beats.
         """
-        # Compute harmonic-percussive source separiation if needed
+        # Compute harmonic-percussive source separation if needed
         if self._audio_percussive is None:
             self._audio_harmonic, self._audio_percussive = self.compute_HPSS()
 
