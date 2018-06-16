@@ -275,8 +275,7 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         Input path. If a directory, MSAF will function in collection mode.
         If audio file, MSAF will be in single file mode.
     annot_beats: bool
-        Whether to use annotated beats or not. Only available in collection
-        mode.
+        Whether to use annotated beats or not.
     feature: str
         String representing the feature to be used (e.g. pcp, mfcc, tonnetz)
     framesync: str
@@ -355,9 +354,9 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
 
         # TODO: Only save if needed
         # Save estimations
-        # msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
-        # io.save_estimations(file_struct, est_times, est_labels,
-                            # boundaries_id, labels_id, **config)
+        msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
+        io.save_estimations(file_struct, est_times, est_labels,
+                            boundaries_id, labels_id, **config)
 
         return est_times, est_labels
     else:
