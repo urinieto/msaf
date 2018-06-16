@@ -87,7 +87,7 @@ v0.1.0
 * Added coveralls
 * More thorough unit testing
 * Proper documentation in Sphinx
-* Features code more modular: easier to manage and to include new features 
+* Features code more modular: easier to manage and to include new features
 * Fixed a bunch of bugs
 
 
