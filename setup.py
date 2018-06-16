@@ -38,20 +38,20 @@ setup(
     license='MIT',
     install_requires=[
         'audioread',
+        'cvxopt',
+        'decorator',
         'enum34',
         'future',
         'jams >= 0.3.0',
-        'numpy >= 1.8.0',
-        'scipy >= 0.13.0',
-        'scikit-learn >= 0.17.0',
-        'seaborn',  # For notebook example (but everyone should have this :-))
-        'matplotlib >= 1.5',
         'joblib',
-        'decorator',
-        'cvxopt',
         'librosa >= 0.6.0',
         'mir_eval',
+        'matplotlib >= 1.5',
+        'numpy >= 1.8.0',
         'pandas',
+        'scikit-learn >= 0.17.0',
+        'scipy >= 0.13.0',
+        'seaborn',  # For notebook example (but everyone should have this :-))
         'vmo >= 0.3.3'
     ],
     extras_require={
