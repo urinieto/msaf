@@ -1,8 +1,8 @@
 Changes
 =======
 
-v0.1.7
-------
+v0.1.70
+-------
 
 * Compatibility with Librosa 0.6.0 when computing CQTs.
 * Added VMO algorithm.
