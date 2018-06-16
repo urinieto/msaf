@@ -6,7 +6,7 @@ A Python framework to analyze music structure.
 
 ## Documentation ##
 
-See http://pythonhosted.org/msaf/ for a complete reference manual and introductory tutorials.
+See https://msaf.readthedocs.io for a complete reference manual and introductory tutorials.
 
 ## Installation ##
 
