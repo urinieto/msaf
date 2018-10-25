@@ -168,7 +168,7 @@ class Segmenter(SegmenterInterface):
 
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
-            SF = gaussian_filter(L.T, M=1, axis=0)
+            SF = gaussian_filter(SF, M=1, axis=0)
             # plt.imshow(SF.T, interpolation="nearest", aspect="auto")
             #plt.show()
 
