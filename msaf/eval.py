@@ -145,6 +145,18 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         est_inter, est_labels = mir_eval.util.adjust_intervals(
             est_inter, est_labels, t_min=0.0, t_max=ann_inter.max())
 
+        # TODO: Fix!
+        caca = []
+        caca_lab = []
+        for inter, label in zip(est_inter, est_labels):
+            start = float('%.1f' % (inter[0]))
+            end = float('%.1f' % (inter[1]))
+            if end > start:
+                caca.append([start, end])
+                caca_lab.append(label)
+        est_inter = np.asarray(caca)
+        est_labels = np.asarray(caca_lab)
+
         # Pair-wise frame clustering
         res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
             ann_inter, ann_labels, est_inter, est_labels)
@@ -180,10 +192,27 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         jam = jams.load(ref_file, validate=False)
         ann = jam.search(namespace='segment_.*')[annotator_id]
         ref_inter, ref_labels = ann.to_interval_values()
+        # TODO: Remove
+        caca = []
+        for inter in ref_inter:
+            caca.append([float('%.1f' % (inter[0])),
+                         float('%.1f' % (inter[1]))])
+        ref_inter = np.asarray(caca)
 
     # Read estimations with correct configuration
     est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
                                                 labels_id, **config)
+    # TODO: Remove
+    caca = []
+    caca_lab = []
+    for inter, label in zip(est_inter, est_labels):
+        start = float('%.1f' % (inter[0]))
+        end = float('%.1f' % (inter[1]))
+        if end > start:
+            caca.append([start, end])
+            caca_lab.append(label)
+    est_inter = np.asarray(caca)
+    est_labels = np.asarray(caca_lab)
 
     # Compute the results and return
     logging.info("Evaluating %s" % os.path.basename(est_file))
