@@ -92,7 +92,7 @@ class CQT(Features):
             self._audio, sr=self.sr, hop_length=self.hop_length,
             n_bins=self.n_bins, norm=self.norm, filter_scale=self.filter_scale)
                             ) ** 2
-        cqt = librosa.amplitude_to_db(linear_cqt, ref=self.ref_power).T
+        cqt = librosa.power_to_db(linear_cqt, ref=self.ref_power).T
         return cqt
 
 
