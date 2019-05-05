@@ -6,6 +6,7 @@ v0.1.8
 
 * Fixed amplitude bug for CQT (see issue #92)
 * Fixed smoothing of lag matrix in SF algorithm (it was only smoothing the time domain, not the lag one) (see issue #90)
+* Fixing potentially empty segments when using annotated beats
 
 v0.1.70
 -------
