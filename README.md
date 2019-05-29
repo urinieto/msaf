@@ -27,7 +27,7 @@ You can follow a thorough example on this titanic [Jupyter Notebook](https://git
 
 ## Citing MSAF ##
 
-Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 ([PDF](http://marl.smusic.nyu.edu/nieto/publications/ISMIR2016-NietoBello.pdf)).
+Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 ([PDF](https://s18798.pcdn.co/ismir2016/wp-content/uploads/sites/2294/2016/07/043_Paper.pdf)).
 
 ## Credits ##
 
