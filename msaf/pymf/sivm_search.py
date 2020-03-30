@@ -18,9 +18,9 @@ import scipy.sparse
 import numpy as np
 from scipy import inf
 try:
-    from scipy.misc.common import factorial
-except:
     from scipy.misc import factorial
+except:
+    from scipy.special import factorial # scipy > 1.3
 
 from .dist import *
 from .vol import *
