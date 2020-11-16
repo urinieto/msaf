@@ -364,7 +364,10 @@ class Features(six.with_metaclass(MetaFeatures)):
         self.dur = len(self._audio) / float(self.sr)
 
         # Compute actual features
+        feat_type = self.feat_type
+        self.feat_type = FeatureTypes.framesync
         self._framesync_features = self.compute_features()
+        self.feat_type = feat_type
 
         # Compute framesync times
         self._compute_framesync_times()
