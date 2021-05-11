@@ -187,7 +187,8 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     ann = jam.search(namespace=namespace).\
         search(**{"Sandbox.boundaries_id": boundaries_id}).\
         search(**{"Sandbox.labels_id": lambda x:
-                  (isinstance(x, six.string_types) and
+                  (isinstance(labels_id, six.string_types) and
+                   isinstance(x, six.string_types) and
                    re.match(labels_id, x) is not None) or x is None})
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, six.string_types):
