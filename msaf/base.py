@@ -351,8 +351,8 @@ class Features(six.with_metaclass(MetaFeatures)):
     def _compute_framesync_times(self):
         """Computes the framesync times based on the framesync features."""
         self._framesync_times = librosa.core.frames_to_time(
-            np.arange(self._framesync_features.shape[0]), self.sr,
-            self.hop_length)
+            np.arange(self._framesync_features.shape[0]), sr=self.sr,
+            hop_length=self.hop_length)
 
     def _compute_all_features(self):
         """Computes all the features (beatsync, framesync) from the audio."""
