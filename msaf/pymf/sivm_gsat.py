@@ -117,7 +117,7 @@ class SIVM_GSAT(SIVM):
         return False,-1
 
     def update_w(self):
-        n = np.int(np.floor(np.random.random() * self._num_samples))
+        n = np.int64(np.floor(np.random.random() * self._num_samples))
         if n not in self.select:
             updated, s = self.online_update_w(self.data[:,n])
             if updated:

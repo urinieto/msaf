@@ -130,10 +130,10 @@ def do_segmentation(C, M, config, in_bound_idxs=None):
         for k in range(1, config["num_layers"] + 1):
             est_idx, est_label = cluster(embedding, Cnorm, k)
             est_idxs.append(est_idx)
-            est_labels.append(np.asarray(est_label, dtype=np.int))
+            est_labels.append(np.asarray(est_label, dtype=np.int64))
 
     else:
         est_idxs, est_labels = cluster(embedding, Cnorm, config["scluster_k"], in_bound_idxs)
-        est_labels = np.asarray(est_labels, dtype=np.int)
+        est_labels = np.asarray(est_labels, dtype=np.int64)
 
     return est_idxs, est_labels, Cnorm
