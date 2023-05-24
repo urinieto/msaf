@@ -146,7 +146,7 @@ class Segmenter(SegmenterInterface):
                 red = 0.1
                 F_copy = np.copy(F)
                 F = librosa.util.utils.sync(
-                         F.T, np.linspace(0, F.shape[0], num=int(F.shape[0] * red), dtype= np.int),
+                         F.T, np.linspace(0, F.shape[0], num=int(F.shape[0] * red), dtype= np.int64),
                          pad=False).T
 
             # Emedding the feature space (i.e. shingle)
@@ -182,7 +182,7 @@ class Segmenter(SegmenterInterface):
             est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))
 
             if self.framesync:
-                est_bounds = np.asarray(est_bounds // red, dtype=np.int)
+                est_bounds = np.asarray(est_bounds // red, dtype=np.int64)
                 F = F_copy
         else:
             est_bounds = []
