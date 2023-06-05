@@ -8,6 +8,7 @@ Contributors
 * Keunwoo Choi <https://github.com/keunwoochoi>
 * Rustam S <https://github.com/fortunto2>
 * Cheng-i Wang <https://github.com/wangsix>
+* Carl Thomé <https://github.com/carlthome>
 
 OLDA and Laplacian algorithm implementations were forked from the original repos by the titanest Brian McFee:
 <https://github.com/bmcfee/olda> and <https://github.com/bmcfee/laplacian_segmentation>, respectively.
