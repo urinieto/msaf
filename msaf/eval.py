@@ -34,7 +34,7 @@ def print_results(results):
     if len(results) == 0:
         logging.warning("No results to print!")
         return
-    res = results.mean()
+    res = results.mean(numeric_only=True)
     logging.info("Results:\n%s" % res)
 
 
@@ -383,10 +383,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
             annotator_id=annotator_id) for file_struct in file_structs[:])
 
     # Aggregate evaluations in pandas format
-    results = pd.DataFrame()
-    for e in evals:
-        if e != []:
-            results = results.append(e, ignore_index=True)
+    results = pd.DataFrame(evals)
     logging.info("%d tracks analyzed" % len(results))
 
     # Print results
