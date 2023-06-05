@@ -17,7 +17,7 @@ See https://msaf.readthedocs.io for a complete reference manual and introductory
 
 From the root folder, type:
     
-    pip install msaf
+    pip install .
 
 (Note: you may need to prefix the previous line with `sudo`, depending on your system configuration).
 
