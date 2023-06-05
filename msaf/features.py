@@ -158,7 +158,7 @@ class MFCC(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        S = librosa.feature.melspectrogram(self._audio,
+        S = librosa.feature.melspectrogram(y=self._audio,
                                            sr=self.sr,
                                            n_fft=self.n_fft,
                                            hop_length=self.hop_length,
@@ -342,6 +342,6 @@ class Tempogram(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        return librosa.feature.tempogram(self._audio, sr=self.sr,
+        return librosa.feature.tempogram(y=self._audio, sr=self.sr,
                                          hop_length=self.hop_length,
                                          win_length=self.win_length).T
