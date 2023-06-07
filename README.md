@@ -19,7 +19,7 @@ From the root folder, type:
     
     pip install .
 
-(Note: you may need to prefix the previous line with `sudo`, depending on your system configuration).
+(Note: you may need to create and activate a Python virtual environment with `python -m venv .venv` and `source .venv/bin/activate` first, depending on your system configuration).
 
 ## Demonstration Notebook ##
 
