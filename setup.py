@@ -1,7 +1,6 @@
 from setuptools import setup, find_packages
 import glob
 import imp
-import numpy.distutils.misc_util
 
 version = imp.load_source('msaf.version', 'msaf/version.py')
 
@@ -56,6 +55,5 @@ setup(
     ],
     extras_require={
         'resample': 'scikits.samplerate>=0.3'
-    },
-    include_dirs=numpy.distutils.misc_util.get_numpy_include_dirs()
+    }
 )
