@@ -1,0 +1,43 @@
+name: Test Python code
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Install test runner
+        run: pip install pytest pytest-cov
+
+      - name: Install legacy test runner
+        run: pip install nose
+
+      - name: Install patched mir_eval dependency
+        run: pip install --force-reinstall --no-dependencies git+https://github.com/craffel/mir_eval@d68afb0b37bfd0ff48a92fbe1ae1325a182cd471
+
+      - name: Run unit tests
+        run: pytest --cov=msaf
+        working-directory: tests
