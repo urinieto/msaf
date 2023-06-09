@@ -12,8 +12,6 @@ matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 import matplotlib.style
 matplotlib.style.use('seaborn-ticks')
 
-from mpl_ic import image_comparison
-
 from nose.tools import assert_raises
 from nose.tools import raises
 import numpy.testing as npt
@@ -227,12 +225,6 @@ def test_process_sonify():
                                              out_bounds=out_wav)
     assert os.path.isfile(out_wav)
     os.remove(out_wav)
-
-
-# TODO: Travis
-# @image_comparison(baseline_images=['run_bounds'], extensions=['png'])
-# def test_process_plot():
-    # est_times, est_labels = msaf.run.process(long_audio_file, plot=True)
 
 
 def test_process_dataset():
