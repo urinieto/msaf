@@ -4,8 +4,7 @@ import librosa
 import logging
 import numpy as np
 from scipy.spatial import distance
-from scipy import signal
-from scipy.ndimage import filters
+from scipy import signal, ndimage
 import pylab as plt
 
 import msaf
@@ -15,7 +14,7 @@ from msaf.algorithms.interface import SegmenterInterface
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
     for i in range(X.shape[1]):
-        X[:, i] = filters.median_filter(X[:, i], size=M)
+        X[:, i] = ndimage.median_filter(X[:, i], size=M)
     return X
 
 
@@ -56,10 +55,10 @@ def pick_peaks(nc, L=16):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
     offset = nc.mean() / 20.
 
-    nc = filters.gaussian_filter1d(nc, sigma=4)  # Smooth out nc
+    nc = ndimage.gaussian_filter1d(nc, sigma=4)  # Smooth out nc
 
-    th = filters.median_filter(nc, size=L) + offset
-    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    th = ndimage.median_filter(nc, size=L) + offset
+    #th = ndimage.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
 
     peaks = []
     for i in range(1, nc.shape[0] - 1):

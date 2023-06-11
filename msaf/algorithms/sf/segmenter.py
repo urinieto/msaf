@@ -4,8 +4,7 @@ import librosa
 import logging
 import numpy as np
 from scipy.spatial import distance
-from scipy import signal
-from scipy.ndimage import filters
+from scipy import signal, ndimage
 
 from msaf.algorithms.interface import SegmenterInterface
 import msaf.utils as U
@@ -14,7 +13,7 @@ import msaf.utils as U
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
     for i in range(X.shape[1]):
-        X[:, i] = filters.median_filter(X[:, i], size=M)
+        X[:, i] = ndimage.median_filter(X[:, i], size=M)
     return X
 
 
@@ -22,9 +21,9 @@ def gaussian_filter(X, M=8, axis=0):
     """Gaussian filter along the first axis of the feature matrix X."""
     for i in range(X.shape[axis]):
         if axis == 1:
-            X[:, i] = filters.gaussian_filter(X[:, i], sigma=M / 2.)
+            X[:, i] = ndimage.gaussian_filter(X[:, i], sigma=M / 2.)
         elif axis == 0:
-            X[i, :] = filters.gaussian_filter(X[i, :], sigma=M / 2.)
+            X[i, :] = ndimage.gaussian_filter(X[i, :], sigma=M / 2.)
     return X
 
 
@@ -63,8 +62,8 @@ def compute_nc(X):
 def pick_peaks(nc, L=16, offset_denom=0.1):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
     offset = nc.mean() * float(offset_denom)
-    th = filters.median_filter(nc, size=L) + offset
-    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    th = ndimage.median_filter(nc, size=L) + offset
+    #th = ndimage.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
     #import pylab as plt
     #plt.plot(nc)
     #plt.plot(th)
