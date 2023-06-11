@@ -6,7 +6,7 @@
 
 import jams
 import librosa
-from nose.tools import raises
+from pytest import raises
 import numpy as np
 import os
 import shutil

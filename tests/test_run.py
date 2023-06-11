@@ -12,8 +12,7 @@ matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 import matplotlib.style
 matplotlib.style.use('seaborn-ticks')
 
-from nose.tools import assert_raises
-from nose.tools import raises
+from pytest import raises
 import numpy.testing as npt
 import os
 from types import ModuleType
@@ -44,13 +43,13 @@ def test_get_boundaries_module():
 
     # Check that a AttributeError is raised when calling it with non-existent
     # boundary id
-    assert_raises(RuntimeError,
-                  msaf.run.get_boundaries_module, fake_module_name)
+    with raises(RuntimeError):
+        msaf.run.get_boundaries_module(fake_module_name)
 
     # Check that a RuntimeError is raised when calling it with invalid
     # boundary id
-    assert_raises(RuntimeError,
-                  msaf.run.get_boundaries_module, "fmc2d")
+    with raises(RuntimeError):
+        msaf.run.get_boundaries_module("fmc2d")
 
 
 def test_get_labels_module():
@@ -65,13 +64,13 @@ def test_get_labels_module():
 
     # Check that a AttributeError is raised when calling it with non-existent
     # labels id
-    assert_raises(RuntimeError,
-                  msaf.run.get_labels_module, fake_module_name)
+    with raises(RuntimeError):
+        msaf.run.get_labels_module(fake_module_name)
 
     # Check that a RuntimeError is raised when calling it with invalid
     # labels id
-    assert_raises(RuntimeError,
-                  msaf.run.get_labels_module, "foote")
+    with raises(RuntimeError):
+        msaf.run.get_labels_module("foote")
 
 
 def test_run_algorithms():

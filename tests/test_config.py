@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
-from nose.tools import raises
+from pytest import raises
 from collections import namedtuple
 
 # Msaf imports

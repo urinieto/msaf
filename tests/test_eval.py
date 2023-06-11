@@ -3,7 +3,7 @@
 Unit tests for eval.
 """
 
-from nose.tools import raises
+from pytest import raises
 from types import ModuleType
 import numpy.testing as npt
 import numpy as np

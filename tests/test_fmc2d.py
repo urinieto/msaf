@@ -1,5 +1,5 @@
 from enum import Enum
-from nose.tools import raises
+from pytest import raises
 import numpy as np
 import os
 
