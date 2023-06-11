@@ -27,16 +27,16 @@ def test_add_var():
     assert msaf.config.test.new_var == val
 
 
-@raises(AttributeError)
 def test_no_var():
     """Raises an AttributeError if the variable doesn't exist in the config."""
-    msaf.config.wrong_variable_name
+    with raises(AttributeError):
+        msaf.config.wrong_variable_name
 
 
-@raises(ValueError)
 def test_wrong_value():
     """Raises error if the variable type is wrong."""
-    msaf.config.cqt.ref_power = 10
+    with raises(ValueError):
+        msaf.config.cqt.ref_power = 10
 
 
 def test_warnings():
@@ -77,46 +77,46 @@ def test_override_config_val():
     assert conf["param1"] == "10"
 
 
-@raises(KeyError)
 def test_fetch_nonexisting_config_val():
     """Tests fetching non-existing value in the conf."""
-    msaf.configparser.fetch_val_for_key("caca", delete_key=False)
+    with raises(KeyError):
+        msaf.configparser.fetch_val_for_key("caca", delete_key=False)
 
 
-@raises(KeyError)
 def test_fetch_too_many_sections():
     """Tests fetching a key with too many sections."""
-    msaf.configparser.fetch_val_for_key("caca.merda.merdeta",
-                                        delete_key=False)
+    with raises(KeyError):
+        msaf.configparser.fetch_val_for_key("caca.merda.merdeta",
+                                            delete_key=False)
 
 
-@raises(AttributeError)
 def test_wrong_addconfig_root():
     """Tests adding a var that already exists in the root."""
-    AddConfigVar('sample_rate', "doc", IntParam(1), root=msaf.config)
+    with raises(AttributeError):
+        AddConfigVar('sample_rate', "doc", IntParam(1), root=msaf.config)
 
 
-@raises(TypeError)
 def test_wrong_addconfig_root_multsections():
     """Tests adding a var that already exists in the root with
     multiple sections and wrong root."""
     conf = namedtuple('conf', ['cqt'])
-    AddConfigVar('cqt.bins', "doc", IntParam(1), root=conf)
+    with raises(TypeError):
+        AddConfigVar('cqt.bins', "doc", IntParam(1), root=conf)
 
 
-@raises(AttributeError)
 def test_add_existing_config_var():
     """Tests adding a var that already exists."""
-    AddConfigVar('sample_rate', "doc", IntParam(1))
+    with raises(AttributeError):
+        AddConfigVar('sample_rate', "doc", IntParam(1))
 
 
-@raises(TypeError)
 def test_wrong_callable_arg():
     """Tests adding a var with a wrong callable default param."""
     # We can add it
     AddConfigVar('my_int', "doc", IntParam(sorted))
     # but it should fail when retrieving it
-    msaf.config.my_int
+    with raises(TypeError):
+        msaf.config.my_int
 
 
 def test_add_filter_config_var():
@@ -127,12 +127,12 @@ def test_add_filter_config_var():
     assert msaf.config.new_var == ".aif"
 
 
-@raises(Exception)
 def test_allowoverride_fail():
     """Tests overriding a variable that can't be overridden."""
     configparam = EnumStr("caca", "merda", allow_override=False)
     AddConfigVar('new_var2', "doc", configparam)
-    msaf.config.new_var2 = "caca2"  # Raise Exception
+    with raises(Exception):
+        msaf.config.new_var2 = "caca2"  # Raise Exception
 
 
 def test_allowoverride():
@@ -143,10 +143,10 @@ def test_allowoverride():
     assert msaf.config.new_var3 == "merda"
 
 
-@raises(ValueError)
 def test_invalid_enumstr():
     """Tests invalid enumstrings."""
-    AddConfigVar('new_var4', "doc", EnumStr("caca", 42, "merda"))
+    with raises(ValueError):
+        AddConfigVar('new_var4', "doc", EnumStr("caca", 42, "merda"))
 
 
 def test_false_boolparam():
@@ -155,19 +155,19 @@ def test_false_boolparam():
     assert not msaf.config.new_var4
 
 
-@raises(ValueError)
 def test_wrong_boolparam():
     """Tests a wrong boolean param."""
-    AddConfigVar('new_var5', "doc", BoolParam("falsitto"))
+    with raises(ValueError):
+        AddConfigVar('new_var5', "doc", BoolParam("falsitto"))
 
 
-@raises(ValueError)
 def test_empty_list_param():
     """Tests an empty list param."""
-    AddConfigVar('new_var6', "doc", ListParam([]))
+    with raises(ValueError):
+        AddConfigVar('new_var6', "doc", ListParam([]))
 
 
-@raises(ValueError)
 def test_wrong_list_param():
     """Tests a wrong list param."""
-    AddConfigVar('new_var7', "doc", ListParam(42))
+    with raises(ValueError):
+        AddConfigVar('new_var7', "doc", ListParam(42))

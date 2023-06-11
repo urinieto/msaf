@@ -60,7 +60,6 @@ def test_find_estimation_multiple():
     assert len(ann.data) == 86
 
 
-@raises(AssertionError)
 def test_save_estimations_hier_wrong():
     file_struct = FileStruct("dummy")
     file_struct.features_file = os.path.join("fixtures",
@@ -71,7 +70,8 @@ def test_save_estimations_hier_wrong():
     labels = [['A', 'B'], ['a', 'a', 'b']]
 
     # Should raise assertion error
-    msaf.io.save_estimations(file_struct, times, labels, None, None)
+    with raises(AssertionError):
+        msaf.io.save_estimations(file_struct, times, labels, None, None)
 
 
 def test_save_estimations_existing():

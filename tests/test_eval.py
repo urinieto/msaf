@@ -125,17 +125,17 @@ def test_compute_gt_results():
         assert "t_recall10" in res.keys()
         assert "t_recall15" in res.keys()
 
-    @raises(NoEstimationsError)
     def __compute_gt_results_no_ests(est_file, ref_file, boundaries_id,
                                      labels_id, config):
-        E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
-                             config)
+        with raises(NoEstimationsError):
+            E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
+                                config)
 
-    @raises(IOError)
     def __compute_gt_results_wrong_file(est_file, ref_file, boundaries_id,
                                         labels_id, config):
-        E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
-                             config)
+        with raises(IOError):
+            E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
+                                config)
 
     config = {"hier": True}
     yield (__compute_gt_results_wrong_file, "wrong.json", "wrong.jams", "sf",
@@ -160,13 +160,13 @@ def test_compute_gt_results():
 
 
 def test_process_track():
-    @raises(AssertionError)
     def __process_track_wrong_names(file_struct):
-        E.process_track(file_struct, None, None, None)
+        with raises(AssertionError):
+            E.process_track(file_struct, None, None, None)
 
-    @raises(NoReferencesError)
     def __process_track_no_refs(file_struct):
-        E.process_track(file_struct, None, None, None)
+        with raises(NoReferencesError):
+            E.process_track(file_struct, None, None, None)
 
     def __process_track_correct(file_struct, bounds_id, labels_id, config):
         res = E.process_track(file_struct, bounds_id, labels_id, config)

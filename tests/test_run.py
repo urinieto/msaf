@@ -149,9 +149,9 @@ def test_run_algorithms():
             yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
 
 
-@raises(NoHierBoundaryError)
 def test_no_bound_hierarchical():
-    msaf.run.run_hierarchical(None, None, None, None, None)
+    with raises(NoHierBoundaryError):
+        msaf.run.run_hierarchical(None, None, None, None, None)
 
 
 def test_no_gt_flat_bounds():
@@ -199,16 +199,16 @@ def test_process_with_gt():
     assert len(est_times) == len(est_labels) + 1
 
 
-@raises(FeaturesNotFound)
 def test_process_wrong_feature():
     feature = "caca"
-    est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
+    with raises(FeaturesNotFound):
+        est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
 
 
-@raises(NoAudioFileError)
 def test_process_wrong_path():
     wrong_path = "caca.mp3"
-    est_times, est_labels = msaf.run.process(wrong_path)
+    with raises(NoAudioFileError):
+        est_times, est_labels = msaf.run.process(wrong_path)
 
 
 def test_process():
