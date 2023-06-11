@@ -85,14 +85,14 @@ def test_compute_label_results_wrong():
     est_labels = ["a", "@"]
     res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels,
                             251, "")
-    yield (__test_dict_res, res)
+    __test_dict_res(res)
 
     # Test the -1 token
     ann_labels = ["a", "b", "c"]
     est_labels = ["a", "-1"]
     res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels,
                             251, "")
-    yield (__test_dict_res, res)
+    __test_dict_res(res)
 
 
 def test_print_results():
@@ -138,24 +138,24 @@ def test_compute_gt_results():
                                 config)
 
     config = {"hier": True}
-    yield (__compute_gt_results_wrong_file, "wrong.json", "wrong.jams", "sf",
+    __compute_gt_results_wrong_file("wrong.json", "wrong.jams", "sf",
            "fmc2d", config)
     config = {"hier": False}
-    yield (__compute_gt_results_wrong_file, "wrong.json", "wrong.jams", "sf",
+    __compute_gt_results_wrong_file("wrong.json", "wrong.jams", "sf",
            "fmc2d", config)
 
     est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
     ref_file = os.path.join("fixtures", "01-Sargon-Mindless-refs.jams")
     config["feature"] = "wrong"
-    yield (__compute_gt_results_no_ests, est_file, ref_file, "foote", None,
+    __compute_gt_results_no_ests(est_file, ref_file, "foote", None,
            config)
 
     # Correct Flat
     config["feature"] = "pcp"
-    yield (__compute_gt_results, est_file, ref_file, "sf", None, config)
+    __compute_gt_results(est_file, ref_file, "sf", None, config)
     # Correct Hierarchical
     config["hier"] = True
-    yield (__compute_gt_results_hier, est_file, ref_file, "olda", None,
+    __compute_gt_results_hier(est_file, ref_file, "olda", None,
            config)
 
 
@@ -175,19 +175,19 @@ def test_process_track():
     # Wrong match
     no_match_fs = FileStruct("udontexist.mp3")
     no_match_fs.ref_file = "idontexist.mp3"
-    yield (__process_track_wrong_names, no_match_fs)
+    __process_track_wrong_names(no_match_fs)
 
     # No References
     no_ref_fs = FileStruct("udontexist.mp3")
     no_ref_fs.ref_file = "udontexist.jams"
-    yield (__process_track_no_refs, no_ref_fs)
+    __process_track_no_refs(no_ref_fs)
 
     # Correct
     audio_path = "fixtures/Sargon_test/audio/Mindless_cut.mp3"
     correct_fs = FileStruct(audio_path)
     config = {"hier": False}
-    yield (__process_track_correct, correct_fs, "sf", None, config)
-    yield (__process_track_correct, audio_path, "sf", None, config)
+    __process_track_correct(correct_fs, "sf", None, config)
+    __process_track_correct(audio_path, "sf", None, config)
 
 
 def test_get_results_file_name():
