@@ -27,10 +27,7 @@ jobs:
           cache: pip
 
       - name: Install package
-        run: pip install -e .
-
-      - name: Install test runner
-        run: pip install pytest pytest-cov
+        run: pip install -e .[tests]
 
       - name: Install patched mir_eval dependency
         run: pip install --force-reinstall --no-dependencies git+https://github.com/craffel/mir_eval@d68afb0b37bfd0ff48a92fbe1ae1325a182cd471
