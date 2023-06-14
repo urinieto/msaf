@@ -12,8 +12,7 @@ matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 import matplotlib.style
 matplotlib.style.use('seaborn-ticks')
 
-from nose.tools import assert_raises
-from nose.tools import raises
+from pytest import raises
 import numpy.testing as npt
 import os
 from types import ModuleType
@@ -44,13 +43,13 @@ def test_get_boundaries_module():
 
     # Check that a AttributeError is raised when calling it with non-existent
     # boundary id
-    assert_raises(RuntimeError,
-                  msaf.run.get_boundaries_module, fake_module_name)
+    with raises(RuntimeError):
+        msaf.run.get_boundaries_module(fake_module_name)
 
     # Check that a RuntimeError is raised when calling it with invalid
     # boundary id
-    assert_raises(RuntimeError,
-                  msaf.run.get_boundaries_module, "fmc2d")
+    with raises(RuntimeError):
+        msaf.run.get_boundaries_module("fmc2d")
 
 
 def test_get_labels_module():
@@ -65,13 +64,13 @@ def test_get_labels_module():
 
     # Check that a AttributeError is raised when calling it with non-existent
     # labels id
-    assert_raises(RuntimeError,
-                  msaf.run.get_labels_module, fake_module_name)
+    with raises(RuntimeError):
+        msaf.run.get_labels_module(fake_module_name)
 
     # Check that a RuntimeError is raised when calling it with invalid
     # labels id
-    assert_raises(RuntimeError,
-                  msaf.run.get_labels_module, "foote")
+    with raises(RuntimeError):
+        msaf.run.get_labels_module("foote")
 
 
 def test_run_algorithms():
@@ -139,7 +138,7 @@ def test_run_algorithms():
         if bound_id == "gt":
             continue
         for label_id in label_ids:
-            yield (_test_run_msaf, bound_id, label_id, False)
+            _test_run_msaf(bound_id, label_id, False)
 
     # Test the hierarchical algorithms
     hier_ids = ["olda", "scluster"]
@@ -147,12 +146,12 @@ def test_run_algorithms():
         for hier_labels_id in hier_ids:
             if hier_labels_id == "olda":
                 hier_labels_id = "fmc2d"
-            yield (_test_run_msaf, hier_bounds_id, hier_labels_id, True)
+            _test_run_msaf(hier_bounds_id, hier_labels_id, True)
 
 
-@raises(NoHierBoundaryError)
 def test_no_bound_hierarchical():
-    msaf.run.run_hierarchical(None, None, None, None, None)
+    with raises(NoHierBoundaryError):
+        msaf.run.run_hierarchical(None, None, None, None, None)
 
 
 def test_no_gt_flat_bounds():
@@ -200,16 +199,16 @@ def test_process_with_gt():
     assert len(est_times) == len(est_labels) + 1
 
 
-@raises(FeaturesNotFound)
 def test_process_wrong_feature():
     feature = "caca"
-    est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
+    with raises(FeaturesNotFound):
+        est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
 
 
-@raises(NoAudioFileError)
 def test_process_wrong_path():
     wrong_path = "caca.mp3"
-    est_times, est_labels = msaf.run.process(wrong_path)
+    with raises(NoAudioFileError):
+        est_times, est_labels = msaf.run.process(wrong_path)
 
 
 def test_process():
