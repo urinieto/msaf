@@ -1,6 +1,6 @@
 # coding: utf-8
 import numpy as np
-from scipy.ndimage import filters
+from scipy import ndimage
 
 import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
@@ -10,7 +10,7 @@ from msaf import pymf
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
     for i in range(X.shape[1]):
-        X[:, i] = filters.median_filter(X[:, i], size=M)
+        X[:, i] = ndimage.median_filter(X[:, i], size=M)
     return X
 
 

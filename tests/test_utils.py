@@ -57,8 +57,8 @@ def test_align_end_hierarchies():
 
     msaf.utils.align_end_hierarchies(hier1, hier2)
 
-    yield (_test_equal_hier, hier1_orig, hier1)
-    yield (_test_equal_hier, hier2_orig, hier2)
+    _test_equal_hier(hier1_orig, hier1)
+    _test_equal_hier(hier2_orig, hier2)
 
 
 def test_lognormalize():

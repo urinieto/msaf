@@ -3,7 +3,7 @@
 from enum import Enum
 import json
 import librosa
-from nose.tools import raises
+from pytest import raises
 import numpy as np
 import os
 
@@ -76,10 +76,10 @@ def test_ref_power_cqt():
     run_ref_power(CQT)
 
 
-@raises(FeatureParamsError)
 def test_wrong_ref_power_cqt():
     """Test for wrong parameters for ref_power of the cqt."""
-    CQT(file_struct, FeatureTypes.framesync, ref_power="caca")
+    with raises(FeatureParamsError):
+        CQT(file_struct, FeatureTypes.framesync, ref_power="caca")
 
 
 def test_standard_pcp():
@@ -104,10 +104,10 @@ def test_ref_power_mfcc():
     run_ref_power(MFCC)
 
 
-@raises(FeatureParamsError)
 def test_wrong_ref_power_mfcc():
     """Test for wrong parameters for ref_power of the mfcc."""
-    MFCC(file_struct, FeatureTypes.framesync, ref_power="caca")
+    with raises(FeatureParamsError):
+        MFCC(file_struct, FeatureTypes.framesync, ref_power="caca")
 
 
 def test_standard_tempogram():
@@ -183,7 +183,6 @@ def test_no_audio():
     assert(CQT.get_id() in data.keys())
 
 
-@raises(NoAudioFileError)
 def test_no_audio_no_params():
     """The features should raise a NoFileAudioError if different parameters
     want to be explored and no audio file is found."""
@@ -191,17 +190,18 @@ def test_no_audio_no_params():
     no_audio_file_struct = FileStruct("fixtures/chirp_noaudio.mp3")
     no_audio_file_struct.features_file = "features/chirp_noaudio.json"
     feat_type = FeatureTypes.framesync
-    CQT(no_audio_file_struct, feat_type, sr=11025).features
+    with raises(NoAudioFileError):
+        CQT(no_audio_file_struct, feat_type, sr=11025).features
 
 
-@raises(NoAudioFileError)
 def test_no_audio_no_features():
     """The features should raise a NoFileAudioError if no features nor
     audio files are found."""
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/caca.mp3")
     feat_type = FeatureTypes.framesync
-    CQT(no_audio_file_struct, feat_type, sr=11025).features
+    with raises(NoAudioFileError):
+        CQT(no_audio_file_struct, feat_type, sr=11025).features
 
 
 def test_ann_features():
@@ -209,25 +209,24 @@ def test_ann_features():
     CQT(file_struct, FeatureTypes.ann_beatsync, sr=11025).features
 
 
-@raises(FeatureTypeNotFound)
 def test_wrong_ann_features():
     """Trying to get annotated features when no annotated beats are found."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.features_file = os.path.join("features", "no_file.json")
     cqt = CQT(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
-    cqt.features
+    with raises(FeatureTypeNotFound):
+        cqt.features
 
 
-@raises(FeatureTypeNotFound)
 def test_wrong_ann_frame_times():
     """Trying to get annotated frametimes when no annotated beats are found."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.features_file = os.path.join("features", "no_file.json")
     cqt = CQT(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
-    cqt.frame_times
+    with raises(FeatureTypeNotFound):
+        cqt.frame_times
 
 
-@raises(FeatureTypeNotFound)
 def test_wrong_type_features():
     """Trying to use custom type for features."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
@@ -235,10 +234,10 @@ def test_wrong_type_features():
     FeatureTypes2 = Enum('FeatureTypes',
                          'framesync1 est_beatsync ann_beatsync')
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
-    cqt.features
+    with raises(FeatureTypeNotFound):
+        cqt.features
 
 
-@raises(FeatureTypeNotFound)
 def test_wrong_type_frame_times():
     """Trying to use custom type for frame times."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
@@ -246,7 +245,8 @@ def test_wrong_type_frame_times():
     FeatureTypes2 = Enum('FeatureTypes',
                          'framesync1 est_beatsync ann_beatsync')
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
-    cqt.frame_times
+    with raises(FeatureTypeNotFound):
+        cqt.frame_times
 
 
 def test_read_ann_beats_old_jams():
@@ -259,13 +259,13 @@ def test_read_ann_beats_old_jams():
     assert frames is None
 
 
-@raises(FeatureTypeNotFound)
 def test_frame_times_old_jams():
     """Trying to use invalid jams file."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
     pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
-    pcp.frame_times
+    with raises(FeatureTypeNotFound):
+        pcp.frame_times
 
 
 def test_frame_times_framesync():
@@ -276,33 +276,33 @@ def test_frame_times_framesync():
     assert(isinstance(times, np.ndarray))
 
 
-@raises(FeatureTypeNotFound)
 def test_frame_times_no_annotations():
     """Checking frame times when there are no beat annotations."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.ref_file = os.path.join("fixtures", "old_jams.jams")
     pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
-    pcp.frame_times
+    with raises(FeatureTypeNotFound):
+        pcp.frame_times
 
 
-@raises(FeatureTypeNotFound)
 def test_wrong_frame_times():
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     pcp = PCP(my_file_struct, FeatureTypes.ann_beatsync, sr=11025)
     pcp.feat_types = "wrong"
-    pcp.frame_times
+    with raises(FeatureTypeNotFound):
+        pcp.frame_times
 
 
-@raises(NotImplementedError)
 def test_global_get_id():
-    Features.get_id()
+    with raises(NotImplementedError):
+        Features.get_id()
 
 
-@raises(NotImplementedError)
 def test_global_compute_features():
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     feats = Features(my_file_struct, 11025, 1024, FeatureTypes.framesync)
-    feats.compute_features()
+    with raises(NotImplementedError):
+        feats.compute_features()
 
 
 def test_select_features():
@@ -320,16 +320,16 @@ def test_select_features():
     assert feature.feat_type == FeatureTypes.ann_beatsync
 
 
-@raises(FeatureTypeNotFound)
 def test_wrong_select_features():
-    Features.select_features("cqt", None, True, True)
+    with raises(FeatureTypeNotFound):
+        Features.select_features("cqt", None, True, True)
 
 
-@raises(FeatureParamsError)
 def test_read_features_wrong_fun():
     my_file_struct = FileStruct("01_-_Come_Together.wav")
     my_file_struct.features_file = os.path.join(
         "fixtures", "01_-_Come_Together.json")
     mfcc = MFCC(my_file_struct, FeatureTypes.est_beatsync, sr=22050)
     mfcc.ref_power = np.mean
-    mfcc.read_features()
+    with raises(FeatureParamsError):
+        mfcc.read_features()

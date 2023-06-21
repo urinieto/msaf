@@ -54,6 +54,7 @@ setup(
         'vmo >= 0.3.3'
     ],
     extras_require={
-        'resample': 'scikits.samplerate>=0.3'
+        'resample': 'scikits.samplerate>=0.3',
+        'tests': ['pytest', 'pytest-cov']
     }
 )
