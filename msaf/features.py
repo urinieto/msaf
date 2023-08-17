@@ -75,7 +75,7 @@ class CQT(Features):
             raise FeatureParamsError("Wrong value for ref_power")
 
     @classmethod
-    def get_id(self):
+    def get_id(cls):
         """Identifier of these features."""
         return "cqt"
 
@@ -145,7 +145,7 @@ class MFCC(Features):
             raise FeatureParamsError("Wrong value for ref_power")
 
     @classmethod
-    def get_id(self):
+    def get_id(cls):
         """Identifier of these features."""
         return "mfcc"
 
@@ -209,7 +209,7 @@ class PCP(Features):
         self.n_octaves = n_octaves
 
     @classmethod
-    def get_id(self):
+    def get_id(cls):
         """Identifier of these features."""
         return "pcp"
 
@@ -279,7 +279,7 @@ class Tonnetz(Features):
         self.n_octaves = n_octaves
 
     @classmethod
-    def get_id(self):
+    def get_id(cls):
         """Identifier of these features."""
         return "tonnetz"
 
@@ -329,7 +329,7 @@ class Tempogram(Features):
         self.win_length = win_length
 
     @classmethod
-    def get_id(self):
+    def get_id(cls):
         """Identifier of these features."""
         return "tempogram"
 

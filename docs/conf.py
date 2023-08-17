@@ -197,7 +197,7 @@ else:
 
 class Mock(MagicMock):
     @classmethod
-    def __getattr__(classname, x):
+    def __getattr__(cls, x):
         if x == "_mock_methods":
             return x._mock_methods
         else:
