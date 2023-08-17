@@ -492,6 +492,6 @@ class Features(six.with_metaclass(MetaFeatures)):
                                   "implementation of the features")
 
     @classmethod
-    def get_id(self):
+    def get_id(cls):
         raise NotImplementedError("This method must return a string identifier"
                                   " of the features")

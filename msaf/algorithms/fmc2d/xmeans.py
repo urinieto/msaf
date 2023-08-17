@@ -175,7 +175,7 @@ class XMeans:
         return l_D - p / 2. * np.log(R)
 
     @classmethod
-    def generate_2d_data(self, N=100, K=5):
+    def generate_2d_data(cls, N=100, K=5):
         """Generates N*K 2D data points with K means and N data points
             for each mean."""
         # Seed the random
