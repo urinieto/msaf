@@ -378,7 +378,7 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
 
         # Evaluate in parallel
         logging.info("Evaluating %d tracks..." % len(file_structs))
-        evals = Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        evals = Parallel(n_jobs=n_jobs, verbose=2)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
             annotator_id=annotator_id) for file_struct in file_structs[:])
 
