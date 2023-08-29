@@ -15,7 +15,6 @@ Here is a list of all the available features:
     Features
 """
 
-from builtins import super
 import librosa
 import numpy as np
 

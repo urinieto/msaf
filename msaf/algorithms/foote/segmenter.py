@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 import librosa
 import logging
 import numpy as np

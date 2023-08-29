@@ -2,16 +2,15 @@
 MSAF.
 A bunch of it is basically shamefully copy pasted from the almighty theano."""
 
-from __future__ import absolute_import, print_function, division
 try:
     from configparser import (ConfigParser, NoOptionError, NoSectionError,
                               InterpolationError)
 except ImportError:
-    from six.moves.configparser import (ConfigParser, NoOptionError, NoSectionError,
+    from configparser import (ConfigParser, NoOptionError, NoSectionError,
                                         InterpolationError)
 import os
 import shlex
-from six import StringIO
+from io import StringIO
 from six import string_types
 import sys
 import warnings
@@ -134,7 +133,7 @@ def _config_print(thing, buf, print_doc=True):
         print("", file=buf)
 
 
-class MsafConfigParser(object):
+class MsafConfigParser:
     # properties are installed by AddConfigVar
     _i_am_a_config_class = True
 
@@ -188,7 +187,7 @@ def AddConfigVar(name, doc, configparam, root=config):
         if not hasattr(root, sections[0]):
             # every internal node in the config tree is an instance of its own
             # unique class
-            class SubObj(object):
+            class SubObj:
                 _i_am_a_config_class = True
             setattr(root.__class__, sections[0], SubObj())
         newroot = getattr(root, sections[0])
@@ -221,7 +220,7 @@ def AddConfigVar(name, doc, configparam, root=config):
         _config_var_list.append(configparam)
 
 
-class ConfigParam(object):
+class ConfigParam:
 
     def __init__(self, default, filter=None, allow_override=True):
         """
@@ -278,7 +277,7 @@ class EnumStr(ConfigParam):
 
         # All options should be strings
         for val in self.all:
-            if not isinstance(val, string_types) and val is not None:
+            if not isinstance(val, str) and val is not None:
                 raise ValueError('Valid values for an EnumStr parameter '
                                  'should be strings or `None`', val, type(val))
 
@@ -294,15 +293,15 @@ class EnumStr(ConfigParam):
             if val in self.all:
                 return val
             else:
-                raise ValueError((
+                raise ValueError(
                     'Invalid value ("%s") for configuration variable "%s". '
                     'Valid options are %s'
-                    % (val, self.fullname, self.all)))
+                    % (val, self.fullname, self.all))
         over = kwargs.get("allow_override", True)
-        super(EnumStr, self).__init__(default, filter, over)
+        super().__init__(default, filter, over)
 
     def __str__(self):
-        return '%s (%s) ' % (self.fullname, self.all)
+        return f'{self.fullname} ({self.all}) '
 
 
 class ListParam(ConfigParam):
@@ -316,10 +315,10 @@ class ListParam(ConfigParam):
             raise ValueError("The parameter is not a list.")
 
         over = kwargs.get("allow_override", True)
-        super(ListParam, self).__init__(default, None, over)
+        super().__init__(default, None, over)
 
     def __str__(self):
-        return '%s (%s) ' % (self.fullname, self.default)
+        return f'{self.fullname} ({self.default}) '
 
 
 class TypedParam(ConfigParam):
@@ -341,11 +340,11 @@ class TypedParam(ConfigParam):
                         % (val, self.fullname), val)
             return cast_val
 
-        super(TypedParam, self).__init__(default, filter,
+        super().__init__(default, filter,
                                          allow_override=allow_override)
 
     def __str__(self):
-        return '%s (%s) ' % (self.fullname, self.mytype)
+        return f'{self.fullname} ({self.mytype}) '
 
 
 def StrParam(default, is_valid=None, allow_override=True):

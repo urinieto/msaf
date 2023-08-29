@@ -45,7 +45,7 @@ def normalize(X, norm_type, floor=0.0, min_db=-80):
     norm_X: np.array
         Normalized `X` according the the input parameters.
     """
-    if isinstance(norm_type, six.string_types):
+    if isinstance(norm_type, str):
         if norm_type == "min_max":
             return min_max_normalize(X, floor=floor)
         if norm_type == "log":

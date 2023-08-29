@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # msaf documentation build configuration file, created by
 # sphinx-quickstart on Tue Jun 25 13:12:33 2013.
@@ -136,8 +135,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'msaf'
-copyright = u'2015-2018, msaf development team'
+project = 'msaf'
+copyright = '2015-2018, msaf development team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -189,10 +188,7 @@ pygments_style = 'sphinx'
 
 import six
 
-if six.PY3:
-    from unittest.mock import MagicMock
-else:
-    from mock import Mock as MagicMock
+from unittest.mock import MagicMock
 
 
 class Mock(MagicMock):
@@ -317,8 +313,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'msaf.tex', u'msaf Documentation',
-   u'The msaf development team', 'manual'),
+  ('index', 'msaf.tex', 'msaf Documentation',
+   'The msaf development team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -347,8 +343,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'msaf', u'msaf Documentation',
-     [u'The msaf development team'], 1)
+    ('index', 'msaf', 'msaf Documentation',
+     ['The msaf development team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -361,8 +357,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'msaf', u'msaf Documentation',
-   u'The msaf development team', 'msaf', 'One line description of project.',
+  ('index', 'msaf', 'msaf Documentation',
+   'The msaf development team', 'msaf', 'One line description of project.',
    'Miscellaneous'),
 ]
 

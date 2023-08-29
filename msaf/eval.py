@@ -256,7 +256,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
         Dictionary of the results (see function compute_results).
     """
     # Convert to file_struct if string is passed
-    if isinstance(file_struct, six.string_types):
+    if isinstance(file_struct, str):
         file_struct = io.FileStruct(file_struct)
 
     est_file = file_struct.est_file
@@ -284,11 +284,11 @@ def get_results_file_name(boundaries_id, labels_id, config,
     results."""
     utils.ensure_dir(msaf.config.results_dir)
     file_name = os.path.join(msaf.config.results_dir, "results")
-    file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
+    file_name += f"_boundsE{boundaries_id}_labelsE{labels_id}"
     file_name += "_annotatorE%d" % (annotator_id)
     sorted_keys = sorted(config.keys(), key=str.lower)
     for key in sorted_keys:
-        file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
+        file_name += "_{}E{}".format(key, str(config[key]).replace("/", "_"))
 
     # Check for max file length
     if len(file_name) > 255 - len(msaf.config.results_ext):

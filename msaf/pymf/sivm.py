@@ -112,7 +112,7 @@ class SIVM(AA):
         else:
             step = 50000
 
-        d = np.zeros((self.data.shape[1]))
+        d = np.zeros(self.data.shape[1])
         if idx == -1:
             # set vec to origin if idx=-1
             vec = np.zeros((self.data.shape[0], 1))
@@ -171,10 +171,10 @@ class SIVM(AA):
         self.init_sivm()
 
         # initialize some of the recursively updated distance measures ....
-        d_square = np.zeros((self.data.shape[1]))
-        d_sum = np.zeros((self.data.shape[1]))
-        d_i_times_d_j = np.zeros((self.data.shape[1]))
-        distiter = np.zeros((self.data.shape[1]))
+        d_square = np.zeros(self.data.shape[1])
+        d_sum = np.zeros(self.data.shape[1])
+        d_i_times_d_j = np.zeros(self.data.shape[1])
+        distiter = np.zeros(self.data.shape[1])
         a = np.log(self._maxd)
         a_inc = a.copy()
 

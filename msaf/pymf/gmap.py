@@ -120,7 +120,7 @@ class GMAP(AA):
 
         if scipy.sparse.issparse(self.data):
             norm_data = np.sqrt(self.data.multiply(self.data).sum(axis=0))
-            norm_data = np.array(norm_data).reshape((-1))
+            norm_data = np.array(norm_data).reshape(-1)
         else:
             norm_data = np.sqrt(np.sum(self.data**2, axis=0))
 

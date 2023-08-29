@@ -102,7 +102,7 @@ class GREEDY(NMF):
                 K = K*L                   
             return K
             
-        self._t = np.zeros((self._num_bases))
+        self._t = np.zeros(self._num_bases)
         t0 = time.time()
         self.select = []       
             

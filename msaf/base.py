@@ -40,7 +40,7 @@ class MetaFeatures(type):
         return cls
 
 
-class Features(six.with_metaclass(MetaFeatures)):
+class Features(metaclass=MetaFeatures):
     """This is the base class for all the features in MSAF.
 
     It contains functions to automatically estimate beats, read annotated
@@ -277,7 +277,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             raise FeaturesNotFound(
                 "The features for the given parameters were not found in "
                 "features file %s" % self.file_struct.features_file)
-        except IOError:
+        except OSError:
             raise NoFeaturesFileError("Could not find features file %s",
                                       self.file_struct.features_file)
 
@@ -421,7 +421,7 @@ class Features(six.with_metaclass(MetaFeatures)):
                 try:
                     self._compute_all_features()
                     self.write_features()
-                except IOError:
+                except OSError:
                     if isinstance(e, FeaturesNotFound) or \
                             isinstance(e, FeatureParamsError):
                         msg = "Computation of the features is needed for " \

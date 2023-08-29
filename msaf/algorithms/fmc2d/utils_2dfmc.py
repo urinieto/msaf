@@ -93,7 +93,7 @@ def json_to_labels(segments_json):
 def json_to_beats(beats_json_file):
     """Extracts the beats from the beats_json_file and puts them into
         an np array."""
-    f = open(beats_json_file, "r")
+    f = open(beats_json_file)
     beats_json = json.load(f)
     beats = []
     for beat in beats_json["beats"]:
@@ -102,7 +102,7 @@ def json_to_beats(beats_json_file):
     return np.asarray(beats)
 
 def analyze_results(file):
-    f = open(file, "r")
+    f = open(file)
     lines = f.readlines()
     F = []
     for line in lines:

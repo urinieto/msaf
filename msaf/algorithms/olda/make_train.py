@@ -76,7 +76,7 @@ def align_segmentation(beat_times, song):
 
 
 def get_annotation(song, rootpath):
-    return '%s/annotations/%s.jams' % (rootpath, os.path.basename(song)[:-4])
+    return f'{rootpath}/annotations/{os.path.basename(song)[:-4]}.jams'
 
 
 def import_data(file_struct, rootpath, output_path, annot_beats):
@@ -87,7 +87,7 @@ def import_data(file_struct, rootpath, output_path, annot_beats):
             os.path.basename(file_struct.audio_file))[0], annot_beats)
 
     if os.path.exists(data_file):
-        with open(data_file, 'r') as f:
+        with open(data_file) as f:
             Data = pickle.load(f)
             print(file_struct.audio_file, 'cached!')
     else:
@@ -186,10 +186,10 @@ if __name__ == '__main__':
         ds_path = ds_path[:-1]
 
     if args.annot_beats:
-        out_path = '%s/AnnotBeats_%s_data.pickle' % (
+        out_path = '{}/AnnotBeats_{}_data.pickle'.format(
             args.output_path, os.path.basename(ds_path))
     else:
-        out_path = '%s/EstBeats_%s_data.pickle' % (
+        out_path = '{}/EstBeats_{}_data.pickle'.format(
             args.output_path, os.path.basename(ds_path))
     with open(out_path, 'w') as f:
         pickle.dump((X, Y, B, T, F, L), f)

@@ -144,7 +144,7 @@ def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
                 est_idxs = io.align_times(est_times, frame_times)
                 if est_idxs[0] != 0:
                     est_idxs = np.concatenate(([0], est_idxs))
-            except IOError:
+            except OSError:
                 logging.warning("No references found for file: %s" %
                                 file_struct.audio_file)
                 return [], []

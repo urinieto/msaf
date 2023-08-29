@@ -91,7 +91,7 @@ class SIVM_GSAT(SIVM):
         self.D[k, :-1] = tmp_d
         self.D[:-1, k] = tmp_d
 
-        v = np.zeros((self._num_bases + 1))
+        v = np.zeros(self._num_bases + 1)
 
         for i in range(self._num_bases):
                 # compute volume for each combination...
