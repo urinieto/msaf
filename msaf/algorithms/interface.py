@@ -84,20 +84,13 @@ class SegmenterInterface:
         raise NotImplementedError("This method does not return hierarchical "
                                   "segmentations.")
 
-    def _preprocess(self, valid_features=["pcp", "tonnetz", "mfcc",
-                                          "cqt", "tempogram"]):
+    def _preprocess(self):
         """This method obtains the actual features."""
-        # Use specific feature
-        if self.feature_str not in valid_features:
-            raise RuntimeError("Feature %s in not valid for algorithm: %s "
-                               "(valid features are %s)." %
-                               (self.feature_str, __name__, valid_features))
-        else:
-            try:
-                F = self.features.features
-            except KeyError:
-                raise RuntimeError("Feature %s in not supported by MSAF" %
-                                   (self.feature_str))
+        try:
+            F = self.features.features
+        except KeyError:
+            raise RuntimeError("Feature %s in not supported by MSAF" % 
+                               (self.feature_str))
 
         return F
 
