@@ -3,16 +3,14 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF several distance functions
+"""PyMF several distance functions.
 
-    kl_divergence(): KL Divergence
-    l1_distance(): L1 distance
-    l2_distance(): L2 distance
-    cosine_distance(): Cosine distance
-    pdist(): Pairwise distance computation
-    vq(): Vector quantization
-
+kl_divergence(): KL Divergence
+l1_distance(): L1 distance
+l2_distance(): L2 distance
+cosine_distance(): Cosine distance
+pdist(): Pairwise distance computation
+vq(): Vector quantization
 """
 
 

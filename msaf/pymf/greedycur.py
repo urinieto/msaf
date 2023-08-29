@@ -4,12 +4,12 @@
 # Licensed under the GNU General Public License (GPL). 
 # http://www.gnu.org/licenses/gpl.txt
 #$Id$
-"""  
-PyMF CUR-like Sparse Column Based Matrix Reconstruction via Greedy Approximation[1]
+"""PyMF CUR-like Sparse Column Based Matrix Reconstruction via Greedy
+Approximation[1]
 
-	GREEDYCUR: class for CUR-like decompositions using the GREEDY[2] algorithm.
+        GREEDYCUR: class for CUR-like decompositions using the GREEDY[2] algorithm.
 
-[1] Drineas, P., Kannan, R. and Mahoney, M. (2006), 'Fast Monte Carlo Algorithms III: 
+[1] Drineas, P., Kannan, R. and Mahoney, M. (2006), 'Fast Monte Carlo Algorithms III:
 Computing a Compressed Approixmate Matrix Decomposition', SIAM J. Computing 36(1), 184-206.
 [2] Ali Civril, Malik Magdon-Ismail. Deterministic Sparse Column Based Matrix
 Reconstruction via Greedy Approximation of SVD. ISAAC'2008.

@@ -3,12 +3,10 @@
 # Copyright (C) Christian Thurau, 2010. 
 # Licensed under the GNU General Public License (GPL). 
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF functions for computing matrix/simplex volumes
+"""PyMF functions for computing matrix/simplex volumes.
 
-	cmdet(): Cayley-Menger Determinant
-	simplex_volume(): Ordinary simplex volume
-		
+cmdet(): Cayley-Menger Determinant
+simplex_volume(): Ordinary simplex volume
 """
 
 

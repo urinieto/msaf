@@ -4,11 +4,9 @@ import msaf.utils as U
 
 
 class SegmenterInterface:
-    """This class is an interface for all the segmenter algorithms included
-    in MSAF. These segmenters must inherit from it and implement one of the
-    following methods:
-            processFlat()
-            processHierarchical()
+    """This class is an interface for all the segmenter algorithms included in
+    MSAF. These segmenters must inherit from it and implement one of the
+    following methods: processFlat() processHierarchical()
 
     Additionally, two private helper functions are provided:
         - preprocess

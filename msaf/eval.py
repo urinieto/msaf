@@ -1,5 +1,4 @@
-"""
-Evaluates the estimated results of the Segmentation dataset against the
+"""Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
 
 .. autosummary::
@@ -162,8 +161,8 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
 def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                        bins=251, annotator_id=0):
-    """Computes the results by using the ground truth dataset identified by
-    the annotator parameter.
+    """Computes the results by using the ground truth dataset identified by the
+    annotator parameter.
 
     Return
     ------

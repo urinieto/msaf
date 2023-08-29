@@ -78,8 +78,8 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
 
 
 def circular_shift(X):
-    """Shifts circularly the X squre matrix in order to get a
-        time-lag matrix."""
+    """Shifts circularly the X squre matrix in order to get a time-lag
+    matrix."""
     N = X.shape[0]
     L = np.zeros(X.shape)
     for i in range(N):
@@ -112,6 +112,7 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)

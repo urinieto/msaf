@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Simplex Volume Maximization [1]
+"""PyMF Simplex Volume Maximization [1]
 
     SIVM: class for SiVM
 
@@ -23,9 +22,7 @@ from .aa import AA
 __all__ = ["SIVM"]
 
 class SIVM(AA):
-    """
-    SIVM(data, num_bases=4, dist_measure='l2')
-
+    """SIVM(data, num_bases=4, dist_measure='l2')
 
     Simplex Volume Maximization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity. W is iteratively
@@ -105,7 +102,7 @@ class SIVM(AA):
 
 
     def _distance(self, idx):
-        """ compute distances of a specific data point to all other samples"""
+        """Compute distances of a specific data point to all other samples."""
 
         if scipy.sparse.issparse(self.data):
             step = self.data.shape[1]
@@ -166,7 +163,7 @@ class SIVM(AA):
             self.select.append(cur_p)
 
     def update_w(self):
-        """ compute new W """
+        """Compute new W."""
         EPS = 10**-8
         self.init_sivm()
 

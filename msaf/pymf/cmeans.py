@@ -3,8 +3,8 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF K-means clustering (unary-convex matrix factorization).
+"""PyMF K-means clustering (unary-convex matrix factorization).
+
 Copyright (C) Christian Thurau, 2010. GNU General Public License (GPL).
 """
 
@@ -18,9 +18,7 @@ from .nmf import NMF
 __all__ = ["Cmeans"]
 
 class Cmeans(NMF):
-    """
-    cmeans(data, num_bases=4)
-
+    """Cmeans(data, num_bases=4)
 
     Fuzzy c-means soft clustering. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity (columns

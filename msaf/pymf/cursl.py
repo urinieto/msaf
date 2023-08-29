@@ -4,12 +4,11 @@
 # Licensed under the GNU General Public License (GPL). 
 # http://www.gnu.org/licenses/gpl.txt
 #$Id$
-"""
-PyMF CUR Decomposition [1]
+"""PyMF CUR Decomposition [1]
 
     CURSL(SVD) : Class for CUR Decomposition (uses statistical leverage based sampling)
 
-[1] Drineas, P., Kannan, R. and Mahoney, M. (2006), 'Fast Monte Carlo Algorithms III: Computing 
+[1] Drineas, P., Kannan, R. and Mahoney, M. (2006), 'Fast Monte Carlo Algorithms III: Computing
 a Compressed Approixmate Matrix Decomposition', SIAM J. Computing 36(1), 184-206.
 """
 
@@ -23,9 +22,8 @@ from cmd import CMD
 __all__ = ["CURSL"]
 
 class CURSL(CMD):
-    """      
-    CURSL(data,  data, rrank=0, crank=0)
-        
+    """CURSL(data,  data, rrank=0, crank=0)
+
     CUR/CMD Decomposition. Factorize a data matrix into three matrices s.t.
     F = | data - USV| is minimal. CURSL randomly selects rows and columns from
     data for building U and V, respectively. The importance sampling is based

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-"""
-Runs one boundary algorithm and a label algorithm on a specified audio file
-and outputs the results using the MIREX format.
-"""
+"""Runs one boundary algorithm and a label algorithm on a specified audio file
+and outputs the results using the MIREX format."""
 import argparse
 import logging
 import time

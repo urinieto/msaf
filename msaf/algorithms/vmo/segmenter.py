@@ -1,14 +1,11 @@
-"""
-Variable Markov Oracle algorithm
-"""
+"""Variable Markov Oracle algorithm."""
 from msaf.algorithms.interface import SegmenterInterface
 import librosa
 from . import main
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This script identifies the structure of a given track using the Variable
+    """This script identifies the structure of a given track using the Variable
     Markov Oracle technique described here:
 
     Wang, C., Mysore, J. G., Structural Segmentation With The Variable Markov
@@ -20,6 +17,7 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)
@@ -45,6 +43,7 @@ class Segmenter(SegmenterInterface):
 
     def processHierarchical(self):
         """Main process.for hierarchial segmentation.
+
         Returns
         -------
         est_idxs : list

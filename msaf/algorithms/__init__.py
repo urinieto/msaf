@@ -1,6 +1,4 @@
-"""
-Initialisation file for all the algorithms contained in MSAF.
-"""
+"""Initialisation file for all the algorithms contained in MSAF."""
 import glob
 import importlib
 import os

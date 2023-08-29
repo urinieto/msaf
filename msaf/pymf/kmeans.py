@@ -3,9 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF K-means clustering (unary-convex matrix factorization).
-"""
+"""PyMF K-means clustering (unary-convex matrix factorization)."""
 
 
 import numpy as np
@@ -17,8 +15,7 @@ from .nmf import NMF
 __all__ = ["Kmeans"]
 
 class Kmeans(NMF):
-    """
-    Kmeans(data, num_bases=4)
+    """Kmeans(data, num_bases=4)
 
     K-means clustering. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to unary vectors, W

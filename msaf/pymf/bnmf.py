@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Binary Matrix Factorization [1]
+"""PyMF Binary Matrix Factorization [1]
 
     BNMF(NMF) : Class for binary matrix factorization
 
@@ -19,8 +18,8 @@ from .nmf import NMF
 __all__ = ["BNMF"]
 
 class BNMF(NMF):
-    """
-    BNMF(data, data, num_bases=4)
+    """BNMF(data, data, num_bases=4)
+
     Binary Matrix Factorization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H and W are restricted to binary values.
 

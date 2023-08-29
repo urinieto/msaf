@@ -16,7 +16,7 @@ from segmenter import features
 
 
 def align_segmentation(beat_times, song):
-    '''Load a ground-truth segmentation, and align times to the nearest
+    """Load a ground-truth segmentation, and align times to the nearest
     detected beats.
 
     Arguments:
@@ -32,7 +32,7 @@ def align_segmentation(beat_times, song):
 
         segment_labels -- array
             list of segment labels
-    '''
+    """
     try:
         segment_times, segment_labels = msaf.io.read_references(song)
     except:

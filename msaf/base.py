@@ -1,7 +1,7 @@
-"""
-Base module containing parent classes for the Features.
-In following versions, base classes for algorithms should also be included
-here.
+"""Base module containing parent classes for the Features.
+
+In following versions, base classes for algorithms should also be
+included here.
 """
 
 import collections
@@ -42,19 +42,20 @@ class MetaFeatures(type):
 class Features(metaclass=MetaFeatures):
     """This is the base class for all the features in MSAF.
 
-    It contains functions to automatically estimate beats, read annotated
-    beats, compute beat-synchronous features, read and write features.
+    It contains functions to automatically estimate beats, read
+    annotated beats, compute beat-synchronous features, read and write
+    features.
 
-    It should be straightforward to add features in MSAF, simply by writing
-    classes that inherit from this one.
+    It should be straightforward to add features in MSAF, simply by
+    writing classes that inherit from this one.
 
-    The `features` getter does the main job, and it returns a matrix `(N, F)`,
-    where `N` is the number of frames an `F` is the number of features
-    per frames.
+    The `features` getter does the main job, and it returns a matrix
+    `(N, F)`, where `N` is the number of frames an `F` is the number of
+    features per frames.
     """
     def __init__(self, file_struct, sr, hop_length, feat_type):
-        """Init function for the base class to make sure all features have
-        at least these parameters as attributes.
+        """Init function for the base class to make sure all features have at
+        least these parameters as attributes.
 
         Parameters
         ----------
@@ -342,8 +343,8 @@ class Features(metaclass=MetaFeatures):
                 json.dump(out_json, f, indent=2)
 
     def get_param_names(self):
-        """Returns the parameter names for these features, avoiding
-        the global parameters."""
+        """Returns the parameter names for these features, avoiding the global
+        parameters."""
         return [name for name in vars(self) if not name.startswith('_') and
                 name not in self._global_param_names]
 
@@ -403,8 +404,8 @@ class Features(metaclass=MetaFeatures):
 
     @property
     def features(self):
-        """This getter will compute the actual features if they haven't
-        been computed yet.
+        """This getter will compute the actual features if they haven't been
+        computed yet.
 
         Returns
         -------

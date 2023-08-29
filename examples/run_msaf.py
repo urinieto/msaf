@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-"""
-Runs one boundary algorithm and a label algorithm on a specified audio file or
-dataset.
-"""
+"""Runs one boundary algorithm and a label algorithm on a specified audio file
+or dataset."""
 import argparse
 import logging
 import os

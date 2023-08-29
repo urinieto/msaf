@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Convex Hull Non-negative Matrix Factorization [1]
+"""PyMF Convex Hull Non-negative Matrix Factorization [1]
 
     CHNMF(NMF) : Class for Convex-hull NMF
     quickhull : Function for finding the convex hull in 2D
@@ -25,7 +24,7 @@ __all__ = ["CHNMF"]
 
 
 def quickhull(sample):
-    """ Find data points on the convex hull of a supplied data set
+    """Find data points on the convex hull of a supplied data set.
 
     Args:
         sample: data points as column vectors n x d
@@ -60,8 +59,7 @@ def quickhull(sample):
         return sample
 
 class CHNMF(AA):
-    """
-    CHNMF(data, num_bases=4)
+    """CHNMF(data, num_bases=4)
 
     Convex Hull Non-negative Matrix Factorization. Factorize a data matrix into
     two matrices s.t. F = | data - W*H | is minimal. H is restricted to convexity
@@ -135,8 +133,7 @@ class CHNMF(AA):
         self.W = np.zeros((self._data_dimension, self._num_bases))
 
     def _map_w_to_data(self):
-        """ Return data points that are most similar to basis vectors W
-        """
+        """Return data points that are most similar to basis vectors W."""
 
         # assign W to the next best data sample
         self._Wmapped_index = vq(self.data, self.W)
@@ -150,10 +147,10 @@ class CHNMF(AA):
             self.Wmapped[:,i] = self.data[:,s]
 
     def update_w(self):
-        """ compute new W """
+        """Compute new W."""
         def select_hull_points(data, n=3):
-            """ select data points for pairwise projections of the first n
-            dimensions """
+            """Select data points for pairwise projections of the first n
+            dimensions."""
 
             # iterate over all projections and select data points
             idx = np.array([])

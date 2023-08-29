@@ -4,10 +4,9 @@
 # Licensed under the GNU General Public License (GPL). 
 # http://www.gnu.org/licenses/gpl.txt
 #$Id$
-""" 
-PyMF GREEDY[1]
+"""PyMF GREEDY[1]
 
-	GREEDY: class for a deterministic SVD based greedy matrix reconstruction [1].
+        GREEDY: class for a deterministic SVD based greedy matrix reconstruction [1].
 
 
 [1] Ali Civril, Malik Magdon-Ismail. Deterministic Sparse Column Based Matrix
@@ -24,9 +23,7 @@ from nmf import NMF
 __all__ = ["GREEDY"]
 
 class GREEDY(NMF):
-    """ 
-    GREEDYVOL(data, num_bases=4, niter=100, show_progress=True, compW=True)
-
+    """GREEDYVOL(data, num_bases=4, niter=100, show_progress=True, compW=True)
 
     Deterministic Sparse Column Based Matrix Reconstruction via Greedy 
     Approximation of SVD. Factorize a data matrix into two matrices s.t.
@@ -87,7 +84,9 @@ class GREEDY(NMF):
         
     def update_w(self):
         def normalize_matrix(K):
-            """ Normalize a matrix K s.t. columns have Euclidean-norm |1|
+            """Normalize a matrix K s.t.
+
+            columns have Euclidean-norm |1|
             """
             if scipy.sparse.issparse(K):                
                 L = np.sqrt(np.array(K.multiply(K).sum(axis=0)))[0,:]                

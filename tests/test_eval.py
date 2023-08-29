@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
-Unit tests for eval.
-"""
+"""Unit tests for eval."""
 
 from pytest import raises
 import numpy.testing as npt

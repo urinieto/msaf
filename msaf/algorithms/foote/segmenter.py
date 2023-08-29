@@ -32,8 +32,8 @@ def compute_ssm(X, metric="seuclidean"):
 
 
 def compute_nc(X, G):
-    """Computes the novelty curve from the self-similarity matrix X and
-        the gaussian kernel G."""
+    """Computes the novelty curve from the self-similarity matrix X and the
+    gaussian kernel G."""
     N = X.shape[0]
     M = G.shape[0]
     nc = np.zeros(N)
@@ -83,6 +83,7 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)

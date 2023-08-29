@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Convex Matrix Factorization [1]
+"""PyMF Convex Matrix Factorization [1]
 
     CNMF(NMF) : Class for convex matrix factorization
 
@@ -22,9 +21,7 @@ from .kmeans import Kmeans
 __all__ = ["CNMF"]
 
 class CNMF(NMF):
-    """
-    CNMF(data, num_bases=4)
-
+    """CNMF(data, num_bases=4)
 
     Convex NMF. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | = | data - data*beta*H| is minimal. H and beta

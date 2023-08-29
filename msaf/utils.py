@@ -1,6 +1,4 @@
-"""
-Useful functions that are common in MSAF
-"""
+"""Useful functions that are common in MSAF."""
 import librosa
 import mir_eval
 import numpy as np
@@ -91,8 +89,8 @@ def intervals_to_times(inters):
 
 
 def get_num_frames(dur, anal):
-    """Given the duration of a track and a dictionary containing analysis
-    info, return the number of frames."""
+    """Given the duration of a track and a dictionary containing analysis info,
+    return the number of frames."""
     total_samples = dur * anal["sample_rate"]
     return int(total_samples / anal["hop_size"])
 

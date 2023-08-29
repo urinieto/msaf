@@ -1,6 +1,4 @@
-"""
-This module contains multiple functions in order to run MSAF algorithms.
-"""
+"""This module contains multiple functions in order to run MSAF algorithms."""
 from copy import deepcopy
 from joblib import Parallel, delayed
 import librosa
@@ -74,7 +72,9 @@ def get_labels_module(labels_id):
 def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
                      config, annotator_id=0):
     """Runs hierarchical algorithms with the specified identifiers on the
-    audio_file. See run_algorithm for more information.
+    audio_file.
+
+    See run_algorithm for more information.
     """
     # Sanity check
     if bounds_module is None:
@@ -119,7 +119,9 @@ def run_hierarchical(audio_file, bounds_module, labels_module, frame_times,
 def run_flat(file_struct, bounds_module, labels_module, frame_times, config,
              annotator_id):
     """Runs the flat algorithms with the specified identifiers on the
-    audio_file. See run_algorithm for more information.
+    audio_file.
+
+    See run_algorithm for more information.
     """
     # Get features to make code nicer
     features = config["features"].features

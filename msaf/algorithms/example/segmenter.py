@@ -1,6 +1,4 @@
-"""
-Example of algorithm for MSAF
-"""
+"""Example of algorithm for MSAF."""
 from msaf.algorithms.interface import SegmenterInterface
 import numpy as np
 
@@ -8,6 +6,7 @@ import numpy as np
 class Segmenter(SegmenterInterface):
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)

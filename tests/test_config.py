@@ -97,8 +97,8 @@ def test_wrong_addconfig_root():
 
 
 def test_wrong_addconfig_root_multsections():
-    """Tests adding a var that already exists in the root with
-    multiple sections and wrong root."""
+    """Tests adding a var that already exists in the root with multiple
+    sections and wrong root."""
     conf = namedtuple('conf', ['cqt'])
     with raises(TypeError):
         AddConfigVar('cqt.bins', "doc", IntParam(1), root=conf)

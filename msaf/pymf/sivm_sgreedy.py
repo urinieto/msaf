@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Simplex Volume Maximization [1]
+"""PyMF Simplex Volume Maximization [1]
 
     SIVM_SGREEDY: class for greedy-search SiVM
 
@@ -24,9 +23,7 @@ from .sivm_search import SIVM_SEARCH
 __all__ = ["SIVM_SGREEDY"]
 
 class SIVM_SGREEDY(SIVM_SEARCH):
-    """
-    SIVM(data, num_bases=4, niter=100, show_progress=True, compW=True)
-
+    """SIVM(data, num_bases=4, niter=100, show_progress=True, compW=True)
 
     Simplex Volume Maximization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity. W is iteratively

@@ -7,19 +7,20 @@ from . import main2
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This script identifies the boundaries of a given track using the Spectral
-    Clustering method published here:
+    """This script identifies the boundaries of a given track using the
+    Spectral Clustering method published here:
 
-    Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with Spectral
-    Clustering. In Proc. of the 15th International Society for Music
-    Information Retrieval Conference (pp. 405–410). Taipei, Taiwan.
+    Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with
+    Spectral Clustering. In Proc. of the 15th International Society for
+    Music Information Retrieval Conference (pp. 405–410). Taipei,
+    Taiwan.
 
     Original code by Brian McFee from:
-        https://github.com/bmcfee/laplacian_segmentation
+    https://github.com/bmcfee/laplacian_segmentation
     """
     def process(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N) or list
@@ -51,6 +52,7 @@ class Segmenter(SegmenterInterface):
 
     def processFlat(self):
         """Main process.for flat segmentation.
+
         Returns
         -------
         est_idxs : np.array(N)
@@ -65,6 +67,7 @@ class Segmenter(SegmenterInterface):
 
     def processHierarchical(self):
         """Main process.for hierarchial segmentation.
+
         Returns
         -------
         est_idxs : list

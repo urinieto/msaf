@@ -1,4 +1,4 @@
-""" Laplacian segmentation """
+"""Laplacian segmentation."""
 
 # Code source: Brian McFee
 # License: ISC

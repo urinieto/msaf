@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-"""
-This script computes the features for a single or multiple audio files.
-It uses the default parameters. These parameters can be changed the
-`.msafrc` config file.
+"""This script computes the features for a single or multiple audio files. It
+uses the default parameters. These parameters can be changed the `.msafrc`
+config file.
 
 Examples:
 

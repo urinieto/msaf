@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
-'''Music segmentation using timbre, pitch, repetition and time.
-'''
+"""Music segmentation using timbre, pitch, repetition and time."""
 import argparse
 import logging
 import sys
@@ -152,8 +151,7 @@ def features(file_struct, annot_beats=False, framesync=False):
 
 
 def gaussian_cost(X):
-    '''Return the average log-likelihood of data under a standard normal
-    '''
+    """Return the average log-likelihood of data under a standard normal."""
 
     d, n = X.shape
 
@@ -251,8 +249,7 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This class implements the algorithm described here:
+    """This class implements the algorithm described here:
 
     McFee, B. and Ellis, D.P.W., Learning to segment songs with ordinal linear
     discriminant analysis. International conference on acoustics, speech and
@@ -262,6 +259,7 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process for flat segmentation.
+
         Returns
         -------
         est_idxs : np.array(N)
@@ -299,6 +297,7 @@ class Segmenter(SegmenterInterface):
 
     def processHierarchical(self):
         """Main process for hierarchical segmentation.
+
         Returns
         -------
         est_idxs : list

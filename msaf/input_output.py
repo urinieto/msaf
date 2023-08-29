@@ -1,7 +1,5 @@
-"""
-These set of functions help the algorithms of MSAF to read and write files
-of the Segmentation Dataset.
-"""
+"""These set of functions help the algorithms of MSAF to read and write files
+of the Segmentation Dataset."""
 import datetime
 import glob
 import json

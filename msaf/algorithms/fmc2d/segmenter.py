@@ -168,8 +168,7 @@ def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This method labels segments using the 2D-FMC method described here:
+    """This method labels segments using the 2D-FMC method described here:
 
     Nieto, O., Bello, J.P., Music Segment Similarity Using 2D-Fourier Magnitude
     Coefficients. Proc. of the 39th IEEE International Conference on Acoustics,
@@ -179,6 +178,7 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idx : np.array(N)

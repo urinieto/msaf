@@ -1,6 +1,4 @@
-"""
-Set of util functions for the section similarity project.
-"""
+"""Set of util functions for the section similarity project."""
 
 import copy
 import numpy as np
@@ -50,8 +48,8 @@ def magnitude(X):
     return np.sqrt(r * r + i * i);
 
 def json_to_bounds(segments_json):
-    """Extracts the boundaries from a json file and puts them into
-        an np array."""
+    """Extracts the boundaries from a json file and puts them into an np
+    array."""
     f = open(segments_json)
     segments = json.load(f)["segments"]
     bounds = []
@@ -62,8 +60,8 @@ def json_to_bounds(segments_json):
     return np.asarray(bounds)
 
 def json_bounds_to_bounds(bounds_json):
-    """Extracts the boundaries from a bounds json file and puts them into
-        an np array."""
+    """Extracts the boundaries from a bounds json file and puts them into an np
+    array."""
     f = open(bounds_json)
     segments = json.load(f)["bounds"]
     bounds = []
@@ -73,8 +71,7 @@ def json_bounds_to_bounds(bounds_json):
     return np.asarray(bounds)
 
 def json_to_labels(segments_json):
-    """Extracts the labels from a json file and puts them into
-        an np array."""
+    """Extracts the labels from a json file and puts them into an np array."""
     f = open(segments_json)
     segments = json.load(f)["segments"]
     labels = []
@@ -90,8 +87,8 @@ def json_to_labels(segments_json):
     return np.asarray(labels)
 
 def json_to_beats(beats_json_file):
-    """Extracts the beats from the beats_json_file and puts them into
-        an np array."""
+    """Extracts the beats from the beats_json_file and puts them into an np
+    array."""
     f = open(beats_json_file)
     beats_json = json.load(f)
     beats = []

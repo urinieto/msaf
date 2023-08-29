@@ -1,6 +1,8 @@
-"""This script contains relevant functions to read the configuration for
-MSAF.
-A bunch of it is basically shamefully copy pasted from the almighty theano."""
+"""This script contains relevant functions to read the configuration for MSAF.
+
+A bunch of it is basically shamefully copy pasted from the almighty
+theano.
+"""
 
 try:
     from configparser import (ConfigParser, NoOptionError, NoSectionError,
@@ -30,9 +32,8 @@ class MsafConfigWarning(Warning):
 
 
 def parse_config_string(config_string, issue_warnings=True):
-    """
-    Parses a config string (comma-separated key=value components) into a dict.
-    """
+    """Parses a config string (comma-separated key=value components) into a
+    dict."""
     config_dict = {}
     my_splitter = shlex.shlex(config_string, posix=True)
     my_splitter.whitespace = ','
@@ -88,9 +89,9 @@ msaf_raw_cfg.read(config_files)
 
 
 def fetch_val_for_key(key, delete_key=False):
-    """Return the overriding config value for a key.
-    A successful search returns a string value.
-    An unsuccessful search raises a KeyError
+    """Return the overriding config value for a key. A successful search
+    returns a string value. An unsuccessful search raises a KeyError.
+
     The (decreasing) priority order is:
     - MSAF_FLAGS
     - ~./msafrc
@@ -158,7 +159,7 @@ config = MsafConfigParser()
 # - ConfigParser subclasses control get/set of config properties to guard
 #   against craziness.
 def AddConfigVar(name, doc, configparam, root=config):
-    """Add a new variable to msaf.config
+    """Add a new variable to msaf.config.
 
     Parameters
     ----------
@@ -222,9 +223,10 @@ def AddConfigVar(name, doc, configparam, root=config):
 class ConfigParam:
 
     def __init__(self, default, filter=None, allow_override=True):
-        """
-        If allow_override is False, we can't change the value after the import
-        of Theano. So the value should be the same during all the execution.
+        """If allow_override is False, we can't change the value after the
+        import of Theano.
+
+        So the value should be the same during all the execution.
         """
         self.default = default
         self.filter = filter

@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Non-negative Matrix Factorization.
+"""PyMF Non-negative Matrix Factorization.
 
     NMF: Class for Non-negative Matrix Factorization
 
@@ -20,9 +19,7 @@ from nmf import NMF
 __all__ = ["RNMF"]
 
 class RNMF(NMF):
-    """
-    RNMF(data, num_bases=4)
-
+    """RNMF(data, num_bases=4)
 
     Non-negative Matrix Factorization. Factorize a data matrix into two matrices
     s.t. F = | data - W*H | = | is minimal. H, and W are restricted to non-negative
