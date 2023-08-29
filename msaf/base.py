@@ -13,7 +13,6 @@ import jams
 import json
 import numpy as np
 import os
-import six
 
 # Local stuff
 import msaf

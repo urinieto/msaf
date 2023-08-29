@@ -17,7 +17,7 @@ a Compressed Approixmate Matrix Decomposition', SIAM J. Computing 36(1), 184-206
 import numpy as np
 import scipy.sparse
 
-from svd import pinv, SVD
+from svd import SVD
 from cmd import CMD
 
 __all__ = ["CURSL"]

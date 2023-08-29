@@ -6,7 +6,6 @@ import copy
 import numpy as np
 import json
 import scipy.fftpack
-import pylab as plt
 
 def resample_mx(X, incolpos, outcolpos):
     """

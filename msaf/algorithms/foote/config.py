@@ -1,6 +1,5 @@
 """Config for the Foote algorithm."""
 
-import msaf
 
 # Foote Params
 config = {

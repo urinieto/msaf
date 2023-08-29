@@ -4,7 +4,6 @@ Unit tests for eval.
 """
 
 from pytest import raises
-from types import ModuleType
 import numpy.testing as npt
 import numpy as np
 import os

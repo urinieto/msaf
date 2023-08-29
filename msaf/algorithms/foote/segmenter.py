@@ -1,10 +1,7 @@
 #!/usr/bin/env python
-import librosa
-import logging
 import numpy as np
 from scipy.spatial import distance
 from scipy import signal, ndimage
-import pylab as plt
 
 import msaf
 from msaf.algorithms.interface import SegmenterInterface

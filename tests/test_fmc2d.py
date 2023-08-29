@@ -1,7 +1,5 @@
-from enum import Enum
 from pytest import raises
 import numpy as np
-import os
 
 # Msaf imports
 from msaf.algorithms import fmc2d

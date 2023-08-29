@@ -14,9 +14,7 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 """
 
 
-import scipy.sparse
 import numpy as np
-from scipy import inf
 try:
     from scipy.misc import factorial
 except:

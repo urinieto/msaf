@@ -186,7 +186,6 @@ pygments_style = 'sphinx'
 
 # -- RTD cruft ---
 
-import six
 
 from unittest.mock import MagicMock
 

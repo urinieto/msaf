@@ -176,7 +176,7 @@ class SIVM(AA):
         d_i_times_d_j = np.zeros(self.data.shape[1])
         distiter = np.zeros(self.data.shape[1])
         a = np.log(self._maxd)
-        a_inc = a.copy()
+        a.copy()
 
         for l in range(1, self._num_bases):
             d = self._distance(self.select[l-1])

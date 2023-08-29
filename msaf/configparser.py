@@ -11,7 +11,6 @@ except ImportError:
 import os
 import shlex
 from io import StringIO
-from six import string_types
 import sys
 import warnings
 

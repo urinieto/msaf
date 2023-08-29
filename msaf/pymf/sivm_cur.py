@@ -15,7 +15,6 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 
 
 import numpy as np
-import scipy
 from .sivm import SIVM
 from .cur import CUR
 

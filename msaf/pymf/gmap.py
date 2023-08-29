@@ -116,7 +116,7 @@ class GMAP(AA):
 
             return sel
 
-        EPS = 10**-8
+        10**-8
 
         if scipy.sparse.issparse(self.data):
             norm_data = np.sqrt(self.data.multiply(self.data).sum(axis=0))

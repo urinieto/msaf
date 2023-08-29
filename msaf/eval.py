@@ -14,7 +14,6 @@ import mir_eval
 import numpy as np
 import os
 import pandas as pd
-import six
 
 # Local stuff
 import msaf

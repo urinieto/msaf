@@ -210,8 +210,8 @@ def main(args):
     #test_kmeans(6)
     X = XMeans.generate_2d_data(K=args.k)
     xmeans = XMeans(X, init_K=2, plot=args.plot)
-    est_K = xmeans.estimate_K_xmeans()
-    est_K_knee = xmeans.estimate_K_knee()
+    xmeans.estimate_K_xmeans()
+    xmeans.estimate_K_knee()
     #print "Estimated x-means K:", est_K
     #print "Estimated Knee Point Detection K:", est_K_knee
 

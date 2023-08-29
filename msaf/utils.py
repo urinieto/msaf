@@ -6,7 +6,6 @@ import mir_eval
 import numpy as np
 import os
 import scipy.io.wavfile
-import six
 
 
 def lognormalize(F, floor=0.1, min_db=-80):

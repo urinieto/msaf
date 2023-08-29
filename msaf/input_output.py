@@ -12,7 +12,6 @@ from collections import defaultdict
 
 import jams
 import numpy as np
-import six
 
 # Local stuff
 import msaf
