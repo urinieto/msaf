@@ -10,7 +10,7 @@ class Segmenter(SegmenterInterface):
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated indeces the segment boundaries in frame indeces.
+            Estimated indices the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -21,7 +21,7 @@ class Segmenter(SegmenterInterface):
         # (these are defined in the in the config.py file).
         assert self.config["my_param1"] == 1.0
 
-        # Identify boundaries in frame indeces with the new algorithm
+        # Identify boundaries in frame indices with the new algorithm
         my_bounds = np.array([0, F.shape[0] - 1])
 
         # Label the segments (use -1 to have empty segments)

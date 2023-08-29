@@ -87,7 +87,7 @@ class Segmenter(SegmenterInterface):
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated indeces the segment boundaries in frames.
+            Estimated indices the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """

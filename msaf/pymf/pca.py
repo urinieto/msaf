@@ -92,8 +92,8 @@ class PCA(NMF):
         svd_mdl = SVD(self.data)
         svd_mdl.factorize()
 
-        # argsort sorts in ascending order -> do reverese indexing
-        # for accesing values in descending order
+        # argsort sorts in ascending order -> do reverse indexing
+        # for accessing values in descending order
         S = np.diag(svd_mdl.S)
         order = np.argsort(S)[::-1]
 

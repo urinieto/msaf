@@ -185,7 +185,7 @@ def get_k_segments(X, k):
     # Step 1: run ward
     boundaries = librosa.segment.agglomerative(X, k)
 
-    # Add first and last boundary indeces
+    # Add first and last boundary indices
     boundaries = np.unique(np.concatenate(([0], boundaries, [X.shape[1]-1])))
 
     # Step 2: compute cost
@@ -263,7 +263,7 @@ class Segmenter(SegmenterInterface):
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -307,7 +307,7 @@ class Segmenter(SegmenterInterface):
             List containing estimated labels for each layer in the hierarchy
             as np.arrays
         """
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F, dur = features(self.file_struct, self.annot_beats, self.framesync)
 
         try:

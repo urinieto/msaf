@@ -32,7 +32,7 @@ def quickhull(sample):
                     d - data dimension (should be two)
 
     Returns:
-        a k x d matrix containint the convex hull data points
+        a k x d matrix containing the convex hull data points
     """
 
     link = lambda a, b: np.concatenate((a, b[1:]))

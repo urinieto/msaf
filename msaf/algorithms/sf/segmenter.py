@@ -116,7 +116,7 @@ class Segmenter(SegmenterInterface):
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -131,7 +131,7 @@ class Segmenter(SegmenterInterface):
         k = self.config["k_nearest"]      # k*N-nearest neighbors for the
                                           # recurrence plot
 
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F = self._preprocess()
 
         # Normalize

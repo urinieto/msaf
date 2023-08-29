@@ -107,7 +107,7 @@ def test_run_algorithms():
             npt.assert_almost_equal(est_times[-1], config["features"].dur,
                                     decimal=2)
 
-    # Commpute and save features for long audio file
+    # Compute and save features for long audio file
     file_struct = msaf.io.FileStruct(long_audio_file)
     file_struct.features_file = msaf.config.features_tmp_file
 

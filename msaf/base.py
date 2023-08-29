@@ -92,7 +92,7 @@ class Features(metaclass=MetaFeatures):
         self._ann_beats_times = None  # Annotated beat times
         self._ann_beats_frames = None  # Annotated beats in frames
 
-        # Differentiate global params from sublcass attributes.
+        # Differentiate global params from subclass attributes.
         # This is a bit hacky... I accept Pull Requests ^_^
         self._global_param_names = ["file_struct", "sr", "feat_type",
                                     "hop_length", "dur"]
@@ -117,7 +117,7 @@ class Features(metaclass=MetaFeatures):
         times: np.array
             Times of estimated beats in seconds.
         frames: np.array
-            Frame indeces of estimated beats.
+            Frame indices of estimated beats.
         """
         # Compute harmonic-percussive source separation if needed
         if self._audio_percussive is None:
@@ -147,7 +147,7 @@ class Features(metaclass=MetaFeatures):
         times: np.array
             Times of annotated beats in seconds.
         frames: np.array
-            Frame indeces of annotated beats.
+            Frame indices of annotated beats.
         """
         times, frames = (None, None)
 
@@ -177,7 +177,7 @@ class Features(metaclass=MetaFeatures):
         Parameters
         ----------
         beat_frames: np.array
-            The frame indeces of the beat positions.
+            The frame indices of the beat positions.
         beat_times: np.array
             The time points of the beat positions (in seconds).
         pad: boolean
@@ -289,7 +289,7 @@ class Features(metaclass=MetaFeatures):
             self.read_features()
         except (WrongFeaturesFormatError, FeaturesNotFound,
                 NoFeaturesFileError):
-            # We need to create the file or overwite it
+            # We need to create the file or overwrite it
             # Metadata
             out_json = collections.OrderedDict({"metadata": {
                 "versions": {"librosa": librosa.__version__,

@@ -117,9 +117,9 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     Returns
     -------
     bounds_idx: np.array
-        Bound indeces found
+        Bound indices found
     labels: np.array
-        Indeces of the labels representing the similarity between segments.
+        Indices of the labels representing the similarity between segments.
     """
 
     #import pylab as plt
@@ -184,14 +184,14 @@ class Segmenter(SegmenterInterface):
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated indeces for the segment boundaries in frames.
+            Estimated indices for the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # C-NMF params
         niter = self.config["niters"]  # Iterations for the MF and clustering
 
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F = self._preprocess()
 
         # Normalize

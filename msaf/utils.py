@@ -32,7 +32,7 @@ def normalize(X, norm_type, floor=0.0, min_db=-80):
         - `"min_max"`: Min/max scaling is performed
         - `"log"`: Logarithmic scaling is performed
         - `np.inf`: Maximum absolute value
-        - `-np.inf`: Mininum absolute value
+        - `-np.inf`: Minimum absolute value
         - `0`: Number of non-zeros
         - float: Corresponding l_p norm.
         - None : No normalization is performed
@@ -157,9 +157,9 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
     Parameters
     ----------
     new_bound_idxs: np.array
-        New indeces to synchronize with.
+        New indices to synchronize with.
     old_bound_idxs: np.array
-        Old indeces, same shape as labels + 1.
+        Old indices, same shape as labels + 1.
     old_labels: np.array
         Labels associated to the old_bound_idxs.
     N: int
@@ -168,7 +168,7 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
     Returns
     -------
     new_labels: np.array
-        New labels, synchronized to the new boundary indeces.
+        New labels, synchronized to the new boundary indices.
     """
     assert len(old_bound_idxs) - 1 == len(old_labels)
 
@@ -178,7 +178,7 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
             zip(old_bound_idxs[:-1], old_labels)):
         unfold_labels[bound_idx:old_bound_idxs[i + 1]] = label
 
-    # Constuct new labels
+    # Construct new labels
     new_labels = np.zeros(len(new_bound_idxs) - 1)
     for i, bound_idx in enumerate(new_bound_idxs[:-1]):
         new_labels[i] = np.median(
@@ -193,7 +193,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     Parameters
     ----------
     est_idxs: np.array
-        Estimated boundaries in frame indeces.
+        Estimated boundaries in frame indices.
     est_labels: np.array
         Estimated labels.
     N: int

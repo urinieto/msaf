@@ -112,7 +112,7 @@ def process(in_path, annot_beats=False, feature="mfcc", framesync=False,
 def main():
     """Main function to sweep parameters of a certain algorithm."""
     parser = argparse.ArgumentParser(
-        description="Runs the speficied algorithm(s) on the MSAF "
+        description="Runs the specified algorithm(s) on the MSAF "
         "formatted dataset.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",

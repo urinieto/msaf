@@ -21,7 +21,7 @@ class Segmenter(SegmenterInterface):
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated indeces the segment boundaries in frame indeces.
+            Estimated indices the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -48,7 +48,7 @@ class Segmenter(SegmenterInterface):
         -------
         est_idxs : list
             List with np.arrays for each layer of segmentation containing
-            the estimated indeces for the segment boundaries.
+            the estimated indices for the segment boundaries.
         est_labels : list
             List with np.arrays containing the labels for each layer of the
             hierarchical segmentation.
