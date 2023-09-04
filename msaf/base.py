@@ -455,7 +455,7 @@ class Features(metaclass=MetaFeatures):
 
         Parameters
         ----------
-        features_id: str
+        features_id: str or `msaf.features.Features` class
             The identifier of the features (it must be a key inside the
             `features_registry`)
         file_struct: msaf.io.FileStruct
@@ -480,12 +480,16 @@ class Features(metaclass=MetaFeatures):
             raise FeatureTypeNotFound("Type of features not valid.")
 
         # Select features with default parameters
-        if features_id not in features_registry.keys():
+        if features_id in features_registry.keys():
+            feature = features_registry[features_id]
+        elif isinstance(features_id, MetaFeatures) and issubclass(features_id, Features):
+            feature = features_id
+        else:
             raise FeaturesNotFound(
                 "The features '%s' are invalid (valid features are %s)"
                 % (features_id, features_registry.keys()))
 
-        return features_registry[features_id](file_struct, feat_type)
+        return feature(file_struct, feat_type)
 
     def compute_features(self):
         raise NotImplementedError("This method must contain the actual "
