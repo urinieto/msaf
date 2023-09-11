@@ -363,6 +363,6 @@ def process(in_path, annot_beats=False, feature="pcp", framesync=False,
         # Collection mode
         file_structs = io.get_dataset_files(in_path)
 
-        return Parallel(n_jobs=n_jobs)(delayed(process_track)(
+        return Parallel(n_jobs=n_jobs, verbose=2)(delayed(process_track)(
             file_struct, boundaries_id, labels_id, config,
             annotator_id=annotator_id) for file_struct in file_structs[:])
