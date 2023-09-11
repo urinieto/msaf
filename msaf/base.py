@@ -1,7 +1,7 @@
-"""
-Base module containing parent classes for the Features.
-In following versions, base classes for algorithms should also be included
-here.
+"""Base module containing parent classes for the Features.
+
+In following versions, base classes for algorithms should also be
+included here.
 """
 
 import collections
@@ -13,7 +13,6 @@ import jams
 import json
 import numpy as np
 import os
-import six
 
 # Local stuff
 import msaf
@@ -40,22 +39,23 @@ class MetaFeatures(type):
         return cls
 
 
-class Features(six.with_metaclass(MetaFeatures)):
+class Features(metaclass=MetaFeatures):
     """This is the base class for all the features in MSAF.
 
-    It contains functions to automatically estimate beats, read annotated
-    beats, compute beat-synchronous features, read and write features.
+    It contains functions to automatically estimate beats, read
+    annotated beats, compute beat-synchronous features, read and write
+    features.
 
-    It should be straightforward to add features in MSAF, simply by writing
-    classes that inherit from this one.
+    It should be straightforward to add features in MSAF, simply by
+    writing classes that inherit from this one.
 
-    The `features` getter does the main job, and it returns a matrix `(N, F)`,
-    where `N` is the number of frames an `F` is the number of features
-    per frames.
+    The `features` getter does the main job, and it returns a matrix
+    `(N, F)`, where `N` is the number of frames an `F` is the number of
+    features per frames.
     """
     def __init__(self, file_struct, sr, hop_length, feat_type):
-        """Init function for the base class to make sure all features have
-        at least these parameters as attributes.
+        """Init function for the base class to make sure all features have at
+        least these parameters as attributes.
 
         Parameters
         ----------
@@ -92,7 +92,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         self._ann_beats_times = None  # Annotated beat times
         self._ann_beats_frames = None  # Annotated beats in frames
 
-        # Differentiate global params from sublcass attributes.
+        # Differentiate global params from subclass attributes.
         # This is a bit hacky... I accept Pull Requests ^_^
         self._global_param_names = ["file_struct", "sr", "feat_type",
                                     "hop_length", "dur"]
@@ -117,7 +117,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         times: np.array
             Times of estimated beats in seconds.
         frames: np.array
-            Frame indeces of estimated beats.
+            Frame indices of estimated beats.
         """
         # Compute harmonic-percussive source separation if needed
         if self._audio_percussive is None:
@@ -147,7 +147,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         times: np.array
             Times of annotated beats in seconds.
         frames: np.array
-            Frame indeces of annotated beats.
+            Frame indices of annotated beats.
         """
         times, frames = (None, None)
 
@@ -177,7 +177,7 @@ class Features(six.with_metaclass(MetaFeatures)):
         Parameters
         ----------
         beat_frames: np.array
-            The frame indeces of the beat positions.
+            The frame indices of the beat positions.
         beat_times: np.array
             The time points of the beat positions (in seconds).
         pad: boolean
@@ -277,7 +277,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             raise FeaturesNotFound(
                 "The features for the given parameters were not found in "
                 "features file %s" % self.file_struct.features_file)
-        except IOError:
+        except OSError:
             raise NoFeaturesFileError("Could not find features file %s",
                                       self.file_struct.features_file)
 
@@ -289,7 +289,7 @@ class Features(six.with_metaclass(MetaFeatures)):
             self.read_features()
         except (WrongFeaturesFormatError, FeaturesNotFound,
                 NoFeaturesFileError):
-            # We need to create the file or overwite it
+            # We need to create the file or overwrite it
             # Metadata
             out_json = collections.OrderedDict({"metadata": {
                 "versions": {"librosa": librosa.__version__,
@@ -343,8 +343,8 @@ class Features(six.with_metaclass(MetaFeatures)):
                 json.dump(out_json, f, indent=2)
 
     def get_param_names(self):
-        """Returns the parameter names for these features, avoiding
-        the global parameters."""
+        """Returns the parameter names for these features, avoiding the global
+        parameters."""
         return [name for name in vars(self) if not name.startswith('_') and
                 name not in self._global_param_names]
 
@@ -404,8 +404,8 @@ class Features(six.with_metaclass(MetaFeatures)):
 
     @property
     def features(self):
-        """This getter will compute the actual features if they haven't
-        been computed yet.
+        """This getter will compute the actual features if they haven't been
+        computed yet.
 
         Returns
         -------
@@ -421,7 +421,7 @@ class Features(six.with_metaclass(MetaFeatures)):
                 try:
                     self._compute_all_features()
                     self.write_features()
-                except IOError:
+                except OSError:
                     if isinstance(e, FeaturesNotFound) or \
                             isinstance(e, FeatureParamsError):
                         msg = "Computation of the features is needed for " \

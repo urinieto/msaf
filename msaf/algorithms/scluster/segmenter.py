@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 import numpy as np
 
 from msaf.algorithms.interface import SegmenterInterface
@@ -8,23 +7,24 @@ from . import main2
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This script identifies the boundaries of a given track using the Spectral
-    Clustering method published here:
+    """This script identifies the boundaries of a given track using the
+    Spectral Clustering method published here:
 
-    Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with Spectral
-    Clustering. In Proc. of the 15th International Society for Music
-    Information Retrieval Conference (pp. 405–410). Taipei, Taiwan.
+    Mcfee, B., & Ellis, D. P. W. (2014). Analyzing Song Structure with
+    Spectral Clustering. In Proc. of the 15th International Society for
+    Music Information Retrieval Conference (pp. 405–410). Taipei,
+    Taiwan.
 
     Original code by Brian McFee from:
-        https://github.com/bmcfee/laplacian_segmentation
+    https://github.com/bmcfee/laplacian_segmentation
     """
     def process(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N) or list
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
             List if hierarchical segmentation.
         est_labels : np.array(N-1) or list
             Estimated labels for the segments.
@@ -52,10 +52,11 @@ class Segmenter(SegmenterInterface):
 
     def processFlat(self):
         """Main process.for flat segmentation.
+
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -66,11 +67,12 @@ class Segmenter(SegmenterInterface):
 
     def processHierarchical(self):
         """Main process.for hierarchial segmentation.
+
         Returns
         -------
         est_idxs : list
             List with np.arrays for each layer of segmentation containing
-            the estimated indeces for the segment boundaries.
+            the estimated indices for the segment boundaries.
         est_labels : list
             List with np.arrays containing the labels for each layer of the
             hierarchical segmentation.

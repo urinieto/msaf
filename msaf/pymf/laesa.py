@@ -3,23 +3,17 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF LAESA
-"""
+"""PyMF LAESA."""
 
 
-import scipy.sparse
 import numpy as np
 
-from .dist import *
 from .sivm import SIVM
 
 __all__ = ["LAESA"]
 
 class LAESA(SIVM):
-    """
-    LAESA(data, num_bases=4)
-
+    """LAESA(data, num_bases=4)
 
     Simplex Volume Maximization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity. W is iteratively

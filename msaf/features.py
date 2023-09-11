@@ -1,6 +1,5 @@
-"""
-Each feature must inherit from the base class :class:`msaf.base.Features` to be
-included in the whole framework.
+"""Each feature must inherit from the base class :class:`msaf.base.Features` to
+be included in the whole framework.
 
 Here is a list of all the available features:
 
@@ -15,7 +14,6 @@ Here is a list of all the available features:
     Features
 """
 
-from builtins import super
 import librosa
 import numpy as np
 
@@ -28,8 +26,8 @@ from msaf.exceptions import FeatureParamsError
 class CQT(Features):
     """This class contains the implementation of the Constant-Q Transform.
 
-    These features contain both harmonic and timbral content of the given
-    audio signal.
+    These features contain both harmonic and timbral content of the
+    given audio signal.
     """
     def __init__(self, file_struct, feat_type, sr=config.sample_rate,
                  hop_length=config.hop_size, n_bins=config.cqt.bins,
@@ -240,8 +238,8 @@ class PCP(Features):
 class Tonnetz(Features):
     """This class contains the implementation of the Tonal Centroids.
 
-    The Tonal Centroids (or Tonnetz) contain harmonic content of a given audio
-    signal.
+    The Tonal Centroids (or Tonnetz) contain harmonic content of a given
+    audio signal.
     """
     def __init__(self, file_struct, feat_type, sr=config.sample_rate,
                  hop_length=config.hop_size, n_bins=config.tonnetz.bins,

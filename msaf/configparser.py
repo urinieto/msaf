@@ -1,18 +1,18 @@
-"""This script contains relevant functions to read the configuration for
-MSAF.
-A bunch of it is basically shamefully copy pasted from the almighty theano."""
+"""This script contains relevant functions to read the configuration for MSAF.
 
-from __future__ import absolute_import, print_function, division
+A bunch of it is basically shamefully copy pasted from the almighty
+theano.
+"""
+
 try:
     from configparser import (ConfigParser, NoOptionError, NoSectionError,
                               InterpolationError)
 except ImportError:
-    from six.moves.configparser import (ConfigParser, NoOptionError, NoSectionError,
+    from configparser import (ConfigParser, NoOptionError, NoSectionError,
                                         InterpolationError)
 import os
 import shlex
-from six import StringIO
-from six import string_types
+from io import StringIO
 import sys
 import warnings
 
@@ -32,9 +32,8 @@ class MsafConfigWarning(Warning):
 
 
 def parse_config_string(config_string, issue_warnings=True):
-    """
-    Parses a config string (comma-separated key=value components) into a dict.
-    """
+    """Parses a config string (comma-separated key=value components) into a
+    dict."""
     config_dict = {}
     my_splitter = shlex.shlex(config_string, posix=True)
     my_splitter.whitespace = ','
@@ -90,9 +89,9 @@ msaf_raw_cfg.read(config_files)
 
 
 def fetch_val_for_key(key, delete_key=False):
-    """Return the overriding config value for a key.
-    A successful search returns a string value.
-    An unsuccessful search raises a KeyError
+    """Return the overriding config value for a key. A successful search
+    returns a string value. An unsuccessful search raises a KeyError.
+
     The (decreasing) priority order is:
     - MSAF_FLAGS
     - ~./msafrc
@@ -134,7 +133,7 @@ def _config_print(thing, buf, print_doc=True):
         print("", file=buf)
 
 
-class MsafConfigParser(object):
+class MsafConfigParser:
     # properties are installed by AddConfigVar
     _i_am_a_config_class = True
 
@@ -160,7 +159,7 @@ config = MsafConfigParser()
 # - ConfigParser subclasses control get/set of config properties to guard
 #   against craziness.
 def AddConfigVar(name, doc, configparam, root=config):
-    """Add a new variable to msaf.config
+    """Add a new variable to msaf.config.
 
     Parameters
     ----------
@@ -188,7 +187,7 @@ def AddConfigVar(name, doc, configparam, root=config):
         if not hasattr(root, sections[0]):
             # every internal node in the config tree is an instance of its own
             # unique class
-            class SubObj(object):
+            class SubObj:
                 _i_am_a_config_class = True
             setattr(root.__class__, sections[0], SubObj())
         newroot = getattr(root, sections[0])
@@ -221,12 +220,13 @@ def AddConfigVar(name, doc, configparam, root=config):
         _config_var_list.append(configparam)
 
 
-class ConfigParam(object):
+class ConfigParam:
 
     def __init__(self, default, filter=None, allow_override=True):
-        """
-        If allow_override is False, we can't change the value after the import
-        of Theano. So the value should be the same during all the execution.
+        """If allow_override is False, we can't change the value after the
+        import of Theano.
+
+        So the value should be the same during all the execution.
         """
         self.default = default
         self.filter = filter
@@ -278,7 +278,7 @@ class EnumStr(ConfigParam):
 
         # All options should be strings
         for val in self.all:
-            if not isinstance(val, string_types) and val is not None:
+            if not isinstance(val, str) and val is not None:
                 raise ValueError('Valid values for an EnumStr parameter '
                                  'should be strings or `None`', val, type(val))
 
@@ -294,15 +294,15 @@ class EnumStr(ConfigParam):
             if val in self.all:
                 return val
             else:
-                raise ValueError((
+                raise ValueError(
                     'Invalid value ("%s") for configuration variable "%s". '
                     'Valid options are %s'
-                    % (val, self.fullname, self.all)))
+                    % (val, self.fullname, self.all))
         over = kwargs.get("allow_override", True)
-        super(EnumStr, self).__init__(default, filter, over)
+        super().__init__(default, filter, over)
 
     def __str__(self):
-        return '%s (%s) ' % (self.fullname, self.all)
+        return f'{self.fullname} ({self.all}) '
 
 
 class ListParam(ConfigParam):
@@ -316,10 +316,10 @@ class ListParam(ConfigParam):
             raise ValueError("The parameter is not a list.")
 
         over = kwargs.get("allow_override", True)
-        super(ListParam, self).__init__(default, None, over)
+        super().__init__(default, None, over)
 
     def __str__(self):
-        return '%s (%s) ' % (self.fullname, self.default)
+        return f'{self.fullname} ({self.default}) '
 
 
 class TypedParam(ConfigParam):
@@ -341,11 +341,11 @@ class TypedParam(ConfigParam):
                         % (val, self.fullname), val)
             return cast_val
 
-        super(TypedParam, self).__init__(default, filter,
+        super().__init__(default, filter,
                                          allow_override=allow_override)
 
     def __str__(self):
-        return '%s (%s) ' % (self.fullname, self.mytype)
+        return f'{self.fullname} ({self.mytype}) '
 
 
 def StrParam(default, is_valid=None, allow_override=True):

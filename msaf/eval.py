@@ -1,5 +1,4 @@
-"""
-Evaluates the estimated results of the Segmentation dataset against the
+"""Evaluates the estimated results of the Segmentation dataset against the
 ground truth (human annotated data).
 
 .. autosummary::
@@ -14,7 +13,6 @@ import mir_eval
 import numpy as np
 import os
 import pandas as pd
-import six
 
 # Local stuff
 import msaf
@@ -163,8 +161,8 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
 def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
                        bins=251, annotator_id=0):
-    """Computes the results by using the ground truth dataset identified by
-    the annotator parameter.
+    """Computes the results by using the ground truth dataset identified by the
+    annotator parameter.
 
     Return
     ------
@@ -256,7 +254,7 @@ def process_track(file_struct, boundaries_id, labels_id, config,
         Dictionary of the results (see function compute_results).
     """
     # Convert to file_struct if string is passed
-    if isinstance(file_struct, six.string_types):
+    if isinstance(file_struct, str):
         file_struct = io.FileStruct(file_struct)
 
     est_file = file_struct.est_file
@@ -284,11 +282,11 @@ def get_results_file_name(boundaries_id, labels_id, config,
     results."""
     utils.ensure_dir(msaf.config.results_dir)
     file_name = os.path.join(msaf.config.results_dir, "results")
-    file_name += "_boundsE%s_labelsE%s" % (boundaries_id, labels_id)
+    file_name += f"_boundsE{boundaries_id}_labelsE{labels_id}"
     file_name += "_annotatorE%d" % (annotator_id)
     sorted_keys = sorted(config.keys(), key=str.lower)
     for key in sorted_keys:
-        file_name += "_%sE%s" % (key, str(config[key]).replace("/", "_"))
+        file_name += "_{}E{}".format(key, str(config[key]).replace("/", "_"))
 
     # Check for max file length
     if len(file_name) > 255 - len(msaf.config.results_ext):

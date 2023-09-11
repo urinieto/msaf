@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Matrix sampling methods
+"""PyMF Matrix sampling methods.
 
     SUB: apply one of the matrix factorization methods of PyMF
          on sampled data for computing W, then compute H.
@@ -30,9 +29,9 @@ from .sivm import SIVM
 __all__ = ["SUB"]
 
 class SUB(NMF):
-    """
-    SUB(data, mfmethod, sstrategy='rand', nsub=20, show_progress=True, mapW=False,
-    base_sel=2,    num_bases=3 , niterH=1, niter=100, compute_h=True, compute_w=True, )
+    """SUB(data, mfmethod, sstrategy='rand', nsub=20, show_progress=True,
+    mapW=False, base_sel=2,    num_bases=3 , niterH=1, niter=100,
+    compute_h=True, compute_w=True, )
 
     Evaluate a matrix factorization method "mfmethod" for a certain sampling
     strategy "sstrategy". This is particular useful for very large datasets.
@@ -80,8 +79,8 @@ class SUB(NMF):
     def hullselect(self):
 
         def selectHullPoints(data, n=20):
-            """ select data points for pairwise projections of the first n
-            dimensions """
+            """Select data points for pairwise projections of the first n
+            dimensions."""
 
             # iterate over all projections and select data points
             idx = np.array([])
@@ -204,8 +203,10 @@ class SUB(NMF):
         self.mdl.factorize()
 
     def factorize(self):
-        """Do factorization s.t. data = dot(dot(data,beta),H), under the convexity constraint
-            beta >=0, sum(beta)=1, H >=0, sum(H)=1
+        """Do factorization s.t.
+
+        data = dot(dot(data,beta),H), under the convexity constraint
+        beta >=0, sum(beta)=1, H >=0, sum(H)=1
         """
         # compute new coefficients for reconstructing data points
         self.update_w()

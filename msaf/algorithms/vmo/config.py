@@ -1,4 +1,4 @@
-"""Configuration file for the Variable Markov Oracle method"""
+"""Configuration file for the Variable Markov Oracle method."""
 
 # Algorithm Params
 config = {

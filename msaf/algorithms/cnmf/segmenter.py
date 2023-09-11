@@ -1,4 +1,3 @@
-# coding: utf-8
 import numpy as np
 from scipy import ndimage
 
@@ -97,8 +96,7 @@ def filter_activation_matrix(G, R):
 
 def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
                      bound_idxs=None, in_labels=None):
-    """
-    Gets the segmentation (boundaries and labels) from the factorization
+    """Gets the segmentation (boundaries and labels) from the factorization
     matrices.
 
     Parameters
@@ -119,9 +117,9 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     Returns
     -------
     bounds_idx: np.array
-        Bound indeces found
+        Bound indices found
     labels: np.array
-        Indeces of the labels representing the similarity between segments.
+        Indices of the labels representing the similarity between segments.
     """
 
     #import pylab as plt
@@ -167,9 +165,8 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This script identifies the structure of a given track using a modified version
-    of the C-NMF method described here:
+    """This script identifies the structure of a given track using a modified
+    version of the C-NMF method described here:
 
     Nieto, O., Jehan, T., Convex Non-negative Matrix Factorization For Automatic
     Music Structure Identification. Proc. of the 38th IEEE International
@@ -183,17 +180,18 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated indeces for the segment boundaries in frames.
+            Estimated indices for the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # C-NMF params
         niter = self.config["niters"]  # Iterations for the MF and clustering
 
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F = self._preprocess()
 
         # Normalize

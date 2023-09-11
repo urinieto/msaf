@@ -1,4 +1,4 @@
-"""Example of a configuration file for a new algorithm"""
+"""Example of a configuration file for a new algorithm."""
 
 # Algorithm Params
 config = {

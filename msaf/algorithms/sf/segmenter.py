@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-# coding: utf-8
 import librosa
-import logging
 import numpy as np
 from scipy.spatial import distance
 from scipy import signal, ndimage
@@ -80,8 +78,8 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
 
 
 def circular_shift(X):
-    """Shifts circularly the X squre matrix in order to get a
-        time-lag matrix."""
+    """Shifts circularly the X squre matrix in order to get a time-lag
+    matrix."""
     N = X.shape[0]
     L = np.zeros(X.shape)
     for i in range(N):
@@ -114,10 +112,11 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -132,7 +131,7 @@ class Segmenter(SegmenterInterface):
         k = self.config["k_nearest"]      # k*N-nearest neighbors for the
                                           # recurrence plot
 
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F = self._preprocess()
 
         # Normalize

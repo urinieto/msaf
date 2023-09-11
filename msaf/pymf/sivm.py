@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Simplex Volume Maximization [1]
+"""PyMF Simplex Volume Maximization [1]
 
     SIVM: class for SiVM
 
@@ -23,9 +22,7 @@ from .aa import AA
 __all__ = ["SIVM"]
 
 class SIVM(AA):
-    """
-    SIVM(data, num_bases=4, dist_measure='l2')
-
+    """SIVM(data, num_bases=4, dist_measure='l2')
 
     Simplex Volume Maximization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity. W is iteratively
@@ -105,14 +102,14 @@ class SIVM(AA):
 
 
     def _distance(self, idx):
-        """ compute distances of a specific data point to all other samples"""
+        """Compute distances of a specific data point to all other samples."""
 
         if scipy.sparse.issparse(self.data):
             step = self.data.shape[1]
         else:
             step = 50000
 
-        d = np.zeros((self.data.shape[1]))
+        d = np.zeros(self.data.shape[1])
         if idx == -1:
             # set vec to origin if idx=-1
             vec = np.zeros((self.data.shape[0], 1))
@@ -166,17 +163,17 @@ class SIVM(AA):
             self.select.append(cur_p)
 
     def update_w(self):
-        """ compute new W """
+        """Compute new W."""
         EPS = 10**-8
         self.init_sivm()
 
         # initialize some of the recursively updated distance measures ....
-        d_square = np.zeros((self.data.shape[1]))
-        d_sum = np.zeros((self.data.shape[1]))
-        d_i_times_d_j = np.zeros((self.data.shape[1]))
-        distiter = np.zeros((self.data.shape[1]))
+        d_square = np.zeros(self.data.shape[1])
+        d_sum = np.zeros(self.data.shape[1])
+        d_i_times_d_j = np.zeros(self.data.shape[1])
+        distiter = np.zeros(self.data.shape[1])
         a = np.log(self._maxd)
-        a_inc = a.copy()
+        a.copy()
 
         for l in range(1, self._num_bases):
             d = self._distance(self.select[l-1])

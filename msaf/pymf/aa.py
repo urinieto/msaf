@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Archetypal Analysis [1]
+"""PyMF Archetypal Analysis [1]
 
     AA: class for Archetypal Analysis
 
@@ -14,7 +13,6 @@ PyMF Archetypal Analysis [1]
 
 
 import numpy as np
-from .dist import vq
 from cvxopt import solvers, base
 
 from .svd import pinv
@@ -23,8 +21,7 @@ from .nmf import NMF
 __all__ = ["AA"]
 
 class AA(NMF):
-    """
-    AA(data, num_bases=4)
+    """AA(data, num_bases=4)
 
     Archetypal Analysis. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | = | data - data*beta*H| is minimal. H and beta
@@ -91,10 +88,10 @@ class AA(NMF):
         self.W = np.random.random((self._data_dimension, self._num_bases))
 
     def update_h(self):
-        """ alternating least squares step, update H under the convexity
-        constraint """
+        """Alternating least squares step, update H under the convexity
+        constraint."""
         def update_single_h(i):
-            """ compute single H[:,i] """
+            """Compute single H[:,i]"""
             # optimize alpha using qp solver from cvxopt
             FA = base.matrix(np.float64(np.dot(-self.W.T, self.data[:,i])))
             al = solvers.qp(HA, FA, INQa, INQb, EQa, EQb)
@@ -111,10 +108,10 @@ class AA(NMF):
             update_single_h(i)
 
     def update_w(self):
-        """ alternating least squares step, update W under the convexity
-        constraint """
+        """Alternating least squares step, update W under the convexity
+        constraint."""
         def update_single_w(i):
-            """ compute single W[:,i] """
+            """Compute single W[:,i]"""
             # optimize beta     using qp solver from cvxopt
             FB = base.matrix(np.float64(np.dot(-self.data.T, W_hat[:,i])))
             be = solvers.qp(HB, FB, INQa, INQb, EQa, EQb)

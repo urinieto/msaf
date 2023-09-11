@@ -3,11 +3,12 @@
 # Copyright (C) Christian Thurau, 2010. 
 # Licensed under the GNU General Public License (GPL). 
 # http://www.gnu.org/licenses/gpl.txt
+"""Pymf is a package for several Matrix Factorization variants.- Detailed
+documentation is available at http://pymf.googlecode.com Copyright (C)
+Christian Thurau, 2010.
 
-'''pymf is a package for several Matrix Factorization variants.-
-Detailed documentation is available at http://pymf.googlecode.com
-Copyright (C) Christian Thurau, 2010. GNU General Public License (GPL)
-'''
+GNU General Public License (GPL)
+"""
 
 
 import numpy as np

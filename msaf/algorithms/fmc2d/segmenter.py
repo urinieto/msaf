@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 import logging
 import numpy as np
 import scipy.cluster.vq as vq
@@ -22,7 +21,7 @@ def get_feat_segments(F, bound_idxs):
     F: np.ndarray
         Matrix containing the features, one feature vector per row.
     bound_idxs: np.ndarray
-        Array with boundary indeces.
+        Array with boundary indices.
 
     Returns
     -------
@@ -121,7 +120,7 @@ def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
     F: np.ndarray
         Matrix containing one feature vector per row.
     bound_idxs: np.ndarray
-        Array with the indeces of the segment boundaries.
+        Array with the indices of the segment boundaries.
     dirichlet: boolean
         Whether to use the dirichlet estimator of the number of unique labels.
     xmeans: boolean
@@ -169,8 +168,7 @@ def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This method labels segments using the 2D-FMC method described here:
+    """This method labels segments using the 2D-FMC method described here:
 
     Nieto, O., Bello, J.P., Music Segment Similarity Using 2D-Fourier Magnitude
     Coefficients. Proc. of the 39th IEEE International Conference on Acoustics,
@@ -180,14 +178,15 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idx : np.array(N)
-            Estimated indeces for the segment boundaries in frames.
+            Estimated indices for the segment boundaries in frames.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F = self._preprocess()
 
         # Normalize

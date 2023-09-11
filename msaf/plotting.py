@@ -1,6 +1,5 @@
-"""This script contains methods to plot multiple aspects of the results
-of MSAF.
-"""
+"""This script contains methods to plot multiple aspects of the results of
+MSAF."""
 
 import jams
 import logging
@@ -26,8 +25,8 @@ translate_ids = {
 
 
 def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
-    """Formats the plot with the correct axis labels, title, ticks, and
-    so on."""
+    """Formats the plot with the correct axis labels, title, ticks, and so
+    on."""
     import matplotlib.pyplot as plt
     if title is None:
         title = os.path.basename(est_file).split(".")[0]

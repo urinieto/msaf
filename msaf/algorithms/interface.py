@@ -4,11 +4,13 @@ import msaf.utils as U
 
 
 class SegmenterInterface:
-    """This class is an interface for all the segmenter algorithms included
-    in MSAF. These segmenters must inherit from it and implement one of the
-    following methods:
-            processFlat()
-            processHierarchical()
+    """This class is an interface for all the segmenter algorithms included in
+    MSAF.
+
+    These segmenters must inherit from it and implement one of the following
+    methods:
+        - processFlat()
+        - processHierarchical()
 
     Additionally, two private helper functions are provided:
         - preprocess
@@ -49,7 +51,7 @@ class SegmenterInterface:
         file_struct: `msaf.io.FileStruct`
             Object with the file paths.
         in_bound_idxs: np.array
-            Array containing the frame indeces of the previously find
+            Array containing the frame indices of the previously find
             boundaries. `None` for computing them.
         feature: str
             Identifier of the features (e.g., pcp, mfcc)
@@ -101,7 +103,7 @@ class SegmenterInterface:
 
     def _postprocess(self, est_idxs, est_labels):
         """Post processes the estimations from the algorithm, removing empty
-        segments and making sure the lenghts of the boundaries and labels
+        segments and making sure the lengths of the boundaries and labels
         match."""
         # Make sure we are using the previously input bounds, if any
         if self.in_bound_idxs is not None:
@@ -117,7 +119,7 @@ class SegmenterInterface:
             "(%d) and number of labels(%d) don't match" % (len(est_idxs),
                                                            len(est_labels))
 
-        # Make sure the indeces are integers
+        # Make sure the indices are integers
         est_idxs = np.asarray(est_idxs, dtype=int)
 
         return est_idxs, est_labels

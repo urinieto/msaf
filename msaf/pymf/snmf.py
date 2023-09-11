@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Semi Non-negative Matrix Factorization.
+"""PyMF Semi Non-negative Matrix Factorization.
 
     SNMF(NMF) : Class for semi non-negative matrix factorization
 
@@ -21,8 +20,7 @@ from .nmf import NMF
 __all__ = ["SNMF"]
 
 class SNMF(NMF):
-    """
-    SNMF(data, num_bases=4)
+    """SNMF(data, num_bases=4)
 
     Semi Non-negative Matrix Factorization. Factorize a data matrix into two
     matrices s.t. F = | data - W*H | is minimal.

@@ -10,13 +10,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class OLDA(BaseEstimator, TransformerMixin):
 
     def __init__(self, sigma=1e-4):
-        '''Ordinal linear discriminant analysis
+        """Ordinal linear discriminant analysis.
 
         Arguments:
         ----------
         sigma : float
             Regularization parameter
-        '''
+        """
 
         self.sigma = sigma
         self.scatter_ordinal_ = None
@@ -24,7 +24,7 @@ class OLDA(BaseEstimator, TransformerMixin):
 
 
     def fit(self, X, Y):
-        '''Fit the OLDA model
+        """Fit the OLDA model.
 
         Parameters
         ----------
@@ -38,7 +38,7 @@ class OLDA(BaseEstimator, TransformerMixin):
         Returns
         -------
         self : object
-        '''
+        """
         
         # Re-initialize the scatter matrices
         self.scatter_ordinal_ = None
@@ -50,7 +50,7 @@ class OLDA(BaseEstimator, TransformerMixin):
         return self
         
     def partial_fit(self, X, Y):
-        '''Partial-fit the OLDA model
+        """Partial-fit the OLDA model.
 
         Parameters
         ----------
@@ -64,7 +64,7 @@ class OLDA(BaseEstimator, TransformerMixin):
         Returns
         -------
         self : object
-        '''
+        """
         
         for (xi, yi) in itertools.izip(X, Y):
             
@@ -115,7 +115,7 @@ class OLDA(BaseEstimator, TransformerMixin):
 
     
     def transform(self, X):
-        '''Transform data by FDA
+        """Transform data by FDA.
 
         Parameters
         ----------
@@ -125,6 +125,6 @@ class OLDA(BaseEstimator, TransformerMixin):
         Returns
         -------
         X_new : array, shape (n_samples)
-        '''
+        """
 
         return [self.components_.dot(xi) for xi in X]

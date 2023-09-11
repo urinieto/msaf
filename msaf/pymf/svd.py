@@ -3,12 +3,10 @@
 # Copyright (C) Christian Thurau, 2010. 
 # Licensed under the GNU General Public License (GPL). 
 # http://www.gnu.org/licenses/gpl.txt
-"""  
-PyMF Singular Value Decomposition.
+"""PyMF Singular Value Decomposition.
 
-    SVD : Class for Singular Value Decomposition
-    pinv() : Compute the pseudoinverse of a Matrix
-     
+SVD : Class for Singular Value Decomposition
+pinv() : Compute the pseudoinverse of a Matrix
 """
 
 
@@ -46,10 +44,8 @@ def pinv(A, k=-1, eps=10**-8):
 
 
 class SVD():    
-    """      
-    SVD(data, show_progress=False)
-    
-    
+    """SVD(data, show_progress=False)
+
     Singular Value Decomposition. Factorize a data matrix into three matrices s.t.
     F = | data - USV| is minimal. U and V correspond to eigenvectors of the matrices
     data*data.T and data.T*data.

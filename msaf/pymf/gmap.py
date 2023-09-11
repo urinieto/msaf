@@ -3,10 +3,9 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Geometric-Map
+"""PyMF Geometric-Map.
 
-    GMAP: Class for Geometric-Map
+GMAP: Class for Geometric-Map
 """
 
 
@@ -20,9 +19,7 @@ from .kmeans import Kmeans
 __all__ = ["GMAP"]
 
 class GMAP(AA):
-    """
-    GMAP(data, num_bases=4, dist_measure='l2')
-
+    """GMAP(data, num_bases=4, dist_measure='l2')
 
     Geometric-Map. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. G-MAP can emulate/approximate several
@@ -91,11 +88,11 @@ class GMAP(AA):
         self.W = np.zeros((self._data_dimension, self._num_bases))
 
     def update_w(self):
-        """ compute new W """
+        """Compute new W."""
 
         def select_next(iterval):
-            """ select the next best data sample using robust map
-            or simply the max iterval ... """
+            """Select the next best data sample using robust map or simply the
+            max iterval ..."""
 
             if self._robust_map:
                 k = np.argsort(iterval)[::-1]
@@ -116,11 +113,11 @@ class GMAP(AA):
 
             return sel
 
-        EPS = 10**-8
+        10**-8
 
         if scipy.sparse.issparse(self.data):
             norm_data = np.sqrt(self.data.multiply(self.data).sum(axis=0))
-            norm_data = np.array(norm_data).reshape((-1))
+            norm_data = np.array(norm_data).reshape(-1)
         else:
             norm_data = np.sqrt(np.sum(self.data**2, axis=0))
 

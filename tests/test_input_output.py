@@ -142,7 +142,7 @@ def test_write_mirex():
 
     # Check that results is correct
     inters = msaf.utils.times_to_intervals(times)
-    with open(out_file, "r") as f:
+    with open(out_file) as f:
         lines = f.readlines()
     assert len(lines) == 3
     for line, inter, label in zip(lines, inters, labels):

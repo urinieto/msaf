@@ -14,7 +14,7 @@ def process(in_path, annot_beats=False, feature="mfcc", framesync=False,
             boundaries_id="gt", labels_id=None, n_jobs=4, config=None):
     """Sweeps parameters across the specified algorithm."""
 
-    results_file = "results_sweep_boundsE%s_labelsE%s.csv" % (boundaries_id,
+    results_file = "results_sweep_boundsE{}_labelsE{}.csv".format(boundaries_id,
                                                               labels_id)
 
     if labels_id == "cnmf3" or boundaries_id == "cnmf3":
@@ -112,7 +112,7 @@ def process(in_path, annot_beats=False, feature="mfcc", framesync=False,
 def main():
     """Main function to sweep parameters of a certain algorithm."""
     parser = argparse.ArgumentParser(
-        description="Runs the speficied algorithm(s) on the MSAF "
+        description="Runs the specified algorithm(s) on the MSAF "
         "formatted dataset.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("in_path",

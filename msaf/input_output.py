@@ -1,7 +1,5 @@
-"""
-These set of functions help the algorithms of MSAF to read and write files
-of the Segmentation Dataset.
-"""
+"""These set of functions help the algorithms of MSAF to read and write files
+of the Segmentation Dataset."""
 import datetime
 import glob
 import json
@@ -12,7 +10,6 @@ from collections import defaultdict
 
 import jams
 import numpy as np
-import six
 
 # Local stuff
 import msaf
@@ -187,11 +184,11 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     ann = jam.search(namespace=namespace).\
         search(**{"Sandbox.boundaries_id": boundaries_id}).\
         search(**{"Sandbox.labels_id": lambda x:
-                  (isinstance(labels_id, six.string_types) and
-                   isinstance(x, six.string_types) and
+                  (isinstance(labels_id, str) and
+                   isinstance(x, str) and
                    re.match(labels_id, x) is not None) or x is None})
     for key, val in zip(params.keys(), params.values()):
-        if isinstance(val, six.string_types):
+        if isinstance(val, str):
             ann = ann.search(**{"Sandbox.%s" % key: val})
         else:
             ann = ann.search(**{"Sandbox.%s" % key: lambda x: x == val})
@@ -469,6 +466,6 @@ def write_mirex(times, labels, out_file):
     assert len(inters) == len(labels)
     out_str = ""
     for inter, label in zip(inters, labels):
-        out_str += "%.3f\t%.3f\t%s\n" % (inter[0], inter[1], label)
+        out_str += f"{inter[0]:.3f}\t{inter[1]:.3f}\t{label}\n"
     with open(out_file, "w") as f:
         f.write(out_str[:-1])

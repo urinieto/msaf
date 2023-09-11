@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Simplex Volume Maximization for CUR [1]
+"""PyMF Simplex Volume Maximization for CUR [1]
 
     SIVMCUR: class for SiVM-CUR
 
@@ -15,15 +14,13 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 
 
 import numpy as np
-import scipy
 from .sivm import SIVM
 from .cur import CUR
 
 __all__ = ["SIVM_CUR"]
 
 class SIVM_CUR(CUR):
-    '''
-    SIVM_CUR(data, num_bases=4, dist_measure='l2')
+    """SIVM_CUR(data, num_bases=4, dist_measure='l2')
 
     Simplex Volume based CUR Decomposition. Factorize a data matrix into three
     matrices s.t. F = | data - USV| is minimal. Unlike CUR, SIVMCUR selects the
@@ -55,7 +52,7 @@ class SIVM_CUR(CUR):
     >>> data = np.array([[1.0, 0.0, 2.0], [0.0, 1.0, 1.0]])
     >>> sivmcur_mdl = SIVM_CUR(data, show_progress=False, rrank=1, crank=2)
     >>> sivmcur_mdl.factorize()
-    '''
+    """
 
     def __init__(self, data, k=-1, rrank=0, crank=0, dist_measure='l2', init='origin'):
         CUR.__init__(self, data, k=k, rrank=rrank, crank=rrank)

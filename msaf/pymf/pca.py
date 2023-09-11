@@ -3,10 +3,9 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Principal Component Analysis.
+"""PyMF Principal Component Analysis.
 
-    PCA: Class for Principal Component Analysis
+PCA: Class for Principal Component Analysis
 """
 
 
@@ -20,9 +19,7 @@ from .svd import SVD
 __all__ = ["PCA"]
 
 class PCA(NMF):
-    """
-    PCA(data, num_bases=4, center_mean=True)
-
+    """PCA(data, num_bases=4, center_mean=True)
 
     Archetypal Analysis. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. W is set to the eigenvectors of the
@@ -95,8 +92,8 @@ class PCA(NMF):
         svd_mdl = SVD(self.data)
         svd_mdl.factorize()
 
-        # argsort sorts in ascending order -> do reverese indexing
-        # for accesing values in descending order
+        # argsort sorts in ascending order -> do reverse indexing
+        # for accessing values in descending order
         S = np.diag(svd_mdl.S)
         order = np.argsort(S)[::-1]
 

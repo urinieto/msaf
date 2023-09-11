@@ -39,8 +39,8 @@ def test_registry():
 
 def run_framesync(features_class):
     """Runs the framesync features for the given features class with the
-    default parameters, and checks that it correctly saved the information
-    in the json file."""
+    default parameters, and checks that it correctly saved the information in
+    the json file."""
     feat_type = FeatureTypes.framesync
     feats = features_class(file_struct, feat_type).features
     assert (os.path.isfile(file_struct.features_file))
@@ -195,8 +195,8 @@ def test_no_audio_no_params():
 
 
 def test_no_audio_no_features():
-    """The features should raise a NoFileAudioError if no features nor
-    audio files are found."""
+    """The features should raise a NoFileAudioError if no features nor audio
+    files are found."""
     # This file doesn't exist
     no_audio_file_struct = FileStruct("fixtures/caca.mp3")
     feat_type = FeatureTypes.framesync
@@ -269,7 +269,7 @@ def test_frame_times_old_jams():
 
 
 def test_frame_times_framesync():
-    """Checking frame times of framesync type of features"""
+    """Checking frame times of framesync type of features."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     pcp = PCP(my_file_struct, FeatureTypes.framesync, sr=11025)
     times = pcp.frame_times

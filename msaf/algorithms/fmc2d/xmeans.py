@@ -83,7 +83,7 @@ class XMeans:
 
     def estimate_K_knee(self, th=.015, maxK=12):
         """Estimates the K using K-means and BIC, by sweeping various K and
-            choosing the optimal BIC."""
+        choosing the optimal BIC."""
         # Sweep K-means
         if self.X.shape[0] < maxK:
             maxK = self.X.shape[0]
@@ -132,7 +132,7 @@ class XMeans:
 
     def get_clustered_data(self, X, labels, label_index):
         """Returns the data with a specific label_index, using the previously
-         learned labels."""
+        learned labels."""
         D = X[np.argwhere(labels == label_index)]
         return D.reshape((D.shape[0], D.shape[-1]))
 
@@ -176,8 +176,8 @@ class XMeans:
 
     @classmethod
     def generate_2d_data(cls, N=100, K=5):
-        """Generates N*K 2D data points with K means and N data points
-            for each mean."""
+        """Generates N*K 2D data points with K means and N data points for each
+        mean."""
         # Seed the random
         np.random.seed(seed=int(time.time()))
 
@@ -210,8 +210,8 @@ def main(args):
     #test_kmeans(6)
     X = XMeans.generate_2d_data(K=args.k)
     xmeans = XMeans(X, init_K=2, plot=args.plot)
-    est_K = xmeans.estimate_K_xmeans()
-    est_K_knee = xmeans.estimate_K_knee()
+    xmeans.estimate_K_xmeans()
+    xmeans.estimate_K_knee()
     #print "Estimated x-means K:", est_K
     #print "Estimated Knee Point Detection K:", est_K_knee
 

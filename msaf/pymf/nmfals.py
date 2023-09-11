@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Non-negative Matrix Factorization.
+"""PyMF Non-negative Matrix Factorization.
 
     NMFALS: Class for Non-negative Matrix Factorization using alternating least
             squares optimization (requires cvxopt)
@@ -22,9 +21,7 @@ from .nmf import NMF
 __all__ = ["NMFALS"]
 
 class NMFALS(NMF):
-    """
-    NMF(data, num_bases=4)
-
+    """NMF(data, num_bases=4)
 
     Non-negative Matrix Factorization. Factorize a data matrix into two matrices
     s.t. F = | data - W*H | = | is minimal. H, and W are restricted to non-negative

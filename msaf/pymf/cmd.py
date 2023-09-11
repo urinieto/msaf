@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Compact Matrix Decomposition [1]
+"""PyMF Compact Matrix Decomposition [1]
 
     CMD(CUR):  Class for Compact Matrix Decomposition
 
@@ -19,9 +18,7 @@ from .cur import CUR
 __all__ = ["CMD"]
 
 class CMD(CUR):
-    """
-    CMD(data, rrank=0, crank=0)
-
+    """CMD(data, rrank=0, crank=0)
 
     Compact Matrix Decomposition. Factorize a data matrix into three matrices s.t.
     F = | data - USV| is minimal. CMD randomly selects rows and columns from

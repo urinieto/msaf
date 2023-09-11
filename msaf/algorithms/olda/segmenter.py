@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
-'''Music segmentation using timbre, pitch, repetition and time.
-'''
+"""Music segmentation using timbre, pitch, repetition and time."""
 import argparse
 import logging
 import sys
@@ -102,7 +101,7 @@ def features(file_struct, annot_beats=False, framesync=False):
     dur = pcp_obj.dur
 
     # Sampling Rate
-    sr = msaf.config.sample_rate
+    msaf.config.sample_rate
 
     ##########
     # print '\treading beats'
@@ -152,8 +151,7 @@ def features(file_struct, annot_beats=False, framesync=False):
 
 
 def gaussian_cost(X):
-    '''Return the average log-likelihood of data under a standard normal
-    '''
+    """Return the average log-likelihood of data under a standard normal."""
 
     d, n = X.shape
 
@@ -187,7 +185,7 @@ def get_k_segments(X, k):
     # Step 1: run ward
     boundaries = librosa.segment.agglomerative(X, k)
 
-    # Add first and last boundary indeces
+    # Add first and last boundary indices
     boundaries = np.unique(np.concatenate(([0], boundaries, [X.shape[1]-1])))
 
     # Step 2: compute cost
@@ -200,13 +198,11 @@ def get_segments(X, kmin=8, kmax=32):
 
     cost_min = np.inf
     S_best = []
-    best_k = -1
     for k in range(kmax, kmin, -1):
         S, cost = get_k_segments(X, k)
         if cost < cost_min:
             cost_min = cost
             S_best = S
-            best_k = k
         else:
             break
 
@@ -253,8 +249,7 @@ def get_num_segs(duration, MIN_SEG=10.0, MAX_SEG=45.0):
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This class implements the algorithm described here:
+    """This class implements the algorithm described here:
 
     McFee, B. and Ellis, D.P.W., Learning to segment songs with ordinal linear
     discriminant analysis. International conference on acoustics, speech and
@@ -264,10 +259,11 @@ class Segmenter(SegmenterInterface):
     """
     def processFlat(self):
         """Main process for flat segmentation.
+
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -301,6 +297,7 @@ class Segmenter(SegmenterInterface):
 
     def processHierarchical(self):
         """Main process for hierarchical segmentation.
+
         Returns
         -------
         est_idxs : list
@@ -310,7 +307,7 @@ class Segmenter(SegmenterInterface):
             List containing estimated labels for each layer in the hierarchy
             as np.arrays
         """
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F, dur = features(self.file_struct, self.annot_beats, self.framesync)
 
         try:

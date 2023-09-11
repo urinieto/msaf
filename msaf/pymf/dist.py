@@ -3,16 +3,14 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF several distance functions
+"""PyMF several distance functions.
 
-    kl_divergence(): KL Divergence
-    l1_distance(): L1 distance
-    l2_distance(): L2 distance
-    cosine_distance(): Cosine distance
-    pdist(): Pairwise distance computation
-    vq(): Vector quantization
-
+kl_divergence(): KL Divergence
+l1_distance(): L1 distance
+l2_distance(): L2 distance
+cosine_distance(): Cosine distance
+pdist(): Pairwise distance computation
+vq(): Vector quantization
 """
 
 
@@ -26,12 +24,12 @@ def kl_divergence(d, vec):
     b = vec*(1/d)
     b = np.where(b>0, np.log(b),0)
     b = vec * b
-    b = np.sum(b - vec + d, axis=0).reshape((-1))
+    b = np.sum(b - vec + d, axis=0).reshape(-1)
     return b
 
 def l1_distance(d, vec):
     ret_val = np.sum(np.abs(d - vec), axis=0)
-    ret_val = ret_val.reshape((-1))
+    ret_val = ret_val.reshape(-1)
     return ret_val
 
 def sparse_l2_distance(d, vec):
@@ -51,7 +49,7 @@ def approx_l2_distance(d, vec):
     B = np.dot(R, vec)
     ret_val = np.sum( (A - B)**2, axis=0)
     ret_val = np.sqrt(R.shape[1]/R.shape[0]) * np.sqrt(ret_val)
-    ret_val = ret_val.reshape((-1))
+    ret_val = ret_val.reshape(-1)
     return ret_val
 
 def l2_distance(d, vec):
@@ -60,7 +58,7 @@ def l2_distance(d, vec):
     else:
         ret_val = np.sqrt(((d[:,:] - vec)**2).sum(axis=0))
 
-    return ret_val.reshape((-1))
+    return ret_val.reshape(-1)
 
 def l2_distance_new(d,vec):
     # compute the norm of d
@@ -79,7 +77,7 @@ def cosine_distance(d, vec):
     # compute distance
     ret_val = 1.0 - tmp/k
 
-    return ret_val.reshape((-1))
+    return ret_val.reshape(-1)
 
 def abs_cosine_distance(d, vec, weighted=False):
     if scipy.sparse.issparse(d):
@@ -98,7 +96,7 @@ def abs_cosine_distance(d, vec, weighted=False):
 
     if weighted:
         ret_val = ret_val * a
-    return ret_val.reshape((-1))
+    return ret_val.reshape(-1)
 
 def weighted_abs_cosine_distance(d, vec):
     ret_val = abs_cosine_distance(d, vec, weighted=True)

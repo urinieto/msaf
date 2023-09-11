@@ -4,8 +4,7 @@
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
 #$Id$
-"""
-PyMF Non-negative Double Singular Value Decompositions.
+"""PyMF Non-negative Double Singular Value Decompositions.
 
     NNDSVD: Class for Non-negative Double Singular Value Decompositions [1]
 
@@ -22,9 +21,7 @@ from svd import SVD
 __all__ = ["NNDSVD"]
 
 class NNDSVD(NMF):
-    """
-    NNDSVD(data, num_bases=4)
-
+    """NNDSVD(data, num_bases=4)
 
     Non-negative Double Singular Value Decompositions. Factorize a data 
     matrix into two matrices s.t. F = | data - W*H | = | is minimal. H, and 

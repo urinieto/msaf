@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF CUR Decomposition [1]
+"""PyMF CUR Decomposition [1]
 
     CUR(SVD) : Class for CUR Decomposition
 
@@ -22,8 +21,7 @@ from .svd import pinv, SVD
 __all__ = ["CUR"]
 
 class CUR(SVD):
-    """
-    CUR(data,  data, k=-1, rrank=0, crank=0)
+    """CUR(data,  data, k=-1, rrank=0, crank=0)
 
     CUR Decomposition. Factorize a data matrix into three matrices s.t.
     F = | data - USV| is minimal. CUR randomly selects rows and columns from

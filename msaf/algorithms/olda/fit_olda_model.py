@@ -48,7 +48,7 @@ def process_arguments():
 
 def load_data(input_file):
 
-    with open(input_file, 'r') as f:
+    with open(input_file) as f:
         #   X = features
         #   Y = segment boundaries (as beat numbers)
         #   B = beat timings
@@ -115,7 +115,7 @@ def fit_model(X, Y, B, T, n_jobs, annot_beats, ds_path):
             scores.append(score_model(O.components_, z[0], beats, z[2]))
 
         mean_score = np.mean(scores)
-        print('Sigma=%.2e, score=%.3f' % (sig, mean_score))
+        print(f'Sigma={sig:.2e}, score={mean_score:.3f}')
 
         if mean_score > best_score:
             best_score = mean_score

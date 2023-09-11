@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-"""
-Runs one boundary algorithm and a label algorithm on a specified audio file
-and outputs the results using the MIREX format.
-"""
+"""Runs one boundary algorithm and a label algorithm on a specified audio file
+and outputs the results using the MIREX format."""
 import argparse
 import logging
 import time
@@ -14,7 +12,7 @@ import msaf
 def main():
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(
-        description="Runs the speficied algorithm(s) on the input file and "
+        description="Runs the specified algorithm(s) on the input file and "
         "the results using the MIREX format.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-bid",

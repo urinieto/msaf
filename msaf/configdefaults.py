@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 from msaf.configparser import \
-    (AddConfigVar, BoolParam, ConfigParam, EnumStr, FloatParam,
+    (AddConfigVar, EnumStr, FloatParam,
      IntParam, StrParam, ListParam, MsafConfigParser)
 
 
