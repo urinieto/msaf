@@ -147,7 +147,7 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     out_audio[:len(audio)] = audio
     out_audio[:len(audio_clicks)] += audio_clicks
 
-    # Convert audio to 16-bit
+    # Convert audio to 16-bit signed integer
     amplitude = np.iinfo(np.int16).max
     data = (amplitude * out_audio).astype(np.int16)
 
