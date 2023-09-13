@@ -147,8 +147,12 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     out_audio[:len(audio)] = audio
     out_audio[:len(audio_clicks)] += audio_clicks
 
+    # Convert audio to 16-bit
+    amplitude = np.iinfo(np.int16).max
+    data = (amplitude * out_audio).astype(np.int16)
+
     # Write to file
-    scipy.io.wavfile.write(out_file, fs, out_audio)
+    scipy.io.wavfile.write(out_file, fs, data)
 
 
 def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
