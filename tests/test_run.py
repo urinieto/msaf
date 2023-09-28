@@ -9,7 +9,6 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 import matplotlib.style
-matplotlib.style.use('seaborn-ticks')
 
 from pytest import raises
 import numpy.testing as npt
