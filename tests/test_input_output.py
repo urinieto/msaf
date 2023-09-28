@@ -1,17 +1,11 @@
-#!/usr/bin/env python
-#
-# Run me as follows:
-# cd tests/
-# nosetests
-
-import jams
-import librosa
-from pytest import raises
-import numpy as np
 import os
 import shutil
 
-# Msaf imports
+import jams
+import librosa
+import numpy as np
+from pytest import raises
+
 import msaf
 from msaf.input_output import FileStruct
 

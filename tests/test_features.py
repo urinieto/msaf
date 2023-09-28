@@ -1,18 +1,17 @@
-#!/usr/bin/env python
-
-from enum import Enum
 import json
-import librosa
-from pytest import raises
-import numpy as np
 import os
+from enum import Enum
+
+import librosa
+import numpy as np
+from pytest import raises
 
 # Msaf imports
 import msaf
 from msaf.base import FeatureTypes
-from msaf.exceptions import (NoAudioFileError, FeatureParamsError,
-                             FeatureTypeNotFound)
-from msaf.features import CQT, PCP, Tonnetz, MFCC, Tempogram, Features
+from msaf.exceptions import (FeatureParamsError, FeatureTypeNotFound,
+                             NoAudioFileError)
+from msaf.features import CQT, MFCC, PCP, Features, Tempogram, Tonnetz
 from msaf.input_output import FileStruct
 
 # Global vars

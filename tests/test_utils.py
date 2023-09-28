@@ -1,12 +1,9 @@
-# Run me as follows:
-# cd tests/
-# nosetests -v -s test_utils.py
 import copy
-import librosa
-import numpy as np
 import os
 
-# Msaf imports
+import librosa
+import numpy as np
+
 import msaf
 
 # Global vars

@@ -1,7 +1,6 @@
-from pytest import raises
 import numpy as np
+from pytest import raises
 
-# Msaf imports
 from msaf.algorithms import fmc2d
 
 
