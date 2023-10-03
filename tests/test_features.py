@@ -9,8 +9,7 @@ from pytest import raises
 # Msaf imports
 import msaf
 from msaf.base import FeatureTypes
-from msaf.exceptions import (FeatureParamsError, FeatureTypeNotFound,
-                             NoAudioFileError)
+from msaf.exceptions import FeatureParamsError, FeatureTypeNotFound, NoAudioFileError
 from msaf.features import CQT, MFCC, PCP, Features, Tempogram, Tonnetz
 from msaf.input_output import FileStruct
 
@@ -29,11 +28,11 @@ except OSError:
 
 def test_registry():
     """All the features should be in the features register."""
-    assert(CQT.get_id() in msaf.base.features_registry.keys())
-    assert(PCP.get_id() in msaf.base.features_registry.keys())
-    assert(Tonnetz.get_id() in msaf.base.features_registry.keys())
-    assert(MFCC.get_id() in msaf.base.features_registry.keys())
-    assert(Tempogram.get_id() in msaf.base.features_registry.keys())
+    assert CQT.get_id() in msaf.base.features_registry.keys()
+    assert PCP.get_id() in msaf.base.features_registry.keys()
+    assert Tonnetz.get_id() in msaf.base.features_registry.keys()
+    assert MFCC.get_id() in msaf.base.features_registry.keys()
+    assert Tempogram.get_id() in msaf.base.features_registry.keys()
 
 
 def run_framesync(features_class):
@@ -42,27 +41,24 @@ def run_framesync(features_class):
     the json file."""
     feat_type = FeatureTypes.framesync
     feats = features_class(file_struct, feat_type).features
-    assert (os.path.isfile(file_struct.features_file))
+    assert os.path.isfile(file_struct.features_file)
     with open(file_struct.features_file) as f:
         data = json.load(f)
-    assert(features_class.get_id() in data.keys())
-    assert("framesync" in data[features_class.get_id()].keys())
-    assert("est_beatsync" in data[features_class.get_id()].keys())
-    assert("ann_beatsync" in data[features_class.get_id()].keys())
+    assert features_class.get_id() in data.keys()
+    assert "framesync" in data[features_class.get_id()].keys()
+    assert "est_beatsync" in data[features_class.get_id()].keys()
+    assert "ann_beatsync" in data[features_class.get_id()].keys()
     read_feats = np.array(data[features_class.get_id()]["framesync"])
-    assert(np.array_equal(feats, read_feats))
+    assert np.array_equal(feats, read_feats)
 
 
 def run_ref_power(features_class):
-    feats = features_class(file_struct, FeatureTypes.framesync,
-                           ref_power="max")
-    assert(feats.ref_power.__code__.co_code == np.max.__code__.co_code)
-    feats = features_class(file_struct, FeatureTypes.framesync,
-                           ref_power="min")
-    assert(feats.ref_power.__code__.co_code == np.min.__code__.co_code)
-    feats = features_class(file_struct, FeatureTypes.framesync,
-                           ref_power="median")
-    assert(feats.ref_power.__code__.co_code == np.median.__code__.co_code)
+    feats = features_class(file_struct, FeatureTypes.framesync, ref_power="max")
+    assert feats.ref_power.__code__.co_code == np.max.__code__.co_code
+    feats = features_class(file_struct, FeatureTypes.framesync, ref_power="min")
+    assert feats.ref_power.__code__.co_code == np.min.__code__.co_code
+    feats = features_class(file_struct, FeatureTypes.framesync, ref_power="median")
+    assert feats.ref_power.__code__.co_code == np.median.__code__.co_code
 
 
 def test_standard_cqt():
@@ -120,12 +116,12 @@ def test_metadata():
     # Note: The json file should have been created with previous tests
     with open(file_struct.features_file) as f:
         data = json.load(f)
-    assert("metadata" in data.keys())
+    assert "metadata" in data.keys()
     metadata = data["metadata"]
-    assert("timestamp" in metadata.keys())
-    assert(metadata["versions"]["numpy"] == np.__version__)
-    assert(metadata["versions"]["msaf"] == msaf.__version__)
-    assert(metadata["versions"]["librosa"] == librosa.__version__)
+    assert "timestamp" in metadata.keys()
+    assert metadata["versions"]["numpy"] == np.__version__
+    assert metadata["versions"]["msaf"] == msaf.__version__
+    assert metadata["versions"]["librosa"] == librosa.__version__
 
 
 def test_change_local_cqt_paramaters():
@@ -133,19 +129,19 @@ def test_change_local_cqt_paramaters():
     updated."""
     feat_type = FeatureTypes.framesync
     CQT(file_struct, feat_type, n_bins=70).features
-    assert (os.path.isfile(file_struct.features_file))
+    assert os.path.isfile(file_struct.features_file)
     with open(file_struct.features_file) as f:
         data = json.load(f)
-    assert(CQT.get_id() in data.keys())
+    assert CQT.get_id() in data.keys()
 
     # These should be here from previous tests
-    assert(MFCC.get_id() in data.keys())
-    assert(Tonnetz.get_id() in data.keys())
-    assert(Tempogram.get_id() in data.keys())
-    assert(PCP.get_id() in data.keys())
-    assert("framesync" in data[CQT.get_id()].keys())
-    assert("est_beatsync" in data[CQT.get_id()].keys())
-    assert("ann_beatsync" in data[CQT.get_id()].keys())
+    assert MFCC.get_id() in data.keys()
+    assert Tonnetz.get_id() in data.keys()
+    assert Tempogram.get_id() in data.keys()
+    assert PCP.get_id() in data.keys()
+    assert "framesync" in data[CQT.get_id()].keys()
+    assert "est_beatsync" in data[CQT.get_id()].keys()
+    assert "ann_beatsync" in data[CQT.get_id()].keys()
 
 
 def test_change_global_paramaters():
@@ -153,19 +149,19 @@ def test_change_global_paramaters():
     updated."""
     feat_type = FeatureTypes.framesync
     CQT(file_struct, feat_type, sr=11025).features
-    assert (os.path.isfile(file_struct.features_file))
+    assert os.path.isfile(file_struct.features_file)
     with open(file_struct.features_file) as f:
         data = json.load(f)
-    assert(CQT.get_id() in data.keys())
+    assert CQT.get_id() in data.keys()
 
     # These should have disappeared, since we now have new global parameters
-    assert(MFCC.get_id() not in data.keys())
-    assert(Tonnetz.get_id() not in data.keys())
-    assert(Tempogram.get_id() not in data.keys())
-    assert(PCP.get_id() not in data.keys())
-    assert("framesync" in data[CQT.get_id()].keys())
-    assert("est_beatsync" in data[CQT.get_id()].keys())
-    assert("ann_beatsync" in data[CQT.get_id()].keys())
+    assert MFCC.get_id() not in data.keys()
+    assert Tonnetz.get_id() not in data.keys()
+    assert Tempogram.get_id() not in data.keys()
+    assert PCP.get_id() not in data.keys()
+    assert "framesync" in data[CQT.get_id()].keys()
+    assert "est_beatsync" in data[CQT.get_id()].keys()
+    assert "ann_beatsync" in data[CQT.get_id()].keys()
 
 
 def test_no_audio():
@@ -176,10 +172,10 @@ def test_no_audio():
     no_audio_file_struct.features_file = "features/chirp_noaudio.json"
     feat_type = FeatureTypes.framesync
     CQT(no_audio_file_struct, feat_type, sr=22050).features
-    assert (os.path.isfile(no_audio_file_struct.features_file))
+    assert os.path.isfile(no_audio_file_struct.features_file)
     with open(no_audio_file_struct.features_file) as f:
         data = json.load(f)
-    assert(CQT.get_id() in data.keys())
+    assert CQT.get_id() in data.keys()
 
 
 def test_no_audio_no_params():
@@ -230,8 +226,7 @@ def test_wrong_type_features():
     """Trying to use custom type for features."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.features_file = os.path.join("features", "no_file.json")
-    FeatureTypes2 = Enum('FeatureTypes',
-                         'framesync1 est_beatsync ann_beatsync')
+    FeatureTypes2 = Enum("FeatureTypes", "framesync1 est_beatsync ann_beatsync")
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
     with raises(FeatureTypeNotFound):
         cqt.features
@@ -241,8 +236,7 @@ def test_wrong_type_frame_times():
     """Trying to use custom type for frame times."""
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     my_file_struct.features_file = os.path.join("features", "no_file.json")
-    FeatureTypes2 = Enum('FeatureTypes',
-                         'framesync1 est_beatsync ann_beatsync')
+    FeatureTypes2 = Enum("FeatureTypes", "framesync1 est_beatsync ann_beatsync")
     cqt = CQT(my_file_struct, FeatureTypes2.framesync1, sr=11025)
     with raises(FeatureTypeNotFound):
         cqt.frame_times
@@ -272,7 +266,7 @@ def test_frame_times_framesync():
     my_file_struct = FileStruct(os.path.join("fixtures", "chirp.mp3"))
     pcp = PCP(my_file_struct, FeatureTypes.framesync, sr=11025)
     times = pcp.frame_times
-    assert(isinstance(times, np.ndarray))
+    assert isinstance(times, np.ndarray)
 
 
 def test_frame_times_no_annotations():
@@ -326,8 +320,7 @@ def test_wrong_select_features():
 
 def test_read_features_wrong_fun():
     my_file_struct = FileStruct("01_-_Come_Together.wav")
-    my_file_struct.features_file = os.path.join(
-        "fixtures", "01_-_Come_Together.json")
+    my_file_struct.features_file = os.path.join("fixtures", "01_-_Come_Together.json")
     mfcc = MFCC(my_file_struct, FeatureTypes.est_beatsync, sr=22050)
     mfcc.ref_power = np.mean
     with raises(FeatureParamsError):
