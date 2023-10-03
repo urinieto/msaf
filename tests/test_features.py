@@ -54,11 +54,11 @@ def run_framesync(features_class):
 
 def run_ref_power(features_class):
     feats = features_class(file_struct, FeatureTypes.framesync, ref_power="max")
-    assert feats.ref_power.__code__.co_code == np.max.__code__.co_code
+    assert feats.ref_power == np.max
     feats = features_class(file_struct, FeatureTypes.framesync, ref_power="min")
-    assert feats.ref_power.__code__.co_code == np.min.__code__.co_code
+    assert feats.ref_power == np.min
     feats = features_class(file_struct, FeatureTypes.framesync, ref_power="median")
-    assert feats.ref_power.__code__.co_code == np.median.__code__.co_code
+    assert feats.ref_power == np.median
 
 
 def test_standard_cqt():
