@@ -54,9 +54,9 @@ def run_framesync(features_class):
 
 def run_ref_power(features_class):
     feats = features_class(file_struct, FeatureTypes.framesync, ref_power="max")
-    assert feats.ref_power == np.max
+    assert feats.ref_power == np.amax
     feats = features_class(file_struct, FeatureTypes.framesync, ref_power="min")
-    assert feats.ref_power == np.min
+    assert feats.ref_power == np.amin
     feats = features_class(file_struct, FeatureTypes.framesync, ref_power="median")
     assert feats.ref_power == np.median
 

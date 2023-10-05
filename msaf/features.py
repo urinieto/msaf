@@ -64,9 +64,9 @@ class CQT(Features):
         self.norm = norm
         self.filter_scale = filter_scale
         if ref_power == "max":
-            self.ref_power = np.max
+            self.ref_power = np.amax
         elif ref_power == "min":
-            self.ref_power = np.min
+            self.ref_power = np.amin
         elif ref_power == "median":
             self.ref_power = np.median
         else:
@@ -134,9 +134,9 @@ class MFCC(Features):
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
         if ref_power == "max":
-            self.ref_power = np.max
+            self.ref_power = np.amax
         elif ref_power == "min":
-            self.ref_power = np.min
+            self.ref_power = np.amin
         elif ref_power == "median":
             self.ref_power = np.median
         else:
