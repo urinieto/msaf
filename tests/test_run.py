@@ -1,27 +1,18 @@
-#!/usr/bin/env python
-#
-# Run me as follows:
-# cd tests/
-# nosetests
-
-# For plotting and testing
-import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-import matplotlib.style
-matplotlib.style.use('seaborn-ticks')
-
-from pytest import raises
-import numpy.testing as npt
 import os
 from types import ModuleType
 
-# Msaf imports
-import msaf
-from msaf.features import Features
-from msaf.exceptions import (NoHierBoundaryError, FeaturesNotFound,
-                             NoAudioFileError)
+import matplotlib
+import matplotlib.style
+import numpy.testing as npt
+from pytest import raises
 
+import msaf
+from msaf.exceptions import (FeaturesNotFound, NoAudioFileError,
+                             NoHierBoundaryError)
+from msaf.features import Features
+
+matplotlib.use('Agg')
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")

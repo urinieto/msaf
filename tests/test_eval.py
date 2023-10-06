@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-"""Unit tests for eval."""
-
-from pytest import raises
-import numpy.testing as npt
-import numpy as np
 import os
-import pandas as pd
 import shutil
+
+import numpy as np
+import numpy.testing as npt
+import pandas as pd
+from pytest import raises
 
 import msaf
 import msaf.eval as E

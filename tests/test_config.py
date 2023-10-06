@@ -1,17 +1,14 @@
-#!/usr/bin/env python
-# For plotting and testing
-import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-
-from pytest import raises
 from collections import namedtuple
 
-# Msaf imports
-import msaf
+import matplotlib
+from pytest import raises
 
-from msaf.configparser import (AddConfigVar, BoolParam, EnumStr,
-                               IntParam, StrParam, ListParam)
+import msaf
+from msaf.configparser import (AddConfigVar, BoolParam, EnumStr, IntParam,
+                               ListParam, StrParam)
+
+matplotlib.use('Agg')
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 
 def test_print_config():
