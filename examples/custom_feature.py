@@ -34,7 +34,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("in_path", help="audio file")
     args = parser.parse_args()
-    results = msaf.run.process(args.in_path, feature="my_features")
+    results = msaf.run.process(args.in_path, feature=MyFeatures)
     print(results)
 
 
