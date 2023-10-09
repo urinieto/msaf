@@ -3,7 +3,7 @@
 Features
 ========
 
-Multiple audio features are available in MSAF, mostly implemented using 
+Multiple audio features are available in MSAF, mostly implemented using
 `librosa <https://github.com/librosa/librosa>`_.
 This framework is written such that they should only be computed once for each audio file.
 These features could potentially be used across all algorithms, so MSAF stores them in ``json``
@@ -21,16 +21,16 @@ The format of the ``json`` file is as follows:
 
     {
         "globals": {
-            "audio_file": "<path to audio file>", 
-            "dur": "<duration of audio>", 
-            "sample_rate": "<sample rate>", 
+            "audio_file": "<path to audio file>",
+            "dur": "<duration of audio>",
+            "sample_rate": "<sample rate>",
             "hop_length": "<hop lenght>"
-        }, 
+        },
         "metadata": {
-            "timestamp": "<YYYY/MM/DD hh:mm:ss>", 
+            "timestamp": "<YYYY/MM/DD hh:mm:ss>",
             "versions": {
-                "numpy": "<numpy version>", 
-                "msaf": "<msaf version>", 
+                "numpy": "<numpy version>",
+                "msaf": "<msaf version>",
                 "librosa": "<librosa version>"
             }
         }
@@ -48,10 +48,10 @@ The format of the ``json`` file is as follows:
                 "..."
             ],
             "params": {
-                "<param_name1>": "<param_value2>", 
-                "<param_name1>": "<param_value2>", 
+                "<param_name1>": "<param_value2>",
+                "<param_name1>": "<param_value2>",
                 "..."
-            } 
+            }
         }
         "est_beatsync_times": [ 0.0, 1.0, "..." ],
         "ann_beatsync_times": [ 0.0, 1.0, "..." ],
@@ -88,11 +88,11 @@ Adding New Features to MSAF
 MSAF is written such that adding new features should be relatively painless.
 Follow these steps:
 
-    1. Add a new class that inherits from ``Features`` in the file `features.py <https://github.com/urinieto/msaf/blob/master/msaf/features.py>`_.
+    1. Add a new class that inherits from ``Features`` in the file `features.py <https://github.com/urinieto/msaf/blob/main/msaf/features.py>`_.
     2. Implement the following methods: ``__init``, ``get_id``, and ``compute_features``:
 
         * ``__init__``: The constructor should accept the necessary parameters for the computation of the features, plus the ``file_struct`` (the audio file encapsulated in the `FileStruct` class), and ``feat_type`` (the type of features).
         * ``get_id``: Class method that returns the identifier of the new type of features.
         * ``compute_features``: The actual implementation of the features. Here the parameters of the constructor should be read.
 
-In the `features.py <https://github.com/urinieto/msaf/blob/master/msaf/features.py>`_ file the existing features of MSAF are found, which can be used as examples.
+In the `features.py <https://github.com/urinieto/msaf/blob/main/msaf/features.py>`_ file the existing features of MSAF are found, which can be used as starting points. See `custom_feature.py <https://github.com/urinieto/msaf/blob/main/examples/custom_feature.py>`_ for a complete example.

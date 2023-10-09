@@ -190,6 +190,8 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     for key, val in zip(params.keys(), params.values()):
         if isinstance(val, str):
             ann = ann.search(**{"Sandbox.%s" % key: val})
+        elif isinstance(val, msaf.base.MetaFeatures):
+            ann = ann.search(**{"Sandbox.%s" % key: lambda x: x == val.get_id()})
         else:
             ann = ann.search(**{"Sandbox.%s" % key: lambda x: x == val})
 
@@ -281,8 +283,10 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
     sandbox["labels_id"] = labels_id
     sandbox["timestamp"] = \
         datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-    for key in params:
-        sandbox[key] = params[key]
+    for key, value in params.items():
+        if isinstance(value, msaf.base.MetaFeatures):
+            value = value.get_id()
+        sandbox[key] = value
     ann.sandbox = sandbox
 
     # Save actual data

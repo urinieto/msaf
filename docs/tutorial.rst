@@ -18,7 +18,7 @@ MSAF is divided into the four different moving blocks that compose the music str
 		in this module of MSAF.
 	- :ref:`Datasets <datasets>`:
 		A series of human-annotated datasets to benchmark algorithms.
-		Note: these data must be downloaded separately from here: 
+		Note: these data must be downloaded separately from here:
 		`<https://github.com/urinieto/msaf-data>`_
 
 .. _quickstart_example:
@@ -56,7 +56,7 @@ Let's begin with a simple example program:
         print("No references found in {}. No evaluation performed.".format(
             file_struct.ref_file))
 
-In the first step we select the appropriate audio file. 
+In the first step we select the appropriate audio file.
 The MSAF `datasets <https://github.com/urinieto/msaf-data>`_ contain the Sargon set, which has multiple audio files to play around. ::
 
     audio_file = "../datasets/Sargon/audio/01-Sargon-Mindless.mp3"
@@ -181,8 +181,8 @@ More Examples
 
 In the `examples <https://github.com/urinieto/msaf/tree/master/examples>`_ folder, more examples of using MSAF can be found.
 
-Included in that folder you can find a `Jupyter Notebook <https://github.com/urinieto/msaf/blob/master/examples/Run%20MSAF.ipynb>`_ with further interactive MSAF usage.
+Included in that folder you can find a `Jupyter Notebook <https://github.com/urinieto/msaf/blob/main/examples/Run%20MSAF.ipynb>`_ with further interactive MSAF usage.
 
 For more information about MSAF, please refer to the original publication:
-    
+
     Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 (`PDF <http://marl.smusic.nyu.edu/nieto/publications/ISMIR2016-NietoBello.pdf>`_).

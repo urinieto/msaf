@@ -22,7 +22,7 @@ From the root folder, type:
 
 ## Demonstration Notebook ##
 
-You can follow a thorough example on this titanic [Jupyter Notebook](https://github.com/urinieto/msaf/blob/master/examples/Run%20MSAF.ipynb).
+You can follow a thorough example on this titanic [Jupyter Notebook](https://github.com/urinieto/msaf/blob/main/examples/Run%20MSAF.ipynb).
 
 ## Citing MSAF ##
 
