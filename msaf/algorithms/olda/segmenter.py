@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
 """Music segmentation using timbre, pitch, repetition and time."""
 import argparse

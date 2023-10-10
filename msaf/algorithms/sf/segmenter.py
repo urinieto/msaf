@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import librosa
 import numpy as np
 from scipy.spatial import distance

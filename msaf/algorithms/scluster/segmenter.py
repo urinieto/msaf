@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import numpy as np
 
 from msaf.algorithms.interface import SegmenterInterface

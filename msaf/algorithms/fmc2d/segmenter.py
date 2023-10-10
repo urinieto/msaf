@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import logging
 import numpy as np
 import scipy.cluster.vq as vq
