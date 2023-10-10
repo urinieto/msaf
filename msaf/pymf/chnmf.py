@@ -13,12 +13,13 @@ Factorization in the Wild. ICDM 2009.
 """
 
 
+from itertools import combinations
+
 import numpy as np
 
-from itertools import combinations
+from .aa import AA
 from .dist import vq
 from .pca import PCA
-from .aa import AA
 
 __all__ = ["CHNMF"]
 

@@ -13,10 +13,10 @@
 
 
 import numpy as np
-from cvxopt import solvers, base
+from cvxopt import base, solvers
 
-from .svd import pinv
 from .nmf import NMF
+from .svd import pinv
 
 __all__ = ["AA"]
 

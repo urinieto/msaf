@@ -9,7 +9,6 @@ import time
 # MSAF import
 import msaf
 
-
 if __name__ == '__main__':
     """Main function to parse the arguments and call the main process."""
     parser = argparse.ArgumentParser(

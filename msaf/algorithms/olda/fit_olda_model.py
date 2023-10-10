@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
-import numpy as np
+import sys
 
-import mir_eval
-import jams
 import cPickle as pickle
-
+import jams
+import mir_eval
+import numpy as np
 import OLDA
 import segmenter
 

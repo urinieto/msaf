@@ -1,16 +1,15 @@
-#!/usr/bin/env python
 import logging
+
 import numpy as np
 import scipy.cluster.vq as vq
 from sklearn import mixture
 from sklearn.cluster import KMeans
 
-# Local stuff
-from . import utils_2dfmc as utils2d
-from .xmeans import XMeans
-
 import msaf.utils as U
 from msaf.algorithms.interface import SegmenterInterface
+
+from . import utils_2dfmc as utils2d
+from .xmeans import XMeans
 
 
 def get_feat_segments(F, bound_idxs):

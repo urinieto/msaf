@@ -1,10 +1,10 @@
-import sklearn
+import librosa
 import numpy as np
-import vmo
-import vmo.analysis as van
 import scipy.linalg
 import scipy.ndimage
-import librosa
+import sklearn
+import vmo
+import vmo.analysis as van
 
 
 def vmo_routine(feature):

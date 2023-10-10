@@ -1,6 +1,7 @@
 """Example of algorithm for MSAF."""
-from msaf.algorithms.interface import SegmenterInterface
 import numpy as np
+
+from msaf.algorithms.interface import SegmenterInterface
 
 
 class Segmenter(SegmenterInterface):

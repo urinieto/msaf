@@ -6,8 +6,9 @@
 """PyMF K-means clustering (unary-convex matrix factorization)."""
 
 
-import numpy as np
 import random
+
+import numpy as np
 
 from . import dist
 from .nmf import NMF

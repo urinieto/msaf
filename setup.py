@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
 import glob
 import imp
+
+from setuptools import find_packages, setup
 
 version = imp.load_source('msaf.version', 'msaf/version.py')
 

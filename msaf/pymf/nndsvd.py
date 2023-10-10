@@ -14,7 +14,6 @@ start for nonnegative matrix factorization, Pattern Recognition, 41, 1350-1362
 
 
 import numpy as np
-
 from nmf import NMF
 from svd import SVD
 

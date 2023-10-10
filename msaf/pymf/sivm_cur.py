@@ -14,8 +14,9 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 
 
 import numpy as np
-from .sivm import SIVM
+
 from .cur import CUR
+from .sivm import SIVM
 
 __all__ = ["SIVM_CUR"]
 

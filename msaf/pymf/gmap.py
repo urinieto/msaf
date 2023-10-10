@@ -9,11 +9,11 @@ GMAP: Class for Geometric-Map
 """
 
 
-import scipy.sparse
 import numpy as np
+import scipy.sparse
 
-from .dist import *
 from .aa import AA
+from .dist import *
 from .kmeans import Kmeans
 
 __all__ = ["GMAP"]

@@ -12,11 +12,12 @@ IEEE Trans. on Pattern Analysis and Machine Intelligence 32(1), 45-55.
 """
 
 
-import numpy as np
 import logging
-from .nmf import NMF
-from .kmeans import Kmeans
 
+import numpy as np
+
+from .kmeans import Kmeans
+from .nmf import NMF
 
 __all__ = ["CNMF"]
 

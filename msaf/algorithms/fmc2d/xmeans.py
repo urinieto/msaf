@@ -2,8 +2,9 @@
 """Class that implements X-means."""
 
 import argparse
-import numpy as np
 import time
+
+import numpy as np
 import pylab as plt
 import scipy.cluster.vq as vq
 from scipy.spatial import distance

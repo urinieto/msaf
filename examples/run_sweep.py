@@ -3,8 +3,9 @@
 import argparse
 import logging
 import time
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 import msaf
 from msaf import input_output as io

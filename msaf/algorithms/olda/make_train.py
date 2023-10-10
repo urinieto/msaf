@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
-import numpy as np
-import librosa
 import os
 import time
 
-from joblib import Parallel, delayed
 import cPickle as pickle
+import librosa
+import numpy as np
+from joblib import Parallel, delayed
+from segmenter import features
 
 import msaf
 from msaf.base import Features
-
-from segmenter import features
 
 
 def align_segmentation(beat_times, song):

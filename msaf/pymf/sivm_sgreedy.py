@@ -13,12 +13,13 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 """
 
 
-import numpy as np
 import time
 
+import numpy as np
+
 from .dist import *
-from .vol import *
 from .sivm_search import SIVM_SEARCH
+from .vol import *
 
 __all__ = ["SIVM_SGREEDY"]
 

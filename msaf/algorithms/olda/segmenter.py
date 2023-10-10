@@ -1,17 +1,15 @@
-#!/usr/bin/env python
 # CREATED:2013-08-22 12:20:01 by Brian McFee <brm2132@columbia.edu>
 """Music segmentation using timbre, pitch, repetition and time."""
 import argparse
 import logging
 import sys
 
-import numpy as np
-import scipy.signal
-import scipy.linalg
-
 import librosa
-import msaf
+import numpy as np
+import scipy.linalg
+import scipy.signal
 
+import msaf
 from msaf.algorithms.interface import SegmenterInterface
 from msaf.base import Features
 

@@ -1,18 +1,18 @@
 """This module contains multiple functions in order to run MSAF algorithms."""
-from copy import deepcopy
-from joblib import Parallel, delayed
-import librosa
 import logging
-import numpy as np
 import os
+from copy import deepcopy
+
+import librosa
+import numpy as np
+from joblib import Parallel, delayed
 
 import msaf
-from msaf import input_output as io
-from msaf import utils
-from msaf import plotting
-from msaf.features import Features
-from msaf.exceptions import NoHierBoundaryError, NoAudioFileError
 import msaf.algorithms as algorithms
+from msaf import input_output as io
+from msaf import plotting, utils
+from msaf.exceptions import NoAudioFileError, NoHierBoundaryError
+from msaf.features import Features
 
 
 def get_boundaries_module(boundaries_id):

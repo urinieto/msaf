@@ -12,9 +12,10 @@ Matrix Factorization, Nature 401(6755), 788-799.
 """
 
 
-import numpy as np
 import logging
 import logging.config
+
+import numpy as np
 import scipy.sparse
 
 __all__ = ["NMF"]
