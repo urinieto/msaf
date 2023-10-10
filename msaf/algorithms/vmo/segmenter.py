@@ -1,6 +1,8 @@
 """Variable Markov Oracle algorithm."""
-from msaf.algorithms.interface import SegmenterInterface
 import librosa
+
+from msaf.algorithms.interface import SegmenterInterface
+
 from . import main
 
 

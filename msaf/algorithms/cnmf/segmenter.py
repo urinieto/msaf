@@ -2,8 +2,8 @@ import numpy as np
 from scipy import ndimage
 
 import msaf.utils as U
-from msaf.algorithms.interface import SegmenterInterface
 from msaf import pymf
+from msaf.algorithms.interface import SegmenterInterface
 
 
 def median_filter(X, M=8):

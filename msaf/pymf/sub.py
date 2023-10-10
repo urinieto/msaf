@@ -13,17 +13,17 @@ Copyright (C) Christian Thurau, 2010. GNU General Public License (GPL).
 
 
 
-import numpy as np
 import random
-#from itertools import combinations
-from .chnmf import combinations
+
+import numpy as np
 
 from . import dist
-from .chnmf import quickhull
-from .nmf import NMF
-from .pca import PCA
+#from itertools import combinations
+from .chnmf import combinations, quickhull
 from .kmeans import Kmeans
 from .laesa import LAESA
+from .nmf import NMF
+from .pca import PCA
 from .sivm import SIVM
 
 __all__ = ["SUB"]

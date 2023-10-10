@@ -6,19 +6,19 @@ ground truth (human annotated data).
 
     process
 """
-import jams
-from joblib import Parallel, delayed
 import logging
+import os
+
+import jams
 import mir_eval
 import numpy as np
-import os
 import pandas as pd
-
+from joblib import Parallel, delayed
 
 import msaf
-from msaf.exceptions import NoReferencesError
 import msaf.input_output as io
 from msaf import utils
+from msaf.exceptions import NoReferencesError
 
 
 def print_results(results):

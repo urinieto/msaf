@@ -3,9 +3,11 @@
 # Ordinal LDA
 
 import itertools
+
 import numpy as np
 import scipy.linalg
 from sklearn.base import BaseEstimator, TransformerMixin
+
 
 class OLDA(BaseEstimator, TransformerMixin):
 

@@ -11,16 +11,16 @@ pinv() : Compute the pseudoinverse of a Matrix
 
 
 
-from numpy.linalg import eigh
 import scipy.sparse
+from numpy.linalg import eigh
 
 try:
     import scipy.sparse.linalg.eigen.arpack as linalg
 except (ImportError, AttributeError):
     import scipy.sparse.linalg as linalg
 
-
 import numpy as np
+
 
 def pinv(A, k=-1, eps=10**-8):    
     # Compute Pseudoinverse of a matrix

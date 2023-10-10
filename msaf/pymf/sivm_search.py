@@ -14,14 +14,15 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 
 
 import numpy as np
+
 try:
     from scipy.misc import factorial
 except:
     from scipy.special import factorial # scipy > 1.3
 
 from .dist import *
-from .vol import *
 from .sivm import SIVM
+from .vol import *
 
 __all__ = ["SIVM_SEARCH"]
 

@@ -15,7 +15,6 @@ import numpy as np
 from .nmf import NMF
 from .svd import SVD
 
-
 __all__ = ["PCA"]
 
 class PCA(NMF):

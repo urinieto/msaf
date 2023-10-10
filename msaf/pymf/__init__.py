@@ -14,31 +14,25 @@ GNU General Public License (GPL)
 import numpy as np
 from scipy.sparse import issparse
 
+from .aa import *
+from .bnmf import *
+from .chnmf import *
+from .cmd import *
+from .cmeans import *
+from .cnmf import *
+from .cur import *
+from .gmap import *
+from .kmeans import *
+from .laesa import *
 from .nmf import *
 from .nmfals import *
 from .nmfnnls import *
-from .cnmf import *
-from .chnmf import *
-from .snmf import *
-from .aa import *
-
-from .laesa import *
-from .bnmf import *
-
-from .sub import *
-
-from .svd import *
 from .pca import *
-from .cur import *
-from .sivm_cur import *
-from .cmd import *
-
-from .kmeans import *
-from .cmeans import *
-
 from .sivm import *
-from .sivm_sgreedy import *
-from .sivm_search import *
+from .sivm_cur import *
 from .sivm_gsat import *
-
-from .gmap import *
+from .sivm_search import *
+from .sivm_sgreedy import *
+from .snmf import *
+from .sub import *
+from .svd import *

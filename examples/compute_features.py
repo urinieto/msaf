@@ -14,11 +14,11 @@ Examples:
 """
 
 import argparse
-from joblib import Parallel, delayed
 import logging
 import os
 import time
 
+from joblib import Parallel, delayed
 
 import msaf
 from msaf.features import Features

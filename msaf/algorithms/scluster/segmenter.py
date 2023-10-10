@@ -2,6 +2,7 @@ import numpy as np
 
 from msaf.algorithms.interface import SegmenterInterface
 from msaf.base import Features
+
 from . import main2
 
 

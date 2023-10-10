@@ -1,11 +1,10 @@
 """Default configuration parameters for MSAF."""
 import logging
+
 import numpy as np
 
-from msaf.configparser import \
-    (AddConfigVar, EnumStr, FloatParam,
-     IntParam, StrParam, ListParam, MsafConfigParser)
-
+from msaf.configparser import (AddConfigVar, EnumStr, FloatParam, IntParam,
+                               ListParam, MsafConfigParser, StrParam)
 
 _logger = logging.getLogger('msaf.configdefaults')
 

@@ -1,10 +1,10 @@
 import librosa
 import numpy as np
+from scipy import ndimage, signal
 from scipy.spatial import distance
-from scipy import signal, ndimage
 
-from msaf.algorithms.interface import SegmenterInterface
 import msaf.utils as U
+from msaf.algorithms.interface import SegmenterInterface
 
 
 def median_filter(X, M=8):

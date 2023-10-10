@@ -1,15 +1,14 @@
 """This script contains methods to plot multiple aspects of the results of
 MSAF."""
 
-import jams
 import logging
-import mir_eval
-import numpy as np
 import os
 
+import jams
+import mir_eval
+import numpy as np
 
-from msaf import io
-from msaf import utils
+from msaf import io, utils
 
 translate_ids = {
     "2dfmc": "2D-FMC",
@@ -147,6 +146,7 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
                    title=None):
     """Plots the results of one track, with ground truth if it exists."""
     import matplotlib.pyplot as plt
+
     # Set up the boundaries id
     bid_lid = boundaries_id
     if labels_id is not None:

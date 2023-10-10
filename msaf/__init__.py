@@ -1,6 +1,7 @@
 """Top-level module for MSAF."""
-from .version import version as __version__
 import numpy as np
+
+from .version import version as __version__
 
 __author__ = "Oriol Nieto"
 __copyright__ = "Copyright 2016, Music and Audio Research Lab (MARL)"
@@ -17,17 +18,12 @@ MSAFRC_WIN_FILE = "~/.msafrc.txt"
 from msaf.configdefaults import config
 
 # Import all submodules
-from . import features
+from . import algorithms, eval, features
 from . import input_output as io
-from . import eval
-from . import plotting
-from . import utils
-from . import algorithms
-from . import run
+from . import plotting, run, utils
 from .base import features_registry
+from .input_output import get_all_boundary_algorithms, get_all_label_algorithms
 from .run import process
-from .input_output import get_all_boundary_algorithms
-from .input_output import get_all_label_algorithms
 
 # TODO: Include this in algorithms
 feat_dict = {

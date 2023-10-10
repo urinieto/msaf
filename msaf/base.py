@@ -6,18 +6,19 @@ included here.
 
 import collections
 import datetime
-from enum import Enum
-import librosa
-import logging
-import jams
 import json
-import numpy as np
+import logging
 import os
+from enum import Enum
 
+import jams
+import librosa
+import numpy as np
 
 import msaf
-from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
-    FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError
+from msaf.exceptions import (FeatureParamsError, FeaturesNotFound,
+                             FeatureTypeNotFound, NoAudioFileError,
+                             NoFeaturesFileError, WrongFeaturesFormatError)
 
 # Three types of features at the moment:
 #   - framesync: Frame-wise synchronous.

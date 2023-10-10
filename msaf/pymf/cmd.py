@@ -13,6 +13,7 @@ Sparse Graphs, in Proc. SIAM Int. Conf. on Data Mining.
 
 
 import numpy as np
+
 from .cur import CUR
 
 __all__ = ["CMD"]

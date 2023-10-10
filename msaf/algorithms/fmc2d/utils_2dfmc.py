@@ -1,9 +1,11 @@
 """Set of util functions for the section similarity project."""
 
 import copy
-import numpy as np
 import json
+
+import numpy as np
 import scipy.fftpack
+
 
 def resample_mx(X, incolpos, outcolpos):
     """

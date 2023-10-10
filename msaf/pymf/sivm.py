@@ -13,11 +13,11 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 """
 
 
-import scipy.sparse
 import numpy as np
+import scipy.sparse
 
-from .dist import *
 from .aa import AA
+from .dist import *
 
 __all__ = ["SIVM"]
 

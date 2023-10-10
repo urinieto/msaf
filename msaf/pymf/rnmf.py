@@ -13,7 +13,6 @@ Matrix Factorization, Nature 401(6755), 788-799.
 
 
 import numpy as np
-
 from nmf import NMF
 
 __all__ = ["RNMF"]

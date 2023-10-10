@@ -1,5 +1,6 @@
 """Interface for all the algorithms in MSAF."""
 import numpy as np
+
 import msaf.utils as U
 
 

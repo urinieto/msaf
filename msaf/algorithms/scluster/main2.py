@@ -4,12 +4,11 @@
 # License: ISC
 
 from collections import defaultdict
-import numpy as np
-import scipy
-
-import sklearn.cluster
 
 import librosa
+import numpy as np
+import scipy
+import sklearn.cluster
 
 
 def embed_beats(A_rep, A_loc, config):

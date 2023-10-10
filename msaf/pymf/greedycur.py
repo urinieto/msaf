@@ -17,8 +17,8 @@ Reconstruction via Greedy Approximation of SVD. ISAAC'2008.
 
 
 import numpy as np
-from greedy import GREEDY
 from cur import CUR
+from greedy import GREEDY
 
 __all__ = ["GREEDYCUR"]
 

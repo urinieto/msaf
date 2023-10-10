@@ -12,6 +12,7 @@
 
 import os
 import sys
+
 import sphinx
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -144,6 +145,7 @@ copyright = '2015-2018, msaf development team'
 #
 
 import imp
+
 msaf = imp.load_source('msaf.version', '../msaf/version.py')
 # The short X.Y version.
 version = msaf.short_version

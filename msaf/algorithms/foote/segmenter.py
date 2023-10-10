@@ -1,6 +1,6 @@
 import numpy as np
+from scipy import ndimage, signal
 from scipy.spatial import distance
-from scipy import signal, ndimage
 
 import msaf
 from msaf.algorithms.interface import SegmenterInterface

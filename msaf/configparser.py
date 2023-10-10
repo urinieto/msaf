@@ -5,19 +5,19 @@ theano.
 """
 
 try:
-    from configparser import (ConfigParser, NoOptionError, NoSectionError,
-                              InterpolationError)
+    from configparser import (ConfigParser, InterpolationError, NoOptionError,
+                              NoSectionError)
 except ImportError:
     from configparser import (ConfigParser, NoOptionError, NoSectionError,
                                         InterpolationError)
+
 import os
 import shlex
-from io import StringIO
 import sys
 import warnings
+from io import StringIO
 
 import msaf
-
 
 MSAF_FLAGS = os.getenv(msaf.MSAF_FLAGS_VAR, "")
 # The MSAF_FLAGS environment variable should be a list of comma-separated
