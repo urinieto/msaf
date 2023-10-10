@@ -14,7 +14,7 @@ import json
 import numpy as np
 import os
 
-# Local stuff
+
 import msaf
 from msaf.exceptions import WrongFeaturesFormatError, NoFeaturesFileError,\
     FeaturesNotFound, FeatureTypeNotFound, FeatureParamsError, NoAudioFileError

@@ -4,7 +4,7 @@ import scipy.cluster.vq as vq
 from sklearn import mixture
 from sklearn.cluster import KMeans
 
-# Local stuff
+
 from . import utils_2dfmc as utils2d
 from .xmeans import XMeans
 

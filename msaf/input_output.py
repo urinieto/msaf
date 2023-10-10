@@ -11,7 +11,7 @@ from collections import defaultdict
 import jams
 import numpy as np
 
-# Local stuff
+
 import msaf
 from msaf import utils
 from msaf.exceptions import NoEstimationsError

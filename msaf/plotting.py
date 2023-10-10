@@ -7,7 +7,7 @@ import mir_eval
 import numpy as np
 import os
 
-# Local stuff
+
 from msaf import io
 from msaf import utils
 

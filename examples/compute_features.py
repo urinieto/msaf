@@ -19,7 +19,7 @@ import logging
 import os
 import time
 
-# Local stuff
+
 import msaf
 from msaf.features import Features
 

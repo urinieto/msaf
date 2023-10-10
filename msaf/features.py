@@ -17,7 +17,7 @@ Here is a list of all the available features:
 import librosa
 import numpy as np
 
-# Local stuff
+
 from msaf import config
 from msaf.base import Features
 from msaf.exceptions import FeatureParamsError

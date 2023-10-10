@@ -14,7 +14,7 @@ import numpy as np
 import os
 import pandas as pd
 
-# Local stuff
+
 import msaf
 from msaf.exceptions import NoReferencesError
 import msaf.input_output as io
