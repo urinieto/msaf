@@ -26,6 +26,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
       - name: Install madmom prerequisites (a transitive dependency from as-seg package)
         run: pip install numpy scipy cython mido
 
