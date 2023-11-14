@@ -26,8 +26,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install Cython
-        run: pip install cython
+      - name: Install madmom prerequisites (a transitive dependency from as-seg package)
+        run: pip install numpy scipy cython mido
 
       - name: Install package
         run: pip install -e .[tests]
