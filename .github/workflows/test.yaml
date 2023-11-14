@@ -26,6 +26,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
+      - name: Install Cython
+        run: pip install cython
+
       - name: Install package
         run: pip install -e .[tests]
 
