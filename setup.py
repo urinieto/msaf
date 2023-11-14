@@ -37,6 +37,7 @@ setup(
     keywords='audio music sound',
     license='MIT',
     install_requires=[
+        'as-seg',
         'audioread',
         'cvxopt',
         'decorator',
