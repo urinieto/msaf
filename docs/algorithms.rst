@@ -43,7 +43,7 @@ To include a new algorithm in MSAF, the following steps should be performed:
         * ``is_boundary_type``: boolean that determines whether the algorithm allows boundary detection.
         * ``is_label_type``: boolean that determines whether the algorithm allows labeling.
 
-    5. The ``segmenter.py`` should contain a class ``Segmenter`` that inherits from ``SegmenterInterface`` and implements the method ``processFlatt``. This is where the main algorithm is implemented.
+    5. The ``segmenter.py`` should contain a class ``Segmenter`` that inherits from ``SegmenterInterface`` and implements the method ``processFlat``. This is where the main algorithm is implemented.
 
 In the folder `algorithms/example <https://github.com/urinieto/msaf/tree/master/msaf/algorithms/example>`_ an example of a new algorithm is included.
 The easiest way to add a new algorithm to MSAF is to copy and paste the example directory to use it as the base code of the new algorithm.
