@@ -12,7 +12,7 @@ config = MsafConfigParser()
 
 # Globals
 AddConfigVar('default_bound_id', "Default boundary detection algorithm",
-             EnumStr("sf", "cnmf", "foote", "olda", "scluster", "gt"))
+             EnumStr("sf", "cnmf", "foote", "olda", "scluster", "gt", "cbm"))
 AddConfigVar('default_label_id', "Default label detection algorithm",
              EnumStr(None, "cnmf", "fmc2d", "scluster"))
 
