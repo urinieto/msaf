@@ -33,5 +33,6 @@ feat_dict = {
     'siplca': '',
     'olda': '',
     'cnmf': 'pcp',
-    '2dfmc': ''
+    '2dfmc': '',
+    'cbm': 'pcp',
 }
