@@ -27,9 +27,7 @@ from msaf.features import Features
 def compute_all_features(file_struct, framesync):
     """Computes all features for the given file."""
     for feature_id in msaf.features_registry:
-        logging.info(
-            f"Computing {feature_id} for file {file_struct.audio_file}"
-        )
+        logging.info(f"Computing {feature_id} for file {file_struct.audio_file}")
         feats = Features.select_features(feature_id, file_struct, False, framesync)
         feats.features
 
