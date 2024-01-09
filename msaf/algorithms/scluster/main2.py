@@ -77,7 +77,7 @@ def _reindex_labels(ref_int, ref_lab, est_int, est_lab):
     # for each estimated label
     #    find the reference label that is maximally overlaps with
 
-    score_map = defaultdict(lambda: 0)
+    score_map = defaultdict(int)
 
     for r_int, r_lab in zip(ref_int, ref_lab):
         for e_int, e_lab in zip(est_int, est_lab):

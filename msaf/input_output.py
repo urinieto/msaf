@@ -375,7 +375,7 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id, labels_id)
             overlap = set(bound_config.keys()).intersection(set(label_config.keys()))
             assert (
                 len(overlap) == 0
-            ), "Parameter %s must not exist both in %s and %s algorithms" % (
+            ), "Parameter {} must not exist both in {} and {} algorithms".format(
                 overlap,
                 boundaries_id,
                 labels_id,

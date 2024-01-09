@@ -294,7 +294,7 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
     # Sanity check
     assert (
         os.path.basename(est_file)[:-4] == os.path.basename(ref_file)[:-4]
-    ), "File names are different %s --- %s" % (
+    ), "File names are different {} --- {}".format(
         os.path.basename(est_file)[:-4],
         os.path.basename(ref_file)[:-4],
     )
