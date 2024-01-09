@@ -6,14 +6,14 @@ Created on Mon Feb 24 11:01:42 2020
 Correlation (also called 'Convolutive') "Block-Matching" (CBM) algorithm.
 This algorithm is designed to segment barwise autosimilarities.
 
-In short, this algorithm focuses on the criteria of homogeneity to estimate segments, 
+In short, this algorithm focuses on the criteria of homogeneity to estimate segments,
 and computes an optimal segmentation via dynamic programming.
 
 See [1] for more details.
 
 References
 ----------
-[1] A. Marmoret, J. E. Cohen, F. Bimbot. Barwise Music Structure Analysis with the Correlation Block Matching Segmentation Algorithm. Transactions of the International Society for Music Information Retrieval, 6(1), 167--185. DOI: https://doi.org/10.5334/tismir.167. 
+[1] A. Marmoret, J. E. Cohen, F. Bimbot. Barwise Music Structure Analysis with the Correlation Block Matching Segmentation Algorithm. Transactions of the International Society for Music Information Retrieval, 6(1), 167--185. DOI: https://doi.org/10.5334/tismir.167.
 """
 
 import math
