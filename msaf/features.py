@@ -7,6 +7,8 @@ Here is a list of all the available features:
     :toctree: generated/
 
     CQT
+    Mel
+    LogMel
     MFCC
     PCP
     Tonnetz
@@ -92,6 +94,137 @@ class CQT(Features):
         cqt = librosa.amplitude_to_db(linear_cqt, ref=self.ref_power).T
         return cqt
 
+class Mel(Features):
+    """This class contains the implementation of the Mel Spectrogram.
+
+    The Mel spectrogram contains the frequency content of a given audio signal.
+
+    The frequency content is expressed according to the Mel scale,
+    which is a perceptually-motivated scale of frequencies.
+
+    See https://en.wikipedia.org/wiki/Mel_scale for more details.
+    """
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size, n_fft=config.n_fft,
+                 n_mels=config.mel.n_mels, f_min=config.mel.f_min, 
+                 f_max=config.mel.f_max):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        file_struct: `msaf.input_output.FileStruct`
+            Object containing the file paths from where to extract/read
+            the features.
+        feat_type: `FeatureTypes`
+            Enum containing the type of features.
+        sr: int > 0
+            Sampling rate for the analysis.
+        hop_length: int > 0
+            Hop size in frames for the analysis.
+        n_fft: int > 0
+            Number of samples in the Fourier window.
+        n_mels: int > 0
+            Number of mel bins in the scale.
+        f_min: float > 0
+            Minimum frequency.
+        f_min: int > 0
+            Maximal frequency.
+        """
+        # Init the parent
+        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
+                         feat_type=feat_type)
+        self.n_fft = n_fft
+        # Init the Mel parameters
+        self.n_mels = n_mels
+        self.f_min = f_min
+        self.f_max = f_max
+
+    @classmethod
+    def get_id(cls):
+        """Identifier of these features."""
+        return "mel"
+
+    def compute_features(self):
+        """Actual implementation of the features.
+
+        Returns
+        -------
+        mel: np.array(N, F)
+            The features, each row representing a feature vector for a give
+            time frame/beat.
+        """
+        mel = librosa.feature.melspectrogram(y=self._audio, 
+                                             sr = self.sr, 
+                                             n_fft=self.n_fft,
+                                             hop_length = self.hop_length, 
+                                             n_mels=self.n_mels, 
+                                             fmin=self.f_min,
+                                             fmax=self.f_max)
+        module_mel = np.abs(mel).T
+        return module_mel
+
+class LogMel(Features):
+    """This class contains the implementation of the Log Mel Spectrogram.
+
+    The Log Mel spectrogram contains the logarithmic frequency content
+    of a given audio signal.
+
+    This is exactly the logarithm of the Mel spectrogram.
+    """
+    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
+                 hop_length=config.hop_size, n_fft=config.n_fft,
+                 n_mels=config.mel.n_mels, f_min=config.mel.f_min, 
+                 f_max=config.mel.f_max):
+        """Constructor of the class.
+
+        Parameters
+        ----------
+        file_struct: `msaf.input_output.FileStruct`
+            Object containing the file paths from where to extract/read
+            the features.
+        feat_type: `FeatureTypes`
+            Enum containing the type of features.
+        sr: int > 0
+            Sampling rate for the analysis.
+        hop_length: int > 0
+            Hop size in frames for the analysis.
+        n_fft: int > 0
+            Number of samples in the Fourier window.
+        n_mels: int > 0
+            Number of mel bins in the scale.
+        f_min: float > 0
+            Minimum frequency.
+        f_min: int > 0
+            Maximal frequency.
+        """
+        # Init the parent
+        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
+                         feat_type=feat_type)
+        self.n_fft = n_fft
+        # Init the Mel parameters
+        self.n_mels = n_mels
+        self.f_min = f_min
+        self.f_max = f_max
+
+    @classmethod
+    def get_id(cls):
+        """Identifier of these features."""
+        return "log_mel"
+
+    def compute_features(self):
+        """Actual implementation of the features.
+
+        Returns
+        -------
+        mel: np.array(N, F)
+            The features, each row representing a feature vector for a give
+            time frame/beat.
+        """
+        mel = Mel(self.file_struct, self.feat_type, self.sr,
+                 self.hop_length, self.n_fft,
+                 self.n_mels, self.f_min, 
+                 self.f_max).features
+        return librosa.power_to_db(mel)
 
 class MFCC(Features):
     """This class contains the implementation of the MFCC Features.

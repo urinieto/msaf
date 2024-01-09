@@ -34,5 +34,5 @@ feat_dict = {
     'olda': '',
     'cnmf': 'pcp',
     '2dfmc': '',
-    'cbm': 'pcp',
+    'cbm': 'log_mel',
 }
