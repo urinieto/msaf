@@ -23,6 +23,7 @@ from .vol import *
 
 __all__ = ["SIVM_SGREEDY"]
 
+
 class SIVM_SGREEDY(SIVM_SEARCH):
     """SIVM(data, num_bases=4, niter=100, show_progress=True, compW=True)
 
@@ -101,19 +102,19 @@ class SIVM_SGREEDY(SIVM_SEARCH):
         self._t = []
         stime = time.time()
 
-        for iter in range(self._num_bases-1):
+        for iter in range(self._num_bases - 1):
             # add new selections to openset
             next_sel = list(np.sort(next_sel))
             D = pdist(self.data[:, next_sel], self.data[:, next_sel])
             V = np.zeros(self.data.shape[1])
-            d = np.zeros((D.shape[0]+1,D.shape[1]+1))
-            d[:D.shape[0], :D.shape[1]] = D[:,:]
+            d = np.zeros((D.shape[0] + 1, D.shape[1] + 1))
+            d[: D.shape[0], : D.shape[1]] = D[:, :]
 
             for i in range(self.data.shape[1]):
                 # create a temp selection
-                dtmp = l2_distance(self.data[:,next_sel], self.data[:,i:i+1])
-                d[:-1,-1] = dtmp
-                d[-1,:-1] = dtmp
+                dtmp = l2_distance(self.data[:, next_sel], self.data[:, i : i + 1])
+                d[:-1, -1] = dtmp
+                d[-1, :-1] = dtmp
                 # compute volume for temp selection
                 V[i] = cmdet(d)
 
@@ -121,9 +122,9 @@ class SIVM_SGREEDY(SIVM_SEARCH):
             next_sel.append(next_index)
             self._v.append(np.max(V))
 
-            self._logger.info('Iter:' + str(iter))
-            self._logger.info('Current selection:' + str(next_sel))
-            self._logger.info('Current volume:' + str(self._v[-1]))
+            self._logger.info("Iter:" + str(iter))
+            self._logger.info("Current selection:" + str(next_sel))
+            self._logger.info("Current volume:" + str(self._v[-1]))
             self._t.append(time.time() - stime)
 
         # update some values ...
@@ -131,7 +132,7 @@ class SIVM_SGREEDY(SIVM_SEARCH):
         self.W = self.data[:, self.select]
 
 
-
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

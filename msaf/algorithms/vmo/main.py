@@ -9,17 +9,18 @@ import vmo.analysis as van
 
 def vmo_routine(feature):
     ideal_t = vmo.find_threshold(feature, dim=feature.shape[1])
-    oracle = vmo.build_oracle(feature, flag='a', threshold=ideal_t[0][1], dim=feature.shape[1])
+    oracle = vmo.build_oracle(
+        feature, flag="a", threshold=ideal_t[0][1], dim=feature.shape[1]
+    )
 
     return oracle
 
 
 def connectivity_from_vmo(oracle, config):
+    median_filter_width = config["median_filter_width"]
 
-    median_filter_width = config['median_filter_width']
-
-    connectivity = van.create_selfsim(oracle, method=config['connectivity'])
-    obs_len = oracle.n_states-1
+    connectivity = van.create_selfsim(oracle, method=config["connectivity"])
+    obs_len = oracle.n_states - 1
 
     df = librosa.segment.timelag_filter(scipy.ndimage.median_filter)
     connectivity = df(connectivity, size=(1, median_filter_width))
@@ -42,12 +43,12 @@ def eigen_decomposition(mat, k=6):  # Changed from 11 to 8 then to 6(7/22)
 
     if len(vals) < k + 1:
         k = -1
-    vecs = scipy.ndimage.median_filter(vecs, size=(5,1))
+    vecs = scipy.ndimage.median_filter(vecs, size=(5, 1))
     return vecs[:, :k]
 
 
 def cluster(evecs, Cnorm, k, in_bound_idxs=None):
-    X = evecs[:, :k] / (Cnorm[:, k - 1:k] + 1e-5)
+    X = evecs[:, :k] / (Cnorm[:, k - 1 : k] + 1e-5)
     KM = sklearn.cluster.KMeans(n_clusters=k, n_init=50, max_iter=500)
     seg_ids = KM.fit_predict(X)
 
@@ -82,7 +83,7 @@ def scluster_segment(feature, config, in_bound_idxs=None):
     connectivity_mat = connectivity_from_vmo(v_oracle, config)
     embedding = eigen_decomposition(connectivity_mat, k=config["hier_num_layers"])
 
-    Cnorm = np.cumsum(embedding ** 2, axis=1) ** 0.5
+    Cnorm = np.cumsum(embedding**2, axis=1) ** 0.5
 
     if config["hier"]:
         est_idxs = []

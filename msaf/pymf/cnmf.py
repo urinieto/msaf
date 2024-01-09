@@ -21,6 +21,7 @@ from .nmf import NMF
 
 __all__ = ["CNMF"]
 
+
 class CNMF(NMF):
     """CNMF(data, num_bases=4)
 
@@ -74,12 +75,12 @@ class CNMF(NMF):
         pass
 
     def init_h(self):
-        if not hasattr(self, 'H'):
+        if not hasattr(self, "H"):
             # init basic matrices
             self.H = np.zeros((self._num_bases, self._num_samples))
 
             # initialize using k-means
-            km = Kmeans(self.data[:,:], num_bases=self._num_bases)
+            km = Kmeans(self.data[:, :], num_bases=self._num_bases)
             km.factorize(niter=10)
             assign = km.assigned
 
@@ -88,64 +89,70 @@ class CNMF(NMF):
                 num_i[i] = len(np.where(assign == i)[0])
 
             self.H.T[range(len(assign)), assign] = 1.0
-            self.H += 0.2*np.ones((self._num_bases, self._num_samples))
+            self.H += 0.2 * np.ones((self._num_bases, self._num_samples))
 
-        if not hasattr(self, 'G'):
+        if not hasattr(self, "G"):
             self.G = np.zeros((self._num_samples, self._num_bases))
 
             self.G[range(len(assign)), assign] = 1.0
             self.G += 0.01
-            self.G /= np.tile(np.reshape(num_i[assign],(-1,1)), self.G.shape[1])
+            self.G /= np.tile(np.reshape(num_i[assign], (-1, 1)), self.G.shape[1])
 
-        if not hasattr(self,'W'):
-            self.W = np.dot(self.data[:,:], self.G)
+        if not hasattr(self, "W"):
+            self.W = np.dot(self.data[:, :], self.G)
 
     def init_w(self):
         pass
 
-    def factorize(self, niter=10, compute_w=True, compute_h=True,
-                  compute_err=True, show_progress=False):
-        """ Factorize s.t. WH = data
+    def factorize(
+        self,
+        niter=10,
+        compute_w=True,
+        compute_h=True,
+        compute_err=True,
+        show_progress=False,
+    ):
+        """Factorize s.t. WH = data
 
-            Parameters
-            ----------
-            niter : int
-                    number of iterations.
-            show_progress : bool
-                    print some extra information to stdout.
-            compute_h : bool
-                    iteratively update values for H.
-            compute_w : bool
-                    iteratively update values for W.
-            compute_err : bool
-                    compute Frobenius norm |data-WH| after each update and store
-                    it to .ferr[k].
+        Parameters
+        ----------
+        niter : int
+                number of iterations.
+        show_progress : bool
+                print some extra information to stdout.
+        compute_h : bool
+                iteratively update values for H.
+        compute_w : bool
+                iteratively update values for W.
+        compute_err : bool
+                compute Frobenius norm |data-WH| after each update and store
+                it to .ferr[k].
 
-            Updated Values
-            --------------
-            .W : updated values for W.
-            .H : updated values for H.
-            .ferr : Frobenius norm |data-WH| for each iteration.
+        Updated Values
+        --------------
+        .W : updated values for W.
+        .H : updated values for H.
+        .ferr : Frobenius norm |data-WH| for each iteration.
         """
 
-        if not hasattr(self,'W'):
-               self.init_w()
+        if not hasattr(self, "W"):
+            self.init_w()
 
-        if not hasattr(self,'H'):
-                self.init_h()
+        if not hasattr(self, "H"):
+            self.init_h()
 
         def separate_positive(m):
-            return (np.abs(m) + m)/2.0
+            return (np.abs(m) + m) / 2.0
 
         def separate_negative(m):
-            return (np.abs(m) - m)/2.0
+            return (np.abs(m) - m) / 2.0
 
         if show_progress:
             self._logger.setLevel(logging.INFO)
         else:
             self._logger.setLevel(logging.ERROR)
 
-        XtX = np.dot(self.data[:,:].T, self.data[:,:])
+        XtX = np.dot(self.data[:, :].T, self.data[:, :])
         XtX_pos = separate_positive(XtX)
         XtX_neg = separate_negative(XtX)
 
@@ -161,7 +168,7 @@ class CNMF(NMF):
                 H_x_WT = np.dot(self.H.T, self.G.T)
                 ha = XtX_pos_x_W + np.dot(H_x_WT, XtX_neg_x_W)
                 hb = XtX_neg_x_W + np.dot(H_x_WT, XtX_pos_x_W) + 10**-9
-                self.H = (self.H.T*np.sqrt(ha/hb)).T
+                self.H = (self.H.T * np.sqrt(ha / hb)).T
 
             # update W
             if compute_w:
@@ -169,21 +176,29 @@ class CNMF(NMF):
                 wa = np.dot(XtX_pos, self.H.T) + np.dot(XtX_neg_x_W, HT_x_H)
                 wb = np.dot(XtX_neg, self.H.T) + np.dot(XtX_pos_x_W, HT_x_H) + 10**-9
 
-                self.G *= np.sqrt(wa/wb)
-                self.W = np.dot(self.data[:,:], self.G)
+                self.G *= np.sqrt(wa / wb)
+                self.W = np.dot(self.data[:, :], self.G)
 
             if compute_err:
                 self.ferr[i] = self.frobenius_norm()
-                self._logger.info('Iteration ' + str(i+1) + '/' + str(niter) +
-                ' FN:' + str(self.ferr[i]))
+                self._logger.info(
+                    "Iteration "
+                    + str(i + 1)
+                    + "/"
+                    + str(niter)
+                    + " FN:"
+                    + str(self.ferr[i])
+                )
             else:
-                self._logger.info('Iteration ' + str(i+1) + '/' + str(niter))
+                self._logger.info("Iteration " + str(i + 1) + "/" + str(niter))
 
             if i > 1 and compute_err:
                 if self.converged(i):
                     self.ferr = self.ferr[:i]
                     break
 
+
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

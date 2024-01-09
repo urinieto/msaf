@@ -36,8 +36,9 @@ def print_results(results):
     logging.info("Results:\n%s" % res)
 
 
-def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
-                    est_file, weight=0.58):
+def compute_results(
+    ann_inter, est_inter, ann_labels, est_labels, bins, est_file, weight=0.58
+):
     """Compute the results using all the available evaluations.
 
     Parameters
@@ -98,38 +99,55 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
 
     # --Boundaries-- #
     # Hit Rate standard
-    res["HitRate_3P"], res["HitRate_3R"], res["HitRate_3F"] = \
-        mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
-    res["HitRate_0.5P"], res["HitRate_0.5R"], res["HitRate_0.5F"] = \
-        mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=False)
+    (
+        res["HitRate_3P"],
+        res["HitRate_3R"],
+        res["HitRate_3F"],
+    ) = mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=False)
+    (
+        res["HitRate_0.5P"],
+        res["HitRate_0.5R"],
+        res["HitRate_0.5F"],
+    ) = mir_eval.segment.detection(ann_inter, est_inter, window=0.5, trim=False)
 
     # Hit rate trimmed
-    res["HitRate_t3P"], res["HitRate_t3R"], res["HitRate_t3F"] = \
-        mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
-    res["HitRate_t0.5P"], res["HitRate_t0.5R"], res["HitRate_t0.5F"] = \
-        mir_eval.segment.detection(ann_inter, est_inter, window=.5, trim=True)
+    (
+        res["HitRate_t3P"],
+        res["HitRate_t3R"],
+        res["HitRate_t3F"],
+    ) = mir_eval.segment.detection(ann_inter, est_inter, window=3, trim=True)
+    (
+        res["HitRate_t0.5P"],
+        res["HitRate_t0.5R"],
+        res["HitRate_t0.5F"],
+    ) = mir_eval.segment.detection(ann_inter, est_inter, window=0.5, trim=True)
 
     # Hit rate weighted
     _, _, res["HitRate_w3F"] = mir_eval.segment.detection(
-        ann_inter, est_inter, window=3, trim=False, beta=weight)
+        ann_inter, est_inter, window=3, trim=False, beta=weight
+    )
     _, _, res["HitRate_w0.5F"] = mir_eval.segment.detection(
-        ann_inter, est_inter, window=.5, trim=False, beta=weight)
+        ann_inter, est_inter, window=0.5, trim=False, beta=weight
+    )
 
     # Hit rate weighted and trimmed
     _, _, res["HitRate_wt3F"] = mir_eval.segment.detection(
-        ann_inter, est_inter, window=3, trim=True, beta=weight)
+        ann_inter, est_inter, window=3, trim=True, beta=weight
+    )
     _, _, res["HitRate_wt0.5F"] = mir_eval.segment.detection(
-        ann_inter, est_inter, window=.5, trim=True, beta=weight)
+        ann_inter, est_inter, window=0.5, trim=True, beta=weight
+    )
 
     # Information gain
-    res["D"] = compute_information_gain(ann_inter, est_inter, est_file,
-                                        bins=bins)
+    res["D"] = compute_information_gain(ann_inter, est_inter, est_file, bins=bins)
 
     # Median Deviations
     res["DevR2E"], res["DevE2R"] = mir_eval.segment.deviation(
-        ann_inter, est_inter, trim=False)
+        ann_inter, est_inter, trim=False
+    )
     res["DevtR2E"], res["DevtE2R"] = mir_eval.segment.deviation(
-        ann_inter, est_inter, trim=True)
+        ann_inter, est_inter, trim=True
+    )
 
     # --Labels-- #
     if est_labels is not None and ("-1" in est_labels or "@" in est_labels):
@@ -138,18 +156,20 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
         # Align labels with intervals
         ann_labels = list(ann_labels)
         est_labels = list(est_labels)
-        ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter,
-                                                               ann_labels)
+        ann_inter, ann_labels = mir_eval.util.adjust_intervals(ann_inter, ann_labels)
         est_inter, est_labels = mir_eval.util.adjust_intervals(
-            est_inter, est_labels, t_min=0.0, t_max=ann_inter.max())
+            est_inter, est_labels, t_min=0.0, t_max=ann_inter.max()
+        )
 
         # Pair-wise frame clustering
         res["PWP"], res["PWR"], res["PWF"] = mir_eval.segment.pairwise(
-            ann_inter, ann_labels, est_inter, est_labels)
+            ann_inter, ann_labels, est_inter, est_labels
+        )
 
         # Normalized Conditional Entropies
         res["So"], res["Su"], res["Sf"] = mir_eval.segment.nce(
-            ann_inter, ann_labels, est_inter, est_labels)
+            ann_inter, ann_labels, est_inter, est_labels
+        )
 
     # Names
     base = os.path.basename(est_file)
@@ -159,8 +179,9 @@ def compute_results(ann_inter, est_inter, ann_labels, est_labels, bins,
     return res
 
 
-def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
-                       bins=251, annotator_id=0):
+def compute_gt_results(
+    est_file, ref_file, boundaries_id, labels_id, config, bins=251, annotator_id=0
+):
     """Computes the results by using the ground truth dataset identified by the
     annotator parameter.
 
@@ -170,26 +191,30 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
         Dictionary of the results (see function compute_results).
     """
     if config["hier"]:
-        ref_times, ref_labels, ref_levels = \
-            msaf.io.read_hier_references(
-                ref_file, annotation_id=annotator_id,
-                exclude_levels=["segment_salami_function"])
+        ref_times, ref_labels, ref_levels = msaf.io.read_hier_references(
+            ref_file,
+            annotation_id=annotator_id,
+            exclude_levels=["segment_salami_function"],
+        )
     else:
         jam = jams.load(ref_file, validate=False)
-        ann = jam.search(namespace='segment_.*')[annotator_id]
+        ann = jam.search(namespace="segment_.*")[annotator_id]
         ref_inter, ref_labels = ann.to_interval_values()
 
     # Read estimations with correct configuration
-    est_inter, est_labels = io.read_estimations(est_file, boundaries_id,
-                                                labels_id, **config)
+    est_inter, est_labels = io.read_estimations(
+        est_file, boundaries_id, labels_id, **config
+    )
 
     # Compute the results and return
     logging.info("Evaluating %s" % os.path.basename(est_file))
     if config["hier"]:
         # Hierarchical
-        assert len(est_inter) == len(est_labels), "Same number of levels " \
-            "are required in the boundaries and labels for the hierarchical " \
+        assert len(est_inter) == len(est_labels), (
+            "Same number of levels "
+            "are required in the boundaries and labels for the hierarchical "
             "evaluation."
+        )
         est_times = []
         est_labels = []
 
@@ -210,17 +235,24 @@ def compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config,
 
         # Compute evaluations
         res = {}
-        res["t_recall10"], res["t_precision10"], res["t_measure10"] = \
-            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=10)
-        res["t_recall15"], res["t_precision15"], res["t_measure15"] = \
-            mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=15)
+        (
+            res["t_recall10"],
+            res["t_precision10"],
+            res["t_measure10"],
+        ) = mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=10)
+        (
+            res["t_recall15"],
+            res["t_precision15"],
+            res["t_measure15"],
+        ) = mir_eval.hierarchy.tmeasure(ref_hier, est_hier, window=15)
 
         res["track_id"] = os.path.basename(est_file)[:-5]
         return res
     else:
         # Flat
-        return compute_results(ref_inter, est_inter, ref_labels, est_labels,
-                               bins, est_file)
+        return compute_results(
+            ref_inter, est_inter, ref_labels, est_labels, bins, est_file
+        )
 
 
 def compute_information_gain(ann_inter, est_inter, est_file, bins):
@@ -231,8 +263,7 @@ def compute_information_gain(ann_inter, est_inter, est_file, bins):
     return mir_eval.beat.information_gain(ann_times, est_times, bins=bins)
 
 
-def process_track(file_struct, boundaries_id, labels_id, config,
-                  annotator_id=0):
+def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0):
     """Processes a single track.
 
     Parameters
@@ -261,23 +292,28 @@ def process_track(file_struct, boundaries_id, labels_id, config,
     ref_file = file_struct.ref_file
 
     # Sanity check
-    assert os.path.basename(est_file)[:-4] == \
-        os.path.basename(ref_file)[:-4], "File names are different %s --- %s" \
-        % (os.path.basename(est_file)[:-4], os.path.basename(ref_file)[:-4])
+    assert (
+        os.path.basename(est_file)[:-4] == os.path.basename(ref_file)[:-4]
+    ), "File names are different %s --- %s" % (
+        os.path.basename(est_file)[:-4],
+        os.path.basename(ref_file)[:-4],
+    )
 
     if not os.path.isfile(ref_file):
-        raise NoReferencesError("Reference file %s does not exist. You must "
-                                "have annotated references to run "
-                                "evaluations." % ref_file)
+        raise NoReferencesError(
+            "Reference file %s does not exist. You must "
+            "have annotated references to run "
+            "evaluations." % ref_file
+        )
 
-    one_res = compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
-                                 config, annotator_id=annotator_id)
+    one_res = compute_gt_results(
+        est_file, ref_file, boundaries_id, labels_id, config, annotator_id=annotator_id
+    )
 
     return one_res
 
 
-def get_results_file_name(boundaries_id, labels_id, config,
-                          annotator_id):
+def get_results_file_name(boundaries_id, labels_id, config, annotator_id):
     """Based on the config and the dataset, get the file name to store the
     results."""
     utils.ensure_dir(msaf.config.results_dir)
@@ -290,15 +326,25 @@ def get_results_file_name(boundaries_id, labels_id, config,
 
     # Check for max file length
     if len(file_name) > 255 - len(msaf.config.results_ext):
-        file_name = file_name[:255 - len(msaf.config.results_ext)]
+        file_name = file_name[: 255 - len(msaf.config.results_ext)]
 
     return file_name + msaf.config.results_ext
 
 
-def process(in_path, boundaries_id=msaf.config.default_bound_id,
-            labels_id=msaf.config.default_label_id, annot_beats=False,
-            framesync=False, feature="pcp", hier=False, save=False,
-            out_file=None, n_jobs=4, annotator_id=0, config=None):
+def process(
+    in_path,
+    boundaries_id=msaf.config.default_bound_id,
+    labels_id=msaf.config.default_label_id,
+    annot_beats=False,
+    framesync=False,
+    feature="pcp",
+    hier=False,
+    save=False,
+    out_file=None,
+    n_jobs=4,
+    annotator_id=0,
+    config=None,
+):
     """Main process to evaluate algorithms' results.
 
     Parameters
@@ -342,8 +388,9 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
 
     # Set up configuration based on algorithms parameters
     if config is None:
-        config = io.get_configuration(feature, annot_beats, framesync,
-                                      boundaries_id, labels_id)
+        config = io.get_configuration(
+            feature, annot_beats, framesync, boundaries_id, labels_id
+        )
 
     # Hierarchical segmentation
     config["hier"] = hier
@@ -353,13 +400,11 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
 
     # Get out file in case we want to save results
     if out_file is None:
-        out_file = get_results_file_name(boundaries_id, labels_id, config,
-                                         annotator_id)
+        out_file = get_results_file_name(boundaries_id, labels_id, config, annotator_id)
 
     # If out_file already exists, read and return them
     if os.path.exists(out_file):
-        logging.warning("Results already exists, reading from file %s" %
-                        out_file)
+        logging.warning("Results already exists, reading from file %s" % out_file)
         results = pd.read_csv(out_file)
         print_results(results)
         return results
@@ -367,8 +412,11 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
     # Perform actual evaluations
     if os.path.isfile(in_path):
         # Single File mode
-        evals = [process_track(in_path, boundaries_id, labels_id, config,
-                               annotator_id=annotator_id)]
+        evals = [
+            process_track(
+                in_path, boundaries_id, labels_id, config, annotator_id=annotator_id
+            )
+        ]
     else:
         # Collection mode
         # Get files
@@ -376,9 +424,12 @@ def process(in_path, boundaries_id=msaf.config.default_bound_id,
 
         # Evaluate in parallel
         logging.info("Evaluating %d tracks..." % len(file_structs))
-        evals = Parallel(n_jobs=n_jobs, verbose=2)(delayed(process_track)(
-            file_struct, boundaries_id, labels_id, config,
-            annotator_id=annotator_id) for file_struct in file_structs[:])
+        evals = Parallel(n_jobs=n_jobs, verbose=2)(
+            delayed(process_track)(
+                file_struct, boundaries_id, labels_id, config, annotator_id=annotator_id
+            )
+            for file_struct in file_structs[:]
+        )
 
     # Aggregate evaluations in pandas format
     results = pd.DataFrame(evals)

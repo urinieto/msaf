@@ -10,8 +10,7 @@ config = {
     "Mp_adaptive": 28,
     "offset_thres": 0.05,
     "bound_norm_feats": np.inf  # min_max, log, np.inf,
-                                # -np.inf, float >= 0, None
-
+    # -np.inf, float >= 0, None
     # For framesync features
     # "M_gaussian"    : 100,
     # "m_embedded"    : 3,

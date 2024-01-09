@@ -5,11 +5,19 @@ theano.
 """
 
 try:
-    from configparser import (ConfigParser, InterpolationError, NoOptionError,
-                              NoSectionError)
+    from configparser import (
+        ConfigParser,
+        InterpolationError,
+        NoOptionError,
+        NoSectionError,
+    )
 except ImportError:
-    from configparser import (ConfigParser, NoOptionError, NoSectionError,
-                                        InterpolationError)
+    from configparser import (
+        ConfigParser,
+        NoOptionError,
+        NoSectionError,
+        InterpolationError,
+    )
 
 import os
 import shlex
@@ -28,6 +36,7 @@ MSAF_FLAGS = os.getenv(msaf.MSAF_FLAGS_VAR, "")
 class MsafConfigWarning(Warning):
     def warn(cls, message, stacklevel=0):
         warnings.warn(message, cls, stacklevel=stacklevel + 3)
+
     warn = classmethod(warn)
 
 
@@ -36,23 +45,25 @@ def parse_config_string(config_string, issue_warnings=True):
     dict."""
     config_dict = {}
     my_splitter = shlex.shlex(config_string, posix=True)
-    my_splitter.whitespace = ','
+    my_splitter.whitespace = ","
     my_splitter.whitespace_split = True
     for kv_pair in my_splitter:
         kv_pair = kv_pair.strip()
         if not kv_pair:
             continue
-        kv_tuple = kv_pair.split('=', 1)
+        kv_tuple = kv_pair.split("=", 1)
         if len(kv_tuple) == 1:
             if issue_warnings:
                 MsafConfigWarning.warn(
-                    ("Config key '%s' has no value, ignoring it" %
-                     kv_tuple[0]), stacklevel=1)
+                    ("Config key '%s' has no value, ignoring it" % kv_tuple[0]),
+                    stacklevel=1,
+                )
         else:
             k, v = kv_tuple
             # subsequent values for k will override earlier ones
             config_dict[k] = v
     return config_dict
+
 
 MSAF_FLAGS_DICT = parse_config_string(MSAF_FLAGS, issue_warnings=True)
 
@@ -62,8 +73,10 @@ MSAF_FLAGS_DICT = parse_config_string(MSAF_FLAGS, issue_warnings=True)
 # In that case, definitions in files on the right (here, ~/.msafrc) have
 # precedence over those in files on the left.
 def config_files_from_msafrc():
-    rval = [os.path.expanduser(s) for s in
-            os.getenv(msaf.MSAFRC_VAR, msaf.MSAFRC_FILE).split(os.pathsep)]
+    rval = [
+        os.path.expanduser(s)
+        for s in os.getenv(msaf.MSAFRC_VAR, msaf.MSAFRC_FILE).split(os.pathsep)
+    ]
     if os.getenv(msaf.MSAFRC_VAR) is None and sys.platform == "win32":
         # to don't need to change the filename and make it open easily
         rval.append(os.path.expanduser(msaf.MSAFRC_WIN_FILE))
@@ -72,13 +85,14 @@ def config_files_from_msafrc():
 
 config_files = config_files_from_msafrc()
 msaf_cfg = ConfigParser(
-    {'USER': os.getenv("USER", os.path.split(os.path.expanduser('~'))[-1]),
-     'LSCRATCH': os.getenv("LSCRATCH", ""),
-     'TMPDIR': os.getenv("TMPDIR", ""),
-     'TEMP': os.getenv("TEMP", ""),
-     'TMP': os.getenv("TMP", ""),
-     'PID': str(os.getpid()),
-     }
+    {
+        "USER": os.getenv("USER", os.path.split(os.path.expanduser("~"))[-1]),
+        "LSCRATCH": os.getenv("LSCRATCH", ""),
+        "TMPDIR": os.getenv("TMPDIR", ""),
+        "TEMP": os.getenv("TEMP", ""),
+        "TMP": os.getenv("TMP", ""),
+        "PID": str(os.getpid()),
+    }
 )
 msaf_cfg.read(config_files)
 # Having a raw version of the config around as well enables us to pass
@@ -108,11 +122,11 @@ def fetch_val_for_key(key, delete_key=False):
     # next try to find it in the config file
 
     # config file keys can be of form option, or section.option
-    key_tokens = key.rsplit('.', 1)
+    key_tokens = key.rsplit(".", 1)
     if len(key_tokens) == 2:
         section, option = key_tokens
     else:
-        section, option = 'global', key
+        section, option = "global", key
     try:
         try:
             return msaf_cfg.get(section, option)
@@ -120,6 +134,7 @@ def fetch_val_for_key(key, delete_key=False):
             return msaf_raw_cfg.get(section, option)
     except (NoOptionError, NoSectionError):
         raise KeyError(key)
+
 
 _config_var_list = []
 
@@ -141,6 +156,7 @@ class MsafConfigParser:
         sio = StringIO()
         _config_print(self.__class__, sio, print_doc=print_doc)
         return sio.getvalue()
+
 
 # N.B. all instances of MsafConfigParser give access to the same properties.
 config = MsafConfigParser()
@@ -181,7 +197,7 @@ def AddConfigVar(name, doc, configparam, root=config):
     if root is config:
         # only set the name in the first call, not the recursive ones
         configparam.fullname = name
-    sections = name.split('.')
+    sections = name.split(".")
     if len(sections) > 1:
         # set up a subobject
         if not hasattr(root, sections[0]):
@@ -189,19 +205,19 @@ def AddConfigVar(name, doc, configparam, root=config):
             # unique class
             class SubObj:
                 _i_am_a_config_class = True
+
             setattr(root.__class__, sections[0], SubObj())
         newroot = getattr(root, sections[0])
-        if (not getattr(newroot, '_i_am_a_config_class', False) or
-                isinstance(newroot, type)):
+        if not getattr(newroot, "_i_am_a_config_class", False) or isinstance(
+            newroot, type
+        ):
             raise TypeError(
-                'Internal config nodes must be config class instances',
-                newroot)
-        return AddConfigVar('.'.join(sections[1:]), doc, configparam,
-                            root=newroot)
+                "Internal config nodes must be config class instances", newroot
+            )
+        return AddConfigVar(".".join(sections[1:]), doc, configparam, root=newroot)
     else:
         if hasattr(root, name):
-            raise AttributeError('This name is already taken',
-                                 configparam.fullname)
+            raise AttributeError("This name is already taken", configparam.fullname)
         configparam.doc = doc
         # Trigger a read of the value from config files and env vars
         # This allow to filter wrong value from the user.
@@ -221,7 +237,6 @@ def AddConfigVar(name, doc, configparam, root=config):
 
 
 class ConfigParam:
-
     def __init__(self, default, filter=None, allow_override=True):
         """If allow_override is False, we can't change the value after the
         import of Theano.
@@ -245,10 +260,9 @@ class ConfigParam:
     def __get__(self, cls, type_, delete_key=False):
         if cls is None:
             return self
-        if not hasattr(self, 'val'):
+        if not hasattr(self, "val"):
             try:
-                val_str = fetch_val_for_key(self.fullname,
-                                            delete_key=delete_key)
+                val_str = fetch_val_for_key(self.fullname, delete_key=delete_key)
                 self.is_default = False
             except KeyError:
                 if callable(self.default):
@@ -260,10 +274,11 @@ class ConfigParam:
         return self.val
 
     def __set__(self, cls, val):
-        if not self.allow_override and hasattr(self, 'val'):
+        if not self.allow_override and hasattr(self, "val"):
             raise Exception(
                 "Can't change the value of this config parameter "
-                "after initialization!")
+                "after initialization!"
+            )
         # print "SETTING PARAM", self.fullname,(cls), val
         if self.filter:
             self.val = self.filter(val)
@@ -279,8 +294,12 @@ class EnumStr(ConfigParam):
         # All options should be strings
         for val in self.all:
             if not isinstance(val, str) and val is not None:
-                raise ValueError('Valid values for an EnumStr parameter '
-                                 'should be strings or `None`', val, type(val))
+                raise ValueError(
+                    "Valid values for an EnumStr parameter "
+                    "should be strings or `None`",
+                    val,
+                    type(val),
+                )
 
         convert = kwargs.get("convert", None)
 
@@ -296,13 +315,14 @@ class EnumStr(ConfigParam):
             else:
                 raise ValueError(
                     'Invalid value ("%s") for configuration variable "%s". '
-                    'Valid options are %s'
-                    % (val, self.fullname, self.all))
+                    "Valid options are %s" % (val, self.fullname, self.all)
+                )
+
         over = kwargs.get("allow_override", True)
         super().__init__(default, filter, over)
 
     def __str__(self):
-        return f'{self.fullname} ({self.all}) '
+        return f"{self.fullname} ({self.all}) "
 
 
 class ListParam(ConfigParam):
@@ -319,7 +339,7 @@ class ListParam(ConfigParam):
         super().__init__(default, None, over)
 
     def __str__(self):
-        return f'{self.fullname} ({self.default}) '
+        return f"{self.fullname} ({self.default}) "
 
 
 class TypedParam(ConfigParam):
@@ -336,16 +356,16 @@ class TypedParam(ConfigParam):
                     return cast_val
                 else:
                     raise ValueError(
-                        'Invalid value (%s) for configuration variable '
-                        '"%s".'
-                        % (val, self.fullname), val)
+                        "Invalid value (%s) for configuration variable "
+                        '"%s".' % (val, self.fullname),
+                        val,
+                    )
             return cast_val
 
-        super().__init__(default, filter,
-                                         allow_override=allow_override)
+        super().__init__(default, filter, allow_override=allow_override)
 
     def __str__(self):
-        return f'{self.fullname} ({self.mytype}) '
+        return f"{self.fullname} ({self.mytype}) "
 
 
 def StrParam(default, is_valid=None, allow_override=True):
@@ -364,13 +384,13 @@ def BoolParam(default, is_valid=None, allow_override=True):
     # see comment at the beginning of this file.
 
     def booltype(s):
-        if s in ['False', 'false', '0', False]:
+        if s in ["False", "false", "0", False]:
             return False
-        elif s in ['True', 'true', '1', True]:
+        elif s in ["True", "true", "1", True]:
             return True
 
     def is_valid_bool(s):
-        if s in ['False', 'false', '0', 'True', 'true', '1', False, True]:
+        if s in ["False", "false", "0", "True", "true", "1", False, True]:
             return True
         else:
             return False
@@ -378,5 +398,4 @@ def BoolParam(default, is_valid=None, allow_override=True):
     if is_valid is None:
         is_valid = is_valid_bool
 
-    return TypedParam(default, booltype, is_valid,
-                      allow_override=allow_override)
+    return TypedParam(default, booltype, is_valid, allow_override=allow_override)

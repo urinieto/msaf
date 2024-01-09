@@ -28,10 +28,18 @@ class CQT(Features):
     These features contain both harmonic and timbral content of the
     given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size, n_bins=config.cqt.bins,
-                 norm=config.cqt.norm, filter_scale=config.cqt.filter_scale,
-                 ref_power=config.cqt.ref_power):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        n_bins=config.cqt.bins,
+        norm=config.cqt.norm,
+        filter_scale=config.cqt.filter_scale,
+        ref_power=config.cqt.ref_power,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -56,8 +64,9 @@ class CQT(Features):
             See `configdefaults.py` for the possible values.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         # Init the CQT parameters
         self.n_bins = n_bins
         self.norm = norm
@@ -85,10 +94,19 @@ class CQT(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        linear_cqt = np.abs(librosa.cqt(
-            self._audio, sr=self.sr, hop_length=self.hop_length,
-            n_bins=self.n_bins, norm=self.norm, filter_scale=self.filter_scale)
-                            ) ** 2
+        linear_cqt = (
+            np.abs(
+                librosa.cqt(
+                    self._audio,
+                    sr=self.sr,
+                    hop_length=self.hop_length,
+                    n_bins=self.n_bins,
+                    norm=self.norm,
+                    filter_scale=self.filter_scale,
+                )
+            )
+            ** 2
+        )
         cqt = librosa.amplitude_to_db(linear_cqt, ref=self.ref_power).T
         return cqt
 
@@ -99,10 +117,18 @@ class MFCC(Features):
     The Mel-Frequency Cepstral Coefficients contain timbral content of a
     given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size, n_fft=config.n_fft,
-                 n_mels=config.mfcc.n_mels, n_mfcc=config.mfcc.n_mfcc,
-                 ref_power=config.mfcc.ref_power):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        n_fft=config.n_fft,
+        n_mels=config.mfcc.n_mels,
+        n_mfcc=config.mfcc.n_mfcc,
+        ref_power=config.mfcc.ref_power,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -126,8 +152,9 @@ class MFCC(Features):
             The reference power for logarithmic scaling.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         # Init the MFCC parameters
         self.n_fft = n_fft
         self.n_mels = n_mels
@@ -155,11 +182,13 @@ class MFCC(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        S = librosa.feature.melspectrogram(y=self._audio,
-                                           sr=self.sr,
-                                           n_fft=self.n_fft,
-                                           hop_length=self.hop_length,
-                                           n_mels=self.n_mels)
+        S = librosa.feature.melspectrogram(
+            y=self._audio,
+            sr=self.sr,
+            n_fft=self.n_fft,
+            hop_length=self.hop_length,
+            n_mels=self.n_mels,
+        )
         log_S = librosa.amplitude_to_db(S, ref=self.ref_power)
         mfcc = librosa.feature.mfcc(S=log_S, n_mfcc=self.n_mfcc).T
         return mfcc
@@ -170,10 +199,18 @@ class PCP(Features):
 
     The PCPs contain harmonic content of a given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size, n_bins=config.pcp.bins,
-                 norm=config.pcp.norm, f_min=config.pcp.f_min,
-                 n_octaves=config.pcp.n_octaves):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        n_bins=config.pcp.bins,
+        norm=config.pcp.norm,
+        f_min=config.pcp.f_min,
+        n_octaves=config.pcp.n_octaves,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -197,8 +234,9 @@ class PCP(Features):
             Number of octaves.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         # Init the PCP parameters
         self.n_bins = n_bins
         self.norm = norm
@@ -220,17 +258,26 @@ class PCP(Features):
             time frame/beat.
         """
         audio_harmonic, _ = self.compute_HPSS()
-        pcp_cqt = np.abs(librosa.hybrid_cqt(audio_harmonic,
-                                            sr=self.sr,
-                                            hop_length=self.hop_length,
-                                            n_bins=self.n_bins,
-                                            norm=self.norm,
-                                            fmin=self.f_min)) ** 2
-        pcp = librosa.feature.chroma_cqt(C=pcp_cqt,
-                                         sr=self.sr,
-                                         hop_length=self.hop_length,
-                                         n_octaves=self.n_octaves,
-                                         fmin=self.f_min).T
+        pcp_cqt = (
+            np.abs(
+                librosa.hybrid_cqt(
+                    audio_harmonic,
+                    sr=self.sr,
+                    hop_length=self.hop_length,
+                    n_bins=self.n_bins,
+                    norm=self.norm,
+                    fmin=self.f_min,
+                )
+            )
+            ** 2
+        )
+        pcp = librosa.feature.chroma_cqt(
+            C=pcp_cqt,
+            sr=self.sr,
+            hop_length=self.hop_length,
+            n_octaves=self.n_octaves,
+            fmin=self.f_min,
+        ).T
         return pcp
 
 
@@ -240,10 +287,18 @@ class Tonnetz(Features):
     The Tonal Centroids (or Tonnetz) contain harmonic content of a given
     audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size, n_bins=config.tonnetz.bins,
-                 norm=config.tonnetz.norm, f_min=config.tonnetz.f_min,
-                 n_octaves=config.tonnetz.n_octaves):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        n_bins=config.tonnetz.bins,
+        norm=config.tonnetz.norm,
+        f_min=config.tonnetz.f_min,
+        n_octaves=config.tonnetz.n_octaves,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -267,8 +322,9 @@ class Tonnetz(Features):
             Number of octaves.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         # Init the local parameters
         self.n_bins = n_bins
         self.norm = norm
@@ -289,8 +345,16 @@ class Tonnetz(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        pcp = PCP(self.file_struct, self.feat_type, self.sr, self.hop_length,
-                  self.n_bins, self.norm, self.f_min, self.n_octaves).features
+        pcp = PCP(
+            self.file_struct,
+            self.feat_type,
+            self.sr,
+            self.hop_length,
+            self.n_bins,
+            self.norm,
+            self.f_min,
+            self.n_octaves,
+        ).features
         tonnetz = librosa.feature.tonnetz(chroma=pcp.T).T
         return tonnetz
 
@@ -300,9 +364,15 @@ class Tempogram(Features):
 
     The Tempogram contains rhythmic content of a given audio signal.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size,
-                 win_length=config.tempogram.win_length):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        win_length=config.tempogram.win_length,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -320,8 +390,9 @@ class Tempogram(Features):
             The size of the window for the tempogram.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         # Init the local parameters
         self.win_length = win_length
 
@@ -339,6 +410,9 @@ class Tempogram(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        return librosa.feature.tempogram(y=self._audio, sr=self.sr,
-                                         hop_length=self.hop_length,
-                                         win_length=self.win_length).T
+        return librosa.feature.tempogram(
+            y=self._audio,
+            sr=self.sr,
+            hop_length=self.hop_length,
+            win_length=self.win_length,
+        ).T

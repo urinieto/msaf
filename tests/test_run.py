@@ -7,17 +7,15 @@ import numpy.testing as npt
 from pytest import raises
 
 import msaf
-from msaf.exceptions import (FeaturesNotFound, NoAudioFileError,
-                             NoHierBoundaryError)
+from msaf.exceptions import FeaturesNotFound, NoAudioFileError, NoHierBoundaryError
 from msaf.features import Features
 
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 # Global vars
 audio_file = os.path.join("fixtures", "chirp.mp3")
-long_audio_file = os.path.join("fixtures", "Sargon_test", "audio",
-                               "Mindless_cut.mp3")
+long_audio_file = os.path.join("fixtures", "Sargon_test", "audio", "Mindless_cut.mp3")
 fake_module_name = "fake_name_module"
 
 
@@ -85,18 +83,20 @@ def test_run_algorithms():
     for bound_id in bound_ids:
         for label_id in label_ids:
             print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
-            config = msaf.io.get_configuration(feature, annot_beats, framesync,
-                                               bound_id, label_id)
+            config = msaf.io.get_configuration(
+                feature, annot_beats, framesync, bound_id, label_id
+            )
             config["hier"] = False
             config["features"] = Features.select_features(
-                feature, file_struct, annot_beats, framesync)
+                feature, file_struct, annot_beats, framesync
+            )
             est_times, est_labels = msaf.run.run_algorithms(
-                file_struct, bound_id, label_id, config)
+                file_struct, bound_id, label_id, config
+            )
             assert len(est_times) == 2
             assert len(est_labels) == 1
             npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
-            npt.assert_almost_equal(est_times[-1], config["features"].dur,
-                                    decimal=2)
+            npt.assert_almost_equal(est_times[-1], config["features"].dur, decimal=2)
 
     # Compute and save features for long audio file
     file_struct = msaf.io.FileStruct(long_audio_file)
@@ -104,13 +104,16 @@ def test_run_algorithms():
 
     def _test_run_msaf(bound_id, label_id, hier=False):
         print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
-        config = msaf.io.get_configuration(feature, annot_beats, framesync,
-                                           bound_id, label_id)
+        config = msaf.io.get_configuration(
+            feature, annot_beats, framesync, bound_id, label_id
+        )
         config["hier"] = hier
         config["features"] = Features.select_features(
-            feature, file_struct, annot_beats, framesync)
+            feature, file_struct, annot_beats, framesync
+        )
         est_times, est_labels = msaf.run.run_algorithms(
-            file_struct, bound_id, label_id, config)
+            file_struct, bound_id, label_id, config
+        )
 
         # Take the first level if hierarchy algorithm
         if hier:
@@ -119,8 +122,7 @@ def test_run_algorithms():
 
         npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
         assert len(est_times) - 1 == len(est_labels)
-        npt.assert_almost_equal(est_times[-1], config["features"].dur,
-                                decimal=2)
+        npt.assert_almost_equal(est_times[-1], config["features"].dur, decimal=2)
 
     # Running all boundary algorithms on a relatively long file
     # Combining boundaries with labels
@@ -154,11 +156,11 @@ def test_no_gt_flat_bounds():
 
     config = {}
     config["features"] = Features.select_features(
-        feature, file_struct, annot_beats, framesync)
-    est_times, est_labels = msaf.run.run_flat(file_struct, None, None,
-                                              None, config, 0)
-    assert(not est_times)
-    assert(not est_labels)
+        feature, file_struct, annot_beats, framesync
+    )
+    est_times, est_labels = msaf.run.run_flat(file_struct, None, None, None, config, 0)
+    assert not est_times
+    assert not est_labels
 
 
 def test_process_track():
@@ -174,7 +176,8 @@ def test_process_track():
     config["framesync"] = False
     config["hier"] = False
     est_times, est_labels = msaf.run.process_track(
-        file_struct, bounds_id, labels_id, config)
+        file_struct, bounds_id, labels_id, config
+    )
 
     assert os.path.isfile(file_struct.est_file)
     os.remove(file_struct.est_file)
@@ -184,7 +187,8 @@ def test_process_with_gt():
     bounds_id = "gt"
     labels_id = "fmc2d"
     est_times, est_labels = msaf.run.process(
-        long_audio_file, boundaries_id=bounds_id, labels_id=labels_id)
+        long_audio_file, boundaries_id=bounds_id, labels_id=labels_id
+    )
     assert est_times[0] == 0
     assert len(est_times) == len(est_labels) + 1
 
@@ -209,9 +213,9 @@ def test_process():
 
 def test_process_sonify():
     out_wav = "out_wav.wav"
-    est_times, est_labels = msaf.run.process(long_audio_file,
-                                             sonify_bounds=True,
-                                             out_bounds=out_wav)
+    est_times, est_labels = msaf.run.process(
+        long_audio_file, sonify_bounds=True, out_bounds=out_wav
+    )
     assert os.path.isfile(out_wav)
     os.remove(out_wav)
 

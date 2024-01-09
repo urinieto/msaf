@@ -6,7 +6,7 @@ config = {
     "penalty_weight": 1,
     "penalty_func": "modulo8",
     "bands_number": 7,
-    "max_size": 32
+    "max_size": 32,
 }
 
 algo_id = "cbm"  # Identifier of the algorithm

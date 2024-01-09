@@ -24,7 +24,7 @@ __DIMENSION = N_MFCC + N_CHROMA + 2 * N_REP + 4
 
 
 def features(file_struct, annot_beats=False, framesync=False):
-    '''Feature-extraction for audio segmentation
+    """Feature-extraction for audio segmentation
     Arguments:
         file_struct -- msaf.io.FileStruct
         paths to the input files in the Segmentation dataset
@@ -43,7 +43,8 @@ def features(file_struct, annot_beats=False, framesync=False):
         - dur -- float
             duration of the track in seconds
 
-    '''
+    """
+
     def compress_data(X, k):
         Xtemp = X.dot(X.T)
         if len(Xtemp) == 0:
@@ -72,13 +73,18 @@ def features(file_struct, annot_beats=False, framesync=False):
         return e_vecs.T.dot(X)
 
     # Latent factor repetition features
-    def repetition(X, metric='euclidean'):
+    def repetition(X, metric="euclidean"):
         R = librosa.segment.recurrence_matrix(
-            X, k=2 * int(np.ceil(np.sqrt(X.shape[1]))),
-            width=REP_WIDTH, metric=metric, sym=False).astype(np.float32)
+            X,
+            k=2 * int(np.ceil(np.sqrt(X.shape[1]))),
+            width=REP_WIDTH,
+            metric=metric,
+            sym=False,
+        ).astype(np.float32)
 
-        P = scipy.signal.medfilt2d(librosa.segment.recurrence_to_lag(R),
-                                   [1, REP_FILTER])
+        P = scipy.signal.medfilt2d(
+            librosa.segment.recurrence_to_lag(R), [1, REP_FILTER]
+        )
 
         # Discard empty rows.
         # This should give an equivalent SVD, but resolves some numerical
@@ -89,10 +95,8 @@ def features(file_struct, annot_beats=False, framesync=False):
 
     #########
     # '\tloading annotations and features of ', audio_path
-    pcp_obj = Features.select_features("pcp", file_struct, annot_beats,
-                                       framesync)
-    mfcc_obj = Features.select_features("mfcc", file_struct, annot_beats,
-                                        framesync)
+    pcp_obj = Features.select_features("pcp", file_struct, annot_beats, framesync)
+    mfcc_obj = Features.select_features("mfcc", file_struct, annot_beats, framesync)
     chroma = pcp_obj.features
     mfcc = mfcc_obj.features
     beats = pcp_obj.frame_times
@@ -103,14 +107,14 @@ def features(file_struct, annot_beats=False, framesync=False):
 
     ##########
     # print '\treading beats'
-    B = beats[:chroma.shape[0]]
+    B = beats[: chroma.shape[0]]
     # beat_frames = librosa.time_to_frames(B, sr=sr,
-                                         #hop_length=msaf.config.hop_size)
-    #print beat_frames, len(beat_frames), uidx
+    # hop_length=msaf.config.hop_size)
+    # print beat_frames, len(beat_frames), uidx
 
     #########
     M = mfcc.T
-    #plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
+    # plt.imshow(M, interpolation="nearest", aspect="auto"); plt.show()
 
     #########
     # Get the beat-sync chroma
@@ -118,13 +122,13 @@ def features(file_struct, annot_beats=False, framesync=False):
     C += C.min() + 0.1
     C = C / C.max(axis=0)
     C = 80 * np.log10(C)  # Normalize from -80 to 0
-    #plt.imshow(C, interpolation="nearest", aspect="auto"); plt.show()
+    # plt.imshow(C, interpolation="nearest", aspect="auto"); plt.show()
 
     # Time-stamp features
     N = np.arange(float(chroma.shape[0]))
 
     #########
-    #print '\tgenerating structure features'
+    # print '\tgenerating structure features'
 
     # TODO:  This might fail if audio file (or number of beats) is too small
     R_timbre = repetition(librosa.feature.stack_memory(M))
@@ -136,14 +140,13 @@ def features(file_struct, annot_beats=False, framesync=False):
     R_timbre /= R_timbre.max()
     R_chroma += R_chroma.min()
     R_chroma /= R_chroma.max()
-    #plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
+    # plt.imshow(R_chroma, interpolation="nearest", aspect="auto"); plt.show()
 
     # Stack it all up
-    #print M.shape, C.shape, R_timbre.shape, R_chroma.shape, len(B), len(N)
-    X = np.vstack([M, C, R_timbre, R_chroma, B, B / dur, N,
-                   N / float(chroma.shape[0])])
+    # print M.shape, C.shape, R_timbre.shape, R_chroma.shape, len(B), len(N)
+    X = np.vstack([M, C, R_timbre, R_chroma, B, B / dur, N, N / float(chroma.shape[0])])
 
-    #plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
+    # plt.imshow(X, interpolation="nearest", aspect="auto"); plt.show()
 
     return X, dur
 
@@ -158,33 +161,33 @@ def gaussian_cost(X):
 
     sigma = np.var(X, axis=1, ddof=1)
 
-    cost = -0.5 * d * n * np.log(2. * np.pi) - 0.5 * (n - 1.) * np.sum(sigma)
+    cost = -0.5 * d * n * np.log(2.0 * np.pi) - 0.5 * (n - 1.0) * np.sum(sigma)
     return cost
 
 
 def clustering_cost(X, boundaries):
-
     # Boundaries include beginning and end frames, so k is one less
     k = len(boundaries) - 1
 
     d, n = map(float, X.shape)
 
     # Compute the average log-likelihood of each cluster
-    cost = [gaussian_cost(X[:, start:end]) for
-            (start, end) in zip(boundaries[:-1], boundaries[1:])]
+    cost = [
+        gaussian_cost(X[:, start:end])
+        for (start, end) in zip(boundaries[:-1], boundaries[1:])
+    ]
 
-    cost = - 2 * np.sum(cost) / n + 2 * (d * k)
+    cost = -2 * np.sum(cost) / n + 2 * (d * k)
 
     return cost
 
 
 def get_k_segments(X, k):
-
     # Step 1: run ward
     boundaries = librosa.segment.agglomerative(X, k)
 
     # Add first and last boundary indices
-    boundaries = np.unique(np.concatenate(([0], boundaries, [X.shape[1]-1])))
+    boundaries = np.unique(np.concatenate(([0], boundaries, [X.shape[1] - 1])))
 
     # Step 2: compute cost
     cost = clustering_cost(X, boundaries)
@@ -193,7 +196,6 @@ def get_k_segments(X, k):
 
 
 def get_segments(X, kmin=8, kmax=32):
-
     cost_min = np.inf
     S_best = []
     for k in range(kmax, kmin, -1):
@@ -208,29 +210,28 @@ def get_segments(X, kmin=8, kmax=32):
 
 
 def process_arguments():
-    parser = argparse.ArgumentParser(description='Music segmentation')
+    parser = argparse.ArgumentParser(description="Music segmentation")
 
-    parser.add_argument('-t',
-                        '--transform',
-                        dest='transform',
-                        required=False,
-                        type=str,
-                        help='npy file containing the linear projection',
-                        default=None)
+    parser.add_argument(
+        "-t",
+        "--transform",
+        dest="transform",
+        required=False,
+        type=str,
+        help="npy file containing the linear projection",
+        default=None,
+    )
 
-    parser.add_argument('input_song',
-                        action='store',
-                        help='path to input audio data')
+    parser.add_argument("input_song", action="store", help="path to input audio data")
 
-    parser.add_argument('output_file',
-                        action='store',
-                        help='path to output segment file')
+    parser.add_argument(
+        "output_file", action="store", help="path to output segment file"
+    )
 
     return vars(parser.parse_args(sys.argv[1:]))
 
 
 def load_transform(transform_file):
-
     if transform_file is None:
         W = np.eye(__DIMENSION)
     else:
@@ -255,6 +256,7 @@ class Segmenter(SegmenterInterface):
 
     .. _PDF: https://bmcfee.github.io/papers/icassp2014_segments.pdf
     """
+
     def processFlat(self):
         """Main process for flat segmentation.
 
@@ -278,8 +280,7 @@ class Segmenter(SegmenterInterface):
             est_idxs = get_segments(F, kmin=kmin, kmax=kmax)
         except:
             # The audio file is too short, only beginning and end
-            logging.warning("Audio file too short! "
-                            "Only start and end boundaries.")
+            logging.warning("Audio file too short! " "Only start and end boundaries.")
             est_idxs = [0, F.shape[1] - 1]
 
         # Make sure that the first and last boundaries are included
@@ -325,17 +326,17 @@ class Segmenter(SegmenterInterface):
                 est_labels.append(np.ones(len(S) - 1) * -1)
 
                 # Make sure that the first and last boundaries are included
-                assert est_idxs[-1][0] == 0 and \
-                    est_idxs[-1][-1] == F.shape[1] - 1, "Layer %d does not " \
-                    "start or end in the right frame(s)." % k
+                assert est_idxs[-1][0] == 0 and est_idxs[-1][-1] == F.shape[1] - 1, (
+                    "Layer %d does not " "start or end in the right frame(s)." % k
+                )
 
                 # Post process layer
-                est_idxs[-1], est_labels[-1] = \
-                        self._postprocess(est_idxs[-1], est_labels[-1])
+                est_idxs[-1], est_labels[-1] = self._postprocess(
+                    est_idxs[-1], est_labels[-1]
+                )
         except:
             # The audio file is too short, only beginning and end
-            logging.warning("Audio file too short! "
-                            "Only start and end boundaries.")
+            logging.warning("Audio file too short! " "Only start and end boundaries.")
             est_idxs = [np.array([0, F.shape[1] - 1])]
             est_labels = [np.ones(1) * -1]
 

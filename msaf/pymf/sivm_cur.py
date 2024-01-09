@@ -20,6 +20,7 @@ from .sivm import SIVM
 
 __all__ = ["SIVM_CUR"]
 
+
 class SIVM_CUR(CUR):
     """SIVM_CUR(data, num_bases=4, dist_measure='l2')
 
@@ -55,7 +56,7 @@ class SIVM_CUR(CUR):
     >>> sivmcur_mdl.factorize()
     """
 
-    def __init__(self, data, k=-1, rrank=0, crank=0, dist_measure='l2', init='origin'):
+    def __init__(self, data, k=-1, rrank=0, crank=0, dist_measure="l2", init="origin"):
         CUR.__init__(self, data, k=k, rrank=rrank, crank=rrank)
         self._dist_measure = dist_measure
         self.init = init
@@ -63,22 +64,25 @@ class SIVM_CUR(CUR):
     def sample(self, A, c):
         # for optimizing the volume of the submatrix, set init to 'origin' (otherwise the volume of
         # the ordinary simplex would be optimized)
-        sivm_mdl = SIVM(A, num_bases=c, dist_measure=self._dist_measure,
-                            init=self.init)
-        sivm_mdl.factorize(show_progress=False, compute_w=True, niter=1,
-                           compute_h=False, compute_err=False)
+        sivm_mdl = SIVM(A, num_bases=c, dist_measure=self._dist_measure, init=self.init)
+        sivm_mdl.factorize(
+            show_progress=False,
+            compute_w=True,
+            niter=1,
+            compute_h=False,
+            compute_err=False,
+        )
 
         return sivm_mdl.select
 
-
     def factorize(self):
-        """ Factorize s.t. CUR = data
+        """Factorize s.t. CUR = data
 
-            Updated Values
-            --------------
-            .C : updated values for C.
-            .U : updated values for U.
-            .R : updated values for R.
+        Updated Values
+        --------------
+        .C : updated values for C.
+        .U : updated values for U.
+        .R : updated values for R.
         """
         # sample row and column indices that maximize the volume of the submatrix
         self._rid = self.sample(self.data.transpose(), self._rrank)
@@ -92,4 +96,5 @@ class SIVM_CUR(CUR):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

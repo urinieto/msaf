@@ -18,6 +18,7 @@ class Segmenter(SegmenterInterface):
     Original code by Brian McFee from:
     https://github.com/bmcfee/laplacian_segmentation
     """
+
     def process(self):
         """Main process.
 
@@ -33,9 +34,11 @@ class Segmenter(SegmenterInterface):
         # This algorithm only accepts one specific kind of features:
         # Combination of PCP + MFCC. Let's get them:
         pcp_obj = Features.select_features(
-            "pcp", self.file_struct, self.annot_beats, self.framesync)
+            "pcp", self.file_struct, self.annot_beats, self.framesync
+        )
         mfcc_obj = Features.select_features(
-            "mfcc", self.file_struct, self.annot_beats, self.framesync)
+            "mfcc", self.file_struct, self.annot_beats, self.framesync
+        )
 
         # Get frame times and make sure they're the same in both features
         frame_times = pcp_obj.frame_times
@@ -45,8 +48,8 @@ class Segmenter(SegmenterInterface):
         # (tranpsosed, because he's that kind of person)
         # TODO: self.in_bound_idxs
         est_idxs, est_labels, F = main2.do_segmentation(
-            pcp_obj.features.T, mfcc_obj.features.T, self.config,
-            self.in_bound_idxs)
+            pcp_obj.features.T, mfcc_obj.features.T, self.config, self.in_bound_idxs
+        )
 
         return est_idxs, est_labels, F
 
@@ -80,8 +83,8 @@ class Segmenter(SegmenterInterface):
         self.config["hier"] = True
         est_idxs, est_labels, F = self.process()
         for layer in range(len(est_idxs)):
-            assert est_idxs[layer][0] == 0 and \
-                est_idxs[layer][-1] == F.shape[1] - 1
-            est_idxs[layer], est_labels[layer] = \
-                self._postprocess(est_idxs[layer], est_labels[layer])
+            assert est_idxs[layer][0] == 0 and est_idxs[layer][-1] == F.shape[1] - 1
+            est_idxs[layer], est_labels[layer] = self._postprocess(
+                est_idxs[layer], est_labels[layer]
+            )
         return est_idxs, est_labels
