@@ -200,8 +200,13 @@ class LogMel(Features):
         # Init the parent
         super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
                          feat_type=feat_type)
+        self.n_fft = n_fft
+        # Init the Mel parameters
+        self.n_mels = n_mels
+        self.f_min = f_min
+        self.f_max = f_max
         self.mel = Mel(self.file_struct, self.feat_type, self.sr,self.hop_length, 
-                       n_fft,n_mels, f_min, f_max).features
+                       self.n_fft,self.n_mels, self.f_min, self.f_max).features
 
     @classmethod
     def get_id(cls):
