@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Semi Non-negative Matrix Factorization.
+"""PyMF Semi Non-negative Matrix Factorization.
 
     SNMF(NMF) : Class for semi non-negative matrix factorization
 
@@ -13,16 +12,15 @@ IEEE Trans. on Pattern Analysis and Machine Intelligence 32(1), 45-55.
 """
 
 
-
 import numpy as np
 
 from .nmf import NMF
 
 __all__ = ["SNMF"]
 
+
 class SNMF(NMF):
-    """
-    SNMF(data, num_bases=4)
+    """SNMF(data, num_bases=4)
 
     Semi Non-negative Matrix Factorization. Factorize a data matrix into two
     matrices s.t. F = | data - W*H | is minimal.
@@ -63,20 +61,19 @@ class SNMF(NMF):
     The result is a set of coefficients snmf_mdl.H, s.t. data = W * snmf_mdl.H.
     """
 
-
     def update_w(self):
-        W1 = np.dot(self.data[:,:], self.H.T)
+        W1 = np.dot(self.data[:, :], self.H.T)
         W2 = np.dot(self.H, self.H.T)
         self.W = np.dot(W1, np.linalg.inv(W2))
 
     def update_h(self):
         def separate_positive(m):
-            return (np.abs(m) + m)/2.0
+            return (np.abs(m) + m) / 2.0
 
         def separate_negative(m):
-            return (np.abs(m) - m)/2.0
+            return (np.abs(m) - m) / 2.0
 
-        XW = np.dot(self.data[:,:].T, self.W)
+        XW = np.dot(self.data[:, :].T, self.W)
 
         WW = np.dot(self.W.T, self.W)
         WW_pos = separate_positive(WW)
@@ -86,10 +83,12 @@ class SNMF(NMF):
         H1 = (XW_pos + np.dot(self.H.T, WW_neg)).T
 
         XW_neg = separate_negative(XW)
-        H2 = (XW_neg + np.dot(self.H.T,WW_pos)).T + 10**-9
+        H2 = (XW_neg + np.dot(self.H.T, WW_pos)).T + 10**-9
 
-        self.H *= np.sqrt(H1/H2)
+        self.H *= np.sqrt(H1 / H2)
+
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

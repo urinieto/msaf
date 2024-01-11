@@ -7,5 +7,5 @@ Variable Markov Oracle
     Segmenter
 """
 from .config import *
-from .segmenter import *
 from .main import *
+from .segmenter import *

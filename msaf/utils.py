@@ -1,12 +1,10 @@
-"""
-Useful functions that are common in MSAF
-"""
+"""Useful functions that are common in MSAF."""
+import os
+
 import librosa
 import mir_eval
 import numpy as np
-import os
 import scipy.io.wavfile
-import six
 
 
 def lognormalize(F, floor=0.1, min_db=-80):
@@ -35,7 +33,7 @@ def normalize(X, norm_type, floor=0.0, min_db=-80):
         - `"min_max"`: Min/max scaling is performed
         - `"log"`: Logarithmic scaling is performed
         - `np.inf`: Maximum absolute value
-        - `-np.inf`: Mininum absolute value
+        - `-np.inf`: Minimum absolute value
         - `0`: Number of non-zeros
         - float: Corresponding l_p norm.
         - None : No normalization is performed
@@ -45,7 +43,7 @@ def normalize(X, norm_type, floor=0.0, min_db=-80):
     norm_X: np.array
         Normalized `X` according the the input parameters.
     """
-    if isinstance(norm_type, six.string_types):
+    if isinstance(norm_type, str):
         if norm_type == "min_max":
             return min_max_normalize(X, floor=floor)
         if norm_type == "log":
@@ -92,8 +90,8 @@ def intervals_to_times(inters):
 
 
 def get_num_frames(dur, anal):
-    """Given the duration of a track and a dictionary containing analysis
-    info, return the number of frames."""
+    """Given the duration of a track and a dictionary containing analysis info,
+    return the number of frames."""
     total_samples = dur * anal["sample_rate"]
     return int(total_samples / anal["hop_size"])
 
@@ -137,9 +135,9 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     # latest release is not compatible with latest numpy)
     times = clicks + offset
     # 1 kHz tone, 100ms
-    click = np.sin(2 * np.pi * np.arange(fs * .1) * 1000 / (1. * fs))
+    click = np.sin(2 * np.pi * np.arange(fs * 0.1) * 1000 / (1.0 * fs))
     # Exponential decay
-    click *= np.exp(-np.arange(fs * .1) / (fs * .01))
+    click *= np.exp(-np.arange(fs * 0.1) / (fs * 0.01))
     length = int(times.max() * fs + click.shape[0] + 1)
     audio_clicks = mir_eval.sonify.clicks(times, fs, length=length)
 
@@ -147,11 +145,18 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     out_audio = np.zeros(max(len(audio), len(audio_clicks)))
 
     # Assign the audio and the clicks
-    out_audio[:len(audio)] = audio
-    out_audio[:len(audio_clicks)] += audio_clicks
+    out_audio[: len(audio)] = audio
+    out_audio[: len(audio_clicks)] += audio_clicks
+
+    # Peak normalize the mix
+    out_audio /= np.abs(out_audio).max()
+
+    # Convert audio to 16-bit signed integer
+    amplitude = np.iinfo(np.int16).max
+    data = (amplitude * out_audio).astype(np.int16)
 
     # Write to file
-    scipy.io.wavfile.write(out_file, fs, out_audio)
+    scipy.io.wavfile.write(out_file, fs, data)
 
 
 def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
@@ -160,9 +165,9 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
     Parameters
     ----------
     new_bound_idxs: np.array
-        New indeces to synchronize with.
+        New indices to synchronize with.
     old_bound_idxs: np.array
-        Old indeces, same shape as labels + 1.
+        Old indices, same shape as labels + 1.
     old_labels: np.array
         Labels associated to the old_bound_idxs.
     N: int
@@ -171,21 +176,19 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
     Returns
     -------
     new_labels: np.array
-        New labels, synchronized to the new boundary indeces.
+        New labels, synchronized to the new boundary indices.
     """
     assert len(old_bound_idxs) - 1 == len(old_labels)
 
     # Construct unfolded labels array
     unfold_labels = np.zeros(N)
-    for i, (bound_idx, label) in enumerate(
-            zip(old_bound_idxs[:-1], old_labels)):
-        unfold_labels[bound_idx:old_bound_idxs[i + 1]] = label
+    for i, (bound_idx, label) in enumerate(zip(old_bound_idxs[:-1], old_labels)):
+        unfold_labels[bound_idx : old_bound_idxs[i + 1]] = label
 
-    # Constuct new labels
+    # Construct new labels
     new_labels = np.zeros(len(new_bound_idxs) - 1)
     for i, bound_idx in enumerate(new_bound_idxs[:-1]):
-        new_labels[i] = np.median(
-            unfold_labels[bound_idx:new_bound_idxs[i + 1]])
+        new_labels[i] = np.median(unfold_labels[bound_idx : new_bound_idxs[i + 1]])
 
     return new_labels
 
@@ -196,7 +199,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     Parameters
     ----------
     est_idxs: np.array
-        Estimated boundaries in frame indeces.
+        Estimated boundaries in frame indices.
     est_labels: np.array
         Estimated labels.
     N: int
@@ -225,8 +228,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     est_times, est_labels = remove_empty_segments(est_times, est_labels)
 
     # Make sure that the first and last times are 0 and duration, respectively
-    assert np.allclose([est_times[0]], [0]) and \
-        np.allclose([est_times[-1]], [dur])
+    assert np.allclose([est_times[0]], [0]) and np.allclose([est_times[-1]], [dur])
 
     return est_times, est_labels
 
@@ -247,8 +249,9 @@ def align_end_hierarchies(hier1, hier2, thres=0.5):
     # Make sure we have correctly formatted hierarchies
     dur_h1 = hier1[0][-1]
     for hier in hier1:
-        assert hier[-1] == dur_h1, "hier1 is not correctly " \
-            "formatted {} {}".format(hier[-1], dur_h1)
+        assert hier[-1] == dur_h1, "hier1 is not correctly " "formatted {} {}".format(
+            hier[-1], dur_h1
+        )
     dur_h2 = hier2[0][-1]
     for hier in hier2:
         assert hier[-1] == dur_h2, "hier2 is not correctly formatted"

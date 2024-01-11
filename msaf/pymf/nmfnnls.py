@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Non-negative Matrix Factorization.
+"""PyMF Non-negative Matrix Factorization.
 
     NMFALS: Class for Non-negative Matrix Factorization using non negative
             least squares optimization (requires scipy.optimize)
@@ -14,16 +13,15 @@ Matrix Factorization, Nature 401(6755), 788-799.
 """
 
 
-
 import scipy.optimize
+
 from .nmf import NMF
 
 __all__ = ["NMFNNLS"]
 
-class NMFNNLS(NMF):
-    """
-    NMFNNLS(data, num_bases=4)
 
+class NMFNNLS(NMF):
+    """NMFNNLS(data, num_bases=4)
 
     Non-negative Matrix Factorization. Factorize a data matrix into two matrices
     s.t. F = | data - W*H | = | is minimal. H, and W are restricted to non-negative
@@ -68,13 +66,12 @@ class NMFNNLS(NMF):
 
     def update_h(self):
         def updatesingleH(i):
-            self.H[:,i] = scipy.optimize.nnls(self.W, self.data[:,i])[0]
+            self.H[:, i] = scipy.optimize.nnls(self.W, self.data[:, i])[0]
 
         map(updatesingleH, range(self._num_samples))
 
-
     def update_w(self):
         def updatesingleW(i):
-            self.W[i,:] = scipy.optimize.nnls(self.H.T, self.data[i,:].T)[0]
+            self.W[i, :] = scipy.optimize.nnls(self.H.T, self.data[i, :].T)[0]
 
         map(updatesingleW, range(self._data_dimension))

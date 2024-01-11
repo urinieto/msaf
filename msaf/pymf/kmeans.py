@@ -3,22 +3,21 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF K-means clustering (unary-convex matrix factorization).
-"""
+"""PyMF K-means clustering (unary-convex matrix factorization)."""
 
+
+import random
 
 import numpy as np
-import random
 
 from . import dist
 from .nmf import NMF
 
 __all__ = ["Kmeans"]
 
+
 class Kmeans(NMF):
-    """
-    Kmeans(data, num_bases=4)
+    """Kmeans(data, num_bases=4)
 
     K-means clustering. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to unary vectors, W
@@ -59,6 +58,7 @@ class Kmeans(NMF):
 
     The result is a set of coefficients kmeans_mdl.H, s.t. data = W * kmeans_mdl.H.
     """
+
     def init_h(self):
         # W has to be present for H to be initialized
         self.H = np.zeros((self._num_bases, self._num_samples))
@@ -71,17 +71,15 @@ class Kmeans(NMF):
         # sort indices, otherwise h5py won't work
         self.W = self.data[:, np.sort(sel)]
 
-
     def update_h(self):
         # and assign samples to the best matching centers
         self.assigned = dist.vq(self.W, self.data)
         self.H = np.zeros(self.H.shape)
         self.H[self.assigned, range(self._num_samples)] = 1.0
 
-
     def update_w(self):
         for i in range(self._num_bases):
-            idx = np.where(self.assigned==i)[0]
+            idx = np.where(self.assigned == i)[0]
             n = len(idx)
             if n > 1:
-                self.W[:,i] = np.sum(self.data[:,idx], axis=1)/n
+                self.W[:, i] = np.sum(self.data[:, idx], axis=1) / n

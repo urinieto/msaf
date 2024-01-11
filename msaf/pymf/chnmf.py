@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Convex Hull Non-negative Matrix Factorization [1]
+"""PyMF Convex Hull Non-negative Matrix Factorization [1]
 
     CHNMF(NMF) : Class for Convex-hull NMF
     quickhull : Function for finding the convex hull in 2D
@@ -14,18 +13,19 @@ Factorization in the Wild. ICDM 2009.
 """
 
 
+from itertools import combinations
+
 import numpy as np
 
-from itertools import combinations
+from .aa import AA
 from .dist import vq
 from .pca import PCA
-from .aa import AA
 
 __all__ = ["CHNMF"]
 
 
 def quickhull(sample):
-    """ Find data points on the convex hull of a supplied data set
+    """Find data points on the convex hull of a supplied data set.
 
     Args:
         sample: data points as column vectors n x d
@@ -33,7 +33,7 @@ def quickhull(sample):
                     d - data dimension (should be two)
 
     Returns:
-        a k x d matrix containint the convex hull data points
+        a k x d matrix containing the convex hull data points
     """
 
     link = lambda a, b: np.concatenate((a, b[1:]))
@@ -46,22 +46,20 @@ def quickhull(sample):
 
         if len(outer):
             pivot = sample[np.argmax(dists)]
-            return link(dome(outer, edge(h, pivot)),
-                dome(outer, edge(pivot, t)))
+            return link(dome(outer, edge(h, pivot)), dome(outer, edge(pivot, t)))
         else:
             return base
 
     if len(sample) > 2:
         axis = sample[:, 0]
         base = np.take(sample, [np.argmin(axis), np.argmax(axis)], axis=0)
-        return link(dome(sample, base),
-            dome(sample, base[::-1]))
+        return link(dome(sample, base), dome(sample, base[::-1]))
     else:
         return sample
 
+
 class CHNMF(AA):
-    """
-    CHNMF(data, num_bases=4)
+    """CHNMF(data, num_bases=4)
 
     Convex Hull Non-negative Matrix Factorization. Factorize a data matrix into
     two matrices s.t. F = | data - W*H | is minimal. H is restricted to convexity
@@ -119,7 +117,6 @@ class CHNMF(AA):
     """
 
     def __init__(self, data, num_bases=4, base_sel=3):
-
         # call inherited method
         AA.__init__(self, data, num_bases=num_bases)
 
@@ -135,8 +132,7 @@ class CHNMF(AA):
         self.W = np.zeros((self._data_dimension, self._num_bases))
 
     def _map_w_to_data(self):
-        """ Return data points that are most similar to basis vectors W
-        """
+        """Return data points that are most similar to basis vectors W."""
 
         # assign W to the next best data sample
         self._Wmapped_index = vq(self.data, self.W)
@@ -147,13 +143,14 @@ class CHNMF(AA):
         # -> sorting sel would screw the matching to W if
         # self.data is stored as a hdf5 table (see h5py)
         for i, s in enumerate(self._Wmapped_index):
-            self.Wmapped[:,i] = self.data[:,s]
+            self.Wmapped[:, i] = self.data[:, s]
 
     def update_w(self):
-        """ compute new W """
+        """Compute new W."""
+
         def select_hull_points(data, n=3):
-            """ select data points for pairwise projections of the first n
-            dimensions """
+            """Select data points for pairwise projections of the first n
+            dimensions."""
 
             # iterate over all projections and select data points
             idx = np.array([])
@@ -171,8 +168,8 @@ class CHNMF(AA):
 
         # determine convex hull data points using either PCA or random
         # projections
-        method = 'randomprojection'
-        if method == 'pca':
+        method = "randomprojection"
+        if method == "pca":
             pcamodel = PCA(self.data)
             pcamodel.factorize(show_progress=False)
             proj = pcamodel.H
@@ -184,40 +181,57 @@ class CHNMF(AA):
         aa_mdl = AA(self.data[:, self._hull_idx], num_bases=self._num_bases)
 
         # determine W
-        aa_mdl.factorize(niter=50, compute_h=True, compute_w=True,
-                         compute_err=True, show_progress=False)
+        aa_mdl.factorize(
+            niter=50,
+            compute_h=True,
+            compute_w=True,
+            compute_err=True,
+            show_progress=False,
+        )
 
         self.W = aa_mdl.W
         self._map_w_to_data()
 
-    def factorize(self, show_progress=False, compute_w=True, compute_h=True,
-                  compute_err=True, niter=1):
-        """ Factorize s.t. WH = data
+    def factorize(
+        self,
+        show_progress=False,
+        compute_w=True,
+        compute_h=True,
+        compute_err=True,
+        niter=1,
+    ):
+        """Factorize s.t. WH = data
 
-            Parameters
-            ----------
-            show_progress : bool
-                    print some extra information to stdout.
-            compute_h : bool
-                    iteratively update values for H.
-            compute_w : bool
-                    iteratively update values for W.
-            compute_err : bool
-                    compute Frobenius norm |data-WH| after each update and store
-                    it to .ferr[k].
+        Parameters
+        ----------
+        show_progress : bool
+                print some extra information to stdout.
+        compute_h : bool
+                iteratively update values for H.
+        compute_w : bool
+                iteratively update values for W.
+        compute_err : bool
+                compute Frobenius norm |data-WH| after each update and store
+                it to .ferr[k].
 
-            Updated Values
-            --------------
-            .W : updated values for W.
-            .H : updated values for H.
-            .ferr : Frobenius norm |data-WH|.
+        Updated Values
+        --------------
+        .W : updated values for W.
+        .H : updated values for H.
+        .ferr : Frobenius norm |data-WH|.
         """
 
-        AA.factorize(self, niter=1, show_progress=show_progress,
-                  compute_w=compute_w, compute_h=compute_h,
-                  compute_err=compute_err)
+        AA.factorize(
+            self,
+            niter=1,
+            show_progress=show_progress,
+            compute_w=compute_w,
+            compute_h=compute_h,
+            compute_err=compute_err,
+        )
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

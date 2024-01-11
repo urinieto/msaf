@@ -3,12 +3,10 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Principal Component Analysis.
+"""PyMF Principal Component Analysis.
 
-    PCA: Class for Principal Component Analysis
+PCA: Class for Principal Component Analysis
 """
-
 
 
 import numpy as np
@@ -16,13 +14,11 @@ import numpy as np
 from .nmf import NMF
 from .svd import SVD
 
-
 __all__ = ["PCA"]
 
-class PCA(NMF):
-    """
-    PCA(data, num_bases=4, center_mean=True)
 
+class PCA(NMF):
+    """PCA(data, num_bases=4, center_mean=True)
 
     Archetypal Analysis. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. W is set to the eigenvectors of the
@@ -67,7 +63,6 @@ class PCA(NMF):
     """
 
     def __init__(self, data, num_bases=0, center_mean=True):
-
         NMF.__init__(self, data, num_bases=num_bases)
 
         # center the data around the mean first
@@ -76,8 +71,8 @@ class PCA(NMF):
         if self._center_mean:
             # copy the data before centering it
             self._data_orig = data
-            self._meanv = self._data_orig[:,:].mean(axis=1).reshape(data.shape[0],-1)
-            self.data = self._data_orig -  self._meanv
+            self._meanv = self._data_orig[:, :].mean(axis=1).reshape(data.shape[0], -1)
+            self.data = self._data_orig - self._meanv
         else:
             self.data = data
 
@@ -88,53 +83,65 @@ class PCA(NMF):
         pass
 
     def update_h(self):
-        self.H = np.dot(self.W.T, self.data[:,:])
+        self.H = np.dot(self.W.T, self.data[:, :])
 
     def update_w(self):
         # compute eigenvectors and eigenvalues using SVD
         svd_mdl = SVD(self.data)
         svd_mdl.factorize()
 
-        # argsort sorts in ascending order -> do reverese indexing
-        # for accesing values in descending order
+        # argsort sorts in ascending order -> do reverse indexing
+        # for accessing values in descending order
         S = np.diag(svd_mdl.S)
         order = np.argsort(S)[::-1]
 
         # select only a few eigenvectors  ...
-        if self._num_bases >0:
-            order = order[:self._num_bases]
+        if self._num_bases > 0:
+            order = order[: self._num_bases]
 
-        self.W = svd_mdl.U[:,order]
-        self.eigenvalues =  S[order]
+        self.W = svd_mdl.U[:, order]
+        self.eigenvalues = S[order]
 
-    def factorize(self, show_progress=False, compute_w=True, compute_h=True,
-                  compute_err=True, niter=1):
-        """ Factorize s.t. WH = data
+    def factorize(
+        self,
+        show_progress=False,
+        compute_w=True,
+        compute_h=True,
+        compute_err=True,
+        niter=1,
+    ):
+        """Factorize s.t. WH = data
 
-            Parameters
-            ----------
-            show_progress : bool
-                    print some extra information to stdout.
-            compute_h : bool
-                    iteratively update values for H.
-            compute_w : bool
-                    iteratively update values for W.
-            compute_err : bool
-                    compute Frobenius norm |data-WH| after each update and store
-                    it to .ferr[k].
+        Parameters
+        ----------
+        show_progress : bool
+                print some extra information to stdout.
+        compute_h : bool
+                iteratively update values for H.
+        compute_w : bool
+                iteratively update values for W.
+        compute_err : bool
+                compute Frobenius norm |data-WH| after each update and store
+                it to .ferr[k].
 
-            Updated Values
-            --------------
-            .W : updated values for W.
-            .H : updated values for H.
-            .ferr : Frobenius norm |data-WH|.
+        Updated Values
+        --------------
+        .W : updated values for W.
+        .H : updated values for H.
+        .ferr : Frobenius norm |data-WH|.
         """
 
-        NMF.factorize(self, niter=1, show_progress=show_progress,
-                  compute_w=compute_w, compute_h=compute_h,
-                  compute_err=compute_err)
+        NMF.factorize(
+            self,
+            niter=1,
+            show_progress=show_progress,
+            compute_w=compute_w,
+            compute_h=compute_h,
+            compute_err=compute_err,
+        )
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

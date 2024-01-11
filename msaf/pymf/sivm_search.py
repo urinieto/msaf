@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Simplex Volume Maximization [1]
+"""PyMF Simplex Volume Maximization [1]
 
     SIVM_SEARCH: class for search-SiVM
 
@@ -14,24 +13,22 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 """
 
 
-import scipy.sparse
 import numpy as np
-from scipy import inf
+
 try:
     from scipy.misc import factorial
 except:
-    from scipy.special import factorial # scipy > 1.3
+    from scipy.special import factorial  # scipy > 1.3
 
 from .dist import *
-from .vol import *
 from .sivm import SIVM
+from .vol import *
 
 __all__ = ["SIVM_SEARCH"]
 
-class SIVM_SEARCH(SIVM):
-    """
-    SIVM_SEARCH(data, num_bases=4, dist_measure='l2')
 
+class SIVM_SEARCH(SIVM):
+    """SIVM_SEARCH(data, num_bases=4, dist_measure='l2')
 
     Simplex Volume Maximization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity. W is iteratively
@@ -81,19 +78,19 @@ class SIVM_SEARCH(SIVM):
     """
 
     def update_w(self):
-        def h(sel,D,k):
+        def h(sel, D, k):
             # compute the volume for a selection of sel columns
             # and a k-1 simplex (-> k columns have to be selected)
             mv = np.max(D)
 
             # fill the remaining distance by the maximal overall found distance
-            d = np.zeros((k,k)) + mv
+            d = np.zeros((k, k)) + mv
             for i in range(k):
-                d[i,i] = 0.0
+                d[i, i] = 0.0
 
-            for idx_i,i in enumerate(sel):
-                for idx_j,j in enumerate(sel):
-                    d[idx_i,idx_j] = D[i,j]
+            for idx_i, i in enumerate(sel):
+                for idx_j, j in enumerate(sel):
+                    d[idx_i, idx_j] = D[i, j]
 
             return d
 
@@ -103,7 +100,7 @@ class SIVM_SEARCH(SIVM):
 
         for i in range(self._num_samples):
             # compute volume for temp selection
-            d = h([i],D,self._num_bases)
+            d = h([i], D, self._num_bases)
             Vtmp = cmdet(d)
             Openset[tuple([i])] = Vtmp
 
@@ -121,15 +118,16 @@ class SIVM_SEARCH(SIVM):
             for i in range(D.shape[0]):
                 # create a temp selection
                 tmp_sel = np.array(next_sel).flatten()
-                tmp_sel = np.concatenate((tmp_sel, [i]),axis=0)
+                tmp_sel = np.concatenate((tmp_sel, [i]), axis=0)
                 tmp_sel = np.unique(tmp_sel)
                 tmp_sel = list(tmp_sel)
                 hkey = tuple(tmp_sel)
 
-                if len(tmp_sel) > len(next_sel) and (
-                    not Closedset.has_key(hkey)) and (
-                    not Openset.has_key(hkey)):
-
+                if (
+                    len(tmp_sel) > len(next_sel)
+                    and (not Closedset.has_key(hkey))
+                    and (not Openset.has_key(hkey))
+                ):
                     # compute volume for temp selection
                     d = h(tmp_sel, D, self._num_bases)
                     Vtmp = cmdet(d)
@@ -139,14 +137,14 @@ class SIVM_SEARCH(SIVM):
 
             # get next best tuple
             vmax = 0.0
-            for (k,v) in Openset.iteritems():
+            for k, v in Openset.iteritems():
                 if v > vmax:
                     next_sel = k
                     vmax = v
 
-            self._logger.info('Iter:' + str(iter))
-            self._logger.info('Current selection:' + str(next_sel))
-            self._logger.info('Current volume:' + str(vmax))
+            self._logger.info("Iter:" + str(iter))
+            self._logger.info("Current selection:" + str(next_sel))
+            self._logger.info("Current volume:" + str(vmax))
             self._v.append(vmax)
 
             # remove next_sel from openset
@@ -160,6 +158,8 @@ class SIVM_SEARCH(SIVM):
         self.select = list(next_sel)
         self.W = self.data[:, self.select]
 
+
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

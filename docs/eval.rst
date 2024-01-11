@@ -10,7 +10,7 @@ These metrics are computed using the external and fantastic framework `mir_eval 
 How To Evaluate Results
 -----------------------
 
-The module `eval.py <https://github.com/urinieto/msaf/blob/master/msaf/eval.py>`_ contains the following ``process`` function that can be called once the desired algorithms have been run on a single file or dataset:
+The module `eval.py <https://github.com/urinieto/msaf/blob/main/msaf/eval.py>`_ contains the following ``process`` function that can be called once the desired algorithms have been run on a single file or dataset:
 
 .. automodule:: msaf.eval
 
@@ -23,17 +23,17 @@ Boundary Metrics
 =================  ==============
 Boundary Metric    Description
 =================  ==============
-D                  Information Gain  
-DevE2R             Median Deviation from Estimation to Reference 
-DevR2E             Median Deviation from Reference to Estimation 
+D                  Information Gain
+DevE2R             Median Deviation from Estimation to Reference
+DevR2E             Median Deviation from Reference to Estimation
 DevtE2R            Median Deviation from Estimation to Reference without first and last boundaries (trimmed)
 DevtR2E            Median Deviation from Reference to Estimation without first and last boundaries (trimmed)
-HitRate\_0.5F      Hit Rate F-measure using 0.5 seconds window 
-HitRate\_0.5P      Hit Rate Precision using 0.5 seconds window 
-HitRate\_0.5R      Hit Rate Recall using 0.5 seconds window 
-HitRate\_3F        Hit Rate F-measure using 3 seconds window 
-HitRate\_3P        Hit Rate Precision using 3 seconds window 
-HitRate\_3R        Hit Rate Recall using 3 seconds window 
+HitRate\_0.5F      Hit Rate F-measure using 0.5 seconds window
+HitRate\_0.5P      Hit Rate Precision using 0.5 seconds window
+HitRate\_0.5R      Hit Rate Recall using 0.5 seconds window
+HitRate\_3F        Hit Rate F-measure using 3 seconds window
+HitRate\_3P        Hit Rate Precision using 3 seconds window
+HitRate\_3R        Hit Rate Recall using 3 seconds window
 HitRate\_t0.5F     Hit Rate F-measure using 0.5 seconds window without first and last boundaries (trimmed)
 HitRate\_t0.5P     Hit Rate Precision using 0.5 seconds window without first and last boundaries (trimmed)
 HitRate\_t0.5R     Hit Rate Recall using 0.5 seconds window without first and last boundaries (trimmed)
@@ -54,10 +54,10 @@ Label Metrics
 =================  ==============
 Label Metric       Description
 =================  ==============
-PWF                Pairwise Frame Clustering F-measure 
-PWP                Pairwise Frame Clustering Precision 
-PWR                Pairwise Frame Clustering Recall 
-Sf                 Normalized Entropy Scores F-measure 
-So                 Normalized Entropy Scores Precision 
-Su                 Normalized Entropy Scores Recall 
+PWF                Pairwise Frame Clustering F-measure
+PWP                Pairwise Frame Clustering Precision
+PWR                Pairwise Frame Clustering Recall
+Sf                 Normalized Entropy Scores F-measure
+So                 Normalized Entropy Scores Precision
+Su                 Normalized Entropy Scores Recall
 =================  ==============

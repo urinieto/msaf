@@ -3,23 +3,18 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF LAESA
-"""
+"""PyMF LAESA."""
 
 
-import scipy.sparse
 import numpy as np
 
-from .dist import *
 from .sivm import SIVM
 
 __all__ = ["LAESA"]
 
-class LAESA(SIVM):
-    """
-    LAESA(data, num_bases=4)
 
+class LAESA(SIVM):
+    """LAESA(data, num_bases=4)
 
     Simplex Volume Maximization. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity. W is iteratively
@@ -60,20 +55,21 @@ class LAESA(SIVM):
 
     The result is a set of coefficients laesa_mdl.H, s.t. data = W * laesa_mdl.H.
     """
+
     def update_w(self):
         # initialize some of the recursively updated distance measures
         self.init_sivm()
         distiter = self._distance(self.select[-1])
 
-        for l in range(self._num_bases-1):
+        for l in range(self._num_bases - 1):
             d = self._distance(self.select[-1])
 
             # replace distances in distiter
-            distiter = np.where(d<distiter, d, distiter)
+            distiter = np.where(d < distiter, d, distiter)
 
             # detect the next best data point
             self.select.append(np.argmax(distiter))
-            self._logger.info('cur_nodes: ' + str(self.select))
+            self._logger.info("cur_nodes: " + str(self.select))
 
         # sort indices, otherwise h5py won't work
         self.W = self.data[:, np.sort(self.select)]
@@ -84,4 +80,5 @@ class LAESA(SIVM):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

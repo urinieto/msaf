@@ -3,8 +3,7 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF Compact Matrix Decomposition [1]
+"""PyMF Compact Matrix Decomposition [1]
 
     CMD(CUR):  Class for Compact Matrix Decomposition
 
@@ -14,14 +13,14 @@ Sparse Graphs, in Proc. SIAM Int. Conf. on Data Mining.
 
 
 import numpy as np
+
 from .cur import CUR
 
 __all__ = ["CMD"]
 
-class CMD(CUR):
-    """
-    CMD(data, rrank=0, crank=0)
 
+class CMD(CUR):
+    """CMD(data, rrank=0, crank=0)
 
     Compact Matrix Decomposition. Factorize a data matrix into three matrices s.t.
     F = | data - USV| is minimal. CMD randomly selects rows and columns from
@@ -60,23 +59,23 @@ class CMD(CUR):
         self._rcnt = np.zeros(len(nrids))
         self._ccnt = np.zeros(len(ncids))
 
-        for i,idx in enumerate(nrids):
+        for i, idx in enumerate(nrids):
             self._rcnt[i] = len(np.where(self._rid == idx)[0])
 
-        for i,idx in enumerate(ncids):
+        for i, idx in enumerate(ncids):
             self._ccnt[i] = len(np.where(self._cid == idx)[0])
 
         self._rid = np.int32(list(nrids))
         self._cid = np.int32(list(ncids))
 
     def factorize(self):
-        """ Factorize s.t. CUR = data
+        """Factorize s.t. CUR = data
 
-            Updated Values
-            --------------
-            .C : updated values for C.
-            .U : updated values for U.
-            .R : updated values for R.
+        Updated Values
+        --------------
+        .C : updated values for C.
+        .U : updated values for U.
+        .R : updated values for R.
         """
 
         [prow, pcol] = self.sample_probability()
@@ -91,4 +90,5 @@ class CMD(CUR):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

@@ -1,16 +1,14 @@
-"""This script contains methods to plot multiple aspects of the results
-of MSAF.
-"""
+"""This script contains methods to plot multiple aspects of the results of
+MSAF."""
 
-import jams
 import logging
-import mir_eval
-import numpy as np
 import os
 
-# Local stuff
-from msaf import io
-from msaf import utils
+import jams
+import mir_eval
+import numpy as np
+
+from msaf import io, utils
 
 translate_ids = {
     "2dfmc": "2D-FMC",
@@ -21,14 +19,15 @@ translate_ids = {
     "olda": "OLDA",
     "serra": "SF",
     "sf": "SF",
-    "siplca": "SI-PLCA"
+    "siplca": "SI-PLCA",
 }
 
 
 def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
-    """Formats the plot with the correct axis labels, title, ticks, and
-    so on."""
+    """Formats the plot with the correct axis labels, title, ticks, and so
+    on."""
     import matplotlib.pyplot as plt
+
     if title is None:
         title = os.path.basename(est_file).split(".")[0]
     plt.title(title)
@@ -43,8 +42,9 @@ def _plot_formatting(title, est_file, algo_ids, last_bound, N, output_file):
     plt.show()
 
 
-def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
-                    output_file=None):
+def plot_boundaries(
+    all_boundaries, est_file, algo_ids=None, title=None, output_file=None
+):
     """Plots all the boundaries.
 
     Parameters
@@ -61,6 +61,7 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
         Title of the plot. If None, the name of the file is printed instead.
     """
     import matplotlib.pyplot as plt
+
     N = len(all_boundaries)  # Number of lists of boundaries
     if algo_ids is None:
         algo_ids = io.get_algo_ids(est_file)
@@ -71,7 +72,7 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
     algo_ids = ["GT"] + algo_ids
 
     figsize = (6, 4)
-    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+    plt.figure(1, figsize=figsize, dpi=120, facecolor="w", edgecolor="k")
     for i, boundaries in enumerate(all_boundaries):
         color = "b"
         if i == 0:
@@ -81,12 +82,12 @@ def plot_boundaries(all_boundaries, est_file, algo_ids=None, title=None,
         plt.axhline(i / float(N), color="k", linewidth=1)
 
     # Format plot
-    _plot_formatting(title, est_file, algo_ids, all_boundaries[0][-1], N,
-                     output_file)
+    _plot_formatting(title, est_file, algo_ids, all_boundaries[0][-1], N, output_file)
 
 
-def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
-                output_file=None):
+def plot_labels(
+    all_labels, gt_times, est_file, algo_ids=None, title=None, output_file=None
+):
     """Plots all the labels.
 
     Parameters
@@ -105,6 +106,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
         Title of the plot. If None, the name of the file is printed instead.
     """
     import matplotlib.pyplot as plt
+
     N = len(all_labels)  # Number of lists of labels
     if algo_ids is None:
         algo_ids = io.get_algo_ids(est_file)
@@ -119,7 +121,7 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
         all_labels[i] = mir_eval.util.index_labels(labels)[0]
 
     # Get color map
-    cm = plt.get_cmap('gist_rainbow')
+    cm = plt.get_cmap("gist_rainbow")
     max_label = max(max(labels) for labels in all_labels)
 
     # To intervals
@@ -127,12 +129,17 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
 
     # Plot labels
     figsize = (6, 4)
-    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+    plt.figure(1, figsize=figsize, dpi=120, facecolor="w", edgecolor="k")
     for i, labels in enumerate(all_labels):
         for label, inter in zip(labels, gt_inters):
-            plt.axvspan(inter[0], inter[1], ymin=i / float(N),
-                        ymax=(i + 1) / float(N), alpha=0.6,
-                        color=cm(label / float(max_label)))
+            plt.axvspan(
+                inter[0],
+                inter[1],
+                ymin=i / float(N),
+                ymax=(i + 1) / float(N),
+                alpha=0.6,
+                color=cm(label / float(max_label)),
+            )
         plt.axhline(i / float(N), color="k", linewidth=1)
 
     # Draw the boundary lines
@@ -140,14 +147,15 @@ def plot_labels(all_labels, gt_times, est_file, algo_ids=None, title=None,
         plt.axvline(bound, color="g")
 
     # Format plot
-    _plot_formatting(title, est_file, algo_ids, gt_times[-1], N,
-                     output_file)
+    _plot_formatting(title, est_file, algo_ids, gt_times[-1], N, output_file)
 
 
-def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
-                   title=None):
+def plot_one_track(
+    file_struct, est_times, est_labels, boundaries_id, labels_id, title=None
+):
     """Plots the results of one track, with ground truth if it exists."""
     import matplotlib.pyplot as plt
+
     # Set up the boundaries id
     bid_lid = boundaries_id
     if labels_id is not None:
@@ -155,7 +163,7 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
     try:
         # Read file
         jam = jams.load(file_struct.ref_file)
-        ann = jam.search(namespace='segment_.*')[0]
+        ann = jam.search(namespace="segment_.*")[0]
         ref_inters, ref_labels = ann.to_interval_values()
 
         # To times
@@ -164,8 +172,9 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
         all_labels = [ref_labels, est_labels]
         algo_ids = ["GT", bid_lid]
     except:
-        logging.warning("No references found in %s. Not plotting groundtruth"
-                        % file_struct.ref_file)
+        logging.warning(
+            "No references found in %s. Not plotting groundtruth" % file_struct.ref_file
+        )
         all_boundaries = [est_times]
         all_labels = [est_labels]
         algo_ids = [bid_lid]
@@ -177,11 +186,11 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
         all_labels[i] = mir_eval.util.index_labels(labels)[0]
 
     # Get color map
-    cm = plt.get_cmap('gist_rainbow')
+    cm = plt.get_cmap("gist_rainbow")
     max_label = max(max(labels) for labels in all_labels)
 
     figsize = (8, 4)
-    plt.figure(1, figsize=figsize, dpi=120, facecolor='w', edgecolor='k')
+    plt.figure(1, figsize=figsize, dpi=120, facecolor="w", edgecolor="k")
     for i, boundaries in enumerate(all_boundaries):
         color = "b"
         if i == 0:
@@ -192,14 +201,25 @@ def plot_one_track(file_struct, est_times, est_labels, boundaries_id, labels_id,
             labels = all_labels[i]
             inters = utils.times_to_intervals(boundaries)
             for label, inter in zip(labels, inters):
-                plt.axvspan(inter[0], inter[1], ymin=i / float(N),
-                            ymax=(i + 1) / float(N), alpha=0.6,
-                            color=cm(label / float(max_label)))
+                plt.axvspan(
+                    inter[0],
+                    inter[1],
+                    ymin=i / float(N),
+                    ymax=(i + 1) / float(N),
+                    alpha=0.6,
+                    color=cm(label / float(max_label)),
+                )
         plt.axhline(i / float(N), color="k", linewidth=1)
 
     # Format plot
-    _plot_formatting(title, os.path.basename(file_struct.audio_file), algo_ids,
-                     all_boundaries[0][-1], N, None)
+    _plot_formatting(
+        title,
+        os.path.basename(file_struct.audio_file),
+        algo_ids,
+        all_boundaries[0][-1],
+        N,
+        None,
+    )
 
 
 def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
@@ -217,6 +237,7 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
         Color Map ID
     """
     import matplotlib.pyplot as plt
+
     def round_time(t, res=0.1):
         v = int(t / float(res)) * res
         return v
@@ -234,11 +255,11 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
 
     # Plot axvspans for each segment
     B = float(len(level_bounds))
-    #plt.figure(figsize=figsize)
+    # plt.figure(figsize=figsize)
     for i, segments in enumerate(level_bounds):
         labels = utils.segment_labels_to_floats(segments)
         for segment, label in zip(segments, labels):
-            #print i, label, cmap(label)
+            # print i, label, cmap(label)
             if res is None:
                 start = segment.start
                 end = segment.end
@@ -247,15 +268,17 @@ def plot_tree(T, res=None, title=None, cmap_id="Pastel2"):
                 start = int(round_time(segment.start, res=res) / res)
                 end = int(round_time(segment.end, res=res) / res)
                 xlabel = "Time (frames)"
-            plt.axvspan(start, end,
-                        ymax=(len(level_bounds) - i) / B,
-                        ymin=(len(level_bounds) - i - 1) / B,
-                        facecolor=cmap(label))
+            plt.axvspan(
+                start,
+                end,
+                ymax=(len(level_bounds) - i) / B,
+                ymin=(len(level_bounds) - i - 1) / B,
+                facecolor=cmap(label),
+            )
 
     # Plot labels
     L = float(len(T.levels) - 1)
-    plt.yticks(np.linspace(0, (L - 1) / L, num=L) + 1 / L / 2.,
-               T.levels[1:][::-1])
+    plt.yticks(np.linspace(0, (L - 1) / L, num=L) + 1 / L / 2.0, T.levels[1:][::-1])
     plt.xlabel(xlabel)
     if title is not None:
         plt.title(title)

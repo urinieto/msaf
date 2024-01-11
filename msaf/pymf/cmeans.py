@@ -3,11 +3,10 @@
 # Copyright (C) Christian Thurau, 2010.
 # Licensed under the GNU General Public License (GPL).
 # http://www.gnu.org/licenses/gpl.txt
-"""
-PyMF K-means clustering (unary-convex matrix factorization).
+"""PyMF K-means clustering (unary-convex matrix factorization).
+
 Copyright (C) Christian Thurau, 2010. GNU General Public License (GPL).
 """
-
 
 
 import numpy as np
@@ -17,10 +16,9 @@ from .nmf import NMF
 
 __all__ = ["Cmeans"]
 
-class Cmeans(NMF):
-    """
-    cmeans(data, num_bases=4)
 
+class Cmeans(NMF):
+    """Cmeans(data, num_bases=4)
 
     Fuzzy c-means soft clustering. Factorize a data matrix into two matrices s.t.
     F = | data - W*H | is minimal. H is restricted to convexity (columns
@@ -71,16 +69,16 @@ class Cmeans(NMF):
     def update_h(self):
         # assign samples to best matching centres ...
         m = 1.75
-        tmp_dist = dist.pdist(self.W, self.data, metric='l2') + self._EPS
-        self.H[:,:] = 0.0
+        tmp_dist = dist.pdist(self.W, self.data, metric="l2") + self._EPS
+        self.H[:, :] = 0.0
 
         for i in range(self._num_bases):
             for k in range(self._num_bases):
-                self.H[i,:] += (tmp_dist[i,:]/tmp_dist[k,:])**(2.0/(m-1))
+                self.H[i, :] += (tmp_dist[i, :] / tmp_dist[k, :]) ** (2.0 / (m - 1))
 
-        self.H = np.where(self.H>0, 1.0/self.H, 0)
+        self.H = np.where(self.H > 0, 1.0 / self.H, 0)
 
     def update_w(self):
         for i in range(self._num_bases):
-            tmp = (self.H[i:i+1,:] * self.data).sum(axis=1)
-            self.W[:,i] = tmp/(self.H[i,:].sum() + self._EPS)
+            tmp = (self.H[i : i + 1, :] * self.data).sum(axis=1)
+            self.W[:, i] = tmp / (self.H[i, :].sum() + self._EPS)

@@ -1,7 +1,5 @@
-"""
-These set of functions help the algorithms of MSAF to read and write files
-of the Segmentation Dataset.
-"""
+"""These set of functions help the algorithms of MSAF to read and write files
+of the Segmentation Dataset."""
 import datetime
 import glob
 import json
@@ -12,9 +10,7 @@ from collections import defaultdict
 
 import jams
 import numpy as np
-import six
 
-# Local stuff
 import msaf
 from msaf import utils
 from msaf.exceptions import NoEstimationsError
@@ -28,26 +24,35 @@ class FileStruct:
         """Creates the entire file structure given the audio file."""
         self.ds_path = os.path.dirname(os.path.dirname(audio_file))
         self.audio_file = audio_file
-        self.est_file = self._get_dataset_file(ds_config.estimations_dir,
-                                               ds_config.estimations_ext)
-        self.features_file = self._get_dataset_file(ds_config.features_dir,
-                                                    ds_config.features_ext)
-        self.ref_file = self._get_dataset_file(ds_config.references_dir,
-                                               ds_config.references_ext)
+        self.est_file = self._get_dataset_file(
+            ds_config.estimations_dir, ds_config.estimations_ext
+        )
+        self.features_file = self._get_dataset_file(
+            ds_config.features_dir, ds_config.features_ext
+        )
+        self.ref_file = self._get_dataset_file(
+            ds_config.references_dir, ds_config.references_ext
+        )
 
     def _get_dataset_file(self, dir, ext):
         """Gets the desired dataset file."""
         audio_file_ext = "." + self.audio_file.split(".")[-1]
-        base_file = os.path.basename(self.audio_file).replace(
-            audio_file_ext, ext)
+        base_file = os.path.basename(self.audio_file).replace(audio_file_ext, ext)
         return os.path.join(self.ds_path, dir, base_file)
 
     def __repr__(self):
         """Prints the file structure."""
-        return "FileStruct(\n\tds_path=%s,\n\taudio_file=%s,\n\test_file=%s," \
-            "\n\tfeatures_file=%s,\n\tref_file=%s\n)" % (
-                self.ds_path, self.audio_file, self.est_file,
-                self.features_file, self.ref_file)
+        return (
+            "FileStruct(\n\tds_path=%s,\n\taudio_file=%s,\n\test_file=%s,"
+            "\n\tfeatures_file=%s,\n\tref_file=%s\n)"
+            % (
+                self.ds_path,
+                self.audio_file,
+                self.est_file,
+                self.features_file,
+                self.ref_file,
+            )
+        )
 
 
 def read_estimations(est_file, boundaries_id, labels_id=None, **params):
@@ -124,12 +129,14 @@ def read_references(audio_path, annotator_id=0):
     ds_path = os.path.dirname(os.path.dirname(audio_path))
 
     # Read references
-    jam_path = os.path.join(ds_path, ds_config.references_dir,
-                            os.path.basename(audio_path)[:-4] +
-                            ds_config.references_ext)
+    jam_path = os.path.join(
+        ds_path,
+        ds_config.references_dir,
+        os.path.basename(audio_path)[:-4] + ds_config.references_ext,
+    )
 
     jam = jams.load(jam_path, validate=False)
-    ann = jam.search(namespace='segment_.*')[annotator_id]
+    ann = jam.search(namespace="segment_.*")[annotator_id]
     ref_inters, ref_labels = ann.to_interval_values()
 
     # Intervals to times
@@ -184,15 +191,25 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     namespace = "multi_segment" if params["hier"] else "segment_open"
     # TODO: This is a workaround to issue in JAMS. Should be
     # resolved in JAMS 0.2.3, but for now, this works too.
-    ann = jam.search(namespace=namespace).\
-        search(**{"Sandbox.boundaries_id": boundaries_id}).\
-        search(**{"Sandbox.labels_id": lambda x:
-                  (isinstance(labels_id, six.string_types) and
-                   isinstance(x, six.string_types) and
-                   re.match(labels_id, x) is not None) or x is None})
+    ann = (
+        jam.search(namespace=namespace)
+        .search(**{"Sandbox.boundaries_id": boundaries_id})
+        .search(
+            **{
+                "Sandbox.labels_id": lambda x: (
+                    isinstance(labels_id, str)
+                    and isinstance(x, str)
+                    and re.match(labels_id, x) is not None
+                )
+                or x is None
+            }
+        )
+    )
     for key, val in zip(params.keys(), params.values()):
-        if isinstance(val, six.string_types):
+        if isinstance(val, str):
             ann = ann.search(**{"Sandbox.%s" % key: val})
+        elif isinstance(val, msaf.base.MetaFeatures):
+            ann = ann.search(**{"Sandbox.%s" % key: lambda x: x == val.get_id()})
         else:
             ann = ann.search(**{"Sandbox.%s" % key: lambda x: x == val})
 
@@ -210,8 +227,7 @@ def find_estimation(jam, boundaries_id, labels_id, params):
     return ann
 
 
-def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
-                     **params):
+def save_estimations(file_struct, times, labels, boundaries_id, labels_id, **params):
     """Saves the segment estimations in a JAMS file.
 
     Parameters
@@ -238,11 +254,15 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
     dur = get_duration(file_struct.features_file)
 
     # Convert to intervals and sanity check
-    if 'numpy' in str(type(times)):
+    if "numpy" in str(type(times)):
         # Flat check
         inters = utils.times_to_intervals(times)
-        assert len(inters) == len(labels), "Number of boundary intervals " \
-            "(%d) and labels (%d) do not match" % (len(inters), len(labels))
+        assert len(inters) == len(
+            labels
+        ), "Number of boundary intervals " "(%d) and labels (%d) do not match" % (
+            len(inters),
+            len(labels),
+        )
         # Put into lists to simplify the writing process later
         inters = [inters]
         labels = [labels]
@@ -252,10 +272,10 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
         for level in range(len(times)):
             est_inters = utils.times_to_intervals(times[level])
             inters.append(est_inters)
-            assert len(inters[level]) == len(labels[level]), \
-                "Number of boundary intervals (%d) and labels (%d) do not " \
-                "match in level %d" % (len(inters[level]), len(labels[level]),
-                                       level)
+            assert len(inters[level]) == len(labels[level]), (
+                "Number of boundary intervals (%d) and labels (%d) do not "
+                "match in level %d" % (len(inters[level]), len(labels[level]), level)
+            )
 
     # Create new estimation
     namespace = "multi_segment" if params["hier"] else "segment_open"
@@ -282,10 +302,11 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
     sandbox = {}
     sandbox["boundaries_id"] = boundaries_id
     sandbox["labels_id"] = labels_id
-    sandbox["timestamp"] = \
-        datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
-    for key in params:
-        sandbox[key] = params[key]
+    sandbox["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
+    for key, value in params.items():
+        if isinstance(value, msaf.base.MetaFeatures):
+            value = value.get_id()
+        sandbox[key] = value
     ann.sandbox = sandbox
 
     # Save actual data
@@ -297,8 +318,7 @@ def save_estimations(file_struct, times, labels, boundaries_id, labels_id,
                 value = {"label": label, "level": i}
             else:
                 value = label
-            ann.append(time=bound_inter[0], duration=dur,
-                       value=value)
+            ann.append(time=bound_inter[0], duration=dur, value=value)
 
     # Write results
     jam.save(file_struct.est_file)
@@ -336,8 +356,7 @@ def get_all_label_algorithms():
     return algo_ids
 
 
-def get_configuration(feature, annot_beats, framesync, boundaries_id,
-                      labels_id):
+def get_configuration(feature, annot_beats, framesync, boundaries_id, labels_id):
     """Gets the configuration dictionary from the current parameters of the
     algorithms to be evaluated."""
     config = {}
@@ -346,20 +365,21 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id,
     config["framesync"] = framesync
     bound_config = {}
     if boundaries_id != "gt":
-        bound_config = \
-            eval(msaf.algorithms.__name__ + "." + boundaries_id).config
+        bound_config = eval(msaf.algorithms.__name__ + "." + boundaries_id).config
         config.update(bound_config)
     if labels_id is not None:
-        label_config = \
-            eval(msaf.algorithms.__name__ + "." + labels_id).config
+        label_config = eval(msaf.algorithms.__name__ + "." + labels_id).config
 
         # Make sure we don't have parameter name duplicates
         if labels_id != boundaries_id:
-            overlap = set(bound_config.keys()). \
-                intersection(set(label_config.keys()))
-            assert len(overlap) == 0, \
-                "Parameter %s must not exist both in %s and %s algorithms" % \
-                (overlap, boundaries_id, labels_id)
+            overlap = set(bound_config.keys()).intersection(set(label_config.keys()))
+            assert (
+                len(overlap) == 0
+            ), "Parameter {} must not exist both in {} and {} algorithms".format(
+                overlap,
+                boundaries_id,
+                labels_id,
+            )
         config.update(label_config)
     return config
 
@@ -369,8 +389,7 @@ def get_dataset_files(in_path):
     # Get audio files
     audio_files = []
     for ext in ds_config.audio_exts:
-        audio_files += glob.glob(
-            os.path.join(in_path, ds_config.audio_dir, "*" + ext))
+        audio_files += glob.glob(os.path.join(in_path, ds_config.audio_dir, "*" + ext))
 
     # Make sure directories exist
     utils.ensure_dir(os.path.join(in_path, ds_config.features_dir))
@@ -383,8 +402,7 @@ def get_dataset_files(in_path):
         file_structs.append(FileStruct(audio_file))
 
     # Sort by audio file name
-    file_structs = sorted(file_structs,
-                          key=lambda file_struct: file_struct.audio_file)
+    file_structs = sorted(file_structs, key=lambda file_struct: file_struct.audio_file)
 
     return file_structs
 
@@ -414,8 +432,13 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     hier_labels = []
     hier_levels = []
     jam = jams.load(jams_file)
-    namespaces = ["segment_salami_upper", "segment_salami_function",
-                  "segment_open", "segment_tut", "segment_salami_lower"]
+    namespaces = [
+        "segment_salami_upper",
+        "segment_salami_function",
+        "segment_open",
+        "segment_tut",
+        "segment_salami_lower",
+    ]
 
     # Remove levels if needed
     for exclude in exclude_levels:
@@ -469,6 +492,6 @@ def write_mirex(times, labels, out_file):
     assert len(inters) == len(labels)
     out_str = ""
     for inter, label in zip(inters, labels):
-        out_str += "%.3f\t%.3f\t%s\n" % (inter[0], inter[1], label)
+        out_str += f"{inter[0]:.3f}\t{inter[1]:.3f}\t{label}\n"
     with open(out_file, "w") as f:
         f.write(out_str[:-1])

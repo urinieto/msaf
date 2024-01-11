@@ -1,14 +1,13 @@
-"""
-Variable Markov Oracle algorithm
-"""
-from msaf.algorithms.interface import SegmenterInterface
+"""Variable Markov Oracle algorithm."""
 import librosa
+
+from msaf.algorithms.interface import SegmenterInterface
+
 from . import main
 
 
 class Segmenter(SegmenterInterface):
-    """
-    This script identifies the structure of a given track using the Variable
+    """This script identifies the structure of a given track using the Variable
     Markov Oracle technique described here:
 
     Wang, C., Mysore, J. G., Structural Segmentation With The Variable Markov
@@ -18,12 +17,14 @@ class Segmenter(SegmenterInterface):
 
     .. _PDF: https://ccrma.stanford.edu/~gautham/Site/Publications_files/segmentation-icassp_2016.pdf
     """
+
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated indeces the segment boundaries in frame indeces.
+            Estimated indices the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
@@ -34,7 +35,9 @@ class Segmenter(SegmenterInterface):
         F = librosa.feature.stack_memory(F.T).T
 
         self.config["hier"] = False
-        my_bounds, my_labels, _ = main.scluster_segment(F, self.config, self.in_bound_idxs)
+        my_bounds, my_labels, _ = main.scluster_segment(
+            F, self.config, self.in_bound_idxs
+        )
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(my_bounds, my_labels)
@@ -45,11 +48,12 @@ class Segmenter(SegmenterInterface):
 
     def processHierarchical(self):
         """Main process.for hierarchial segmentation.
+
         Returns
         -------
         est_idxs : list
             List with np.arrays for each layer of segmentation containing
-            the estimated indeces for the segment boundaries.
+            the estimated indices for the segment boundaries.
         est_labels : list
             List with np.arrays containing the labels for each layer of the
             hierarchical segmentation.
@@ -59,10 +63,12 @@ class Segmenter(SegmenterInterface):
         F = librosa.feature.stack_memory(F.T).T
 
         self.config["hier"] = True
-        est_idxs, est_labels, F = main.scluster_segment(F, self.config, self.in_bound_idxs)
+        est_idxs, est_labels, F = main.scluster_segment(
+            F, self.config, self.in_bound_idxs
+        )
         for layer in range(len(est_idxs)):
-            assert est_idxs[layer][0] == 0 and \
-                est_idxs[layer][-1] == F.shape[1] - 1
-            est_idxs[layer], est_labels[layer] = \
-                self._postprocess(est_idxs[layer], est_labels[layer])
+            assert est_idxs[layer][0] == 0 and est_idxs[layer][-1] == F.shape[1] - 1
+            est_idxs[layer], est_labels[layer] = self._postprocess(
+                est_idxs[layer], est_labels[layer]
+            )
         return est_idxs, est_labels

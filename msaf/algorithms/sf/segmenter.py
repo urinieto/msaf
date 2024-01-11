@@ -1,20 +1,16 @@
-#!/usr/bin/env python
-# coding: utf-8
 import librosa
-import logging
 import numpy as np
+from scipy import ndimage, signal
 from scipy.spatial import distance
-from scipy import signal
-from scipy.ndimage import filters
 
-from msaf.algorithms.interface import SegmenterInterface
 import msaf.utils as U
+from msaf.algorithms.interface import SegmenterInterface
 
 
 def median_filter(X, M=8):
     """Median filter along the first axis of the feature matrix X."""
     for i in range(X.shape[1]):
-        X[:, i] = filters.median_filter(X[:, i], size=M)
+        X[:, i] = ndimage.median_filter(X[:, i], size=M)
     return X
 
 
@@ -22,18 +18,18 @@ def gaussian_filter(X, M=8, axis=0):
     """Gaussian filter along the first axis of the feature matrix X."""
     for i in range(X.shape[axis]):
         if axis == 1:
-            X[:, i] = filters.gaussian_filter(X[:, i], sigma=M / 2.)
+            X[:, i] = ndimage.gaussian_filter(X[:, i], sigma=M / 2.0)
         elif axis == 0:
-            X[i, :] = filters.gaussian_filter(X[i, :], sigma=M / 2.)
+            X[i, :] = ndimage.gaussian_filter(X[i, :], sigma=M / 2.0)
     return X
 
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Serra's paper."""
-    g = signal.gaussian(M, M / 3., sym=True)
+    g = signal.gaussian(M, M / 3.0, sym=True)
     G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
-    G[M // 2:, :M // 2] = -G[M // 2:, :M // 2]
-    G[:M // 2, M // 1:] = -G[:M // 2, M // 1:]
+    G[M // 2 :, : M // 2] = -G[M // 2 :, : M // 2]
+    G[: M // 2, M // 1 :] = -G[: M // 2, M // 1 :]
     return G
 
 
@@ -63,12 +59,12 @@ def compute_nc(X):
 def pick_peaks(nc, L=16, offset_denom=0.1):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
     offset = nc.mean() * float(offset_denom)
-    th = filters.median_filter(nc, size=L) + offset
-    #th = filters.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
-    #import pylab as plt
-    #plt.plot(nc)
-    #plt.plot(th)
-    #plt.show()
+    th = ndimage.median_filter(nc, size=L) + offset
+    # th = ndimage.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    # import pylab as plt
+    # plt.plot(nc)
+    # plt.plot(th)
+    # plt.show()
     # th = np.ones(nc.shape[0]) * nc.mean() - 0.08
     peaks = []
     for i in range(1, nc.shape[0] - 1):
@@ -81,8 +77,8 @@ def pick_peaks(nc, L=16, offset_denom=0.1):
 
 
 def circular_shift(X):
-    """Shifts circularly the X squre matrix in order to get a
-        time-lag matrix."""
+    """Shifts circularly the X squre matrix in order to get a time-lag
+    matrix."""
     N = X.shape[0]
     L = np.zeros(X.shape)
     for i in range(N):
@@ -98,8 +94,7 @@ def embedded_space(X, m, tau=1):
         # print X[i:i+m,:].flatten().shape, w, X.shape
         # print Y[i,:].shape
         rem = int((m % 1) * X.shape[1])  # Reminder for float m
-        Y[i, :] = np.concatenate((X[i:i + int(m), :].flatten(),
-                                 X[i + int(m), :rem]))
+        Y[i, :] = np.concatenate((X[i : i + int(m), :].flatten(), X[i + int(m), :rem]))
     return Y
 
 
@@ -113,27 +108,29 @@ class Segmenter(SegmenterInterface):
     In Proc. of the 26th AAAI Conference on Artificial Intelligence
     (pp. 1613–1619).Toronto, Canada.
     """
+
     def processFlat(self):
         """Main process.
+
         Returns
         -------
         est_idxs : np.array(N)
-            Estimated times for the segment boundaries in frame indeces.
+            Estimated times for the segment boundaries in frame indices.
         est_labels : np.array(N-1)
             Estimated labels for the segments.
         """
         # Structural Features params
-        Mp = self.config["Mp_adaptive"]   # Size of the adaptive threshold for
-                                          # peak picking
+        Mp = self.config["Mp_adaptive"]  # Size of the adaptive threshold for
+        # peak picking
         od = self.config["offset_thres"]  # Offset coefficient for adaptive
-                                          # thresholding
+        # thresholding
 
-        M = self.config["M_gaussian"]     # Size of gaussian kernel in beats
-        m = self.config["m_embedded"]     # Number of embedded dimensions
-        k = self.config["k_nearest"]      # k*N-nearest neighbors for the
-                                          # recurrence plot
+        M = self.config["M_gaussian"]  # Size of gaussian kernel in beats
+        m = self.config["m_embedded"]  # Number of embedded dimensions
+        k = self.config["k_nearest"]  # k*N-nearest neighbors for the
+        # recurrence plot
 
-        # Preprocess to obtain features, times, and input boundary indeces
+        # Preprocess to obtain features, times, and input boundary indices
         F = self._preprocess()
 
         # Normalize
@@ -141,13 +138,16 @@ class Segmenter(SegmenterInterface):
 
         # Check size in case the track is too short
         if F.shape[0] > 20:
-
             if self.framesync:
                 red = 0.1
                 F_copy = np.copy(F)
                 F = librosa.util.utils.sync(
-                         F.T, np.linspace(0, F.shape[0], num=int(F.shape[0] * red), dtype= np.int),
-                         pad=False).T
+                    F.T,
+                    np.linspace(
+                        0, F.shape[0], num=int(F.shape[0] * red), dtype=np.int64
+                    ),
+                    pad=False,
+                ).T
 
             # Emedding the feature space (i.e. shingle)
             E = embedded_space(F, m)
@@ -159,18 +159,19 @@ class Segmenter(SegmenterInterface):
                 k=k * int(F.shape[0]),
                 width=1,  # zeros from the diagonal
                 metric="euclidean",
-                sym=True).astype(np.float32)
+                sym=True,
+            ).astype(np.float32)
 
             # Circular shift
             L = circular_shift(R)
-            #plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
-            #plt.show()
+            # plt.imshow(L, interpolation="nearest", cmap=plt.get_cmap("binary"))
+            # plt.show()
 
             # Obtain structural features by filtering the lag matrix
             SF = gaussian_filter(L.T, M=M, axis=1)
             SF = gaussian_filter(L.T, M=1, axis=0)
             # plt.imshow(SF.T, interpolation="nearest", aspect="auto")
-            #plt.show()
+            # plt.show()
 
             # Compute the novelty curve
             nc = compute_nc(SF)
@@ -179,10 +180,10 @@ class Segmenter(SegmenterInterface):
             est_bounds = pick_peaks(nc, L=Mp, offset_denom=od)
 
             # Re-align embedded space
-            est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.))
+            est_bounds = np.asarray(est_bounds) + int(np.ceil(m / 2.0))
 
             if self.framesync:
-                est_bounds = np.asarray(est_bounds // red, dtype=np.int)
+                est_bounds = np.asarray(est_bounds // red, dtype=np.int64)
                 F = F_copy
         else:
             est_bounds = []
@@ -194,7 +195,7 @@ class Segmenter(SegmenterInterface):
         assert est_idxs[0] == 0 and est_idxs[-1] == F.shape[0] - 1
 
         # Empty labels
-        est_labels = np.ones(len(est_idxs) - 1) * - 1
+        est_labels = np.ones(len(est_idxs) - 1) * -1
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(est_idxs, est_labels)
