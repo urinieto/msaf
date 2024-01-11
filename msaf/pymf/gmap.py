@@ -18,6 +18,7 @@ from .kmeans import Kmeans
 
 __all__ = ["GMAP"]
 
+
 class GMAP(AA):
     """GMAP(data, num_bases=4, dist_measure='l2')
 
@@ -73,13 +74,11 @@ class GMAP(AA):
     # -> any value other does not make sense.
     _NITER = 1
 
-    def __init__(self, data, num_bases=4, method='pca', robust_map=True):
-
+    def __init__(self, data, num_bases=4, method="pca", robust_map=True):
         AA.__init__(self, data, num_bases=num_bases)
         self.sub = []
         self._robust_map = robust_map
         self._method = method
-
 
     def init_h(self):
         self.H = np.zeros((self._num_bases, self._num_samples))
@@ -96,17 +95,21 @@ class GMAP(AA):
 
             if self._robust_map:
                 k = np.argsort(iterval)[::-1]
-                d_sub = self.data[:,k[:self._robust_nselect]]
-                self.sub.extend(k[:self._robust_nselect])
+                d_sub = self.data[:, k[: self._robust_nselect]]
+                self.sub.extend(k[: self._robust_nselect])
 
                 # cluster d_sub
                 kmeans_mdl = Kmeans(d_sub, num_bases=self._robust_cluster)
                 kmeans_mdl.factorize(niter=10)
 
                 # get largest cluster
-                h = np.histogram(kmeans_mdl.assigned, range(self._robust_cluster+1))[0]
+                h = np.histogram(kmeans_mdl.assigned, range(self._robust_cluster + 1))[
+                    0
+                ]
                 largest_cluster = np.argmax(h)
-                sel = pdist(kmeans_mdl.W[:, largest_cluster:largest_cluster+1], d_sub)
+                sel = pdist(
+                    kmeans_mdl.W[:, largest_cluster : largest_cluster + 1], d_sub
+                )
                 sel = k[np.argmin(sel)]
             else:
                 sel = np.argmax(iterval)
@@ -121,38 +124,37 @@ class GMAP(AA):
         else:
             norm_data = np.sqrt(np.sum(self.data**2, axis=0))
 
-
         self.select = []
 
-        if self._method == 'pca' or self._method == 'aa':
+        if self._method == "pca" or self._method == "aa":
             iterval = norm_data.copy()
 
-        if self._method == 'nmf':
-            iterval = np.sum(self.data, axis=0)/(np.sqrt(self.data.shape[0])*norm_data)
+        if self._method == "nmf":
+            iterval = np.sum(self.data, axis=0) / (
+                np.sqrt(self.data.shape[0]) * norm_data
+            )
             iterval = 1.0 - iterval
 
         self.select.append(select_next(iterval))
 
-
         for l in range(1, self._num_bases):
-
             if scipy.sparse.issparse(self.data):
-                c = self.data[:, self.select[-1]:self.select[-1]+1].T * self.data
+                c = self.data[:, self.select[-1] : self.select[-1] + 1].T * self.data
                 c = np.array(c.todense())
             else:
-                c = np.dot(self.data[:,self.select[-1]], self.data)
+                c = np.dot(self.data[:, self.select[-1]], self.data)
 
-            c = c/(norm_data * norm_data[self.select[-1]])
+            c = c / (norm_data * norm_data[self.select[-1]])
 
-            if self._method == 'pca':
+            if self._method == "pca":
                 c = 1.0 - np.abs(c)
                 c = c * norm_data
 
-            elif self._method == 'aa':
-                c = (c*-1.0 + 1.0)/2.0
+            elif self._method == "aa":
+                c = (c * -1.0 + 1.0) / 2.0
                 c = c * norm_data
 
-            elif self._method == 'nmf':
+            elif self._method == "nmf":
                 c = 1.0 - np.abs(c)
 
             ### update the estimated volume
@@ -161,7 +163,7 @@ class GMAP(AA):
             # detect the next best data point
             self.select.append(select_next(iterval))
 
-            self._logger.info('cur_nodes: ' + str(self.select))
+            self._logger.info("cur_nodes: " + str(self.select))
 
         # sort indices, otherwise h5py won't work
         self.W = self.data[:, np.sort(self.select)]
@@ -169,48 +171,63 @@ class GMAP(AA):
         # "unsort" it again to keep the correct order
         self.W = self.W[:, np.argsort(np.argsort(self.select))]
 
-    def factorize(self, show_progress=False, compute_w=True, compute_h=True,
-                  compute_err=True, robust_cluster=3, niter=1, robust_nselect=-1):
-        """ Factorize s.t. WH = data
+    def factorize(
+        self,
+        show_progress=False,
+        compute_w=True,
+        compute_h=True,
+        compute_err=True,
+        robust_cluster=3,
+        niter=1,
+        robust_nselect=-1,
+    ):
+        """Factorize s.t. WH = data
 
-            Parameters
-            ----------
-            show_progress : bool
-                    print some extra information to stdout.
-                    False, default
-            compute_h : bool
-                    iteratively update values for H.
-                    True, default
-            compute_w : bool
-                    iteratively update values for W.
-                    default, True
-            compute_err : bool
-                    compute Frobenius norm |data-WH| after each update and store
-                    it to .ferr[k].
-            robust_cluster : int, optional
-                    set the number of clusters for robust map selection.
-                    3, default
-            robust_nselect : int, optional
-                    set the number of samples to consider for robust map
-                    selection.
-                    -1, default (automatically determine suitable number)
+        Parameters
+        ----------
+        show_progress : bool
+                print some extra information to stdout.
+                False, default
+        compute_h : bool
+                iteratively update values for H.
+                True, default
+        compute_w : bool
+                iteratively update values for W.
+                default, True
+        compute_err : bool
+                compute Frobenius norm |data-WH| after each update and store
+                it to .ferr[k].
+        robust_cluster : int, optional
+                set the number of clusters for robust map selection.
+                3, default
+        robust_nselect : int, optional
+                set the number of samples to consider for robust map
+                selection.
+                -1, default (automatically determine suitable number)
 
-            Updated Values
-            --------------
-            .W : updated values for W.
-            .H : updated values for H.
-            .ferr : Frobenius norm |data-WH|.
+        Updated Values
+        --------------
+        .W : updated values for W.
+        .H : updated values for H.
+        .ferr : Frobenius norm |data-WH|.
         """
         self._robust_cluster = robust_cluster
         self._robust_nselect = robust_nselect
 
         if self._robust_nselect == -1:
-            self._robust_nselect = np.round(np.log(self.data.shape[1])*2)
+            self._robust_nselect = np.round(np.log(self.data.shape[1]) * 2)
 
-        AA.factorize(self, niter=1, show_progress=show_progress,
-                  compute_w=compute_w, compute_h=compute_h,
-                  compute_err=compute_err)
+        AA.factorize(
+            self,
+            niter=1,
+            show_progress=show_progress,
+            compute_w=compute_w,
+            compute_h=compute_h,
+            compute_err=compute_err,
+        )
+
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

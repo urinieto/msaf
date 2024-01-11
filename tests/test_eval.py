@@ -28,8 +28,7 @@ def test_compute_boundary_results():
     npt.assert_almost_equal(res["HitRate_t3R"], 0.0, decimal=6)
     npt.assert_almost_equal(res["HitRate_wt3F"], 0.0, decimal=6)
 
-    npt.assert_almost_equal(res["HitRate_0.5F"], 0.28571428571428575,
-                            decimal=6)
+    npt.assert_almost_equal(res["HitRate_0.5F"], 0.28571428571428575, decimal=6)
     npt.assert_almost_equal(res["HitRate_0.5P"], 0.33333333333, decimal=6)
     npt.assert_almost_equal(res["HitRate_0.5R"], 0.25, decimal=6)
     npt.assert_almost_equal(res["HitRate_w0.5F"], 0.307529455081001, decimal=6)
@@ -51,8 +50,7 @@ def test_compute_label_results():
     est_inter = np.asarray(list(zip(est_times[:-1], est_times[1:])))
     ann_labels = ["a", "b", "c"]
     est_labels = ["a", "b"]
-    res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels,
-                            251, "")
+    res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels, 251, "")
     npt.assert_almost_equal(res["Su"], 0.76556390622295, decimal=6)
     npt.assert_almost_equal(res["So"], 0.90894734356069651, decimal=6)
     npt.assert_almost_equal(res["Sf"], 0.83111687541927404, decimal=6)
@@ -78,15 +76,13 @@ def test_compute_label_results_wrong():
     # Test the @ token
     ann_labels = ["a", "b", "c"]
     est_labels = ["a", "@"]
-    res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels,
-                            251, "")
+    res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels, 251, "")
     __test_dict_res(res)
 
     # Test the -1 token
     ann_labels = ["a", "b", "c"]
     est_labels = ["a", "-1"]
-    res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels,
-                            251, "")
+    res = E.compute_results(ann_inter, est_inter, ann_labels, est_labels, 251, "")
     __test_dict_res(res)
 
 
@@ -96,23 +92,20 @@ def test_print_results():
 
     results = [
         {"HitRate_3F": 0.5, "HitRate_3P": 0.5, "HitRate_3R": 0.5},
-        {"HitRate_3F": 0.32, "HitRate_3P": 0.8, "HitRate_3R": 0.2}]
+        {"HitRate_3F": 0.32, "HitRate_3P": 0.8, "HitRate_3R": 0.2},
+    ]
     E.print_results(pd.DataFrame(results))
 
 
 def test_compute_gt_results():
-    def __compute_gt_results(est_file, ref_file, boundaries_id,
-                             labels_id, config):
-        res = E.compute_gt_results(est_file, ref_file, boundaries_id,
-                                   labels_id, config)
+    def __compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config):
+        res = E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config)
         assert "HitRate_3F" in res.keys()
         assert "HitRate_3P" in res.keys()
         assert "HitRate_3R" in res.keys()
 
-    def __compute_gt_results_hier(est_file, ref_file, boundaries_id,
-                                  labels_id, config):
-        res = E.compute_gt_results(est_file, ref_file, boundaries_id,
-                                   labels_id, config)
+    def __compute_gt_results_hier(est_file, ref_file, boundaries_id, labels_id, config):
+        res = E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config)
         assert "t_measure10" in res.keys()
         assert "t_measure15" in res.keys()
         assert "t_precision10" in res.keys()
@@ -120,38 +113,34 @@ def test_compute_gt_results():
         assert "t_recall10" in res.keys()
         assert "t_recall15" in res.keys()
 
-    def __compute_gt_results_no_ests(est_file, ref_file, boundaries_id,
-                                     labels_id, config):
+    def __compute_gt_results_no_ests(
+        est_file, ref_file, boundaries_id, labels_id, config
+    ):
         with raises(NoEstimationsError):
-            E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
-                                config)
+            E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config)
 
-    def __compute_gt_results_wrong_file(est_file, ref_file, boundaries_id,
-                                        labels_id, config):
+    def __compute_gt_results_wrong_file(
+        est_file, ref_file, boundaries_id, labels_id, config
+    ):
         with raises(IOError):
-            E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id,
-                                config)
+            E.compute_gt_results(est_file, ref_file, boundaries_id, labels_id, config)
 
     config = {"hier": True}
-    __compute_gt_results_wrong_file("wrong.json", "wrong.jams", "sf",
-           "fmc2d", config)
+    __compute_gt_results_wrong_file("wrong.json", "wrong.jams", "sf", "fmc2d", config)
     config = {"hier": False}
-    __compute_gt_results_wrong_file("wrong.json", "wrong.jams", "sf",
-           "fmc2d", config)
+    __compute_gt_results_wrong_file("wrong.json", "wrong.jams", "sf", "fmc2d", config)
 
     est_file = os.path.join("fixtures", "01-Sargon-Mindless-ests.jams")
     ref_file = os.path.join("fixtures", "01-Sargon-Mindless-refs.jams")
     config["feature"] = "wrong"
-    __compute_gt_results_no_ests(est_file, ref_file, "foote", None,
-           config)
+    __compute_gt_results_no_ests(est_file, ref_file, "foote", None, config)
 
     # Correct Flat
     config["feature"] = "pcp"
     __compute_gt_results(est_file, ref_file, "sf", None, config)
     # Correct Hierarchical
     config["hier"] = True
-    __compute_gt_results_hier(est_file, ref_file, "olda", None,
-           config)
+    __compute_gt_results_hier(est_file, ref_file, "olda", None, config)
 
 
 def test_process_track():
@@ -191,12 +180,12 @@ def test_get_results_file_name():
     print(file_name)
     assert file_name == os.path.join(
         msaf.config.results_dir,
-        "results_boundsEsf_labelsENone_annotatorE0_hierEFalse.csv")
+        "results_boundsEsf_labelsENone_annotatorE0_hierEFalse.csv",
+    )
 
     # Try with a file that's too long
     config["thisIsWayTooLongForCertainOSs"] = "I am Sargon, king of Akkad"
-    config["thisIsWayTooLongForCertainOSspart2"] = "I am Sargon, the mighty " \
-        "one"
+    config["thisIsWayTooLongForCertainOSspart2"] = "I am Sargon, the mighty " "one"
     config["thisIsWayTooLongForCertainOSspart3"] = "You Are a Titan"
     config["thisIsWayTooLongForCertainOSspart4"] = "This is silly"
     file_name = E.get_results_file_name("sf", None, config, 0)
@@ -219,9 +208,7 @@ def test_process():
     assert len(res) == 2
 
     # Saving results to default file
-    config = {"feature": "pcp",
-              "framesync": False,
-              "annot_beats": False}
+    config = {"feature": "pcp", "framesync": False, "annot_beats": False}
     res = E.process("fixtures/Sargon_test/", config=config, save=True)
     out_file = E.get_results_file_name("sf", None, config, 0)
     assert isinstance(res, pd.DataFrame)
@@ -231,13 +218,15 @@ def test_process():
 
     # Saving results to custom file
     out_file = "my_fancy_file.csv"
-    res = E.process("fixtures/Sargon_test/", config=config, save=True,
-                    out_file=out_file)
+    res = E.process(
+        "fixtures/Sargon_test/", config=config, save=True, out_file=out_file
+    )
     assert isinstance(res, pd.DataFrame)
     assert len(res) == 2
     assert os.path.isfile(out_file)
 
     # Do it again, this time it shouldn't compute anything, simply read file
-    res = E.process("fixtures/Sargon_test/", config=config, save=True,
-                    out_file=out_file)
+    res = E.process(
+        "fixtures/Sargon_test/", config=config, save=True, out_file=out_file
+    )
     os.remove(out_file)

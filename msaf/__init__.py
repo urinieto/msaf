@@ -27,12 +27,12 @@ from .run import process
 
 # TODO: Include this in algorithms
 feat_dict = {
-    'sf': 'pcp',
-    'levy': 'pcp',
-    'foote': 'pcp',
-    'siplca': '',
-    'olda': '',
-    'cnmf': 'pcp',
-    '2dfmc': '',
-    'cbm': 'pcp',
+    "sf": "pcp",
+    "levy": "pcp",
+    "foote": "pcp",
+    "siplca": "",
+    "olda": "",
+    "cnmf": "pcp",
+    "2dfmc": "",
+    "cbm": "pcp",
 }

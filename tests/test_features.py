@@ -9,8 +9,7 @@ from pytest import raises
 # Msaf imports
 import msaf
 from msaf.base import FeatureTypes
-from msaf.exceptions import (FeatureParamsError, FeatureTypeNotFound,
-                             NoAudioFileError)
+from msaf.exceptions import FeatureParamsError, FeatureTypeNotFound, NoAudioFileError
 from msaf.features import CQT, MFCC, PCP, Features, Tempogram, Tonnetz
 from msaf.input_output import FileStruct
 

@@ -15,10 +15,10 @@ def median_filter(X, M=8):
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Foote's paper."""
-    g = signal.gaussian(M, M // 3., sym=True)
+    g = signal.gaussian(M, M // 3.0, sym=True)
     G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
-    G[M // 2:, :M // 2] = -G[M // 2:, :M // 2]
-    G[:M // 2, M // 2:] = -G[:M // 2, M // 2:]
+    G[M // 2 :, : M // 2] = -G[M // 2 :, : M // 2]
+    G[: M // 2, M // 2 :] = -G[: M // 2, M // 2 :]
     return G
 
 
@@ -38,7 +38,7 @@ def compute_nc(X, G):
     nc = np.zeros(N)
 
     for i in range(M // 2, N - M // 2 + 1):
-        nc[i] = np.sum(X[i - M // 2:i + M // 2, i - M // 2:i + M // 2] * G)
+        nc[i] = np.sum(X[i - M // 2 : i + M // 2, i - M // 2 : i + M // 2] * G)
 
     # Normalize
     nc += nc.min()
@@ -48,12 +48,12 @@ def compute_nc(X, G):
 
 def pick_peaks(nc, L=16):
     """Obtain peaks from a novelty curve using an adaptive threshold."""
-    offset = nc.mean() / 20.
+    offset = nc.mean() / 20.0
 
     nc = ndimage.gaussian_filter1d(nc, sigma=4)  # Smooth out nc
 
     th = ndimage.median_filter(nc, size=L) + offset
-    #th = ndimage.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
+    # th = ndimage.gaussian_filter(nc, sigma=L/2., mode="nearest") + offset
 
     peaks = []
     for i in range(1, nc.shape[0] - 1):
@@ -62,11 +62,11 @@ def pick_peaks(nc, L=16):
             # is it above the threshold?
             if nc[i] > th[i]:
                 peaks.append(i)
-    #plt.plot(nc)
-    #plt.plot(th)
-    #for peak in peaks:
-        #plt.axvline(peak)
-    #plt.show()
+    # plt.plot(nc)
+    # plt.plot(th)
+    # for peak in peaks:
+    # plt.axvline(peak)
+    # plt.show()
 
     return peaks
 
@@ -80,6 +80,7 @@ class Segmenter(SegmenterInterface):
     Novelty. In Proc. of the IEEE International Conference of Multimedia and
     Expo (pp. 452–455). New York City, NY, USA.
     """
+
     def processFlat(self):
         """Main process.
 
@@ -102,14 +103,14 @@ class Segmenter(SegmenterInterface):
 
         # Median filter
         F = median_filter(F, M=self.config["m_median"])
-        #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+        # plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
         # Self similarity matrix
         S = compute_ssm(F)
 
         # Compute gaussian kernel
         G = compute_gaussian_krnl(self.config["M_gaussian"])
-        #plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
+        # plt.imshow(S, interpolation="nearest", aspect="auto"); plt.show()
 
         # Compute the novelty curve
         nc = compute_nc(S, G)

@@ -135,9 +135,9 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     # latest release is not compatible with latest numpy)
     times = clicks + offset
     # 1 kHz tone, 100ms
-    click = np.sin(2 * np.pi * np.arange(fs * .1) * 1000 / (1. * fs))
+    click = np.sin(2 * np.pi * np.arange(fs * 0.1) * 1000 / (1.0 * fs))
     # Exponential decay
-    click *= np.exp(-np.arange(fs * .1) / (fs * .01))
+    click *= np.exp(-np.arange(fs * 0.1) / (fs * 0.01))
     length = int(times.max() * fs + click.shape[0] + 1)
     audio_clicks = mir_eval.sonify.clicks(times, fs, length=length)
 
@@ -145,8 +145,8 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     out_audio = np.zeros(max(len(audio), len(audio_clicks)))
 
     # Assign the audio and the clicks
-    out_audio[:len(audio)] = audio
-    out_audio[:len(audio_clicks)] += audio_clicks
+    out_audio[: len(audio)] = audio
+    out_audio[: len(audio_clicks)] += audio_clicks
 
     # Peak normalize the mix
     out_audio /= np.abs(out_audio).max()
@@ -182,15 +182,13 @@ def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
 
     # Construct unfolded labels array
     unfold_labels = np.zeros(N)
-    for i, (bound_idx, label) in enumerate(
-            zip(old_bound_idxs[:-1], old_labels)):
-        unfold_labels[bound_idx:old_bound_idxs[i + 1]] = label
+    for i, (bound_idx, label) in enumerate(zip(old_bound_idxs[:-1], old_labels)):
+        unfold_labels[bound_idx : old_bound_idxs[i + 1]] = label
 
     # Construct new labels
     new_labels = np.zeros(len(new_bound_idxs) - 1)
     for i, bound_idx in enumerate(new_bound_idxs[:-1]):
-        new_labels[i] = np.median(
-            unfold_labels[bound_idx:new_bound_idxs[i + 1]])
+        new_labels[i] = np.median(unfold_labels[bound_idx : new_bound_idxs[i + 1]])
 
     return new_labels
 
@@ -230,8 +228,7 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     est_times, est_labels = remove_empty_segments(est_times, est_labels)
 
     # Make sure that the first and last times are 0 and duration, respectively
-    assert np.allclose([est_times[0]], [0]) and \
-        np.allclose([est_times[-1]], [dur])
+    assert np.allclose([est_times[0]], [0]) and np.allclose([est_times[-1]], [dur])
 
     return est_times, est_labels
 
@@ -252,8 +249,9 @@ def align_end_hierarchies(hier1, hier2, thres=0.5):
     # Make sure we have correctly formatted hierarchies
     dur_h1 = hier1[0][-1]
     for hier in hier1:
-        assert hier[-1] == dur_h1, "hier1 is not correctly " \
-            "formatted {} {}".format(hier[-1], dur_h1)
+        assert hier[-1] == dur_h1, "hier1 is not correctly " "formatted {} {}".format(
+            hier[-1], dur_h1
+        )
     dur_h2 = hier2[0][-1]
     for hier in hier2:
         assert hier[-1] == dur_h2, "hier2 is not correctly formatted"

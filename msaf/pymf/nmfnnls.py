@@ -13,12 +13,12 @@ Matrix Factorization, Nature 401(6755), 788-799.
 """
 
 
-
 import scipy.optimize
 
 from .nmf import NMF
 
 __all__ = ["NMFNNLS"]
+
 
 class NMFNNLS(NMF):
     """NMFNNLS(data, num_bases=4)
@@ -66,13 +66,12 @@ class NMFNNLS(NMF):
 
     def update_h(self):
         def updatesingleH(i):
-            self.H[:,i] = scipy.optimize.nnls(self.W, self.data[:,i])[0]
+            self.H[:, i] = scipy.optimize.nnls(self.W, self.data[:, i])[0]
 
         map(updatesingleH, range(self._num_samples))
 
-
     def update_w(self):
         def updatesingleW(i):
-            self.W[i,:] = scipy.optimize.nnls(self.H.T, self.data[i,:].T)[0]
+            self.W[i, :] = scipy.optimize.nnls(self.H.T, self.data[i, :].T)[0]
 
         map(updatesingleW, range(self._data_dimension))

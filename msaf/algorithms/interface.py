@@ -43,8 +43,17 @@ class SegmenterInterface:
 
     In these cases, est_times or est_labels will be empty (None).
     """
-    def __init__(self, file_struct, in_bound_idxs=None, feature="pcp",
-                 annot_beats=False, framesync=False, features=None, **config):
+
+    def __init__(
+        self,
+        file_struct,
+        in_bound_idxs=None,
+        feature="pcp",
+        annot_beats=False,
+        framesync=False,
+        features=None,
+        **config
+    ):
         """Inits the Segmenter.
 
         Parameters
@@ -76,22 +85,23 @@ class SegmenterInterface:
 
     def processFlat(self):
         """Main process to obtain the flat segmentation of a given track."""
-        raise NotImplementedError("This method does not return flat "
-                                  "segmentations.")
+        raise NotImplementedError("This method does not return flat " "segmentations.")
 
     def processHierarchical(self):
         """Main process to obtian the hierarchical segmentation of a given
         track."""
-        raise NotImplementedError("This method does not return hierarchical "
-                                  "segmentations.")
+        raise NotImplementedError(
+            "This method does not return hierarchical " "segmentations."
+        )
 
     def _preprocess(self):
         """This method obtains the actual features."""
         try:
             F = self.features.features
         except KeyError:
-            raise RuntimeError("Feature %s in not supported by MSAF" % 
-                               (self.feature_str))
+            raise RuntimeError(
+                "Feature %s in not supported by MSAF" % (self.feature_str)
+            )
 
         return F
 
@@ -102,16 +112,20 @@ class SegmenterInterface:
         # Make sure we are using the previously input bounds, if any
         if self.in_bound_idxs is not None:
             F = self._preprocess()
-            est_labels = U.synchronize_labels(self.in_bound_idxs, est_idxs,
-                                              est_labels, F.shape[0])
+            est_labels = U.synchronize_labels(
+                self.in_bound_idxs, est_idxs, est_labels, F.shape[0]
+            )
             est_idxs = self.in_bound_idxs
 
         # Remove empty segments if needed
         est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)
 
-        assert len(est_idxs) - 1 == len(est_labels), "Number of boundaries " \
-            "(%d) and number of labels(%d) don't match" % (len(est_idxs),
-                                                           len(est_labels))
+        assert len(est_idxs) - 1 == len(
+            est_labels
+        ), "Number of boundaries " "(%d) and number of labels(%d) don't match" % (
+            len(est_idxs),
+            len(est_labels),
+        )
 
         # Make sure the indices are integers
         est_idxs = np.asarray(est_idxs, dtype=int)

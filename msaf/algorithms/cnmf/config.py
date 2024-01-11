@@ -10,7 +10,7 @@ config = {
     "rank_labels": 4,
     "niters": 500,
     "norm_feats": np.inf  # min_max, log, np.inf,
-                          # -np.inf, float >= 0, None
+    # -np.inf, float >= 0, None
 }
 
 algo_id = "cnmf"

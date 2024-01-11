@@ -3,7 +3,7 @@
 # Algorithm Params
 config = {
     # "method": 'scluster',
-    "connectivity": 'lrs',
+    "connectivity": "lrs",
     "median_filter_width": 9,
     "hier_num_layers": 10,  # How many hierarchical layers to compute (only for the hierarchical case)
     "vmo_k": 10,

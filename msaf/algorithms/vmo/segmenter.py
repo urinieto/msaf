@@ -17,6 +17,7 @@ class Segmenter(SegmenterInterface):
 
     .. _PDF: https://ccrma.stanford.edu/~gautham/Site/Publications_files/segmentation-icassp_2016.pdf
     """
+
     def processFlat(self):
         """Main process.
 
@@ -34,7 +35,9 @@ class Segmenter(SegmenterInterface):
         F = librosa.feature.stack_memory(F.T).T
 
         self.config["hier"] = False
-        my_bounds, my_labels, _ = main.scluster_segment(F, self.config, self.in_bound_idxs)
+        my_bounds, my_labels, _ = main.scluster_segment(
+            F, self.config, self.in_bound_idxs
+        )
 
         # Post process estimations
         est_idxs, est_labels = self._postprocess(my_bounds, my_labels)
@@ -60,10 +63,12 @@ class Segmenter(SegmenterInterface):
         F = librosa.feature.stack_memory(F.T).T
 
         self.config["hier"] = True
-        est_idxs, est_labels, F = main.scluster_segment(F, self.config, self.in_bound_idxs)
+        est_idxs, est_labels, F = main.scluster_segment(
+            F, self.config, self.in_bound_idxs
+        )
         for layer in range(len(est_idxs)):
-            assert est_idxs[layer][0] == 0 and \
-                est_idxs[layer][-1] == F.shape[1] - 1
-            est_idxs[layer], est_labels[layer] = \
-                self._postprocess(est_idxs[layer], est_labels[layer])
+            assert est_idxs[layer][0] == 0 and est_idxs[layer][-1] == F.shape[1] - 1
+            est_idxs[layer], est_labels[layer] = self._postprocess(
+                est_idxs[layer], est_labels[layer]
+            )
         return est_idxs, est_labels

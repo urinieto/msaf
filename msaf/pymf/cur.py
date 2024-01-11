@@ -19,6 +19,7 @@ from .svd import SVD, pinv
 
 __all__ = ["CUR"]
 
+
 class CUR(SVD):
     """CUR(data,  data, k=-1, rrank=0, crank=0)
 
@@ -54,14 +55,13 @@ class CUR(SVD):
     """
 
     def __init__(self, data, k=-1, rrank=0, crank=0):
-        SVD.__init__(self, data,k=k,rrank=rrank, crank=rrank)
+        SVD.__init__(self, data, k=k, rrank=rrank, crank=rrank)
 
         # select all data samples for computing the error:
         # note that this might take very long, adjust self._rset and self._cset
         # for faster computations.
         self._rset = range(self._rows)
         self._cset = range(self._cols)
-
 
     def sample(self, s, probs):
         prob_rows = np.cumsum(probs.flatten())
@@ -79,11 +79,10 @@ class CUR(SVD):
         return np.sort(temp_ind)
 
     def sample_probability(self):
-
         if scipy.sparse.issparse(self.data):
             dsquare = self.data.multiply(self.data)
         else:
-            dsquare = self.data[:,:]**2
+            dsquare = self.data[:, :] ** 2
 
         prow = np.array(dsquare.sum(axis=1), np.float64)
         pcol = np.array(dsquare.sum(axis=0), np.float64)
@@ -91,7 +90,7 @@ class CUR(SVD):
         prow /= prow.sum()
         pcol /= pcol.sum()
 
-        return (prow.reshape(-1,1), pcol.reshape(-1,1))
+        return (prow.reshape(-1, 1), pcol.reshape(-1, 1))
 
     def computeUCR(self):
         # the next  lines do NOT work with h5py if CUR is used -> double indices in self.cid or self.rid
@@ -99,17 +98,29 @@ class CUR(SVD):
         # reoccuring row/column selections.
 
         if scipy.sparse.issparse(self.data):
-            self._C = self.data[:, self._cid] * scipy.sparse.csc_matrix(np.diag(self._ccnt**(1/2)))
-            self._R = scipy.sparse.csc_matrix(np.diag(self._rcnt**(1/2))) * self.data[self._rid,:]
+            self._C = self.data[:, self._cid] * scipy.sparse.csc_matrix(
+                np.diag(self._ccnt ** (1 / 2))
+            )
+            self._R = (
+                scipy.sparse.csc_matrix(np.diag(self._rcnt ** (1 / 2)))
+                * self.data[self._rid, :]
+            )
 
-            self._U = pinv(self._C, self._k) * self.data[:,:] * pinv(self._R, self._k)
+            self._U = pinv(self._C, self._k) * self.data[:, :] * pinv(self._R, self._k)
 
         else:
-            self._C = np.dot(self.data[:, self._cid].reshape((self._rows, len(self._cid))), np.diag(self._ccnt**(1/2)))
-            self._R = np.dot(np.diag(self._rcnt**(1/2)), self.data[self._rid,:].reshape((len(self._rid), self._cols)))
+            self._C = np.dot(
+                self.data[:, self._cid].reshape((self._rows, len(self._cid))),
+                np.diag(self._ccnt ** (1 / 2)),
+            )
+            self._R = np.dot(
+                np.diag(self._rcnt ** (1 / 2)),
+                self.data[self._rid, :].reshape((len(self._rid), self._cols)),
+            )
 
-            self._U = np.dot(np.dot(pinv(self._C, self._k), self.data[:,:]),
-                             pinv(self._R, self._k))
+            self._U = np.dot(
+                np.dot(pinv(self._C, self._k), self.data[:, :]), pinv(self._R, self._k)
+            )
 
         # set some standard (with respect to SVD) variable names
         self.U = self._C
@@ -117,13 +128,13 @@ class CUR(SVD):
         self.V = self._R
 
     def factorize(self):
-        """ Factorize s.t. CUR = data
+        """Factorize s.t. CUR = data
 
-            Updated Values
-            --------------
-            .C : updated values for C.
-            .U : updated values for U.
-            .R : updated values for R.
+        Updated Values
+        --------------
+        .C : updated values for C.
+        .U : updated values for U.
+        .R : updated values for R.
         """
         [prow, pcol] = self.sample_probability()
         self._rid = self.sample(self._rrank, prow)
@@ -137,4 +148,5 @@ class CUR(SVD):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

@@ -18,7 +18,7 @@ Getting started
 Troubleshooting
 ---------------
 
-For bug reports and other, more technical issues, consult the `github issues 
+For bug reports and other, more technical issues, consult the `github issues
 <https://github.com/urinieto/msaf/issues>`_.
 
 Main documentation

@@ -20,6 +20,7 @@ from .svd import pinv
 
 __all__ = ["AA"]
 
+
 class AA(NMF):
     """AA(data, num_bases=4)
 
@@ -74,8 +75,9 @@ class AA(NMF):
 
     The result is a set of coefficients aa_mdl.H, s.t. data = W * aa_mdl.H.
     """
+
     # set cvxopt options
-    solvers.options['show_progress'] = False
+    solvers.options["show_progress"] = False
 
     def init_h(self):
         self.H = np.random.random((self._num_bases, self._num_samples))
@@ -90,18 +92,19 @@ class AA(NMF):
     def update_h(self):
         """Alternating least squares step, update H under the convexity
         constraint."""
+
         def update_single_h(i):
             """Compute single H[:,i]"""
             # optimize alpha using qp solver from cvxopt
-            FA = base.matrix(np.float64(np.dot(-self.W.T, self.data[:,i])))
+            FA = base.matrix(np.float64(np.dot(-self.W.T, self.data[:, i])))
             al = solvers.qp(HA, FA, INQa, INQb, EQa, EQb)
-            self.H[:,i] = np.array(al['x']).reshape((1, self._num_bases))
+            self.H[:, i] = np.array(al["x"]).reshape((1, self._num_bases))
 
-        EQb = base.matrix(1.0, (1,1))
+        EQb = base.matrix(1.0, (1, 1))
         # float64 required for cvxopt
         HA = base.matrix(np.float64(np.dot(self.W.T, self.W)))
         INQa = base.matrix(-np.eye(self._num_bases))
-        INQb = base.matrix(0.0, (self._num_bases,1))
+        INQb = base.matrix(0.0, (self._num_bases, 1))
         EQa = base.matrix(1.0, (1, self._num_bases))
 
         for i in range(self._num_samples):
@@ -110,15 +113,16 @@ class AA(NMF):
     def update_w(self):
         """Alternating least squares step, update W under the convexity
         constraint."""
+
         def update_single_w(i):
             """Compute single W[:,i]"""
             # optimize beta     using qp solver from cvxopt
-            FB = base.matrix(np.float64(np.dot(-self.data.T, W_hat[:,i])))
+            FB = base.matrix(np.float64(np.dot(-self.data.T, W_hat[:, i])))
             be = solvers.qp(HB, FB, INQa, INQb, EQa, EQb)
-            self.beta[i,:] = np.array(be['x']).reshape((1, self._num_samples))
+            self.beta[i, :] = np.array(be["x"]).reshape((1, self._num_samples))
 
         # float64 required for cvxopt
-        HB = base.matrix(np.float64(np.dot(self.data[:,:].T, self.data[:,:])))
+        HB = base.matrix(np.float64(np.dot(self.data[:, :].T, self.data[:, :])))
         EQb = base.matrix(1.0, (1, 1))
         W_hat = np.dot(self.data, pinv(self.H))
         INQa = base.matrix(-np.eye(self._num_samples))
@@ -130,6 +134,8 @@ class AA(NMF):
 
         self.W = np.dot(self.beta, self.data.T).T
 
+
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

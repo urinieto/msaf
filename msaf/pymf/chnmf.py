@@ -46,18 +46,17 @@ def quickhull(sample):
 
         if len(outer):
             pivot = sample[np.argmax(dists)]
-            return link(dome(outer, edge(h, pivot)),
-                dome(outer, edge(pivot, t)))
+            return link(dome(outer, edge(h, pivot)), dome(outer, edge(pivot, t)))
         else:
             return base
 
     if len(sample) > 2:
         axis = sample[:, 0]
         base = np.take(sample, [np.argmin(axis), np.argmax(axis)], axis=0)
-        return link(dome(sample, base),
-            dome(sample, base[::-1]))
+        return link(dome(sample, base), dome(sample, base[::-1]))
     else:
         return sample
+
 
 class CHNMF(AA):
     """CHNMF(data, num_bases=4)
@@ -118,7 +117,6 @@ class CHNMF(AA):
     """
 
     def __init__(self, data, num_bases=4, base_sel=3):
-
         # call inherited method
         AA.__init__(self, data, num_bases=num_bases)
 
@@ -145,10 +143,11 @@ class CHNMF(AA):
         # -> sorting sel would screw the matching to W if
         # self.data is stored as a hdf5 table (see h5py)
         for i, s in enumerate(self._Wmapped_index):
-            self.Wmapped[:,i] = self.data[:,s]
+            self.Wmapped[:, i] = self.data[:, s]
 
     def update_w(self):
         """Compute new W."""
+
         def select_hull_points(data, n=3):
             """Select data points for pairwise projections of the first n
             dimensions."""
@@ -169,8 +168,8 @@ class CHNMF(AA):
 
         # determine convex hull data points using either PCA or random
         # projections
-        method = 'randomprojection'
-        if method == 'pca':
+        method = "randomprojection"
+        if method == "pca":
             pcamodel = PCA(self.data)
             pcamodel.factorize(show_progress=False)
             proj = pcamodel.H
@@ -182,40 +181,57 @@ class CHNMF(AA):
         aa_mdl = AA(self.data[:, self._hull_idx], num_bases=self._num_bases)
 
         # determine W
-        aa_mdl.factorize(niter=50, compute_h=True, compute_w=True,
-                         compute_err=True, show_progress=False)
+        aa_mdl.factorize(
+            niter=50,
+            compute_h=True,
+            compute_w=True,
+            compute_err=True,
+            show_progress=False,
+        )
 
         self.W = aa_mdl.W
         self._map_w_to_data()
 
-    def factorize(self, show_progress=False, compute_w=True, compute_h=True,
-                  compute_err=True, niter=1):
-        """ Factorize s.t. WH = data
+    def factorize(
+        self,
+        show_progress=False,
+        compute_w=True,
+        compute_h=True,
+        compute_err=True,
+        niter=1,
+    ):
+        """Factorize s.t. WH = data
 
-            Parameters
-            ----------
-            show_progress : bool
-                    print some extra information to stdout.
-            compute_h : bool
-                    iteratively update values for H.
-            compute_w : bool
-                    iteratively update values for W.
-            compute_err : bool
-                    compute Frobenius norm |data-WH| after each update and store
-                    it to .ferr[k].
+        Parameters
+        ----------
+        show_progress : bool
+                print some extra information to stdout.
+        compute_h : bool
+                iteratively update values for H.
+        compute_w : bool
+                iteratively update values for W.
+        compute_err : bool
+                compute Frobenius norm |data-WH| after each update and store
+                it to .ferr[k].
 
-            Updated Values
-            --------------
-            .W : updated values for W.
-            .H : updated values for H.
-            .ferr : Frobenius norm |data-WH|.
+        Updated Values
+        --------------
+        .W : updated values for W.
+        .H : updated values for H.
+        .ferr : Frobenius norm |data-WH|.
         """
 
-        AA.factorize(self, niter=1, show_progress=show_progress,
-                  compute_w=compute_w, compute_h=compute_h,
-                  compute_err=compute_err)
+        AA.factorize(
+            self,
+            niter=1,
+            show_progress=show_progress,
+            compute_w=compute_w,
+            compute_h=compute_h,
+            compute_err=compute_err,
+        )
 
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

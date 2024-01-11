@@ -14,15 +14,28 @@ y_harmonic, y_percussive = librosa.effects.hpss(audio)
 
 
 def test_synchronize_labels():
-    old_bound_idxs = [0, 82, 150, 268, 342, 353, 463, 535, 616, 771, 833, 920,
-                      979, 1005]
+    old_bound_idxs = [
+        0,
+        82,
+        150,
+        268,
+        342,
+        353,
+        463,
+        535,
+        616,
+        771,
+        833,
+        920,
+        979,
+        1005,
+    ]
     new_bound_idxs = [0, 229, 337, 854, 929, 994, 1004]
     labels = [4, 6, 2, 0, 0, 2, 5, 3, 0, 5, 1, 5, 1]
     N = 1005
-    new_labels = msaf.utils.synchronize_labels(new_bound_idxs,
-                                               old_bound_idxs,
-                                               labels,
-                                               N)
+    new_labels = msaf.utils.synchronize_labels(
+        new_bound_idxs, old_bound_idxs, labels, N
+    )
     assert len(new_labels) == len(new_bound_idxs) - 1
 
 

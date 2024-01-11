@@ -59,17 +59,16 @@ def compute_labels(X, rank, R, bound_idxs, niter=300):
     label_frames = filter_activation_matrix(G.T, R)
     label_frames = np.asarray(label_frames, dtype=int)
 
-    #labels = [label_frames[0]]
+    # labels = [label_frames[0]]
     labels = []
     bound_inters = zip(bound_idxs[:-1], bound_idxs[1:])
     for bound_inter in bound_inters:
         if bound_inter[1] - bound_inter[0] <= 0:
             labels.append(np.max(label_frames) + 1)
         else:
-            labels.append(most_frequent(
-                label_frames[bound_inter[0]: bound_inter[1]]))
-        #print bound_inter, labels[-1]
-    #labels.append(label_frames[-1])
+            labels.append(most_frequent(label_frames[bound_inter[0] : bound_inter[1]]))
+        # print bound_inter, labels[-1]
+    # labels.append(label_frames[-1])
 
     return labels
 
@@ -77,9 +76,9 @@ def compute_labels(X, rank, R, bound_idxs, niter=300):
 def filter_activation_matrix(G, R):
     """Filters the activation matrix G, and returns a flattened copy."""
 
-    #import pylab as plt
-    #plt.imshow(G, interpolation="nearest", aspect="auto")
-    #plt.show()
+    # import pylab as plt
+    # plt.imshow(G, interpolation="nearest", aspect="auto")
+    # plt.show()
 
     idx = np.argmax(G, axis=1)
     max_idx = np.arange(G.shape[0])
@@ -94,8 +93,9 @@ def filter_activation_matrix(G, R):
     return G.flatten()
 
 
-def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
-                     bound_idxs=None, in_labels=None):
+def get_segmentation(
+    X, rank, R, rank_labels, R_labels, niter=300, bound_idxs=None, in_labels=None
+):
     """Gets the segmentation (boundaries and labels) from the factorization
     matrices.
 
@@ -122,9 +122,9 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
         Indices of the labels representing the similarity between segments.
     """
 
-    #import pylab as plt
-    #plt.imshow(X, interpolation="nearest", aspect="auto")
-    #plt.show()
+    # import pylab as plt
+    # plt.imshow(X, interpolation="nearest", aspect="auto")
+    # plt.show()
 
     # Find non filtered boundaries
     compute_bounds = True if bound_idxs is None else False
@@ -151,15 +151,14 @@ def get_segmentation(X, rank, R, rank_labels, R_labels, niter=300,
     bound_idxs = np.concatenate(([0], bound_idxs, [X.shape[1] - 1]))
     bound_idxs = np.asarray(bound_idxs, dtype=int)
     if in_labels is None:
-        labels = compute_labels(X, rank_labels, R_labels, bound_idxs,
-                                niter=niter)
+        labels = compute_labels(X, rank_labels, R_labels, bound_idxs, niter=niter)
     else:
         labels = np.ones(len(bound_idxs) - 1)
 
-    #plt.imshow(G[:, np.newaxis], interpolation="nearest", aspect="auto")
-    #for b in bound_idxs:
-        #plt.axvline(b, linewidth=2.0, color="k")
-    #plt.show()
+    # plt.imshow(G[:, np.newaxis], interpolation="nearest", aspect="auto")
+    # for b in bound_idxs:
+    # plt.axvline(b, linewidth=2.0, color="k")
+    # plt.show()
 
     return bound_idxs, labels
 
@@ -178,6 +177,7 @@ class Segmenter(SegmenterInterface):
     .. _PDF: http://marl.smusic.nyu.edu/nieto/publications/Nieto-ICASSP13.pdf
     .. _PhD Thesis: http://marl.smusic.nyu.edu/nieto/publications/Nieto-Dissertation.pdf
     """
+
     def processFlat(self):
         """Main process.
 
@@ -200,13 +200,19 @@ class Segmenter(SegmenterInterface):
         if F.shape[0] >= self.config["h"]:
             # Median filter
             F = median_filter(F, M=self.config["h"])
-            #plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
+            # plt.imshow(F.T, interpolation="nearest", aspect="auto"); plt.show()
 
             # Find the boundary indices and labels using matrix factorization
             est_idxs, est_labels = get_segmentation(
-                F.T, self.config["rank"], self.config["R"],
-                self.config["rank_labels"], self.config["R_labels"],
-                niter=niter, bound_idxs=self.in_bound_idxs, in_labels=None)
+                F.T,
+                self.config["rank"],
+                self.config["R"],
+                self.config["rank_labels"],
+                self.config["R_labels"],
+                niter=niter,
+                bound_idxs=self.in_bound_idxs,
+                in_labels=None,
+            )
 
             # Remove empty segments if needed
             est_idxs, est_labels = U.remove_empty_segments(est_idxs, est_labels)

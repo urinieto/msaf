@@ -12,17 +12,15 @@ import sklearn.cluster
 
 
 def embed_beats(A_rep, A_loc, config):
-
-    R = librosa.segment.recurrence_matrix(A_rep, width=config["rec_width"],
-                                          mode='affinity',
-                                          metric='cosine',
-                                          sym=True)
+    R = librosa.segment.recurrence_matrix(
+        A_rep, width=config["rec_width"], mode="affinity", metric="cosine", sym=True
+    )
 
     # Enhance diagonals with a median filter (Equation 2)
     df = librosa.segment.timelag_filter(scipy.ndimage.median_filter)
     Rf = df(R, size=(1, config["rec_smooth"]))
 
-    path_distance = np.sum(np.diff(A_loc, axis=1)**2, axis=0)
+    path_distance = np.sum(np.diff(A_loc, axis=1) ** 2, axis=0)
     sigma = np.median(path_distance)
     path_sim = np.exp(-path_distance / sigma)
 
@@ -33,7 +31,7 @@ def embed_beats(A_rep, A_loc, config):
     deg_path = np.sum(R_path, axis=1)
     deg_rec = np.sum(Rf, axis=1)
 
-    mu = deg_path.dot(deg_path + deg_rec) / np.sum((deg_path + deg_rec)**2)
+    mu = deg_path.dot(deg_path + deg_rec) / np.sum((deg_path + deg_rec) ** 2)
 
     A = mu * Rf + (1 - mu) * R_path
 
@@ -52,7 +50,7 @@ def embed_beats(A_rep, A_loc, config):
 
 
 def cluster(evecs, Cnorm, k, in_bound_idxs=None):
-    X = evecs[:, :k] / (Cnorm[:, k - 1:k] + 1e-5)
+    X = evecs[:, :k] / (Cnorm[:, k - 1 : k] + 1e-5)
     KM = sklearn.cluster.KMeans(n_clusters=k, n_init=50, max_iter=500)
     seg_ids = KM.fit_predict(X)
 
@@ -79,12 +77,13 @@ def _reindex_labels(ref_int, ref_lab, est_int, est_lab):
     # for each estimated label
     #    find the reference label that is maximally overlaps with
 
-    score_map = defaultdict(lambda: 0)
+    score_map = defaultdict(int)
 
     for r_int, r_lab in zip(ref_int, ref_lab):
         for e_int, e_lab in zip(est_int, est_lab):
-            score_map[(e_lab, r_lab)] += max(0, min(e_int[1], r_int[1]) -
-                                             max(e_int[0], r_int[0]))
+            score_map[(e_lab, r_lab)] += max(
+                0, min(e_int[1], r_int[1]) - max(e_int[0], r_int[0])
+            )
 
     r_taken = set()
     e_map = dict()
@@ -120,7 +119,7 @@ def reindex(hierarchy):
 
 def do_segmentation(C, M, config, in_bound_idxs=None):
     embedding = embed_beats(C, M, config)
-    Cnorm = np.cumsum(embedding ** 2, axis=1) ** 0.5
+    Cnorm = np.cumsum(embedding**2, axis=1) ** 0.5
 
     if config["hier"]:
         est_idxs = []
@@ -131,7 +130,9 @@ def do_segmentation(C, M, config, in_bound_idxs=None):
             est_labels.append(np.asarray(est_label, dtype=np.int64))
 
     else:
-        est_idxs, est_labels = cluster(embedding, Cnorm, config["scluster_k"], in_bound_idxs)
+        est_idxs, est_labels = cluster(
+            embedding, Cnorm, config["scluster_k"], in_bound_idxs
+        )
         est_labels = np.asarray(est_labels, dtype=np.int64)
 
     return est_idxs, est_labels, Cnorm

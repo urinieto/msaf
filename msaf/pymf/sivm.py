@@ -21,6 +21,7 @@ from .dist import *
 
 __all__ = ["SIVM"]
 
+
 class SIVM(AA):
     """SIVM(data, num_bases=4, dist_measure='l2')
 
@@ -74,32 +75,30 @@ class SIVM(AA):
     # -> any value other does not make sense.
     _NITER = 1
 
-    def __init__(self, data, num_bases=4, dist_measure='l2',  init='fastmap'):
-
+    def __init__(self, data, num_bases=4, dist_measure="l2", init="fastmap"):
         AA.__init__(self, data, num_bases=num_bases)
 
         self._dist_measure = dist_measure
         self._init = init
 
         # assign the correct distance function
-        if self._dist_measure == 'l1':
+        if self._dist_measure == "l1":
             self._distfunc = l1_distance
 
-        elif self._dist_measure == 'l2':
+        elif self._dist_measure == "l2":
             self._distfunc = l2_distance
 
-        elif self._dist_measure == 'cosine':
+        elif self._dist_measure == "cosine":
             self._distfunc = cosine_distance
 
-        elif self._dist_measure == 'abs_cosine':
+        elif self._dist_measure == "abs_cosine":
             self._distfunc = abs_cosine_distance
 
-        elif self._dist_measure == 'weighted_abs_cosine':
+        elif self._dist_measure == "weighted_abs_cosine":
             self._distfunc = weighted_abs_cosine_distance
 
-        elif self._dist_measure == 'kl':
+        elif self._dist_measure == "kl":
             self._distfunc = kl_divergence
-
 
     def _distance(self, idx):
         """Compute distances of a specific data point to all other samples."""
@@ -116,9 +115,9 @@ class SIVM(AA):
             if scipy.sparse.issparse(self.data):
                 vec = scipy.sparse.csc_matrix(vec)
         else:
-            vec = self.data[:, idx:idx+1]
+            vec = self.data[:, idx : idx + 1]
 
-        self._logger.info('compute distance to node ' + str(idx))
+        self._logger.info("compute distance to node " + str(idx))
 
         # slice data into smaller chunks
         for idx_start in range(0, self.data.shape[1], step):
@@ -127,10 +126,10 @@ class SIVM(AA):
             else:
                 idx_end = idx_start + step
 
-            d[idx_start:idx_end] = self._distfunc(
-                self.data[:,idx_start:idx_end], vec)
-            self._logger.info('completed:' +
-                str(idx_end/(self.data.shape[1]/100.0)) + "%")
+            d[idx_start:idx_end] = self._distfunc(self.data[:, idx_start:idx_end], vec)
+            self._logger.info(
+                "completed:" + str(idx_end / (self.data.shape[1] / 100.0)) + "%"
+            )
         return d
 
     def init_h(self):
@@ -141,7 +140,7 @@ class SIVM(AA):
 
     def init_sivm(self):
         self.select = []
-        if self._init == 'fastmap':
+        if self._init == "fastmap":
             # Fastmap like initialization
             # set the starting index for fastmap initialization
             cur_p = 0
@@ -155,7 +154,7 @@ class SIVM(AA):
             self._maxd = np.max(d)
             self.select.append(cur_p)
 
-        elif self._init == 'origin':
+        elif self._init == "origin":
             # set first vertex to origin
             cur_p = -1
             d = self._distance(cur_p)
@@ -176,7 +175,7 @@ class SIVM(AA):
         a.copy()
 
         for l in range(1, self._num_bases):
-            d = self._distance(self.select[l-1])
+            d = self._distance(self.select[l - 1])
 
             # take the log of d (sually more stable that d)
             d = np.log(d + EPS)
@@ -184,12 +183,12 @@ class SIVM(AA):
             d_i_times_d_j += d * d_sum
             d_sum += d
             d_square += d**2
-            distiter = d_i_times_d_j + a*d_sum - (l/2.0) * d_square
+            distiter = d_i_times_d_j + a * d_sum - (l / 2.0) * d_square
 
             # detect the next best data point
             self.select.append(np.argmax(distiter))
 
-            self._logger.info('cur_nodes: ' + str(self.select))
+            self._logger.info("cur_nodes: " + str(self.select))
 
         # sort indices, otherwise h5py won't work
         self.W = self.data[:, np.sort(self.select)]
@@ -197,33 +196,46 @@ class SIVM(AA):
         # "unsort" it again to keep the correct order
         self.W = self.W[:, np.argsort(np.argsort(self.select))]
 
-    def factorize(self, show_progress=False, compute_w=True, compute_h=True,
-                  compute_err=True, niter=1):
-        """ Factorize s.t. WH = data
+    def factorize(
+        self,
+        show_progress=False,
+        compute_w=True,
+        compute_h=True,
+        compute_err=True,
+        niter=1,
+    ):
+        """Factorize s.t. WH = data
 
-            Parameters
-            ----------
-            show_progress : bool
-                    print some extra information to stdout.
-            compute_h : bool
-                    iteratively update values for H.
-            compute_w : bool
-                    iteratively update values for W.
-            compute_err : bool
-                    compute Frobenius norm |data-WH| after each update and store
-                    it to .ferr[k].
+        Parameters
+        ----------
+        show_progress : bool
+                print some extra information to stdout.
+        compute_h : bool
+                iteratively update values for H.
+        compute_w : bool
+                iteratively update values for W.
+        compute_err : bool
+                compute Frobenius norm |data-WH| after each update and store
+                it to .ferr[k].
 
-            Updated Values
-            --------------
-            .W : updated values for W.
-            .H : updated values for H.
-            .ferr : Frobenius norm |data-WH|.
+        Updated Values
+        --------------
+        .W : updated values for W.
+        .H : updated values for H.
+        .ferr : Frobenius norm |data-WH|.
         """
 
-        AA.factorize(self, niter=1, show_progress=show_progress,
-                  compute_w=compute_w, compute_h=compute_h,
-                  compute_err=compute_err)
+        AA.factorize(
+            self,
+            niter=1,
+            show_progress=show_progress,
+            compute_w=compute_w,
+            compute_h=compute_h,
+            compute_err=compute_err,
+        )
+
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

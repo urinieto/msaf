@@ -5,16 +5,17 @@ from msaf.algorithms.interface import SegmenterInterface
 import numpy as np
 
 # General module for manipulating data: conversion between time, bars, frame indexes, loading of data, ...
-#import as_seg.data_manipulation as dm # Used functions may be replaced by utils apparently
+# import as_seg.data_manipulation as dm # Used functions may be replaced by utils apparently
 from msaf.utils import intervals_to_times
 
 # Module to process the compute the autosimilarity
-#import as_seg.autosimilarity_computation as as_computation
-import msaf.algorithms.cbm.autosimilarity_computation as as_comp # Importing the file instead of the toolbox
+# import as_seg.autosimilarity_computation as as_computation
+import msaf.algorithms.cbm.autosimilarity_computation as as_comp  # Importing the file instead of the toolbox
 
 # Module containing the CBM algorithm
-#import as_seg.CBM_algorithm as cbm
-import msaf.algorithms.cbm.CBM_algorithm as CBM # Importing the file instead of the toolbox
+# import as_seg.CBM_algorithm as cbm
+import msaf.algorithms.cbm.CBM_algorithm as CBM  # Importing the file instead of the toolbox
+
 
 class Segmenter(SegmenterInterface):
     def processFlat(self):
@@ -30,13 +31,18 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Compute the self-similarity matrix
-        ssm = as_comp.switch_autosimilarity(F, self.config["ssm_type"]) # To test, but should probably be transposed
+        ssm = as_comp.switch_autosimilarity(
+            F, self.config["ssm_type"]
+        )  # To test, but should probably be transposed
 
         # Compute the CBM algorithm
-        segments = CBM.compute_cbm(ssm, max_size = self.config["max_size"],
-                                   penalty_weight = self.config["penalty_weight"], 
-                                   penalty_func = self.config["penalty_func"],
-                                   bands_number = self.config["bands_number"])[0]
+        segments = CBM.compute_cbm(
+            ssm,
+            max_size=self.config["max_size"],
+            penalty_weight=self.config["penalty_weight"],
+            penalty_func=self.config["penalty_func"],
+            bands_number=self.config["bands_number"],
+        )[0]
 
         # Recast segments into frontiers
         my_bounds = intervals_to_times(np.array(segments))

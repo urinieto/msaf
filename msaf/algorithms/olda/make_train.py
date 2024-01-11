@@ -45,8 +45,7 @@ def align_segmentation(beat_times, song):
     beat_intervals = np.asarray(zip(beat_times[:-1], beat_times[1:]))
 
     # Map beats to segments
-    beat_segment_ids = librosa.util.match_intervals(beat_intervals,
-                                                    segment_intervals)
+    beat_segment_ids = librosa.util.match_intervals(beat_intervals, segment_intervals)
 
     segment_beats = []
     segment_times_out = []
@@ -56,8 +55,7 @@ def align_segmentation(beat_times, song):
     # len(beat_segment_ids)
     for i in range(segment_times.shape[0]):
         hits = np.argwhere(beat_segment_ids == i)
-        if len(hits) > 0 and i < len(segment_intervals) and \
-                i < len(segment_labels):
+        if len(hits) > 0 and i < len(segment_intervals) and i < len(segment_labels):
             segment_beats.extend(hits[0])
             segment_times_out.append(segment_intervals[i, :])
             segment_labels_out.append(segment_labels[i])
@@ -75,120 +73,133 @@ def align_segmentation(beat_times, song):
 
 
 def get_annotation(song, rootpath):
-    return f'{rootpath}/annotations/{os.path.basename(song)[:-4]}.jams'
+    return f"{rootpath}/annotations/{os.path.basename(song)[:-4]}.jams"
 
 
 def import_data(file_struct, rootpath, output_path, annot_beats):
     msaf.utils.ensure_dir(output_path)
     msaf.utils.ensure_dir(os.path.join(output_path, "features"))
-    data_file = '%s/features/%s_annotbeatsE%d.pickle' % \
-        (output_path, os.path.splitext(
-            os.path.basename(file_struct.audio_file))[0], annot_beats)
+    data_file = "%s/features/%s_annotbeatsE%d.pickle" % (
+        output_path,
+        os.path.splitext(os.path.basename(file_struct.audio_file))[0],
+        annot_beats,
+    )
 
     if os.path.exists(data_file):
         with open(data_file) as f:
             Data = pickle.load(f)
-            print(file_struct.audio_file, 'cached!')
+            print(file_struct.audio_file, "cached!")
     else:
         X, _ = features(file_struct, annot_beats)
-        pcp_obj = Features.select_features("pcp", file_struct, annot_beats,
-                                           framesync=False)
-        B = pcp_obj.frame_times[:pcp_obj.features.shape[0]]
+        pcp_obj = Features.select_features(
+            "pcp", file_struct, annot_beats, framesync=False
+        )
+        B = pcp_obj.frame_times[: pcp_obj.features.shape[0]]
 
         if X is None:
             return X
 
         Y, T, L = align_segmentation(
-            get_annotation(file_struct.audio_file, rootpath), B,
-            file_struct.audio_file)
+            get_annotation(file_struct.audio_file, rootpath), B, file_struct.audio_file
+        )
 
         if Y is None:
             return Y
 
-        Data = {'features': X,
-                'beats': B,
-                'filename': file_struct.audio_file,
-                'segment_times': T,
-                'segment_labels': L,
-                'segments': Y}
-        print(file_struct.audio_file, 'processed!')
+        Data = {
+            "features": X,
+            "beats": B,
+            "filename": file_struct.audio_file,
+            "segment_times": T,
+            "segment_labels": L,
+            "segments": Y,
+        }
+        print(file_struct.audio_file, "processed!")
 
-        with open(data_file, 'w') as f:
+        with open(data_file, "w") as f:
             pickle.dump(Data, f)
 
     return Data
 
 
-def make_dataset(n=None, n_jobs=1, rootpath='', output_path='',
-                 annot_beats=False):
-
+def make_dataset(n=None, n_jobs=1, rootpath="", output_path="", annot_beats=False):
     audio_files = msaf.io.get_dataset_files(rootpath)
 
     if n is None:
         n = len(audio_files)
 
-    data = Parallel(n_jobs=n_jobs)(delayed(import_data)(
-        file_struct, rootpath, output_path, annot_beats)
-        for file_struct in audio_files[:n])
+    data = Parallel(n_jobs=n_jobs)(
+        delayed(import_data)(file_struct, rootpath, output_path, annot_beats)
+        for file_struct in audio_files[:n]
+    )
 
     X, Y, B, T, F, L = [], [], [], [], [], []
     for d in data:
         if d is None:
             continue
-        X.append(d['features'])
-        Y.append(d['segments'])
-        B.append(d['beats'])
-        T.append(d['segment_times'])
-        F.append(d['filename'])
-        L.append(d['segment_labels'])
+        X.append(d["features"])
+        Y.append(d["segments"])
+        B.append(d["beats"])
+        T.append(d["segment_times"])
+        F.append(d["filename"])
+        L.append(d["segment_labels"])
 
     return X, Y, B, T, F, L
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Trains OLDA from the given dataset",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("ds_path",
-                        action="store",
-                        help="Input dataset dir")
-    parser.add_argument("output_path",
-                        action="store",
-                        help="Output dir to store the features")
-    parser.add_argument("-n",
-                        action="store",
-                        dest="n",
-                        type=int,
-                        help="Number of files to process (`None` for all)",
-                        default=None)
-    parser.add_argument("-j",
-                        action="store",
-                        dest="n_jobs",
-                        type=int,
-                        help="Number of jobs (threads)",
-                        default=1)
-    parser.add_argument("-b",
-                        action="store_true",
-                        dest="annot_beats",
-                        help="Use annotated beats",
-                        default=False)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("ds_path", action="store", help="Input dataset dir")
+    parser.add_argument(
+        "output_path", action="store", help="Output dir to store the features"
+    )
+    parser.add_argument(
+        "-n",
+        action="store",
+        dest="n",
+        type=int,
+        help="Number of files to process (`None` for all)",
+        default=None,
+    )
+    parser.add_argument(
+        "-j",
+        action="store",
+        dest="n_jobs",
+        type=int,
+        help="Number of jobs (threads)",
+        default=1,
+    )
+    parser.add_argument(
+        "-b",
+        action="store_true",
+        dest="annot_beats",
+        help="Use annotated beats",
+        default=False,
+    )
     args = parser.parse_args()
     start_time = time.time()
-    X, Y, B, T, F, L = make_dataset(n=args.n,
-                                    n_jobs=args.n_jobs,
-                                    rootpath=args.ds_path,
-                                    output_path=args.output_path,
-                                    annot_beats=args.annot_beats)
+    X, Y, B, T, F, L = make_dataset(
+        n=args.n,
+        n_jobs=args.n_jobs,
+        rootpath=args.ds_path,
+        output_path=args.output_path,
+        annot_beats=args.annot_beats,
+    )
 
     ds_path = args.ds_path
     if ds_path[-1] == "/":
         ds_path = ds_path[:-1]
 
     if args.annot_beats:
-        out_path = '{}/AnnotBeats_{}_data.pickle'.format(
-            args.output_path, os.path.basename(ds_path))
+        out_path = "{}/AnnotBeats_{}_data.pickle".format(
+            args.output_path, os.path.basename(ds_path)
+        )
     else:
-        out_path = '{}/EstBeats_{}_data.pickle'.format(
-            args.output_path, os.path.basename(ds_path))
-    with open(out_path, 'w') as f:
+        out_path = "{}/EstBeats_{}_data.pickle".format(
+            args.output_path, os.path.basename(ds_path)
+        )
+    with open(out_path, "w") as f:
         pickle.dump((X, Y, B, T, F, L), f)

@@ -34,13 +34,14 @@ def get_feat_segments(F, bound_idxs):
     bound_idxs = np.sort(bound_idxs)
 
     # Make sure we're not out of bounds
-    assert bound_idxs[0] >= 0 and bound_idxs[-1] < F.shape[0], \
-        "Boundaries are not correct for the given feature dimensions."
+    assert (
+        bound_idxs[0] >= 0 and bound_idxs[-1] < F.shape[0]
+    ), "Boundaries are not correct for the given feature dimensions."
 
     # Obtain the segments
     feat_segments = []
     for i in range(len(bound_idxs) - 1):
-        feat_segments.append(F[bound_idxs[i]:bound_idxs[i + 1], :])
+        feat_segments.append(F[bound_idxs[i] : bound_idxs[i + 1], :])
     return feat_segments
 
 
@@ -73,10 +74,11 @@ def feat_segments_to_2dfmc_max(feat_segments, offset=4):
 
         # Remove a set of frames in the beginning an end of the segment
         if feat_segment.shape[0] <= offset or offset == 0:
-            X[:feat_segment.shape[0], :] = feat_segment
+            X[: feat_segment.shape[0], :] = feat_segment
         else:
-            X[:feat_segment.shape[0] - offset, :] = \
-                feat_segment[offset // 2:-offset // 2, :]
+            X[: feat_segment.shape[0] - offset, :] = feat_segment[
+                offset // 2 : -offset // 2, :
+            ]
 
         # Compute the 2D-FMC
         try:
@@ -93,7 +95,7 @@ def feat_segments_to_2dfmc_max(feat_segments, offset=4):
 
 def compute_labels_kmeans(fmcs, k):
     # Removing the higher frequencies seem to yield better results
-    fmcs = fmcs[:, fmcs.shape[1] // 2:]
+    fmcs = fmcs[:, fmcs.shape[1] // 2 :]
 
     # Pre-process
     fmcs = np.log1p(fmcs)
@@ -110,8 +112,7 @@ def compute_labels_kmeans(fmcs, k):
     return kmeans.labels_
 
 
-def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
-                       offset=4):
+def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5, offset=4):
     """Main function to compute the segment similarity of file file_struct.
 
     Parameters
@@ -149,7 +150,7 @@ def compute_similarity(F, bound_idxs, dirichlet=False, xmeans=False, k=5,
         if fmcs.shape[1] > 500:
             labels_est = compute_labels_kmeans(fmcs, k=k)
         else:
-            dpgmm = mixture.DPGMM(n_components=k_init, covariance_type='full')
+            dpgmm = mixture.DPGMM(n_components=k_init, covariance_type="full")
             # dpgmm = mixture.VBGMM(n_components=k_init, covariance_type='full')
             dpgmm.fit(fmcs)
             k = len(dpgmm.means_)
@@ -175,6 +176,7 @@ class Segmenter(SegmenterInterface):
 
     .. _PDF: http://marl.smusic.nyu.edu/nieto/publications/NietoBello-ICASSP14.pdf
     """
+
     def processFlat(self):
         """Main process.
 
@@ -189,19 +191,26 @@ class Segmenter(SegmenterInterface):
         F = self._preprocess()
 
         # Normalize
-        F = U.normalize(F, norm_type=self.config["label_norm_feats"],
-                        floor=self.config["label_norm_floor"],
-                        min_db=self.config["label_norm_min_db"])
+        F = U.normalize(
+            F,
+            norm_type=self.config["label_norm_feats"],
+            floor=self.config["label_norm_floor"],
+            min_db=self.config["label_norm_min_db"],
+        )
 
         # Find the labels using 2D-FMCs
-        est_labels = compute_similarity(F, self.in_bound_idxs,
-                                        dirichlet=self.config["dirichlet"],
-                                        xmeans=self.config["xmeans"],
-                                        k=self.config["k"],
-                                        offset=self.config["2dfmc_offset"])
+        est_labels = compute_similarity(
+            F,
+            self.in_bound_idxs,
+            dirichlet=self.config["dirichlet"],
+            xmeans=self.config["xmeans"],
+            k=self.config["k"],
+            offset=self.config["2dfmc_offset"],
+        )
 
         # Post process estimations
-        self.in_bound_idxs, est_labels = self._postprocess(self.in_bound_idxs,
-                                                           est_labels)
+        self.in_bound_idxs, est_labels = self._postprocess(
+            self.in_bound_idxs, est_labels
+        )
 
         return self.in_bound_idxs, est_labels

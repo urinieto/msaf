@@ -15,7 +15,7 @@ See https://msaf.readthedocs.io for a complete reference manual and introductory
 ## Installation ##
 
 From the root folder, type:
-    
+
     pip install .
 
 (Note: you may need to create and activate a Python virtual environment with `python -m venv .venv` and `source .venv/bin/activate` first, depending on your system configuration).
