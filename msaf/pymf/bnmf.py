@@ -80,7 +80,7 @@ class BNMF(NMF):
     def update_h(self):
         H1 = np.dot(self.W.T, self.data[:, :]) + 3.0 * self._lamb_H * (self.H**2)
         H2 = (
-            np.dot(np.dot(self.W.T, self.W), self.H)
+            np.linalg.multi_dot([self.W.T, self.W, self.H])
             + 2 * self._lamb_H * (self.H**3)
             + self._lamb_H * self.H
             + 10**-9

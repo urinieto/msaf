@@ -122,13 +122,13 @@ class NMF:
 
     def update_h(self):
         # pre init H1, and H2 (necessary for storing matrices on disk)
-        H2 = np.dot(np.dot(self.W.T, self.W), self.H) + 10**-9
+        H2 = np.linalg.multi_dot([self.W.T, self.W, self.H]) + 10**-9
         self.H *= np.dot(self.W.T, self.data[:, :])
         self.H /= H2
 
     def update_w(self):
         # pre init W1, and W2 (necessary for storing matrices on disk)
-        W2 = np.dot(np.dot(self.W, self.H), self.H.T) + 10**-9
+        W2 = np.linalg.multi_dot([self.W, self.H, self.H.T]) + 10**-9
         self.W *= np.dot(self.data[:, :], self.H.T)
         self.W /= W2
 

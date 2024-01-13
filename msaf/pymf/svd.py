@@ -149,7 +149,8 @@ class SVD:
 
             Vtmp = v_vectors[:, idx]
 
-            self.U = np.dot(np.dot(self.data[:, :], Vtmp), S_inv)
+            self.U = np.linalg.multi_dot([self.data[:, :], Vtmp, S_inv])
+
             self.V = Vtmp.T
 
         def _sparse_right_svd():
