@@ -99,15 +99,14 @@ AddConfigVar(
 
 # Mel Features
 ## Mel spectrograms are defined following [1]
-## [1] Ullrich, K., Schl\"uter, J., & Grill, T. (2014, October). Boundary Detection in Music Structure Analysis using Convolutional Neural Networks. In ISMIR (pp. 417-422). 
-AddConfigVar('mel.n_mels', "Number of mel bins.",
-             IntParam(80))
-AddConfigVar('mel.f_min',
-             "Minimum frequency for constructing the mel scale.",
-             FloatParam(80.0))
-AddConfigVar('mel.f_max',
-             "Maximum frequency for constructing the mel scale.",
-             FloatParam(16000))
+## [1] Ullrich, K., Schl\"uter, J., & Grill, T. (2014, October). Boundary Detection in Music Structure Analysis using Convolutional Neural Networks. In ISMIR (pp. 417-422).
+AddConfigVar("mel.n_mels", "Number of mel bins.", IntParam(80))
+AddConfigVar(
+    "mel.f_min", "Minimum frequency for constructing the mel scale.", FloatParam(80.0)
+)
+AddConfigVar(
+    "mel.f_max", "Maximum frequency for constructing the mel scale.", FloatParam(16000)
+)
 
 # MFCC Features
 AddConfigVar("mfcc.n_mels", "Number of mel filters.", IntParam(128))

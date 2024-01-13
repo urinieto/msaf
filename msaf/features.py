@@ -112,6 +112,7 @@ class CQT(Features):
         cqt = librosa.amplitude_to_db(linear_cqt, ref=self.ref_power).T
         return cqt
 
+
 class Mel(Features):
     """This class contains the implementation of the Mel Spectrogram.
 
@@ -122,10 +123,18 @@ class Mel(Features):
 
     See https://en.wikipedia.org/wiki/Mel_scale for more details.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size, n_fft=config.n_fft,
-                 n_mels=config.mel.n_mels, f_min=config.mel.f_min, 
-                 f_max=config.mel.f_max):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        n_fft=config.n_fft,
+        n_mels=config.mel.n_mels,
+        f_min=config.mel.f_min,
+        f_max=config.mel.f_max,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -149,8 +158,9 @@ class Mel(Features):
             Maximal frequency.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         self.n_fft = n_fft
         # Init the Mel parameters
         self.n_mels = n_mels
@@ -171,15 +181,18 @@ class Mel(Features):
             The features, each row representing a feature vector for a give
             time frame/beat.
         """
-        mel = librosa.feature.melspectrogram(y=self._audio, 
-                                             sr = self.sr, 
-                                             n_fft=self.n_fft,
-                                             hop_length = self.hop_length, 
-                                             n_mels=self.n_mels, 
-                                             fmin=self.f_min,
-                                             fmax=self.f_max)
+        mel = librosa.feature.melspectrogram(
+            y=self._audio,
+            sr=self.sr,
+            n_fft=self.n_fft,
+            hop_length=self.hop_length,
+            n_mels=self.n_mels,
+            fmin=self.f_min,
+            fmax=self.f_max,
+        )
         module_mel = np.abs(mel).T
         return module_mel
+
 
 class LogMel(Features):
     """This class contains the implementation of the Log Mel Spectrogram.
@@ -189,10 +202,18 @@ class LogMel(Features):
 
     This is exactly the logarithm of the Mel spectrogram.
     """
-    def __init__(self, file_struct, feat_type, sr=config.sample_rate,
-                 hop_length=config.hop_size, n_fft=config.n_fft,
-                 n_mels=config.mel.n_mels, f_min=config.mel.f_min, 
-                 f_max=config.mel.f_max):
+
+    def __init__(
+        self,
+        file_struct,
+        feat_type,
+        sr=config.sample_rate,
+        hop_length=config.hop_size,
+        n_fft=config.n_fft,
+        n_mels=config.mel.n_mels,
+        f_min=config.mel.f_min,
+        f_max=config.mel.f_max,
+    ):
         """Constructor of the class.
 
         Parameters
@@ -216,15 +237,24 @@ class LogMel(Features):
             Maximal frequency.
         """
         # Init the parent
-        super().__init__(file_struct=file_struct, sr=sr, hop_length=hop_length,
-                         feat_type=feat_type)
+        super().__init__(
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+        )
         self.n_fft = n_fft
         # Init the Mel parameters
         self.n_mels = n_mels
         self.f_min = f_min
         self.f_max = f_max
-        self.mel = Mel(self.file_struct, self.feat_type, self.sr,self.hop_length, 
-                       self.n_fft,self.n_mels, self.f_min, self.f_max).features
+        self.mel = Mel(
+            self.file_struct,
+            self.feat_type,
+            self.sr,
+            self.hop_length,
+            self.n_fft,
+            self.n_mels,
+            self.f_min,
+            self.f_max,
+        ).features
 
     @classmethod
     def get_id(cls):
@@ -241,6 +271,7 @@ class LogMel(Features):
             time frame/beat.
         """
         return librosa.power_to_db(self.mel)
+
 
 class MFCC(Features):
     """This class contains the implementation of the MFCC Features.
