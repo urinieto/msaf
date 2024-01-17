@@ -45,7 +45,7 @@ AddConfigVar(
 )
 AddConfigVar(
     "minimum_frames",
-    "Minimum number of frames to activate " "algorithms.",
+    "Minimum number of frames to activate algorithms.",
     IntParam(10),
 )
 AddConfigVar(
