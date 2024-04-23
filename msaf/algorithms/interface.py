@@ -88,7 +88,7 @@ class SegmenterInterface:
         raise NotImplementedError("This method does not return flat " "segmentations.")
 
     def processHierarchical(self):
-        """Main process to obtian the hierarchical segmentation of a given
+        """Main process to obtain the hierarchical segmentation of a given
         track."""
         raise NotImplementedError(
             "This method does not return hierarchical " "segmentations."
