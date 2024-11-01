@@ -184,7 +184,7 @@ class Features(metaclass=MetaFeatures):
                 )
         return times, frames
 
-    def compute_beat_sync_features(self, beat_frames, beat_times, pad):
+    def compute_beat_sync_features(self, beat_frames, beat_times, pad, frames_per_beat=1):
         """Make the features beat-synchronous.
 
         Parameters
@@ -207,6 +207,16 @@ class Features(metaclass=MetaFeatures):
         """
         if beat_frames is None:
             return None, None
+        if frames_per_beat != 1:
+            new_beat_frames = np.empty(0,dtype=int)
+            for idx in range(len(beat_frames)-1):
+                this_beat_frame = beat_frames[idx]
+                next_beat_frame = beat_frames[idx+1]
+                subdivision = (next_beat_frame - this_beat_frame)
+                assert (frames_per_beat < subdivision)
+                frames_in_beat = [int(k * subdivision/frames_per_beat + this_beat_frame) for k in range(frames_per_beat)]
+                new_beat_frames = np.concatenate((new_beat_frames, frames_in_beat), dtype=int )
+            beat_frames = new_beat_frames
 
         # Make beat synchronous
         beatsync_feats = librosa.util.utils.sync(
