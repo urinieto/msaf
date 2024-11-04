@@ -25,10 +25,13 @@ from msaf.exceptions import (
     WrongFeaturesFormatError,
 )
 
-# Three types of features at the moment:
+# Five types of features at the moment:
 #   - framesync: Frame-wise synchronous.
 #   - est_beatsync: Beat-synchronous using estimated beats with librosa
 #   - ann_beatsync: Beat-synchronous using annotated beats from ground-truth
+#   - est_mutlibeat: Multiple frames per beat-synchronous using estimated beats 
+#   - ann_multibeat: Multiple frames per beat-synchronous using annotated beats from ground-truth
+
 FeatureTypes = Enum("FeatureTypes", "framesync est_beatsync ann_beatsync est_multibeat ann_multibeat")
 
 # All available features
@@ -61,7 +64,7 @@ class Features(metaclass=MetaFeatures):
     features per frames.
     """
 
-    def __init__(self, file_struct, sr, hop_length, feat_type):
+    def __init__(self, file_struct, sr, hop_length, feat_type, frame_per_beat=3):
         """Init function for the base class to make sure all features have at
         least these parameters as attributes.
 
@@ -75,13 +78,15 @@ class Features(metaclass=MetaFeatures):
             Hop in frames of the features to be computed.
         feat_type: `FeatureTypes`
             Enum containing the type of feature.
+        frame_per_beat: int > 0
+            Number of frames per beat used in multibeat features
         """
         # Set the global parameters
         self.file_struct = file_struct
         self.sr = sr
         self.hop_length = hop_length
         self.feat_type = feat_type
-        self.fpb = 3 # The number of frames per beat computed for mfpb features
+        self.frame_per_beat = frame_per_beat # The number of frames per beat computed for mfpb features
 
         # The following attributes will be populated, if needed,
         # once the `features` getter is called
@@ -450,8 +455,8 @@ class Features(metaclass=MetaFeatures):
         pad = True  # Always append to the end of the features
         self._est_beatsync_features = self.compute_beat_sync_features(self._est_beats_frames, pad)
         self._ann_beatsync_features = self.compute_beat_sync_features(self._ann_beats_frames, pad)
-        self._est_multibeat_features = self.compute_beat_sync_features(self._est_beats_frames, pad, frames_per_beat=self.fpb)
-        self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_beats_frames, pad, frames_per_beat=self.fpb)
+        self._est_multibeat_features = self.compute_beat_sync_features(self._est_beats_frames, pad, frames_per_beat=self.frame_per_beat)
+        self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_beats_frames, pad, frames_per_beat=self.frame_per_beat)
         self._est_beatsync_times = self.pad_beat_times(self._est_beatsync_features, self._est_beats_times)
         self._ann_beatsync_times = self.pad_beat_times(self._ann_beatsync_features, self._ann_beats_times)
 
@@ -537,7 +542,7 @@ class Features(metaclass=MetaFeatures):
         return self._features
 
     @classmethod
-    def select_features(cls, features_id, file_struct, annot_beats, framesync):
+    def select_features(cls, features_id, file_struct, annot_beats, framesync, multibeat=False):
         """Selects the features from the given parameters.
 
         Parameters
@@ -560,9 +565,15 @@ class Features(metaclass=MetaFeatures):
         if not annot_beats and framesync:
             feat_type = FeatureTypes.framesync
         elif annot_beats and not framesync:
-            feat_type = FeatureTypes.ann_beatsync
+            if multibeat:
+                feat_type = FeatureTypes.ann_multibeat
+            else:
+                feat_type = FeatureTypes.ann_beatsync
         elif not annot_beats and not framesync:
-            feat_type = FeatureTypes.est_beatsync
+            if multibeat:
+                feat_type = FeatureTypes.est_multibeat
+            else:
+                feat_type = FeatureTypes.est_beatsync
         else:
             raise FeatureTypeNotFound("Type of features not valid.")
 
