@@ -64,7 +64,7 @@ class Features(metaclass=MetaFeatures):
     features per frames.
     """
 
-    def __init__(self, file_struct, sr, hop_length, feat_type, frame_per_beat=3):
+    def __init__(self, file_struct, sr, hop_length, feat_type, frames_per_beat=3):
         """Init function for the base class to make sure all features have at
         least these parameters as attributes.
 
@@ -86,7 +86,7 @@ class Features(metaclass=MetaFeatures):
         self.sr = sr
         self.hop_length = hop_length
         self.feat_type = feat_type
-        self.frame_per_beat = frame_per_beat # The number of frames per beat computed for mfpb features
+        self.frames_per_beat = frames_per_beat # The number of frames per beat computed for mfpb features
 
         # The following attributes will be populated, if needed,
         # once the `features` getter is called
@@ -116,6 +116,7 @@ class Features(metaclass=MetaFeatures):
             "feat_type",
             "hop_length",
             "dur",
+            "frames_per_beat",
         ]
 
     def compute_HPSS(self):
@@ -279,6 +280,7 @@ class Features(metaclass=MetaFeatures):
             assert os.path.basename(self.file_struct.audio_file) == os.path.basename(
                 feats["globals"]["audio_file"]
             )
+            assert self.frames_per_beat == int(feats["globals"]["frames_per_beat"])
 
             # Check for specific features params
             feat_params_err = FeatureParamsError(
@@ -365,6 +367,7 @@ class Features(metaclass=MetaFeatures):
                 "sample_rate": self.sr,
                 "hop_length": self.hop_length,
                 "audio_file": self.file_struct.audio_file,
+                "frames_per_beat": self.frames_per_beat,
             }
 
             # Beats
@@ -392,23 +395,14 @@ class Features(metaclass=MetaFeatures):
 
             # Actual features
             out_json[self.get_id()]["framesync"] = self._framesync_features.tolist()
-            out_json[self.get_id()][
-                "est_beatsync"
-            ] = self._est_beatsync_features.tolist()
-            if self._ann_beatsync_features is not None:
-                out_json[self.get_id()][
-                    "ann_beatsync"
-                ] = self._ann_beatsync_features.tolist()
-            
-            out_json[self.get_id()][
-                "est_multibeat"
-            ] = self._est_multibeat_features.tolist()
-            if self._ann_mutlibeat_features is not None:
-                out_json[self.get_id()][
-                    "ann_multibeat"
-                ] = self._ann_mutlibeat_features.tolist()
-            
+            out_json[self.get_id()]["est_beatsync"] = self._est_beatsync_features.tolist()
 
+            if self._ann_beatsync_features is not None:
+                out_json[self.get_id()]["ann_beatsync"] = self._ann_beatsync_features.tolist()
+            
+            out_json[self.get_id()]["est_multibeat"] = self._est_multibeat_features.tolist()
+            if self._ann_mutlibeat_features is not None:
+                out_json[self.get_id()]["ann_multibeat"] = self._ann_mutlibeat_features.tolist()
             # Save it
             with open(self.file_struct.features_file, "w") as f:
                 json.dump(out_json, f, indent=2)
@@ -455,8 +449,8 @@ class Features(metaclass=MetaFeatures):
         pad = True  # Always append to the end of the features
         self._est_beatsync_features = self.compute_beat_sync_features(self._est_beats_frames, pad)
         self._ann_beatsync_features = self.compute_beat_sync_features(self._ann_beats_frames, pad)
-        self._est_multibeat_features = self.compute_beat_sync_features(self._est_beats_frames, pad, frames_per_beat=self.frame_per_beat)
-        self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_beats_frames, pad, frames_per_beat=self.frame_per_beat)
+        self._est_multibeat_features = self.compute_beat_sync_features(self._est_beats_frames, pad, frames_per_beat=self.frames_per_beat)
+        self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_beats_frames, pad, frames_per_beat=self.frames_per_beat)
         self._est_beatsync_times = self.pad_beat_times(self._est_beatsync_features, self._est_beats_times)
         self._ann_beatsync_times = self.pad_beat_times(self._ann_beatsync_features, self._ann_beats_times)
 
@@ -530,12 +524,12 @@ class Features(metaclass=MetaFeatures):
         elif self.feat_type is FeatureTypes.est_multibeat:
             self._features = self._est_multibeat_features
         elif self.feat_type is FeatureTypes.ann_multibeat:
-            if self._ann_beatsync_features_mfbp is None:
+            if self._ann_multibeat_features is None:
                 raise FeatureTypeNotFound(
                     "Feature type %s is not valid because no annotated beats "
                     "were found" % self.feat_type
                 )
-            self._features = self._ann_beatsync_features_mfbp
+            self._features = self._ann_mutlibeat_features
         else:
             raise FeatureTypeNotFound("Feature type %s is not valid." % self.feat_type)
 
