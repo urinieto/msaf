@@ -107,6 +107,10 @@ class Features(metaclass=MetaFeatures):
         self._ann_beatsync_times = None  # Annotated beat-sync times
         self._ann_beats_times = None  # Annotated beat times
         self._ann_beats_frames = None  # Annotated beats in frames
+        self._est_multibeat_frames = None # Estimated multibeat frames
+        self._est_multibeat_times = None # Estimated multibeat times
+        self._ann_multibeat_frames = None # Annotated multibeat frames
+        self._ann_multibeat_times = None # Annotated multibeat times
 
         # Differentiate global params from subclass attributes.
         # This is a bit hacky... I accept Pull Requests ^_^
@@ -193,7 +197,7 @@ class Features(metaclass=MetaFeatures):
                 )
         return times, frames
 
-    def compute_beat_sync_features(self, beat_frames, pad, frames_per_beat=1):
+    def compute_beat_sync_features(self, beat_frames, pad):
         """Make the features beat-synchronous.
 
         Parameters
@@ -211,17 +215,7 @@ class Features(metaclass=MetaFeatures):
         """
         if beat_frames is None:
             return None
-        if frames_per_beat != 1:
-            new_beat_frames = np.empty(0,dtype=int)
-            for idx in range(len(beat_frames)-1):
-                this_beat_frame = beat_frames[idx]
-                next_beat_frame = beat_frames[idx+1]
-                subdivision = (next_beat_frame - this_beat_frame)
-                assert (frames_per_beat < subdivision)
-                frames_in_beat = [int(k * subdivision/frames_per_beat + this_beat_frame) for k in range(frames_per_beat)]
-                new_beat_frames = np.concatenate((new_beat_frames, frames_in_beat), dtype=int )
-            beat_frames = new_beat_frames
-
+        
         # Make beat synchronous
         beatsync_feats = librosa.util.utils.sync(
             self._framesync_features.T, beat_frames, pad=pad
@@ -229,31 +223,69 @@ class Features(metaclass=MetaFeatures):
 
         return beatsync_feats
     
-    def pad_beat_times(self, beatsync_feats, beat_times):
+    def _compute_multibeat(self, beat_frames):
+        """Compute frames index  evenly distributed between beats
+        Parameters
+        ----------
+            beat_frames: np.array
+                the frames index of beats
+        Returns
+        -------
+            multibeat_frames: np.array
+                the frames index of multibeats
+        """
+        if beat_frames is None:
+            return None, None
+        multibeat_frames = np.empty(0,dtype=int)
+        for idx in range(len(beat_frames)-1):
+            this_beat_frame = beat_frames[idx]
+            next_beat_frame = beat_frames[idx+1]
+            subdivision = (next_beat_frame - this_beat_frame)
+            assert (self.frames_per_beat < subdivision)
+            frames_in_beat = [int(k * subdivision/self.frames_per_beat + this_beat_frame) for k in range(self.frames_per_beat)]
+            multibeat_frames = np.concatenate((multibeat_frames, frames_in_beat), dtype=int )
+
+        # Compute times of frames
+        multibeat_times = librosa.frames_to_time(multibeat_frames, sr=self.sr, hop_length=self.hop_length)
+
+        return multibeat_times, multibeat_frames
+    
+    def _pad_beats(self, beat_times, beat_frames):
         """Pad the beat times if necessary
         Parameters
         ----------
-        beatsync_feats: np.array
-            The beat-synchronized features.
-
         beat_times: np.array
             The time points of the beat positions (in seconds).
 
+        beat_frames: np.array
+            The beat-synchronized frames.
+
+
         Returns
         -------
-        beatsync_times: np.array
+        padded_beat_times: np.array
             The updated time points of the beat positions (in seconds)
-            or None if beatsync_feats is None
+            or None if beat_frames is None
+
+        padded_beat_frames: np.array
+            The frames padded to the full range of self._framesync
+            or None if beat_frames is None
+
         """
-        if beatsync_feats is None:
-            return None
-        
-        beatsync_times = np.copy(beat_times)
-        if beatsync_times.shape[0] != beatsync_feats.shape[0]:
-            beatsync_times = np.concatenate(
-                (beatsync_times, [self._framesync_times[-1]])
+        if beat_frames is None:
+            return None, None
+        if beat_frames.shape[0] == 0:
+            return beat_times, beat_frames
+        assert (beat_frames.shape[0] == beat_times.shape[0])
+        padded_beat_frames = np.copy(beat_frames)
+        padded_beat_times = np.copy(beat_times)
+        if padded_beat_frames[-1] < self._framesync_features.T.shape[0]:
+            padded_beat_frames = np.append(padded_beat_frames, self._framesync_features.T.shape[0])
+            padded_beat_times = np.concatenate(
+                (padded_beat_times, [self._framesync_times[-1]])
             )
-        return beatsync_times
+        assert (padded_beat_frames.shape[0] == padded_beat_times.shape[0])
+        return padded_beat_times, padded_beat_frames
 
     def read_features(self, tol=1e-3):
         """Reads the features from a file and stores them in the current
@@ -307,12 +339,15 @@ class Features(metaclass=MetaFeatures):
             )
             self._framesync_features = np.array(feats[self.get_id()]["framesync"])
             self._est_beatsync_features = np.array(feats[self.get_id()]["est_beatsync"])
+
+            self._est_multibeat_times = np.array(feats[self.get_id()]["est_multibeat_times"])
             self._est_multibeat_features = np.array(feats[self.get_id()]["est_multibeat"])
 
             # Read annotated beats if available
             if "ann_beats" in feats.keys():
                 self._ann_beats_times = np.array(feats["ann_beats"])
                 self._ann_beatsync_times = np.array(feats["ann_beatsync_times"])
+                self._ann_multibeat_times = np.array(feats["ann_multibeat_times"])
                 self._ann_beats_frames = librosa.core.time_to_frames(
                     self._ann_beats_times, sr=self.sr, hop_length=self.hop_length
                 )
@@ -373,9 +408,11 @@ class Features(metaclass=MetaFeatures):
             # Beats
             out_json["est_beats"] = self._est_beats_times.tolist()
             out_json["est_beatsync_times"] = self._est_beatsync_times.tolist()
+            out_json["est_multibeat_times"] = self._est_multibeat_times.tolist()
             if self._ann_beats_times is not None:
                 out_json["ann_beats"] = self._ann_beats_times.tolist()
                 out_json["ann_beatsync_times"] = self._ann_beatsync_times.tolist()
+                out_json["ann_multibeat_times"] = self._ann_multibeat_times.tolist()
         except FeatureParamsError:
             # We have other features in the file, simply add these ones
             with open(self.file_struct.features_file) as f:
@@ -441,18 +478,27 @@ class Features(metaclass=MetaFeatures):
         # Compute framesync times
         self._compute_framesync_times()
 
-        # Compute/Read beats
+        # Compute/Read beats times and frames
         self._est_beats_times, self._est_beats_frames = self.estimate_beats()
         self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
 
-        # Beat-Synchronize
-        pad = True  # Always append to the end of the features
+        # Pad beats
+        self._est_beatsync_times, self._est_beats_frames = self._pad_beats(self._est_beats_times, self._est_beats_frames)
+        self._ann_beatsync_times, self._ann_beats_frames = self._pad_beats(self._ann_beats_times, self._ann_beats_frames)
+
+        # Compute multibeats timees and frames
+        self._est_multibeat_times, self._est_multibeat_frames = self._compute_multibeat(self._est_beats_frames)
+        self._ann_multibeat_times, self._ann_multibeat_frames = self._compute_multibeat(self._ann_beats_frames)
+
+        # Compute frames features on beat
+        pad = False  # We already padded the beat frames append to the end of the features
         self._est_beatsync_features = self.compute_beat_sync_features(self._est_beats_frames, pad)
         self._ann_beatsync_features = self.compute_beat_sync_features(self._ann_beats_frames, pad)
-        self._est_multibeat_features = self.compute_beat_sync_features(self._est_beats_frames, pad, frames_per_beat=self.frames_per_beat)
-        self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_beats_frames, pad, frames_per_beat=self.frames_per_beat)
-        self._est_beatsync_times = self.pad_beat_times(self._est_beatsync_features, self._est_beats_times)
-        self._ann_beatsync_times = self.pad_beat_times(self._ann_beatsync_features, self._ann_beats_times)
+
+        # Compute frames features on multibeat
+        self._est_multibeat_features = self.compute_beat_sync_features(self._est_multibeat_frames, pad)
+        self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_multibeat_frames, pad)
+
 
 
     @property
@@ -469,7 +515,12 @@ class Features(metaclass=MetaFeatures):
             frame_times = self._est_beatsync_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
             frame_times = self._ann_beatsync_times
-
+        elif self.feat_type is FeatureTypes.est_multibeat:
+            frame_times = self._est_multibeat_times
+        elif self.feat_type is FeatureTypes.ann_multibeat:
+            frame_times = self._ann_multibeat_times
+        else:
+            raise FeatureTypeNotFound("Type of features not valid.")
         return frame_times
 
     @property
