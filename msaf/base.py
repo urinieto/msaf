@@ -251,7 +251,7 @@ class Features(metaclass=MetaFeatures):
         return multibeat_times, multibeat_frames
     
     def _pad_beats(self, beat_times, beat_frames):
-        """Pad the beat times if necessary
+        """Pad the beat frames
         Parameters
         ----------
         beat_times: np.array
@@ -286,7 +286,29 @@ class Features(metaclass=MetaFeatures):
             )
         assert (padded_beat_frames.shape[0] == padded_beat_times.shape[0])
         return padded_beat_times, padded_beat_frames
-
+    
+    def _pad_beats_times(self, beat_times, beatsync_feats):
+        """Pad the beat_times with the last frametimes if necessary
+        Parameters
+        -----------
+            beat_times: np.array
+                the beats times to pad
+            beatsync_features: np.array
+                The features corresponding to the beats
+        Returns
+        ---------
+            beatsync_times: np.array
+                the padded beats times
+        """
+        if beatsync_feats is None :
+            return None
+        beatsync_times = np.copy(beat_times)
+        if beatsync_times.shape[0] != beatsync_feats.shape[0]:
+            beatsync_times = np.concatenate(
+                (beatsync_times, [self._framesync_times[-1]])
+            )
+        return beatsync_times
+    
     def read_features(self, tol=1e-3):
         """Reads the features from a file and stores them in the current
         object.
@@ -482,16 +504,12 @@ class Features(metaclass=MetaFeatures):
         self._est_beats_times, self._est_beats_frames = self.estimate_beats()
         self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
 
-        # Pad beats
-        self._est_beatsync_times, self._est_beats_frames = self._pad_beats(self._est_beats_times, self._est_beats_frames)
-        self._ann_beatsync_times, self._ann_beats_frames = self._pad_beats(self._ann_beats_times, self._ann_beats_frames)
-
         # Compute multibeats timees and frames
         self._est_multibeat_times, self._est_multibeat_frames = self._compute_multibeat(self._est_beats_frames)
         self._ann_multibeat_times, self._ann_multibeat_frames = self._compute_multibeat(self._ann_beats_frames)
 
         # Compute frames features on beat
-        pad = False  # We already padded the beat frames append to the end of the features
+        pad = True  # pad the beat frames 
         self._est_beatsync_features = self.compute_beat_sync_features(self._est_beats_frames, pad)
         self._ann_beatsync_features = self.compute_beat_sync_features(self._ann_beats_frames, pad)
 
@@ -499,7 +517,9 @@ class Features(metaclass=MetaFeatures):
         self._est_multibeat_features = self.compute_beat_sync_features(self._est_multibeat_frames, pad)
         self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_multibeat_frames, pad)
 
-
+        # Pad beatsync times
+        self._est_beatsync_times = self._pad_beats_times(self._est_beats_times, self._est_beatsync_features)
+        self._ann_beatsync_times = self._pad_beats_times(self._ann_beats_times, self._ann_beatsync_features)
 
     @property
     def frame_times(self):
