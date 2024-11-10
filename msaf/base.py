@@ -235,7 +235,7 @@ class Features(metaclass=MetaFeatures):
                 the frames index of multibeats
         """
         if beat_frames is None:
-            return None, None
+            return None
         multibeat_frames = np.empty(0,dtype=int)
         for idx in range(len(beat_frames)-1):
             this_beat_frame = beat_frames[idx]
@@ -245,10 +245,34 @@ class Features(metaclass=MetaFeatures):
             frames_in_beat = [int(k * subdivision/self.frames_per_beat + this_beat_frame) for k in range(self.frames_per_beat)]
             multibeat_frames = np.concatenate((multibeat_frames, frames_in_beat), dtype=int )
 
-        # Compute times of frames
-        multibeat_times = librosa.frames_to_time(multibeat_frames, sr=self.sr, hop_length=self.hop_length)
+        return multibeat_frames
 
-        return multibeat_times, multibeat_frames
+    def _shape_beatwise(self, multibeat_features):
+        """Transform the multibeat_features matrix into a beatwise features matrix
+        Parameters
+        -----------
+        multibeat_features: np.array
+            The features to transform
+        Returns
+        ----------
+        beatwise_feature: np.array
+            The features shaped as a beatwise matrix
+            or None if multibeat_features is None
+        """
+        if multibeat_features is None:
+            return None
+        if multibeat_features.shape[0] == 0:
+            return multibeat_features
+        assert(multibeat_features.shape[0]%self.frames_per_beat == 0,"The size of array must be a multiple of self.frames_per_beat")
+        nummber_of_beats = int(multibeat_features.shape[0]/self.frames_per_beat)
+        tensor = []
+        for k in range(nummber_of_beats):
+            beat=[]
+            for f in range(self.frames_per_beat):
+                beat.append(multibeat_features[k*self.frames_per_beat + f])
+            tensor.append(beat)
+        tensor = np.array(tensor)
+        return np.reshape(tensor,(tensor.shape[0], -1), order='C')
     
     def _pad_beats(self, beat_times, beat_frames):
         """Pad the beat frames
@@ -505,8 +529,12 @@ class Features(metaclass=MetaFeatures):
         self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
 
         # Compute multibeats timees and frames
-        self._est_multibeat_times, self._est_multibeat_frames = self._compute_multibeat(self._est_beats_frames)
-        self._ann_multibeat_times, self._ann_multibeat_frames = self._compute_multibeat(self._ann_beats_frames)
+        self._est_multibeat_frames = self._compute_multibeat(self._est_beats_frames)
+        self._ann_multibeat_frames = self._compute_multibeat(self._ann_beats_frames)
+
+        # Multibeat times is beats time (before padding)
+        self._est_multibeat_times = np.copy(self._est_beats_times)
+        self._ann_multibeat_times = np.copy(self._ann_beats_times)
 
         # Compute frames features on beat
         pad = True  # pad the beat frames 
@@ -516,6 +544,10 @@ class Features(metaclass=MetaFeatures):
         # Compute frames features on multibeat
         self._est_multibeat_features = self.compute_beat_sync_features(self._est_multibeat_frames, pad)
         self._ann_mutlibeat_features = self.compute_beat_sync_features(self._ann_multibeat_frames, pad)
+
+        # Transform multibeat into beatwise matrix
+        self._est_multibeat_features = self._shape_beatwise(self._est_multibeat_features)
+        self._ann_mutlibeat_features = self._shape_beatwise(self._ann_mutlibeat_features)
 
         # Pad beatsync times
         self._est_beatsync_times = self._pad_beats_times(self._est_beats_times, self._est_beatsync_features)
