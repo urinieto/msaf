@@ -23,6 +23,7 @@ from msaf.exceptions import (
     NoAudioFileError,
     NoFeaturesFileError,
     WrongFeaturesFormatError,
+    FramePerBeatTooHigh,
 )
 
 # Five types of features at the moment:
@@ -236,12 +237,15 @@ class Features(metaclass=MetaFeatures):
         """
         if beat_frames is None:
             return None
+        if beat_frames == []:
+            return []
         multibeat_frames = np.empty(0,dtype=int)
         for idx in range(len(beat_frames)-1):
             this_beat_frame = beat_frames[idx]
             next_beat_frame = beat_frames[idx+1]
             subdivision = (next_beat_frame - this_beat_frame)
-            assert (self.frames_per_beat < subdivision)
+            if not (self.frames_per_beat < subdivision):
+                raise FramePerBeatTooHigh
             frames_in_beat = [int(k * subdivision/self.frames_per_beat + this_beat_frame) for k in range(self.frames_per_beat)]
             multibeat_frames = np.concatenate((multibeat_frames, frames_in_beat), dtype=int )
 
@@ -273,43 +277,6 @@ class Features(metaclass=MetaFeatures):
             tensor.append(beat)
         tensor = np.array(tensor)
         return np.reshape(tensor,(tensor.shape[0], -1), order='C')
-    
-    def _pad_beats(self, beat_times, beat_frames):
-        """Pad the beat frames
-        Parameters
-        ----------
-        beat_times: np.array
-            The time points of the beat positions (in seconds).
-
-        beat_frames: np.array
-            The beat-synchronized frames.
-
-
-        Returns
-        -------
-        padded_beat_times: np.array
-            The updated time points of the beat positions (in seconds)
-            or None if beat_frames is None
-
-        padded_beat_frames: np.array
-            The frames padded to the full range of self._framesync
-            or None if beat_frames is None
-
-        """
-        if beat_frames is None:
-            return None, None
-        if beat_frames.shape[0] == 0:
-            return beat_times, beat_frames
-        assert (beat_frames.shape[0] == beat_times.shape[0])
-        padded_beat_frames = np.copy(beat_frames)
-        padded_beat_times = np.copy(beat_times)
-        if padded_beat_frames[-1] < self._framesync_features.T.shape[0]:
-            padded_beat_frames = np.append(padded_beat_frames, self._framesync_features.T.shape[0])
-            padded_beat_times = np.concatenate(
-                (padded_beat_times, [self._framesync_times[-1]])
-            )
-        assert (padded_beat_frames.shape[0] == padded_beat_times.shape[0])
-        return padded_beat_times, padded_beat_frames
     
     def _pad_beats_times(self, beat_times, beatsync_feats):
         """Pad the beat_times with the last frametimes if necessary
