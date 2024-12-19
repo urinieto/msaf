@@ -620,7 +620,8 @@ class Features(metaclass=MetaFeatures):
             Whether to use annotated (`True`) or estimated (`False`) beats
         framesync: boolean
             Whether to use framesync (`True`) or beatsync (`False`) features
-
+        multibeat: boolean
+            Whether to use multibeat ('True`) or not. Default is `False`
         Returns
         -------
         features: obj
