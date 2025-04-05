@@ -11,12 +11,14 @@
     "audio_file": "fixtures/chirp_noaudio.mp3",
     "dur": 10.0,
     "sample_rate": 22050,
-    "hop_length": 1024
+    "hop_length": 1024,
+    "frames_per_beat": 3
   },
   "est_beats": [],
   "est_beatsync_times": [],
   "cqt": {
     "est_beatsync": [],
+    "est_multibeat": [],
     "params": {
       "filter_scale": "1.0",
       "ref_power": "amax",
