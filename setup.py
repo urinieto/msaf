@@ -44,7 +44,6 @@ setup(
         "cvxopt",
         "decorator",
         "enum34",
-        "future",
         "jams >= 0.3.0",
         "joblib",
         "librosa >= 0.6.0",
