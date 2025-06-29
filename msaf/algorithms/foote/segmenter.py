@@ -15,7 +15,7 @@ def median_filter(X, M=8):
 
 def compute_gaussian_krnl(M):
     """Creates a gaussian kernel following Foote's paper."""
-    g = signal.gaussian(M, M // 3.0, sym=True)
+    g = signal.windows.gaussian(M, M // 3.0, sym=True)
     G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
     G[M // 2 :, : M // 2] = -G[M // 2 :, : M // 2]
     G[: M // 2, M // 2 :] = -G[: M // 2, M // 2 :]
