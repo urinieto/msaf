@@ -12,6 +12,7 @@
 
 import os
 import sys
+import importlib.util
 
 import sphinx
 
@@ -148,9 +149,12 @@ copyright = "2015-2018, msaf development team"
 # built documents.
 #
 
-import imp
+spec = importlib.util.spec_from_file_location(
+    "msaf.version", os.path.abspath("../msaf/version.py")
+)
+msaf = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(msaf)
 
-msaf = imp.load_source("msaf.version", "../msaf/version.py")
 # The short X.Y version.
 version = msaf.short_version
 # The full version, including alpha/beta/rc tags.

@@ -1,9 +1,11 @@
 import glob
-import imp
+import importlib.util
 
-from setuptools import find_packages, setup
+from setuptools import setup, find_packages
 
-version = imp.load_source("msaf.version", "msaf/version.py")
+spec = importlib.util.spec_from_file_location("msaf.version", "msaf/version.py")
+version = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(version)
 
 # MSAF configuration
 setup(
@@ -42,7 +44,6 @@ setup(
         "cvxopt",
         "decorator",
         "enum34",
-        "future",
         "jams >= 0.3.0",
         "joblib",
         "librosa >= 0.6.0",
