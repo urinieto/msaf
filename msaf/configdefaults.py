@@ -33,6 +33,7 @@ AddConfigVar(
 AddConfigVar("sample_rate", "Default Sample Rate to be used.", IntParam(22050))
 AddConfigVar("n_fft", "FFT size", IntParam(4096))
 AddConfigVar("hop_size", "Hop length in samples", IntParam(1024))
+AddConfigVar("frames_per_beat","The number of framees computed per beat on multibeat", IntParam(3))
 
 
 # Files and dirs

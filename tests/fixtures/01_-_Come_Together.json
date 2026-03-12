@@ -89078,7 +89078,8 @@
         0.0,
         0.0
       ]
-    ]
+    ],
+    "est_multibeat" :[]
   },
   "mfcc": {
     "est_beatsync": [
@@ -100267,6 +100268,7 @@
         1.4796745923739383
       ]
     ],
+    "est_multibeat" :[],
     "params": {
       "ref_power": "amax",
       "n_mels": "128",
@@ -190088,7 +190090,8 @@
     "audio_file": "/home/uri/datasets/BeatlesTUT/audio/01_-_Come_Together.wav",
     "dur": 260.6497959183674,
     "sample_rate": 22050,
-    "hop_length": 1024
+    "hop_length": 1024,
+    "frames_per_beat": 3
   },
   "est_beats": [
     1.207437641723356,

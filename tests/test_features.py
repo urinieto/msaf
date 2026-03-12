@@ -48,6 +48,8 @@ def run_framesync(features_class):
     assert "framesync" in data[features_class.get_id()].keys()
     assert "est_beatsync" in data[features_class.get_id()].keys()
     assert "ann_beatsync" in data[features_class.get_id()].keys()
+    assert "est_multibeat" in data[features_class.get_id()].keys()
+    assert "ann_multibeat" in data[features_class.get_id()].keys()
     read_feats = np.array(data[features_class.get_id()]["framesync"])
     assert np.array_equal(feats, read_feats)
 
@@ -311,6 +313,14 @@ def test_select_features():
     feature = Features.select_features("cqt", my_file_struct, True, False)
     assert isinstance(feature, CQT)
     assert feature.feat_type == FeatureTypes.ann_beatsync
+
+    feature = Features.select_features("mfcc", my_file_struct, False, False, multibeat=True)
+    assert isinstance(feature, MFCC)
+    assert feature.feat_type == FeatureTypes.est_multibeat
+
+    feature = Features.select_features("cqt", my_file_struct, True, False, multibeat=True)
+    assert isinstance(feature, CQT)
+    assert feature.feat_type == FeatureTypes.ann_multibeat
 
 
 def test_wrong_select_features():

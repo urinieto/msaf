@@ -64,6 +64,13 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
+        "-mb",
+        action="store_true",
+        dest="multibeat",
+        help="Compute mulitple frames per beat",
+        default=False,
+    )
+    parser.add_argument(
         "-j",
         action="store",
         dest="n_jobs",
@@ -113,6 +120,7 @@ if __name__ == "__main__":
         "annot_beats": args.annot_beats,
         "feature": args.feature,
         "framesync": args.framesync,
+        "multibeat": args.multibeat,
         "boundaries_id": args.boundaries_id,
         "labels_id": args.labels_id,
         "n_jobs": args.n_jobs,

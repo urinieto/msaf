@@ -43,3 +43,6 @@ class NoEstimationsError(MSAFError):
 
 class WrongAlgorithmID(MSAFError):
     """This algorithm was not found in msaf."""
+
+class FramePerBeatTooHigh(MSAFError):
+    """Frames per beat is higher than the number of frames between two beats"""
