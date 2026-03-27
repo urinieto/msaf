@@ -1,8 +1,12 @@
 """Base module containing parent classes for the Features."""
 
+from __future__ import annotations
+
 import logging
 import os
+from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 import jams
 import librosa
@@ -20,7 +24,26 @@ from msaf.exceptions import (
 FeatureTypes = Enum("FeatureTypes", "framesync est_beatsync ann_beatsync")
 
 # All available features
-features_registry = {}
+features_registry: dict[str, type[Features]] = {}
+
+
+@dataclass
+class ProcessingContext:
+    """Holds shared state for a single processing run.
+
+    Separates the computed features object from the scalar algorithm
+    parameters so that features are explicitly shared across boundary
+    and label algorithms without being buried in a generic dict.
+    """
+
+    features: Features | None = None
+    hier: bool = False
+    algorithm_config: dict[str, Any] = field(default_factory=dict)
+
+    # Convenience proxies so call-sites that used config["features"].X still work
+    @property
+    def dur(self) -> float | None:
+        return self.features.dur if self.features is not None else None
 
 
 class MetaFeatures(type):
@@ -28,7 +51,6 @@ class MetaFeatures(type):
 
     def __new__(meta, name, bases, class_dict):
         cls = type.__new__(meta, name, bases, class_dict)
-        # Register classes that inherit from the base class Features
         if "Features" in [base.__name__ for base in bases]:
             features_registry[cls.get_id()] = cls
         return cls
@@ -41,72 +63,73 @@ class Features(metaclass=MetaFeatures):
     annotated beats, compute beat-synchronous features, and compute
     features on the fly from audio.
 
-    It should be straightforward to add features in MSAF, simply by
-    writing classes that inherit from this one.
+    Features are computed **lazily**: only the requested feature type
+    (framesync, est_beatsync, or ann_beatsync) is computed.  Beat
+    estimation is skipped entirely when only framesync features are
+    needed.
 
-    The `features` getter does the main job, and it returns a matrix
-    `(N, F)`, where `N` is the number of frames an `F` is the number of
-    features per frames.
+    The ``features`` property does the main job, and it returns a matrix
+    ``(N, F)``, where ``N`` is the number of frames and ``F`` is the
+    number of features per frame.
     """
 
-    def __init__(self, file_struct, sr, hop_length, feat_type):
-        """Init function for the base class to make sure all features have at
-        least these parameters as attributes.
-
-        Parameters
-        ----------
-        file_struct: `msaf.input_output.FileStruct`
-            Object containing the paths to the files.
-        sr: int > 0
-            Sampling rate of the audio file.
-        hop_length: int > 0
-            Hop in frames of the features to be computed.
-        feat_type: `FeatureTypes`
-            Enum containing the type of feature.
-        """
+    def __init__(
+        self,
+        file_struct: Any,
+        sr: int,
+        hop_length: int,
+        feat_type: FeatureTypes,
+    ) -> None:
         self.file_struct = file_struct
         self.sr = sr
         self.hop_length = hop_length
         self.feat_type = feat_type
 
-        # The following attributes will be populated, if needed,
-        # once the `features` getter is called
-        self.dur = None
-        self._features = None
-        self._framesync_features = None
-        self._est_beatsync_features = None
-        self._ann_beatsync_features = None
+        self.dur: float | None = None
+        self._features: np.ndarray | None = None
+        self._framesync_features: np.ndarray | None = None
+        self._est_beatsync_features: np.ndarray | None = None
+        self._ann_beatsync_features: np.ndarray | None = None
+        self._audio: np.ndarray | None = None
+        self._audio_harmonic: np.ndarray | None = None
+        self._audio_percussive: np.ndarray | None = None
+        self._framesync_times: np.ndarray | None = None
+        self._est_beatsync_times: np.ndarray | None = None
+        self._est_beats_times: np.ndarray | None = None
+        self._est_beats_frames: np.ndarray | None = None
+        self._ann_beatsync_times: np.ndarray | None = None
+        self._ann_beats_times: np.ndarray | None = None
+        self._ann_beats_frames: np.ndarray | None = None
+
+    # -- Audio & HPSS ---------------------------------------------------------
+
+    def _load_audio(self) -> None:
+        """Load audio from disk if not already loaded."""
+        if self._audio is None:
+            logging.info("Loading audio: %s", self.file_struct.audio_file)
+            self._audio, _ = librosa.load(self.file_struct.audio_file, sr=self.sr)
+            self.dur = len(self._audio) / float(self.sr)
+
+    def compute_HPSS(self) -> tuple[np.ndarray, np.ndarray]:
+        """Computes harmonic-percussive source separation."""
+        return librosa.effects.hpss(self._audio)
+
+    def release_audio(self) -> None:
+        """Free audio arrays to reclaim memory after feature computation."""
         self._audio = None
         self._audio_harmonic = None
         self._audio_percussive = None
-        self._framesync_times = None
-        self._est_beatsync_times = None
-        self._est_beats_times = None
-        self._est_beats_frames = None
-        self._ann_beatsync_times = None
-        self._ann_beats_times = None
-        self._ann_beats_frames = None
 
-    def compute_HPSS(self):
-        """Computes harmonic-percussive source separation.
+    # -- Beat estimation ------------------------------------------------------
 
-        Returns
-        -------
-        audio_harmonic: np.array
-            The harmonic component of the audio signal
-        audio_percussive: np.array
-            The percussive component of the audio signal
-        """
-        return librosa.effects.hpss(self._audio)
-
-    def estimate_beats(self):
+    def estimate_beats(self) -> tuple[np.ndarray, np.ndarray]:
         """Estimates the beats using librosa.
 
         Returns
         -------
-        times: np.array
+        times: np.ndarray
             Times of estimated beats in seconds.
-        frames: np.array
+        frames: np.ndarray
             Frame indices of estimated beats.
         """
         if self._audio_percussive is None:
@@ -115,7 +138,6 @@ class Features(metaclass=MetaFeatures):
         tempo, frames = librosa.beat.beat_track(
             y=self._audio_percussive, sr=self.sr, hop_length=self.hop_length
         )
-
         times = librosa.frames_to_time(frames, sr=self.sr, hop_length=self.hop_length)
 
         if len(times) > 0 and times[0] == 0:
@@ -124,16 +146,8 @@ class Features(metaclass=MetaFeatures):
 
         return times, frames
 
-    def read_ann_beats(self):
-        """Reads the annotated beats if available.
-
-        Returns
-        -------
-        times: np.array
-            Times of annotated beats in seconds.
-        frames: np.array
-            Frame indices of annotated beats.
-        """
+    def read_ann_beats(self) -> tuple[np.ndarray | None, np.ndarray | None]:
+        """Reads the annotated beats if available."""
         times, frames = (None, None)
 
         if os.path.isfile(self.file_struct.ref_file):
@@ -142,7 +156,8 @@ class Features(metaclass=MetaFeatures):
             except TypeError:
                 logging.warning(
                     "Can't read JAMS file %s. Maybe it's not "
-                    "compatible with current JAMS version?" % self.file_struct.ref_file
+                    "compatible with current JAMS version?",
+                    self.file_struct.ref_file,
                 )
                 return times, frames
             beat_annot = jam.search(namespace="beat.*")
@@ -155,27 +170,15 @@ class Features(metaclass=MetaFeatures):
                 )
         return times, frames
 
-    def compute_beat_sync_features(self, beat_frames, beat_times, pad):
-        """Make the features beat-synchronous.
+    # -- Beat-sync helpers ----------------------------------------------------
 
-        Parameters
-        ----------
-        beat_frames: np.array
-            The frame indices of the beat positions.
-        beat_times: np.array
-            The time points of the beat positions (in seconds).
-        pad: boolean
-            If `True`, `beat_frames` is padded to span the full range.
-
-        Returns
-        -------
-        beatsync_feats: np.array
-            The beat-synchronized features.
-            `None` if the beat_frames was `None`.
-        beatsync_times: np.array
-            The beat-synchronized times.
-            `None` if the beat_frames was `None`.
-        """
+    def compute_beat_sync_features(
+        self,
+        beat_frames: np.ndarray | None,
+        beat_times: np.ndarray | None,
+        pad: bool,
+    ) -> tuple[np.ndarray | None, np.ndarray | None]:
+        """Make the features beat-synchronous."""
         if beat_frames is None:
             return None, None
 
@@ -190,7 +193,9 @@ class Features(metaclass=MetaFeatures):
             )
         return beatsync_feats, beatsync_times
 
-    def _compute_framesync_times(self):
+    # -- Core computation (lazy) ----------------------------------------------
+
+    def _compute_framesync_times(self) -> None:
         """Computes the framesync times based on the framesync features."""
         self._framesync_times = librosa.core.frames_to_time(
             np.arange(self._framesync_features.shape[0]),
@@ -198,26 +203,26 @@ class Features(metaclass=MetaFeatures):
             hop_length=self.hop_length,
         )
 
-    def _compute_all_features(self):
-        """Computes all the features (beatsync, framesync) from the audio."""
-        logging.info("Loading audio: %s", self.file_struct.audio_file)
-        self._audio, _ = librosa.load(self.file_struct.audio_file, sr=self.sr)
-
-        self.dur = len(self._audio) / float(self.sr)
-
+    def _ensure_framesync(self) -> None:
+        """Compute framesync features if not already done."""
+        if self._framesync_features is not None:
+            return
+        self._load_audio()
         logging.info("Computing %s features...", self.get_id())
-        feat_type = self.feat_type
+        # Temporarily set feat_type to framesync for compute_features()
+        orig_feat_type = self.feat_type
         self.feat_type = FeatureTypes.framesync
         self._framesync_features = self.compute_features()
-        self.feat_type = feat_type
-
+        self.feat_type = orig_feat_type
         self._compute_framesync_times()
 
+    def _ensure_est_beatsync(self) -> None:
+        """Compute estimated-beat-synchronous features if not already done."""
+        if self._est_beatsync_features is not None:
+            return
+        self._ensure_framesync()
         logging.info("Estimating beats...")
         self._est_beats_times, self._est_beats_frames = self.estimate_beats()
-        self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
-
-        # Beat-Synchronize
         pad = True
         (
             self._est_beatsync_features,
@@ -225,6 +230,14 @@ class Features(metaclass=MetaFeatures):
         ) = self.compute_beat_sync_features(
             self._est_beats_frames, self._est_beats_times, pad
         )
+
+    def _ensure_ann_beatsync(self) -> None:
+        """Compute annotated-beat-synchronous features if not already done."""
+        if self._ann_beatsync_features is not None:
+            return
+        self._ensure_framesync()
+        self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
+        pad = True
         (
             self._ann_beatsync_features,
             self._ann_beatsync_times,
@@ -232,42 +245,49 @@ class Features(metaclass=MetaFeatures):
             self._ann_beats_frames, self._ann_beats_times, pad
         )
 
+    # -- Public properties ----------------------------------------------------
+
     @property
-    def frame_times(self):
-        """This getter returns the frame times, for the corresponding type of
-        features."""
-        frame_times = None
-        # Make sure we have already computed the features
+    def frame_times(self) -> np.ndarray | None:
+        """Returns the frame times for the corresponding type of features."""
+        # Trigger feature computation
         self.features
         if self.feat_type is FeatureTypes.framesync:
             self._compute_framesync_times()
-            frame_times = self._framesync_times
+            return self._framesync_times
         elif self.feat_type is FeatureTypes.est_beatsync:
-            frame_times = self._est_beatsync_times
+            return self._est_beatsync_times
         elif self.feat_type is FeatureTypes.ann_beatsync:
-            frame_times = self._ann_beatsync_times
-
-        return frame_times
+            return self._ann_beatsync_times
+        return None
 
     @property
-    def features(self):
-        """This getter will compute the actual features if they haven't been
-        computed yet.
+    def features(self) -> np.ndarray:
+        """Lazily compute and return the requested feature type.
 
         Returns
         -------
-        features: np.array
+        features: np.ndarray
             The actual features. Each row corresponds to a feature vector.
         """
         if self._features is None:
             try:
-                self._compute_all_features()
+                if self.feat_type is FeatureTypes.framesync:
+                    self._ensure_framesync()
+                elif self.feat_type is FeatureTypes.est_beatsync:
+                    self._ensure_est_beatsync()
+                elif self.feat_type is FeatureTypes.ann_beatsync:
+                    self._ensure_ann_beatsync()
+                else:
+                    raise FeatureTypeNotFound(
+                        "Feature type %s is not valid." % self.feat_type
+                    )
             except OSError:
                 raise NoAudioFileError(
                     "Couldn't find audio file in %s" % self.file_struct.audio_file
                 )
 
-        # Choose features based on type
+        # Select the right array
         if self.feat_type is FeatureTypes.framesync:
             self._features = self._framesync_features
         elif self.feat_type is FeatureTypes.est_beatsync:
@@ -284,27 +304,17 @@ class Features(metaclass=MetaFeatures):
 
         return self._features
 
+    # -- Factory --------------------------------------------------------------
+
     @classmethod
-    def select_features(cls, features_id, file_struct, annot_beats, framesync):
-        """Selects the features from the given parameters.
-
-        Parameters
-        ----------
-        features_id: str or `msaf.features.Features` class
-            The identifier of the features (it must be a key inside the
-            `features_registry`)
-        file_struct: msaf.io.FileStruct
-            The file struct containing the files to extract the features from
-        annot_beats: boolean
-            Whether to use annotated (`True`) or estimated (`False`) beats
-        framesync: boolean
-            Whether to use framesync (`True`) or beatsync (`False`) features
-
-        Returns
-        -------
-        features: obj
-            The actual features object that inherits from `msaf.Features`
-        """
+    def select_features(
+        cls,
+        features_id: str | type[Features],
+        file_struct: Any,
+        annot_beats: bool,
+        framesync: bool,
+    ) -> Features:
+        """Selects the features from the given parameters."""
         if not annot_beats and framesync:
             feat_type = FeatureTypes.framesync
         elif annot_beats and not framesync:
@@ -314,7 +324,7 @@ class Features(metaclass=MetaFeatures):
         else:
             raise FeatureTypeNotFound("Type of features not valid.")
 
-        if features_id in features_registry.keys():
+        if features_id in features_registry:
             feature = features_registry[features_id]
         elif isinstance(features_id, MetaFeatures) and issubclass(
             features_id, Features
@@ -323,18 +333,20 @@ class Features(metaclass=MetaFeatures):
         else:
             raise FeatureTypeNotFound(
                 "The features '%s' are invalid (valid features are %s)"
-                % (features_id, features_registry.keys())
+                % (features_id, list(features_registry.keys()))
             )
 
         return feature(file_struct, feat_type)
 
-    def compute_features(self):
+    # -- Abstract methods -----------------------------------------------------
+
+    def compute_features(self) -> np.ndarray:
         raise NotImplementedError(
             "This method must contain the actual implementation of the features"
         )
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         raise NotImplementedError(
             "This method must return a string identifier of the features"
         )

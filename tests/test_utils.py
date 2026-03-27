@@ -39,22 +39,6 @@ def test_synchronize_labels():
     assert len(new_labels) == len(new_bound_idxs) - 1
 
 
-def test_get_num_frames():
-    dur = 320.2
-    anal = {"sample_rate": 22050, "hop_size": 512}
-    n_frames = msaf.utils.get_num_frames(dur, anal)
-    assert n_frames == int(dur * anal["sample_rate"] / anal["hop_size"])
-
-
-def test_get_time_frames():
-    dur = 1
-    anal = {"sample_rate": 22050, "hop_size": 512}
-    n_frames = msaf.utils.get_time_frames(dur, anal)
-    assert n_frames.shape[0] == 43
-    assert n_frames[0] == 0.0
-    assert n_frames[-1] == 1.0
-
-
 def test_align_end_hierarchies():
     def _test_equal_hier(hier_orig, hier_new):
         for layer_orig, layer_new in zip(hier_orig, hier_new):
@@ -72,14 +56,16 @@ def test_align_end_hierarchies():
 
 
 def test_lognormalize():
-    # Just check that we're not overwriting data
     X = np.random.random((300, 10))
+    X_orig = X.copy()
     Y = msaf.utils.lognormalize(X)
-    assert not np.array_equal(X, Y)
+    assert not np.array_equal(X_orig, Y)
 
 
 def test_min_max_normalize():
-    # Just check that we're not overwriting data
+    # Verify min_max_normalize does NOT mutate the input
     X = np.random.random((300, 10))
+    X_orig = X.copy()
     Y = msaf.utils.min_max_normalize(X)
-    assert not np.array_equal(X, Y)
+    assert not np.array_equal(X_orig, Y)
+    np.testing.assert_array_equal(X, X_orig)  # input unchanged

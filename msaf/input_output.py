@@ -1,5 +1,6 @@
 """These set of functions help the algorithms of MSAF to read and write files
 of the Segmentation Dataset."""
+from __future__ import annotations
 
 import datetime
 import glob
@@ -7,6 +8,7 @@ import logging
 import os
 import re
 from collections import defaultdict
+from typing import Any
 
 import jams
 import librosa
@@ -21,7 +23,7 @@ ds_config = msaf.config.dataset
 
 
 class FileStruct:
-    def __init__(self, audio_file):
+    def __init__(self, audio_file: str) -> None:
         """Creates the entire file structure given the audio file."""
         self.ds_path = os.path.dirname(os.path.dirname(audio_file))
         self.audio_file = audio_file
@@ -32,13 +34,13 @@ class FileStruct:
             ds_config.references_dir, ds_config.references_ext
         )
 
-    def _get_dataset_file(self, dir, ext):
+    def _get_dataset_file(self, dir: str, ext: str) -> str:
         """Gets the desired dataset file."""
         audio_file_ext = "." + self.audio_file.split(".")[-1]
         base_file = os.path.basename(self.audio_file).replace(audio_file_ext, ext)
         return os.path.join(self.ds_path, dir, base_file)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Prints the file structure."""
         return (
             "FileStruct(\n\tds_path=%s,\n\taudio_file=%s,\n\test_file=%s,"
@@ -52,7 +54,12 @@ class FileStruct:
         )
 
 
-def read_estimations(est_file, boundaries_id, labels_id=None, **params):
+def read_estimations(
+    est_file: str,
+    boundaries_id: str,
+    labels_id: str | None = None,
+    **params: Any,
+) -> tuple[np.ndarray | list[np.ndarray], np.ndarray | list[np.ndarray]]:
     """Reads the estimations (boundaries and/or labels) from a jams file
     containing the estimations of an algorithm.
 
@@ -84,8 +91,8 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     all_boundaries, all_labels = est.to_interval_values()
 
     if params["hier"]:
-        hier_bounds = defaultdict(list)
-        hier_labels = defaultdict(list)
+        hier_bounds: defaultdict[Any, list[Any]] = defaultdict(list)
+        hier_labels: defaultdict[Any, list[Any]] = defaultdict(list)
         for bounds, labels in zip(all_boundaries, all_labels):
             level = labels["level"]
             hier_bounds[level].append(bounds)
@@ -99,7 +106,9 @@ def read_estimations(est_file, boundaries_id, labels_id=None, **params):
     return all_boundaries, all_labels
 
 
-def read_references(audio_path, annotator_id=0):
+def read_references(
+    audio_path: str, annotator_id: int = 0
+) -> tuple[np.ndarray, list[Any]]:
     """Reads the boundary times and the labels.
 
     Parameters
@@ -135,7 +144,7 @@ def read_references(audio_path, annotator_id=0):
     return ref_times, ref_labels
 
 
-def align_times(times, frames):
+def align_times(times: np.ndarray, frames: np.ndarray) -> np.ndarray:
     """Aligns the times to the closest frame times (e.g. beats).
 
     Parameters
@@ -156,7 +165,12 @@ def align_times(times, frames):
     return aligned_times
 
 
-def find_estimation(jam, boundaries_id, labels_id, params):
+def find_estimation(
+    jam: jams.JAMS,
+    boundaries_id: str,
+    labels_id: str | None,
+    params: dict[str, Any],
+) -> jams.Annotation | None:
     """Finds the correct estimation from all the estimations contained in a
     JAMS file given the specified arguments.
 
@@ -213,8 +227,14 @@ def find_estimation(jam, boundaries_id, labels_id, params):
 
 
 def save_estimations(
-    file_struct, times, labels, boundaries_id, labels_id, dur=None, **params
-):
+    file_struct: FileStruct,
+    times: np.ndarray | list[np.ndarray],
+    labels: np.ndarray | list[np.ndarray],
+    boundaries_id: str,
+    labels_id: str | None,
+    dur: float | None = None,
+    **params: Any,
+) -> None:
     """Saves the segment estimations in a JAMS file.
 
     Parameters
@@ -283,7 +303,7 @@ def save_estimations(
     # Save metadata and parameters
     ann.annotation_metadata.version = msaf.__version__
     ann.annotation_metadata.data_source = "MSAF"
-    sandbox = {}
+    sandbox: dict[str, Any] = {}
     sandbox["boundaries_id"] = boundaries_id
     sandbox["labels_id"] = labels_id
     sandbox["timestamp"] = datetime.datetime.today().strftime("%Y/%m/%d %H:%M:%S")
@@ -308,7 +328,7 @@ def save_estimations(
     jam.save(file_struct.est_file)
 
 
-def get_all_boundary_algorithms():
+def get_all_boundary_algorithms() -> list[str]:
     """Gets all the possible boundary algorithms in MSAF.
 
     Returns
@@ -316,7 +336,7 @@ def get_all_boundary_algorithms():
     algo_ids : list
         List of all the IDs of boundary algorithms (strings).
     """
-    algo_ids = []
+    algo_ids: list[str] = []
     for name in msaf.algorithms.__all__:
         module = getattr(msaf.algorithms, name)
         if module.is_boundary_type:
@@ -324,7 +344,7 @@ def get_all_boundary_algorithms():
     return algo_ids
 
 
-def get_all_label_algorithms():
+def get_all_label_algorithms() -> list[str]:
     """Gets all the possible label (structural grouping) algorithms in MSAF.
 
     Returns
@@ -332,7 +352,7 @@ def get_all_label_algorithms():
     algo_ids : list
         List of all the IDs of label algorithms (strings).
     """
-    algo_ids = []
+    algo_ids: list[str] = []
     for name in msaf.algorithms.__all__:
         module = getattr(msaf.algorithms, name)
         if module.is_label_type:
@@ -340,14 +360,20 @@ def get_all_label_algorithms():
     return algo_ids
 
 
-def get_configuration(feature, annot_beats, framesync, boundaries_id, labels_id):
+def get_configuration(
+    feature: str,
+    annot_beats: bool,
+    framesync: bool,
+    boundaries_id: str,
+    labels_id: str | None,
+) -> dict[str, Any]:
     """Gets the configuration dictionary from the current parameters of the
     algorithms to be evaluated."""
-    config = {}
+    config: dict[str, Any] = {}
     config["annot_beats"] = annot_beats
     config["feature"] = feature
     config["framesync"] = framesync
-    bound_config = {}
+    bound_config: dict[str, Any] = {}
     if boundaries_id != "gt":
         bound_config = getattr(msaf.algorithms, boundaries_id).config
         config.update(bound_config)
@@ -365,9 +391,9 @@ def get_configuration(feature, annot_beats, framesync, boundaries_id, labels_id)
     return config
 
 
-def get_dataset_files(in_path):
+def get_dataset_files(in_path: str) -> list[FileStruct]:
     """Gets the files of the given dataset."""
-    audio_files = []
+    audio_files: list[str] = []
     for ext in ds_config.audio_exts:
         audio_files += glob.glob(os.path.join(in_path, ds_config.audio_dir, "*" + ext))
 
@@ -375,7 +401,7 @@ def get_dataset_files(in_path):
     utils.ensure_dir(os.path.join(in_path, ds_config.estimations_dir))
     utils.ensure_dir(os.path.join(in_path, ds_config.references_dir))
 
-    file_structs = []
+    file_structs: list[FileStruct] = []
     for audio_file in audio_files:
         file_structs.append(FileStruct(audio_file))
 
@@ -384,7 +410,11 @@ def get_dataset_files(in_path):
     return file_structs
 
 
-def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
+def read_hier_references(
+    jams_file: str,
+    annotation_id: int = 0,
+    exclude_levels: list[str] = [],
+) -> tuple[list[np.ndarray], list[list[Any]], list[str]]:
     """Reads hierarchical references from a jams file.
 
     Parameters
@@ -405,9 +435,9 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     hier_levels : list
         List of strings for the level identifiers.
     """
-    hier_bounds = []
-    hier_labels = []
-    hier_levels = []
+    hier_bounds: list[np.ndarray] = []
+    hier_labels: list[list[Any]] = []
+    hier_levels: list[str] = []
     jam = jams.load(jams_file)
     namespaces = [
         "segment_salami_upper",
@@ -433,7 +463,7 @@ def read_hier_references(jams_file, annotation_id=0, exclude_levels=[]):
     return hier_bounds, hier_labels, hier_levels
 
 
-def write_mirex(times, labels, out_file):
+def write_mirex(times: np.ndarray, labels: np.ndarray, out_file: str) -> None:
     """Writes results to file using the standard MIREX format.
 
     Parameters

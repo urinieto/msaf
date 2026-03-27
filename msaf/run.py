@@ -1,8 +1,12 @@
 """This module contains multiple functions in order to run MSAF algorithms."""
 
+from __future__ import annotations
+
 import logging
 import os
 from copy import deepcopy
+from types import ModuleType
+from typing import Any
 
 import librosa
 import numpy as np
@@ -17,7 +21,7 @@ from msaf.exceptions import NoAudioFileError, NoHierBoundaryError
 from msaf.features import Features
 
 
-def get_boundaries_module(boundaries_id):
+def get_boundaries_module(boundaries_id: str) -> ModuleType | None:
     """Obtains the boundaries module given a boundary algorithm identificator.
 
     Parameters
@@ -42,7 +46,7 @@ def get_boundaries_module(boundaries_id):
     return module
 
 
-def get_labels_module(labels_id):
+def get_labels_module(labels_id: str | None) -> ModuleType | None:
     """Obtains the label module given a label algorithm identificator.
 
     Parameters
@@ -68,8 +72,13 @@ def get_labels_module(labels_id):
 
 
 def run_hierarchical(
-    audio_file, bounds_module, labels_module, frame_times, config, annotator_id=0
-):
+    audio_file: Any,
+    bounds_module: ModuleType | None,
+    labels_module: ModuleType | None,
+    frame_times: np.ndarray,
+    config: dict[str, Any],
+    annotator_id: int = 0,
+) -> tuple[list[np.ndarray], list[np.ndarray]]:
     """Runs hierarchical algorithms with the specified identifiers on the
     audio_file.
 
@@ -112,8 +121,13 @@ def run_hierarchical(
 
 
 def run_flat(
-    file_struct, bounds_module, labels_module, frame_times, config, annotator_id
-):
+    file_struct: Any,
+    bounds_module: ModuleType | None,
+    labels_module: ModuleType | None,
+    frame_times: np.ndarray,
+    config: dict[str, Any],
+    annotator_id: int,
+) -> tuple[np.ndarray, np.ndarray] | tuple[list, list]:
     """Runs the flat algorithms with the specified identifiers on the
     audio_file.
 
@@ -162,7 +176,13 @@ def run_flat(
     return est_times, est_labels
 
 
-def run_algorithms(file_struct, boundaries_id, labels_id, config, annotator_id=0):
+def run_algorithms(
+    file_struct: Any,
+    boundaries_id: str,
+    labels_id: str | None,
+    config: dict[str, Any],
+    annotator_id: int = 0,
+) -> tuple[np.ndarray, np.ndarray] | tuple[list[np.ndarray], list[np.ndarray]]:
     """Runs the algorithms with the specified identifiers on the audio_file.
 
     Parameters
@@ -209,7 +229,13 @@ def run_algorithms(file_struct, boundaries_id, labels_id, config, annotator_id=0
     return est_times, est_labels
 
 
-def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0):
+def process_track(
+    file_struct: Any,
+    boundaries_id: str,
+    labels_id: str | None,
+    config: dict[str, Any],
+    annotator_id: int = 0,
+) -> tuple[np.ndarray, np.ndarray]:
     """Prepares the parameters, runs the algorithms, and saves results.
 
     Parameters
@@ -261,21 +287,21 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
 
 
 def process(
-    in_path,
-    annot_beats=False,
-    feature="pcp",
-    framesync=False,
-    boundaries_id=None,
-    labels_id=None,
-    hier=False,
-    sonify_bounds=False,
-    plot=False,
-    n_jobs=4,
-    annotator_id=0,
-    config=None,
-    out_bounds="out_bounds.wav",
-    out_sr=22050,
-):
+    in_path: str,
+    annot_beats: bool = False,
+    feature: str = "pcp",
+    framesync: bool = False,
+    boundaries_id: str | None = None,
+    labels_id: str | None = None,
+    hier: bool = False,
+    sonify_bounds: bool = False,
+    plot: bool = False,
+    n_jobs: int = 4,
+    annotator_id: int = 0,
+    config: dict[str, Any] | None = None,
+    out_bounds: str = "out_bounds.wav",
+    out_sr: int = 22050,
+) -> tuple[np.ndarray, np.ndarray] | list[tuple[np.ndarray, np.ndarray]]:
     """Main process to segment a file or a collection of files.
 
     Parameters

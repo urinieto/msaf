@@ -1,4 +1,8 @@
 """Interface for all the algorithms in MSAF."""
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
 
 import msaf.utils as U
@@ -46,14 +50,14 @@ class SegmenterInterface:
 
     def __init__(
         self,
-        file_struct,
-        in_bound_idxs=None,
-        feature="pcp",
-        annot_beats=False,
-        framesync=False,
-        features=None,
-        **config
-    ):
+        file_struct: Any,
+        in_bound_idxs: np.ndarray | None = None,
+        feature: str = "pcp",
+        annot_beats: bool = False,
+        framesync: bool = False,
+        features: Any | None = None,
+        **config: Any
+    ) -> None:
         """Inits the Segmenter.
 
         Parameters
@@ -83,18 +87,18 @@ class SegmenterInterface:
         self.config = config
         self.features = features
 
-    def processFlat(self):
+    def processFlat(self) -> tuple[np.ndarray, np.ndarray]:
         """Main process to obtain the flat segmentation of a given track."""
         raise NotImplementedError("This method does not return flat " "segmentations.")
 
-    def processHierarchical(self):
+    def processHierarchical(self) -> tuple[list[np.ndarray], list[np.ndarray]]:
         """Main process to obtain the hierarchical segmentation of a given
         track."""
         raise NotImplementedError(
             "This method does not return hierarchical " "segmentations."
         )
 
-    def _preprocess(self):
+    def _preprocess(self) -> np.ndarray:
         """This method obtains the actual features."""
         try:
             F = self.features.features
@@ -105,7 +109,9 @@ class SegmenterInterface:
 
         return F
 
-    def _postprocess(self, est_idxs, est_labels):
+    def _postprocess(
+        self, est_idxs: np.ndarray, est_labels: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Post processes the estimations from the algorithm, removing empty
         segments and making sure the lengths of the boundaries and labels
         match."""

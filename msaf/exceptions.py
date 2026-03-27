@@ -1,4 +1,5 @@
 """Exception classes for msaf."""
+from __future__ import annotations
 
 
 class MSAFError(Exception):

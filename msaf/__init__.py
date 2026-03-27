@@ -14,7 +14,7 @@ from msaf.config import config
 from . import algorithms, eval, features
 from . import input_output as io
 from . import plotting, run, utils
-from .base import features_registry
+from .base import ProcessingContext, features_registry
 from .input_output import get_all_boundary_algorithms, get_all_label_algorithms
 from .run import process
 
@@ -24,6 +24,7 @@ __all__ = [
     "eval",
     "features",
     "features_registry",
+    "ProcessingContext",
     "get_all_boundary_algorithms",
     "get_all_label_algorithms",
     "io",

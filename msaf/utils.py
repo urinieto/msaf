@@ -1,4 +1,7 @@
 """Useful functions that are common in MSAF."""
+
+from __future__ import annotations
+
 import os
 
 import librosa
@@ -7,41 +10,47 @@ import numpy as np
 import scipy.io.wavfile
 
 
-def lognormalize(F, floor=0.1, min_db=-80):
+def lognormalize(F: np.ndarray, floor: float = 0.1, min_db: float = -80) -> np.ndarray:
     """Log-normalizes features such that each vector is between min_db to 0."""
     assert min_db < 0
     F = min_max_normalize(F, floor=floor)
-    F = np.abs(min_db) * np.log10(F)  # Normalize from min_db to 0
+    F = np.abs(min_db) * np.log10(F)
     return F
 
 
-def min_max_normalize(F, floor=0.001):
+def min_max_normalize(F: np.ndarray, floor: float = 0.001) -> np.ndarray:
     """Normalizes features such that each vector is between floor to 1."""
+    F = F.copy()
     F += -F.min() + floor
     F = F / F.max(axis=0)
     return F
 
 
-def normalize(X, norm_type, floor=0.0, min_db=-80):
+def normalize(
+    X: np.ndarray,
+    norm_type: str | float | None,
+    floor: float = 0.0,
+    min_db: float = -80,
+) -> np.ndarray:
     """Normalizes the given matrix of features.
 
     Parameters
     ----------
-    X: np.array
+    X: np.ndarray
         Each row represents a feature vector.
     norm_type: {"min_max", "log", np.inf, -np.inf, 0, float > 0, None}
-        - `"min_max"`: Min/max scaling is performed
-        - `"log"`: Logarithmic scaling is performed
-        - `np.inf`: Maximum absolute value
-        - `-np.inf`: Minimum absolute value
-        - `0`: Number of non-zeros
+        - ``"min_max"``: Min/max scaling is performed
+        - ``"log"``: Logarithmic scaling is performed
+        - ``np.inf``: Maximum absolute value
+        - ``-np.inf``: Minimum absolute value
+        - ``0``: Number of non-zeros
         - float: Corresponding l_p norm.
         - None : No normalization is performed
 
     Returns
     -------
-    norm_X: np.array
-        Normalized `X` according the the input parameters.
+    norm_X: np.ndarray
+        Normalized ``X`` according the the input parameters.
     """
     if isinstance(norm_type, str):
         if norm_type == "min_max":
@@ -51,58 +60,47 @@ def normalize(X, norm_type, floor=0.0, min_db=-80):
     return librosa.util.normalize(X, norm=norm_type, axis=1)
 
 
-def ensure_dir(directory):
+def ensure_dir(directory: str) -> None:
     """Makes sure that the given directory exists."""
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 
-def times_to_intervals(times):
+def times_to_intervals(times: np.ndarray) -> np.ndarray:
     """Given a set of times, convert them into intervals.
 
     Parameters
     ----------
-    times: np.array(N)
+    times: np.ndarray(N)
         A set of times.
 
     Returns
     -------
-    inters: np.array(N-1, 2)
+    inters: np.ndarray(N-1, 2)
         A set of intervals.
     """
     return np.asarray(list(zip(times[:-1], times[1:])))
 
 
-def intervals_to_times(inters):
+def intervals_to_times(inters: np.ndarray) -> np.ndarray:
     """Given a set of intervals, convert them into times.
 
     Parameters
     ----------
-    inters: np.array(N-1, 2)
+    inters: np.ndarray(N-1, 2)
         A set of intervals.
 
     Returns
     -------
-    times: np.array(N)
+    times: np.ndarray(N)
         A set of times.
     """
     return np.concatenate((inters.flatten()[::2], [inters[-1, -1]]), axis=0)
 
 
-def get_num_frames(dur, anal):
-    """Given the duration of a track and a dictionary containing analysis info,
-    return the number of frames."""
-    total_samples = dur * anal["sample_rate"]
-    return int(total_samples / anal["hop_size"])
-
-
-def get_time_frames(dur, anal):
-    """Gets the time frames and puts them in a numpy array."""
-    n_frames = get_num_frames(dur, anal)
-    return np.linspace(0, dur, num=n_frames)
-
-
-def remove_empty_segments(times, labels):
+def remove_empty_segments(
+    times: np.ndarray, labels: list | np.ndarray
+) -> tuple[np.ndarray, list]:
     """Removes empty segments if needed."""
     assert len(times) - 1 == len(labels)
     inters = times_to_intervals(times)
@@ -115,14 +113,20 @@ def remove_empty_segments(times, labels):
     return intervals_to_times(np.asarray(new_inters)), new_labels
 
 
-def sonify_clicks(audio, clicks, out_file, fs, offset=0):
+def sonify_clicks(
+    audio: np.ndarray,
+    clicks: np.ndarray,
+    out_file: str,
+    fs: int,
+    offset: float = 0,
+) -> None:
     """Sonifies the estimated times into the output file.
 
     Parameters
     ----------
-    audio: np.array
+    audio: np.ndarray
         Audio samples of the input track.
-    clicks: np.array
+    clicks: np.ndarray
         Click positions in seconds.
     out_file: str
         Path to the output file.
@@ -131,89 +135,93 @@ def sonify_clicks(audio, clicks, out_file, fs, offset=0):
     offset: float
         Offset of the clicks with respect to the audio.
     """
-    # Generate clicks (this should be done by mir_eval, but its
-    # latest release is not compatible with latest numpy)
     times = clicks + offset
-    # 1 kHz tone, 100ms
-    click = np.sin(2 * np.pi * np.arange(fs * 0.1) * 1000 / (1.0 * fs))
-    # Exponential decay
-    click *= np.exp(-np.arange(fs * 0.1) / (fs * 0.01))
-    length = int(times.max() * fs + click.shape[0] + 1)
+    length = int(times.max() * fs + fs * 0.1 + 1)
     audio_clicks = mir_eval.sonify.clicks(times, fs, length=length)
 
-    # Create array to store the audio plus the clicks
     out_audio = np.zeros(max(len(audio), len(audio_clicks)))
-
-    # Assign the audio and the clicks
     out_audio[: len(audio)] = audio
     out_audio[: len(audio_clicks)] += audio_clicks
 
-    # Peak normalize the mix
+    # Peak normalize
     out_audio /= np.abs(out_audio).max()
 
-    # Convert audio to 16-bit signed integer
     amplitude = np.iinfo(np.int16).max
     data = (amplitude * out_audio).astype(np.int16)
-
-    # Write to file
     scipy.io.wavfile.write(out_file, fs, data)
 
 
-def synchronize_labels(new_bound_idxs, old_bound_idxs, old_labels, N):
+def synchronize_labels(
+    new_bound_idxs: np.ndarray,
+    old_bound_idxs: np.ndarray,
+    old_labels: np.ndarray,
+    N: int,
+) -> np.ndarray:
     """Synchronizes the labels from the old_bound_idxs to the new_bound_idxs.
 
     Parameters
     ----------
-    new_bound_idxs: np.array
+    new_bound_idxs: np.ndarray
         New indices to synchronize with.
-    old_bound_idxs: np.array
+    old_bound_idxs: np.ndarray
         Old indices, same shape as labels + 1.
-    old_labels: np.array
+    old_labels: np.ndarray
         Labels associated to the old_bound_idxs.
     N: int
         Total number of frames.
 
     Returns
     -------
-    new_labels: np.array
+    new_labels: np.ndarray
         New labels, synchronized to the new boundary indices.
     """
     assert len(old_bound_idxs) - 1 == len(old_labels)
 
-    # Construct unfolded labels array
-    unfold_labels = np.zeros(N)
-    for i, (bound_idx, label) in enumerate(zip(old_bound_idxs[:-1], old_labels)):
-        unfold_labels[bound_idx : old_bound_idxs[i + 1]] = label
-
-    # Construct new labels
+    # Compute new labels by finding the median old label in each new segment
     new_labels = np.zeros(len(new_bound_idxs) - 1)
-    for i, bound_idx in enumerate(new_bound_idxs[:-1]):
-        new_labels[i] = np.median(unfold_labels[bound_idx : new_bound_idxs[i + 1]])
+    for i, new_start in enumerate(new_bound_idxs[:-1]):
+        new_end = new_bound_idxs[i + 1]
+        # Find which old segments overlap with this new segment
+        labels_in_range = []
+        for j, old_start in enumerate(old_bound_idxs[:-1]):
+            old_end = old_bound_idxs[j + 1]
+            # Check overlap
+            if old_end > new_start and old_start < new_end:
+                overlap = min(old_end, new_end) - max(old_start, new_start)
+                labels_in_range.extend([old_labels[j]] * max(1, int(overlap)))
+        if labels_in_range:
+            new_labels[i] = np.median(labels_in_range)
 
     return new_labels
 
 
-def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
+def process_segmentation_level(
+    est_idxs: np.ndarray,
+    est_labels: np.ndarray,
+    N: int,
+    frame_times: np.ndarray,
+    dur: float,
+) -> tuple[np.ndarray, np.ndarray]:
     """Processes a level of segmentation, and converts it into times.
 
     Parameters
     ----------
-    est_idxs: np.array
+    est_idxs: np.ndarray
         Estimated boundaries in frame indices.
-    est_labels: np.array
+    est_labels: np.ndarray
         Estimated labels.
     N: int
         Number of frames in the whole track.
-    frame_times: np.array
+    frame_times: np.ndarray
         Time stamp for each frame.
     dur: float
         Duration of the audio track.
 
     Returns
     -------
-    est_times: np.array
+    est_times: np.ndarray
         Estimated segment boundaries in seconds.
-    est_labels: np.array
+    est_labels: np.ndarray
         Estimated labels for each segment.
     """
     assert est_idxs[0] == 0 and est_idxs[-1] == N - 1
@@ -227,13 +235,16 @@ def process_segmentation_level(est_idxs, est_labels, N, frame_times, dur):
     # Remove empty segments if needed
     est_times, est_labels = remove_empty_segments(est_times, est_labels)
 
-    # Make sure that the first and last times are 0 and duration, respectively
     assert np.allclose([est_times[0]], [0]) and np.allclose([est_times[-1]], [dur])
 
     return est_times, est_labels
 
 
-def align_end_hierarchies(hier1, hier2, thres=0.5):
+def align_end_hierarchies(
+    hier1: list[np.ndarray],
+    hier2: list[np.ndarray],
+    thres: float = 0.5,
+) -> None:
     """Align the end of the hierarchies such that they end at the same exact
     second as long they have the same duration within a certain threshold.
 
@@ -246,20 +257,18 @@ def align_end_hierarchies(hier1, hier2, thres=0.5):
     thres: float > 0
         Threshold to decide whether two values are the same.
     """
-    # Make sure we have correctly formatted hierarchies
     dur_h1 = hier1[0][-1]
     for hier in hier1:
-        assert hier[-1] == dur_h1, "hier1 is not correctly " "formatted {} {}".format(
-            hier[-1], dur_h1
+        assert hier[-1] == dur_h1, "hier1 is not correctly formatted %s %s" % (
+            hier[-1],
+            dur_h1,
         )
     dur_h2 = hier2[0][-1]
     for hier in hier2:
         assert hier[-1] == dur_h2, "hier2 is not correctly formatted"
 
-    # If durations are different, do nothing
     if abs(dur_h1 - dur_h2) > thres:
         return
 
-    # Align h1 with h2
     for hier in hier1:
         hier[-1] = dur_h2

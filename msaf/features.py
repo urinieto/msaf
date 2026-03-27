@@ -15,12 +15,15 @@ Here is a list of all the available features:
     Tempogram
     Features
 """
+from __future__ import annotations
+
+from typing import Any, Callable
 
 import librosa
 import numpy as np
 
 from msaf.config import config
-from msaf.base import Features
+from msaf.base import Features, FeatureTypes
 
 
 class CQT(Features):
@@ -32,15 +35,15 @@ class CQT(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        n_bins=config.cqt.bins,
-        norm=config.cqt.norm,
-        filter_scale=config.cqt.filter_scale,
-        ref_power=config.cqt.ref_power,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        n_bins: int = config.cqt.bins,
+        norm: float = config.cqt.norm,
+        filter_scale: float = config.cqt.filter_scale,
+        ref_power: str = config.cqt.ref_power,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -73,7 +76,7 @@ class CQT(Features):
         self.norm = norm
         self.filter_scale = filter_scale
         if ref_power == "max":
-            self.ref_power = np.amax
+            self.ref_power: Callable[..., Any] = np.amax
         elif ref_power == "min":
             self.ref_power = np.amin
         elif ref_power == "median":
@@ -82,11 +85,11 @@ class CQT(Features):
             raise ValueError("Wrong value for ref_power")
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "cqt"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
@@ -125,15 +128,15 @@ class Mel(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        n_fft=config.n_fft,
-        n_mels=config.mel.n_mels,
-        f_min=config.mel.f_min,
-        f_max=config.mel.f_max,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        n_fft: int = config.n_fft,
+        n_mels: int = config.mel.n_mels,
+        f_min: float = config.mel.f_min,
+        f_max: float = config.mel.f_max,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -167,11 +170,11 @@ class Mel(Features):
         self.f_max = f_max
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "mel"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
@@ -204,15 +207,15 @@ class LogMel(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        n_fft=config.n_fft,
-        n_mels=config.mel.n_mels,
-        f_min=config.mel.f_min,
-        f_max=config.mel.f_max,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        n_fft: int = config.n_fft,
+        n_mels: int = config.mel.n_mels,
+        f_min: float = config.mel.f_min,
+        f_max: float = config.mel.f_max,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -256,11 +259,11 @@ class LogMel(Features):
         ).features
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "log_mel"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
@@ -281,15 +284,15 @@ class MFCC(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        n_fft=config.n_fft,
-        n_mels=config.mfcc.n_mels,
-        n_mfcc=config.mfcc.n_mfcc,
-        ref_power=config.mfcc.ref_power,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        n_fft: int = config.n_fft,
+        n_mels: int = config.mfcc.n_mels,
+        n_mfcc: int = config.mfcc.n_mfcc,
+        ref_power: str = config.mfcc.ref_power,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -321,7 +324,7 @@ class MFCC(Features):
         self.n_mels = n_mels
         self.n_mfcc = n_mfcc
         if ref_power == "max":
-            self.ref_power = np.amax
+            self.ref_power: Callable[..., Any] = np.amax
         elif ref_power == "min":
             self.ref_power = np.amin
         elif ref_power == "median":
@@ -330,11 +333,11 @@ class MFCC(Features):
             raise ValueError("Wrong value for ref_power")
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "mfcc"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
@@ -363,15 +366,15 @@ class PCP(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        n_bins=config.pcp.bins,
-        norm=config.pcp.norm,
-        f_min=config.pcp.f_min,
-        n_octaves=config.pcp.n_octaves,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        n_bins: int = config.pcp.bins,
+        norm: int = config.pcp.norm,
+        f_min: float = config.pcp.f_min,
+        n_octaves: int = config.pcp.n_octaves,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -405,11 +408,11 @@ class PCP(Features):
         self.n_octaves = n_octaves
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "pcp"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
@@ -451,15 +454,15 @@ class Tonnetz(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        n_bins=config.tonnetz.bins,
-        norm=config.tonnetz.norm,
-        f_min=config.tonnetz.f_min,
-        n_octaves=config.tonnetz.n_octaves,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        n_bins: int = config.tonnetz.bins,
+        norm: int = config.tonnetz.norm,
+        f_min: float = config.tonnetz.f_min,
+        n_octaves: int = config.tonnetz.n_octaves,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -493,11 +496,11 @@ class Tonnetz(Features):
         self.n_octaves = n_octaves
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "tonnetz"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
@@ -528,12 +531,12 @@ class Tempogram(Features):
 
     def __init__(
         self,
-        file_struct,
-        feat_type,
-        sr=config.sample_rate,
-        hop_length=config.hop_size,
-        win_length=config.tempogram.win_length,
-    ):
+        file_struct: Any,
+        feat_type: FeatureTypes,
+        sr: int = config.sample_rate,
+        hop_length: int = config.hop_size,
+        win_length: int = config.tempogram.win_length,
+    ) -> None:
         """Constructor of the class.
 
         Parameters
@@ -558,11 +561,11 @@ class Tempogram(Features):
         self.win_length = win_length
 
     @classmethod
-    def get_id(cls):
+    def get_id(cls) -> str:
         """Identifier of these features."""
         return "tempogram"
 
-    def compute_features(self):
+    def compute_features(self) -> np.ndarray:
         """Actual implementation of the features.
 
         Returns
