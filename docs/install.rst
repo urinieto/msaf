@@ -1,52 +1,42 @@
 Installation Instructions
 =========================
 
-The simplest way to install MSAF is through the Python Package Index (PyPI).  This
-will ensure that all required dependencies are fulfilled.  This can be achieved by
-executing the following command::
+Requirements
+------------
+
+MSAF requires **Python 3.10 or newer**.
+
+Install from PyPI
+-----------------
+
+The simplest way to install MSAF is through PyPI::
 
     pip install msaf
 
-or::
+For development, install with the extra dev dependencies::
 
-    sudo pip install msaf
+    pip install msaf[dev]
 
-to install system-wide, or::
+Install from Source
+-------------------
 
-    pip install -u msaf
+Clone the repository and install in editable mode::
 
-to install just for your own user.
-
-If you've downloaded the archive manually from the `releases
-<https://github.com/urinieto/msaf/releases/>`_ page, you can install using the
-`setuptools` script::
-
-    tar xzf msaf-VERSION.tar.gz
-    cd librosa-VERSION/
-    python setup.py install
+    git clone https://github.com/urinieto/msaf.git
+    cd msaf
+    pip install -e .[dev]
 
 Getting the Datasets
 --------------------
 
-The datasets of MSAF are included in a separate repo due to their heavy size.
-They can be downloaded from `<https://github.com/urinieto/msaf-data>`_
-
-Additional notes for OS X
--------------------------
-
-By default, Numpy is compiled against the Accelerate Framework by Apple.
-While this framework is remarkably fast, Apple `does not want you to fork()
-without exec <http://mail.scipy.org/pipermail/numpy-discussion/2012-August/063589.html>`_, which may result in nasty crashes when using more than one thread (``-j > 1``).
-
-The solution is to use an alternative framework, like OpenBLAS, and link it to
-Numpy instead of the Accelerate Framework.
-There is a nice explanation to do so `here <http://stackoverflow.com/a/14391693/777706>`_.
+The datasets of MSAF are included in a separate repo due to their size.
+They can be downloaded from `<https://github.com/urinieto/msaf-data>`_.
 
 ffmpeg
 ------
 
-To fuel `audioread` with more audio-decoding power, you can install *ffmpeg* which
-ships with many audio decoders.
+For broader audio format support, install *ffmpeg*:
 
-You can use *homebrew* to install the program by calling
-`brew install ffmpeg` or get a binary version from their website https://www.ffmpeg.org.
+- macOS: ``brew install ffmpeg``
+- Ubuntu: ``sudo apt install ffmpeg``
+- Or download from https://www.ffmpeg.org

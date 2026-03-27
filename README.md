@@ -1,33 +1,74 @@
-# Music Structure Analysis Framework #
+# MSAF - Music Structure Analysis Framework
 
-A Python framework to analyze music structure.
+A Python framework for automatic music structure analysis.
 
 [![PyPI version](https://badge.fury.io/py/msaf.svg)](https://badge.fury.io/py/msaf)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/urinieto/msaf/master/LICENSE.md)
+[![Python](https://img.shields.io/pypi/pyversions/msaf)](https://pypi.org/project/msaf/)
 [![Build Status](https://github.com/urinieto/msaf/actions/workflows/test.yaml/badge.svg)](https://github.com/urinieto/msaf/actions/workflows/test.yaml)
-[![Coverage Status](https://coveralls.io/repos/github/urinieto/msaf/badge.svg?branch=master)](https://coveralls.io/github/urinieto/msaf?branch=master)
 [![Documentation Status](https://readthedocs.org/projects/msaf/badge/?version=latest)](https://msaf.readthedocs.io/en/latest/?badge=latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## Documentation ##
+## Quickstart
 
-See https://msaf.readthedocs.io for a complete reference manual and introductory tutorials.
+```bash
+pip install msaf
+```
 
-## Installation ##
+```python
+import msaf
 
-From the root folder, type:
+# Segment a track using the default algorithm (SF boundaries, no labels)
+boundaries, labels = msaf.process("my_song.mp3")
+print(boundaries)  # Array of boundary times in seconds
 
-    pip install .
+# Use a specific boundary and label algorithm
+boundaries, labels = msaf.process(
+    "my_song.mp3",
+    boundaries_id="cnmf",
+    labels_id="cnmf",
+    feature="pcp",
+)
+```
 
-(Note: you may need to create and activate a Python virtual environment with `python -m venv .venv` and `source .venv/bin/activate` first, depending on your system configuration).
+**Requirements:** Python >= 3.10
 
-## Demonstration Notebook ##
+## Features
 
-You can follow a thorough example on this titanic [Jupyter Notebook](https://github.com/urinieto/msaf/blob/main/examples/Run%20MSAF.ipynb).
+- **8 boundary detection algorithms**: Foote, SF, C-NMF, 2D-FMC, OLDA, Spectral Clustering, CBM, VMO
+- **4 label algorithms**: C-NMF, 2D-FMC, Spectral Clustering, VMO
+- **7 audio feature types**: CQT, Mel, Log-Mel, MFCC, PCP (Chroma), Tonnetz, Tempogram
+- **Beat-synchronous and frame-synchronous** analysis
+- **Hierarchical segmentation** support
+- **Evaluation** against ground truth using mir_eval
+- **YAML-based configuration** with OmegaConf (customizable via `~/.msaf.yaml`)
+- **Progress bars** for batch processing
 
-## Citing MSAF ##
+## Documentation
+
+See https://msaf.readthedocs.io for the complete reference manual and tutorials.
+
+## Configuration
+
+MSAF uses OmegaConf for configuration. Override defaults by creating `~/.msaf.yaml`:
+
+```yaml
+sample_rate: 44100
+hop_size: 512
+cqt:
+  bins: 96
+```
+
+Or programmatically:
+
+```python
+import msaf
+msaf.config.sample_rate = 44100
+```
+
+## Citing MSAF
 
 Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 ([PDF](https://ccrma.stanford.edu/~urinieto/MARL/publications/ISMIR2016-NietoBello.pdf)).
 
-## Credits ##
+## Credits
 
-Created by [Oriol Nieto](http://marl.smusic.nyu.edu/nieto/) (<oriol@nyu.edu>).
+Created by [Oriol Nieto](https://github.com/urinieto) (<oriol@nyu.edu>).

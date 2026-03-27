@@ -7,7 +7,7 @@ import numpy.testing as npt
 from pytest import raises
 
 import msaf
-from msaf.exceptions import FeaturesNotFound, NoAudioFileError, NoHierBoundaryError
+from msaf.exceptions import FeatureTypeNotFound, NoAudioFileError, NoHierBoundaryError
 from msaf.features import Features
 
 matplotlib.use("Agg")
@@ -29,7 +29,7 @@ def test_get_boundaries_module():
     # Check that "gt" returns None
     assert msaf.run.get_boundaries_module("gt") is None
 
-    # Check that a AttributeError is raised when calling it with non-existent
+    # Check that a RuntimeError is raised when calling it with non-existent
     # boundary id
     with raises(RuntimeError):
         msaf.run.get_boundaries_module(fake_module_name)
@@ -50,7 +50,7 @@ def test_get_labels_module():
     # Check that None returns None
     assert msaf.run.get_labels_module(None) is None
 
-    # Check that a AttributeError is raised when calling it with non-existent
+    # Check that a RuntimeError is raised when calling it with non-existent
     # labels id
     with raises(RuntimeError):
         msaf.run.get_labels_module(fake_module_name)
@@ -77,7 +77,6 @@ def test_run_algorithms():
     annot_beats = False
     framesync = False
     file_struct = msaf.io.FileStruct(audio_file)
-    file_struct.features_file = msaf.config.features_tmp_file
 
     # Running all algorithms on a file that is too short
     for bound_id in bound_ids:
@@ -98,9 +97,8 @@ def test_run_algorithms():
             npt.assert_almost_equal(est_times[0], 0.0, decimal=2)
             npt.assert_almost_equal(est_times[-1], config["features"].dur, decimal=2)
 
-    # Compute and save features for long audio file
+    # Compute features for long audio file
     file_struct = msaf.io.FileStruct(long_audio_file)
-    file_struct.features_file = msaf.config.features_tmp_file
 
     def _test_run_msaf(bound_id, label_id, hier=False):
         print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
@@ -152,7 +150,6 @@ def test_no_gt_flat_bounds():
     annot_beats = False
     framesync = False
     file_struct = msaf.io.FileStruct(audio_file)
-    file_struct.features_file = msaf.config.features_tmp_file
 
     config = {}
     config["features"] = Features.select_features(
@@ -167,7 +164,6 @@ def test_process_track():
     bounds_id = "foote"
     labels_id = None
     file_struct = msaf.io.FileStruct(audio_file)
-    file_struct.features_file = msaf.config.features_tmp_file
     file_struct.est_file = "tmp.json"
 
     config = {}
@@ -195,7 +191,7 @@ def test_process_with_gt():
 
 def test_process_wrong_feature():
     feature = "caca"
-    with raises(FeaturesNotFound):
+    with raises(FeatureTypeNotFound):
         est_times, est_labels = msaf.run.process(long_audio_file, feature=feature)
 
 

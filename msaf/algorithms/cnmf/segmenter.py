@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import ndimage
+from sklearn.decomposition import NMF
 
 import msaf.utils as U
-from msaf import pymf
 from msaf.algorithms.interface import SegmenterInterface
 
 
@@ -14,7 +14,7 @@ def median_filter(X, M=8):
 
 
 def cnmf(S, rank, niter=500, hull=False):
-    """(Convex) Non-Negative Matrix Factorization.
+    """Non-Negative Matrix Factorization using scikit-learn.
 
     Parameters
     ----------
@@ -24,22 +24,21 @@ def cnmf(S, rank, niter=500, hull=False):
         Rank of decomposition
     niter: int
         Number of iterations to be used
+    hull: bool
+        Ignored (kept for API compatibility).
 
     Returns
     -------
     F: np.array
-        Cluster matrix (decomposed matrix)
+        Basis matrix (decomposed matrix)
     G: np.array
         Activation matrix (decomposed matrix)
         (s.t. S ~= F * G)
     """
-    if hull:
-        nmf_mdl = pymf.CHNMF(S, num_bases=rank)
-    else:
-        nmf_mdl = pymf.CNMF(S, num_bases=rank)
-    nmf_mdl.factorize(niter=niter)
-    F = np.asarray(nmf_mdl.W)
-    G = np.asarray(nmf_mdl.H)
+    S_nn = np.maximum(S, 0)
+    model = NMF(n_components=rank, max_iter=niter, init="nndsvd")
+    G = model.fit_transform(S_nn.T).T
+    F = model.components_
     return F, G
 
 

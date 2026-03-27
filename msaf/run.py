@@ -1,4 +1,5 @@
 """This module contains multiple functions in order to run MSAF algorithms."""
+
 import logging
 import os
 from copy import deepcopy
@@ -6,6 +7,7 @@ from copy import deepcopy
 import librosa
 import numpy as np
 from joblib import Parallel, delayed
+from tqdm import tqdm
 
 import msaf
 import msaf.algorithms as algorithms
@@ -32,7 +34,7 @@ def get_boundaries_module(boundaries_id):
     if boundaries_id == "gt":
         return None
     try:
-        module = eval(algorithms.__name__ + "." + boundaries_id)
+        module = getattr(algorithms, boundaries_id)
     except AttributeError:
         raise RuntimeError("Algorithm %s can not be found in msaf!" % boundaries_id)
     if not module.is_boundary_type:
@@ -57,7 +59,7 @@ def get_labels_module(labels_id):
     if labels_id is None:
         return None
     try:
-        module = eval(algorithms.__name__ + "." + labels_id)
+        module = getattr(algorithms, labels_id)
     except AttributeError:
         raise RuntimeError("Algorithm %s can not be found in msaf!" % labels_id)
     if not module.is_label_type:
@@ -73,22 +75,17 @@ def run_hierarchical(
 
     See run_algorithm for more information.
     """
-    # Sanity check
     if bounds_module is None:
         raise NoHierBoundaryError(
-            "A boundary algorithm is needed when using " "hierarchical segmentation."
+            "A boundary algorithm is needed when using hierarchical segmentation."
         )
 
-    # Get features to make code nicer
     features = config["features"].features
 
-    # Compute boundaries
     S = bounds_module.Segmenter(audio_file, **config)
     est_idxs, est_labels = S.processHierarchical()
 
-    # Compute labels if needed
     if labels_module is not None and bounds_module.__name__ != labels_module.__name__:
-        # Compute labels for each level in the hierarchy
         flat_config = deepcopy(config)
         flat_config["hier"] = False
         for i, level_idxs in enumerate(est_idxs):
@@ -97,8 +94,6 @@ def run_hierarchical(
             )
             est_labels[i] = S.processFlat()[1]
 
-    # Make sure the first and last boundaries are included for each
-    # level in the hierarchy
     est_times = []
     cleaned_est_labels = []
     for level in range(len(est_idxs)):
@@ -124,11 +119,8 @@ def run_flat(
 
     See run_algorithm for more information.
     """
-    # Get features to make code nicer
     features = config["features"].features
 
-    # Segment using the specified boundaries and labels
-    # Case when boundaries and labels algorithms are the same
     if (
         bounds_module is not None
         and labels_module is not None
@@ -136,15 +128,12 @@ def run_flat(
     ):
         S = bounds_module.Segmenter(file_struct, **config)
         est_idxs, est_labels = S.processFlat()
-    # Different boundary and label algorithms
     else:
-        # Identify segment boundaries
         if bounds_module is not None:
             S = bounds_module.Segmenter(file_struct, in_labels=[], **config)
             est_idxs, est_labels = S.processFlat()
         else:
             try:
-                # Ground-truth boundaries
                 est_times, est_labels = io.read_references(
                     file_struct.audio_file, annotator_id=annotator_id
                 )
@@ -157,7 +146,6 @@ def run_flat(
                 )
                 return [], []
 
-        # Label segments
         if labels_module is not None:
             if len(est_idxs) == 2:
                 est_labels = np.array([0])
@@ -167,7 +155,6 @@ def run_flat(
                 )
                 est_labels = S.processFlat()[1]
 
-    # Make sure the first and last boundaries are included
     est_times, est_labels = utils.process_segmentation_level(
         est_idxs, est_labels, features.shape[0], frame_times, config["features"].dur
     )
@@ -202,7 +189,6 @@ def run_algorithms(file_struct, boundaries_id, labels_id, config, annotator_id=0
         If `list`, it will be a list of np.arrays, sorted by segmentation
         layer.
     """
-    # Check that there are enough audio frames
     if config["features"].features.shape[0] <= msaf.config.minimum_frames:
         logging.warning(
             "Audio file too short, or too many few beats "
@@ -210,14 +196,11 @@ def run_algorithms(file_struct, boundaries_id, labels_id, config, annotator_id=0
         )
         return np.asarray([0, config["features"].dur]), np.asarray([0], dtype=int)
 
-    # Get the corresponding modules
     bounds_module = get_boundaries_module(boundaries_id)
     labels_module = get_labels_module(labels_id)
 
-    # Get the correct frame times
     frame_times = config["features"].frame_times
 
-    # Segment audio based on type of segmentation
     run_fun = run_hierarchical if config["hier"] else run_flat
     est_times, est_labels = run_fun(
         file_struct, bounds_module, labels_module, frame_times, config, annotator_id
@@ -233,7 +216,7 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
     ----------
     file_struct: `msaf.io.FileStruct`
         FileStruct containing the paths of the input files (audio file,
-        features file, reference file, output estimation file).
+        reference file, output estimation file).
     boundaries_id: str
         Identifier of the boundaries algorithm to use ("gt" for ground truth).
     labels_id: str
@@ -265,7 +248,13 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
     # Save
     logging.info("Writing results in: %s" % file_struct.est_file)
     io.save_estimations(
-        file_struct, est_times, est_labels, boundaries_id, labels_id, **config
+        file_struct,
+        est_times,
+        est_labels,
+        boundaries_id,
+        labels_id,
+        dur=config["features"].dur,
+        **config,
     )
 
     return est_times, est_labels
@@ -276,8 +265,8 @@ def process(
     annot_beats=False,
     feature="pcp",
     framesync=False,
-    boundaries_id=msaf.config.default_bound_id,
-    labels_id=msaf.config.default_label_id,
+    boundaries_id=None,
+    labels_id=None,
     hier=False,
     sonify_bounds=False,
     plot=False,
@@ -298,12 +287,13 @@ def process(
         Whether to use annotated beats or not.
     feature: str
         String representing the feature to be used (e.g. pcp, mfcc, tonnetz)
-    framesync: str
+    framesync: bool
         Whether to use framesync features or not (default: False -> beatsync)
     boundaries_id: str
-        Identifier of the boundaries algorithm (use "gt" for groundtruth)
+        Identifier of the boundaries algorithm (use "gt" for groundtruth).
+        If None, uses the default from config.
     labels_id: str
-        Identifier of the labels algorithm (use None to not compute labels)
+        Identifier of the labels algorithm (use None to not compute labels).
     hier : bool
         Whether to compute a hierarchical or flat segmentation.
     sonify_bounds: bool
@@ -332,6 +322,12 @@ def process(
         boundary times and estimated labels.
         If labels_id is None, est_labels will be a list of -1.
     """
+    # Use config defaults if not specified
+    if boundaries_id is None:
+        boundaries_id = msaf.config.default_bound_id
+    if labels_id is None:
+        labels_id = msaf.config.default_label_id
+
     # Seed random to reproduce results
     np.random.seed(123)
 
@@ -348,11 +344,7 @@ def process(
         raise NoAudioFileError("File or directory does not exists, %s" % in_path)
     if os.path.isfile(in_path):
         # Single file mode
-        # Get (if they exitst) or compute features
         file_struct = msaf.io.FileStruct(in_path)
-
-        # Use temporary file in single mode
-        file_struct.features_file = msaf.config.features_tmp_file
 
         # Get features
         config["features"] = Features.select_features(
@@ -374,11 +366,16 @@ def process(
                 file_struct, est_times, est_labels, boundaries_id, labels_id
             )
 
-        # TODO: Only save if needed
         # Save estimations
         msaf.utils.ensure_dir(os.path.dirname(file_struct.est_file))
         io.save_estimations(
-            file_struct, est_times, est_labels, boundaries_id, labels_id, **config
+            file_struct,
+            est_times,
+            est_labels,
+            boundaries_id,
+            labels_id,
+            dur=config["features"].dur,
+            **config,
         )
 
         return est_times, est_labels
@@ -386,9 +383,9 @@ def process(
         # Collection mode
         file_structs = io.get_dataset_files(in_path)
 
-        return Parallel(n_jobs=n_jobs, verbose=2)(
+        return Parallel(n_jobs=n_jobs)(
             delayed(process_track)(
                 file_struct, boundaries_id, labels_id, config, annotator_id=annotator_id
             )
-            for file_struct in file_structs[:]
+            for file_struct in tqdm(file_structs, desc="Processing tracks")
         )

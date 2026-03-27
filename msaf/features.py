@@ -19,9 +19,8 @@ Here is a list of all the available features:
 import librosa
 import numpy as np
 
-from msaf import config
+from msaf.config import config
 from msaf.base import Features
-from msaf.exceptions import FeatureParamsError
 
 
 class CQT(Features):
@@ -80,7 +79,7 @@ class CQT(Features):
         elif ref_power == "median":
             self.ref_power = np.median
         else:
-            raise FeatureParamsError("Wrong value for ref_power")
+            raise ValueError("Wrong value for ref_power")
 
     @classmethod
     def get_id(cls):
@@ -328,7 +327,7 @@ class MFCC(Features):
         elif ref_power == "median":
             self.ref_power = np.median
         else:
-            raise FeatureParamsError("Wrong value for ref_power")
+            raise ValueError("Wrong value for ref_power")
 
     @classmethod
     def get_id(cls):

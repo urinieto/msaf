@@ -3,130 +3,152 @@
 Configuration
 =============
 
-The ``config`` module contains many ``attributes`` that modify MSAF's behavior.
-Many of these attributes are consulted during the import of the ``msaf`` module and many are assumed to be
-read-only.
+MSAF uses `OmegaConf <https://omegaconf.readthedocs.io/>`_ for configuration
+management. The configuration is a structured object with sensible defaults
+that can be overridden via a YAML file or programmatically.
 
-*As a rule, the attributes in this module should not be modified by user code.*
+Configuration Precedence
+------------------------
 
-MSAF's code comes with default values for these attributes, but you can
-override them from your ``.msafrc`` file, and override those values in turn by
-the :envvar:`MSAF_FLAGS` environment variable.
+The order of precedence is (highest to lowest):
 
-The order of precedence is:
+1. Direct assignment in code: ``msaf.config.sample_rate = 44100``
+2. User YAML file at ``~/.msaf.yaml`` (or the path in ``MSAF_CONFIG`` env var)
+3. Built-in defaults
 
-1. an assignment to ``msaf.config.<property>``
-2. an assignment in :envvar:`MSAF_FLAGS`
-3. an assignment in the .msafrc file (or the file indicated in :envvar:`MSAFRC`)
+User YAML File
+--------------
 
-You can print out the current/effective configuration at any time by printing
-``msaf.config``.
-For example, to see a list  of all active configuration variables, type this from the command-line::
+Create a ``~/.msaf.yaml`` file to override default settings. For example:
 
-	python -c 'import msaf; print(msaf.config)' | less
+.. code-block:: yaml
 
-Environment Variables
+    sample_rate: 44100
+    hop_size: 512
+
+    cqt:
+      bins: 96
+
+You can also set the ``MSAF_CONFIG`` environment variable to point to a
+different YAML file:
+
+.. code-block:: bash
+
+    MSAF_CONFIG=/path/to/my_config.yaml python myscript.py
+
+Programmatic Override
 ---------------------
 
-.. envvar:: MSAF_FLAGS
+You can override config values directly in your code:
 
-    This is a list of comma-delimited key=value pairs that control
-    MSAF's behavior.
+.. code-block:: python
 
-    For example, in bash, you can override your :envvar:`MSAFRC` defaults
-    for <myscript>.py by typing this:
-
-    .. code-block:: bash
-
-        MSAF_FLAGS='sample_rate=11025,n_fft=2048' python <myscript>.py
-
-    If a value is defined several times in ``MSAF_FLAGS``,
-    the right-most definition is used. So, for instance, if
-    ``MSAF_FLAGS='sample_rate=44100, sample_rate=22050'``, then 22050 Hz will be used as the default sampling rate.
-
-.. envvar:: MSAFRC
-
-    The location[s] of the .msafrc file[s] in ConfigParser format.
-    It defaults to ``$HOME/.msafrc``. On Windows, it defaults to
-    ``$HOME/.msafrc:$HOME/.msafrc.txt`` to make Windows users' life
-    easier.
-
-    Here is the .msafrc equivalent to the MSAF_FLAGS in the example above:
-
-    .. code-block:: cfg
-
-        [global]
-        sample_rate = 11025
-        n_fft = 2048
-
-        [cqt]
-        bins = 96
-
-    Configuration attributes that are available directly in ``config``
-    (e.g. ``config.sample_rate``, ``config.hop_size``) should be defined in the
-    ``[global]`` section.
-    Attributes from a subsection of ``config`` (e.g. ``config.cqt.bins``,
-    ``config.mfcc.n_mels``) should be defined in their corresponding
-    section (e.g. ``[cqt]``, ``[mfcc]``).
-
-    Multiple configuration files can be specified by separating them with ':'
-    characters (as in $PATH).  Multiple configuration files will be merged,
-    with later (right-most) files taking priority over earlier files in the
-    case that multiple files specify values for a common configuration option.
-    For example, to override system-wide settings with personal ones,
-    set ``MSAFRC=/etc/msafrc:~/.msafrc``.
+    import msaf
+    msaf.config.sample_rate = 44100
+    msaf.config.cqt.bins = 96
 
 Config Attributes
 -----------------
 
-The list below describes some of the more common and important flags
-that you might want to use. For the complete list (including documentation),
-import MSAF and print the config variable, as in:
-
-.. code-block:: bash
-
-    python -c 'import msaf; print(msaf.config)' | less
-
-.. attribute:: default_bound_id
-
-    String value: either ``'sf'``, ``'cnmf'``, ``'foote'``, ``'olda'``,
-    ``'scluster'``, ``'gt'``
-
-    This is the identifier for the boundary algorithm to use.
-    If ``'gt'`` is used the reference boundaries will be read instead of computed.
-    See the :doc:`algorithms` section for more information.
-
-.. attribute:: default_label_id
-
-    String value: either ``None``, ``'cnmf'``, ``'fmc2d'``, ``'scluster'``
-
-    This is the identifier for the label algorithm to use.
-    If ``None`` is used, no label algorithm will be applied.
-    See the :doc:`algorithms` section for more information.
+Global Parameters
+~~~~~~~~~~~~~~~~~
 
 .. attribute:: sample_rate
 
-    Positive int value, default: 22050
-
-    The sampling rate to apply to the actual audio. Resampling will be applied
-    as needed.
+    Positive int value, default: 22050.
+    The sampling rate for audio analysis. Resampling will be applied as needed.
 
 .. attribute:: n_fft
 
-    Positive power of two int value, default: 4096
-
+    Positive int value, default: 4096.
     The size of the Fast Fourier Transform, in number of samples.
 
 .. attribute:: hop_size
 
-    Positive power of two int value, default: 1024
+    Positive int value, default: 1024.
+    The hop size in samples.
 
-    The size of the hop size, which should be smaller than the ``n_fft`` value,
-    such that overlap is allowed.
+.. attribute:: default_bound_id
 
-.. attribute:: features_tmp_file
+    String value, default: ``'sf'``.
+    The default boundary detection algorithm.
+    See the :doc:`algorithms` section for available options.
 
-    String value, default ``'.features_msaf_tmp.json'``
+.. attribute:: default_label_id
 
-    The file name in which temporary feature files will be stored when working in
-    *single file* mode.
+    String or None, default: ``None``.
+    The default label algorithm. If ``None``, no labels are computed.
+
+.. attribute:: minimum_frames
+
+    Positive int value, default: 10.
+    Minimum number of frames required to run algorithms.
+
+Feature Parameters
+~~~~~~~~~~~~~~~~~~
+
+Each feature type has its own configuration section:
+
+- ``msaf.config.cqt``: CQT features (bins, norm, filter_scale, ref_power)
+- ``msaf.config.mel``: Mel spectrogram (n_mels, f_min, f_max)
+- ``msaf.config.mfcc``: MFCC features (n_mels, n_mfcc, ref_power)
+- ``msaf.config.pcp``: PCP / Chroma features (bins, norm, f_min, n_octaves)
+- ``msaf.config.tonnetz``: Tonnetz features (bins, norm, f_min, n_octaves)
+- ``msaf.config.tempogram``: Tempogram features (win_length)
+
+Dataset Parameters
+~~~~~~~~~~~~~~~~~~
+
+The ``msaf.config.dataset`` section controls dataset directory structure:
+
+- ``audio_dir``: Directory containing audio files (default: ``"audio"``)
+- ``estimations_dir``: Directory for estimation output (default: ``"estimations"``)
+- ``references_dir``: Directory for reference annotations (default: ``"references"``)
+- ``audio_exts``: Supported audio extensions (default: ``[".wav", ".mp3", ".aif"]``)
+
+Full Default Configuration
+--------------------------
+
+.. code-block:: yaml
+
+    sample_rate: 22050
+    n_fft: 4096
+    hop_size: 1024
+    default_bound_id: sf
+    default_label_id: null
+    minimum_frames: 10
+    results_dir: results
+    results_ext: .csv
+    out_boundaries_ext: -bounds.wav
+    dataset:
+      audio_dir: audio
+      estimations_dir: estimations
+      references_dir: references
+      audio_exts: [.wav, .mp3, .aif]
+      estimations_ext: .jams
+      references_ext: .jams
+    cqt:
+      bins: 84
+      norm: .inf
+      filter_scale: 1.0
+      ref_power: max
+    mel:
+      n_mels: 80
+      f_min: 80.0
+      f_max: 16000.0
+    mfcc:
+      n_mels: 128
+      n_mfcc: 14
+      ref_power: max
+    pcp:
+      bins: 84
+      norm: .inf
+      f_min: 27.5
+      n_octaves: 6
+    tonnetz:
+      bins: 84
+      norm: .inf
+      f_min: 27.5
+      n_octaves: 6
+    tempogram:
+      win_length: 192

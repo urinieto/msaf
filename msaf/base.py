@@ -1,12 +1,5 @@
-"""Base module containing parent classes for the Features.
+"""Base module containing parent classes for the Features."""
 
-In following versions, base classes for algorithms should also be
-included here.
-"""
-
-import collections
-import datetime
-import json
 import logging
 import os
 from enum import Enum
@@ -15,17 +8,12 @@ import jams
 import librosa
 import numpy as np
 
-import msaf
 from msaf.exceptions import (
-    FeatureParamsError,
-    FeaturesNotFound,
     FeatureTypeNotFound,
     NoAudioFileError,
-    NoFeaturesFileError,
-    WrongFeaturesFormatError,
 )
 
-# Three types of features at the moment:
+# Three types of features:
 #   - framesync: Frame-wise synchronous.
 #   - est_beatsync: Beat-synchronous using estimated beats with librosa
 #   - ann_beatsync: Beat-synchronous using annotated beats from ground-truth
@@ -50,8 +38,8 @@ class Features(metaclass=MetaFeatures):
     """This is the base class for all the features in MSAF.
 
     It contains functions to automatically estimate beats, read
-    annotated beats, compute beat-synchronous features, read and write
-    features.
+    annotated beats, compute beat-synchronous features, and compute
+    features on the fly from audio.
 
     It should be straightforward to add features in MSAF, simply by
     writing classes that inherit from this one.
@@ -76,7 +64,6 @@ class Features(metaclass=MetaFeatures):
         feat_type: `FeatureTypes`
             Enum containing the type of feature.
         """
-        # Set the global parameters
         self.file_struct = file_struct
         self.sr = sr
         self.hop_length = hop_length
@@ -84,31 +71,21 @@ class Features(metaclass=MetaFeatures):
 
         # The following attributes will be populated, if needed,
         # once the `features` getter is called
-        self.dur = None  # The duration of the audio file in seconds
-        self._features = None  # The actual features
-        self._framesync_features = None  # Frame-sync features
-        self._est_beatsync_features = None  # Estimated Beat-sync features
-        self._ann_beatsync_features = None  # Annotated Beat-sync features
-        self._audio = None  # Actual audio signal
-        self._audio_harmonic = None  # Harmonic audio signal
-        self._audio_percussive = None  # Percussive audio signal
-        self._framesync_times = None  # The times of the framesync features
-        self._est_beatsync_times = None  # Estimated beat-sync times
-        self._est_beats_times = None  # Estimated beat times
-        self._est_beats_frames = None  # Estimated beats in frames
-        self._ann_beatsync_times = None  # Annotated beat-sync times
-        self._ann_beats_times = None  # Annotated beat times
-        self._ann_beats_frames = None  # Annotated beats in frames
-
-        # Differentiate global params from subclass attributes.
-        # This is a bit hacky... I accept Pull Requests ^_^
-        self._global_param_names = [
-            "file_struct",
-            "sr",
-            "feat_type",
-            "hop_length",
-            "dur",
-        ]
+        self.dur = None
+        self._features = None
+        self._framesync_features = None
+        self._est_beatsync_features = None
+        self._ann_beatsync_features = None
+        self._audio = None
+        self._audio_harmonic = None
+        self._audio_percussive = None
+        self._framesync_times = None
+        self._est_beatsync_times = None
+        self._est_beats_times = None
+        self._est_beats_frames = None
+        self._ann_beatsync_times = None
+        self._ann_beats_times = None
+        self._ann_beats_frames = None
 
     def compute_HPSS(self):
         """Computes harmonic-percussive source separation.
@@ -132,19 +109,15 @@ class Features(metaclass=MetaFeatures):
         frames: np.array
             Frame indices of estimated beats.
         """
-        # Compute harmonic-percussive source separation if needed
         if self._audio_percussive is None:
             self._audio_harmonic, self._audio_percussive = self.compute_HPSS()
 
-        # Compute beats
         tempo, frames = librosa.beat.beat_track(
             y=self._audio_percussive, sr=self.sr, hop_length=self.hop_length
         )
 
-        # To times
         times = librosa.frames_to_time(frames, sr=self.sr, hop_length=self.hop_length)
 
-        # TODO: Is this really necessary?
         if len(times) > 0 and times[0] == 0:
             times = times[1:]
             frames = frames[1:]
@@ -163,7 +136,6 @@ class Features(metaclass=MetaFeatures):
         """
         times, frames = (None, None)
 
-        # Read annotations if they exist in correct folder
         if os.path.isfile(self.file_struct.ref_file):
             try:
                 jam = jams.load(self.file_struct.ref_file)
@@ -175,7 +147,6 @@ class Features(metaclass=MetaFeatures):
                 return times, frames
             beat_annot = jam.search(namespace="beat.*")
 
-            # If beat annotations exist, get times and frames
             if len(beat_annot) > 0:
                 beats_inters, _ = beat_annot[0].to_interval_values()
                 times = beats_inters[:, 0]
@@ -208,173 +179,16 @@ class Features(metaclass=MetaFeatures):
         if beat_frames is None:
             return None, None
 
-        # Make beat synchronous
         beatsync_feats = librosa.util.utils.sync(
             self._framesync_features.T, beat_frames, pad=pad
         ).T
 
-        # Assign times (and add last time if padded)
         beatsync_times = np.copy(beat_times)
         if beatsync_times.shape[0] != beatsync_feats.shape[0]:
             beatsync_times = np.concatenate(
                 (beatsync_times, [self._framesync_times[-1]])
             )
         return beatsync_feats, beatsync_times
-
-    def read_features(self, tol=1e-3):
-        """Reads the features from a file and stores them in the current
-        object.
-
-        Parameters
-        ----------
-        tol: float
-            Tolerance level to detect duration of audio.
-        """
-        try:
-            # Read JSON file
-            with open(self.file_struct.features_file) as f:
-                feats = json.load(f)
-
-            # Store duration
-            if self.dur is None:
-                self.dur = float(feats["globals"]["dur"])
-
-            # Check that we have the correct global parameters
-            assert np.isclose(self.dur, float(feats["globals"]["dur"]), rtol=tol)
-            assert self.sr == int(feats["globals"]["sample_rate"])
-            assert self.hop_length == int(feats["globals"]["hop_length"])
-            assert os.path.basename(self.file_struct.audio_file) == os.path.basename(
-                feats["globals"]["audio_file"]
-            )
-
-            # Check for specific features params
-            feat_params_err = FeatureParamsError(
-                "Couldn't find features for %s id in file %s"
-                % (self.get_id(), self.file_struct.features_file)
-            )
-            if self.get_id() not in feats.keys():
-                raise feat_params_err
-            for param_name in self.get_param_names():
-                value = getattr(self, param_name)
-                if hasattr(value, "__call__"):
-                    # Special case of functions
-                    if value.__name__ != feats[self.get_id()]["params"][param_name]:
-                        raise feat_params_err
-                else:
-                    if str(value) != feats[self.get_id()]["params"][param_name]:
-                        raise feat_params_err
-
-            # Store actual features
-            self._est_beats_times = np.array(feats["est_beats"])
-            self._est_beatsync_times = np.array(feats["est_beatsync_times"])
-            self._est_beats_frames = librosa.core.time_to_frames(
-                self._est_beats_times, sr=self.sr, hop_length=self.hop_length
-            )
-            self._framesync_features = np.array(feats[self.get_id()]["framesync"])
-            self._est_beatsync_features = np.array(feats[self.get_id()]["est_beatsync"])
-
-            # Read annotated beats if available
-            if "ann_beats" in feats.keys():
-                self._ann_beats_times = np.array(feats["ann_beats"])
-                self._ann_beatsync_times = np.array(feats["ann_beatsync_times"])
-                self._ann_beats_frames = librosa.core.time_to_frames(
-                    self._ann_beats_times, sr=self.sr, hop_length=self.hop_length
-                )
-                self._ann_beatsync_features = np.array(
-                    feats[self.get_id()]["ann_beatsync"]
-                )
-        except KeyError:
-            raise WrongFeaturesFormatError(
-                "The features file %s is not correctly formatted"
-                % self.file_struct.features_file
-            )
-        except AssertionError:
-            raise FeaturesNotFound(
-                "The features for the given parameters were not found in "
-                "features file %s" % self.file_struct.features_file
-            )
-        except OSError:
-            raise NoFeaturesFileError(
-                "Could not find features file %s", self.file_struct.features_file
-            )
-
-    def write_features(self):
-        """Saves features to file."""
-        out_json = collections.OrderedDict()
-        try:
-            # Only save the necessary information
-            self.read_features()
-        except (WrongFeaturesFormatError, FeaturesNotFound, NoFeaturesFileError):
-            # We need to create the file or overwrite it
-            # Metadata
-            out_json = collections.OrderedDict(
-                {
-                    "metadata": {
-                        "versions": {
-                            "librosa": librosa.__version__,
-                            "msaf": msaf.__version__,
-                            "numpy": np.__version__,
-                        },
-                        "timestamp": datetime.datetime.today().strftime(
-                            "%Y/%m/%d %H:%M:%S"
-                        ),
-                    }
-                }
-            )
-
-            # Global parameters
-            out_json["globals"] = {
-                "dur": self.dur,
-                "sample_rate": self.sr,
-                "hop_length": self.hop_length,
-                "audio_file": self.file_struct.audio_file,
-            }
-
-            # Beats
-            out_json["est_beats"] = self._est_beats_times.tolist()
-            out_json["est_beatsync_times"] = self._est_beatsync_times.tolist()
-            if self._ann_beats_times is not None:
-                out_json["ann_beats"] = self._ann_beats_times.tolist()
-                out_json["ann_beatsync_times"] = self._ann_beatsync_times.tolist()
-        except FeatureParamsError:
-            # We have other features in the file, simply add these ones
-            with open(self.file_struct.features_file) as f:
-                out_json = json.load(f)
-        finally:
-            # Specific parameters of the current features
-            out_json[self.get_id()] = {}
-            out_json[self.get_id()]["params"] = {}
-            for param_name in self.get_param_names():
-                value = getattr(self, param_name)
-                # Check for special case of functions
-                if hasattr(value, "__call__"):
-                    value = value.__name__
-                else:
-                    value = str(value)
-                out_json[self.get_id()]["params"][param_name] = value
-
-            # Actual features
-            out_json[self.get_id()]["framesync"] = self._framesync_features.tolist()
-            out_json[self.get_id()][
-                "est_beatsync"
-            ] = self._est_beatsync_features.tolist()
-            if self._ann_beatsync_features is not None:
-                out_json[self.get_id()][
-                    "ann_beatsync"
-                ] = self._ann_beatsync_features.tolist()
-
-            # Save it
-            with open(self.file_struct.features_file, "w") as f:
-                json.dump(out_json, f, indent=2)
-
-    def get_param_names(self):
-        """Returns the parameter names for these features, avoiding the global
-        parameters."""
-        return [
-            name
-            for name in vars(self)
-            if not name.startswith("_") and name not in self._global_param_names
-        ]
 
     def _compute_framesync_times(self):
         """Computes the framesync times based on the framesync features."""
@@ -386,27 +200,25 @@ class Features(metaclass=MetaFeatures):
 
     def _compute_all_features(self):
         """Computes all the features (beatsync, framesync) from the audio."""
-        # Read actual audio waveform
+        logging.info("Loading audio: %s", self.file_struct.audio_file)
         self._audio, _ = librosa.load(self.file_struct.audio_file, sr=self.sr)
 
-        # Get duration of audio file
         self.dur = len(self._audio) / float(self.sr)
 
-        # Compute actual features
+        logging.info("Computing %s features...", self.get_id())
         feat_type = self.feat_type
         self.feat_type = FeatureTypes.framesync
         self._framesync_features = self.compute_features()
         self.feat_type = feat_type
 
-        # Compute framesync times
         self._compute_framesync_times()
 
-        # Compute/Read beats
+        logging.info("Estimating beats...")
         self._est_beats_times, self._est_beats_frames = self.estimate_beats()
         self._ann_beats_times, self._ann_beats_frames = self.read_ann_beats()
 
         # Beat-Synchronize
-        pad = True  # Always append to the end of the features
+        pad = True
         (
             self._est_beatsync_features,
             self._est_beatsync_times,
@@ -447,32 +259,13 @@ class Features(metaclass=MetaFeatures):
         features: np.array
             The actual features. Each row corresponds to a feature vector.
         """
-        # Compute features if needed
         if self._features is None:
             try:
-                self.read_features()
-            except (
-                NoFeaturesFileError,
-                FeaturesNotFound,
-                WrongFeaturesFormatError,
-                FeatureParamsError,
-            ) as e:
-                try:
-                    self._compute_all_features()
-                    self.write_features()
-                except OSError:
-                    if isinstance(e, FeaturesNotFound) or isinstance(
-                        e, FeatureParamsError
-                    ):
-                        msg = (
-                            "Computation of the features is needed for "
-                            "current parameters but no audio file was found."
-                            "Please, change your parameters or add the audio"
-                            " file in %s"
-                        )
-                    else:
-                        msg = "Couldn't find audio file in %s"
-                    raise NoAudioFileError(msg % self.file_struct.audio_file)
+                self._compute_all_features()
+            except OSError:
+                raise NoAudioFileError(
+                    "Couldn't find audio file in %s" % self.file_struct.audio_file
+                )
 
         # Choose features based on type
         if self.feat_type is FeatureTypes.framesync:
@@ -521,7 +314,6 @@ class Features(metaclass=MetaFeatures):
         else:
             raise FeatureTypeNotFound("Type of features not valid.")
 
-        # Select features with default parameters
         if features_id in features_registry.keys():
             feature = features_registry[features_id]
         elif isinstance(features_id, MetaFeatures) and issubclass(
@@ -529,7 +321,7 @@ class Features(metaclass=MetaFeatures):
         ):
             feature = features_id
         else:
-            raise FeaturesNotFound(
+            raise FeatureTypeNotFound(
                 "The features '%s' are invalid (valid features are %s)"
                 % (features_id, features_registry.keys())
             )
@@ -538,11 +330,11 @@ class Features(metaclass=MetaFeatures):
 
     def compute_features(self):
         raise NotImplementedError(
-            "This method must contain the actual " "implementation of the features"
+            "This method must contain the actual implementation of the features"
         )
 
     @classmethod
     def get_id(cls):
         raise NotImplementedError(
-            "This method must return a string identifier" " of the features"
+            "This method must return a string identifier of the features"
         )

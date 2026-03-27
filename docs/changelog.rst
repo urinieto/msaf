@@ -1,6 +1,47 @@
 Changes
 =======
 
+v1.0.0
+------
+
+**Breaking changes:**
+
+* Removed feature caching to disk. Features are now always computed on the fly
+  from audio. The ``features_file`` attribute has been removed from ``FileStruct``,
+  and the ``compute_features.py`` example script has been removed.
+* Replaced the Theano-style configuration system (``configparser.py`` +
+  ``configdefaults.py``) with OmegaConf + YAML. User config is now stored in
+  ``~/.msaf.yaml`` instead of ``~/.msafrc``. The ``MSAF_CONFIG`` environment
+  variable replaces ``MSAF_FLAGS`` and ``MSAFRC``.
+* Replaced the vendored ``pymf`` library (GPL) with scikit-learn's NMF for the
+  C-NMF algorithm. Results may differ slightly.
+* Removed ``FeatureParamsError``, ``FeaturesNotFound``, ``NoFeaturesFileError``,
+  and ``WrongFeaturesFormatError`` exceptions. Invalid feature parameters now
+  raise ``ValueError``.
+* Minimum Python version is now 3.10.
+* Removed dependencies: ``enum34``, ``six``, ``audioread``, ``decorator``,
+  ``seaborn``.
+* The ``boundaries_id`` and ``labels_id`` parameters of ``msaf.process()`` now
+  default to ``None`` (resolved from config at call time) instead of being
+  evaluated at import time.
+
+**New features:**
+
+* Modern ``pyproject.toml``-based packaging (PEP 621).
+* OmegaConf-based configuration with YAML support and ``~/.msaf.yaml`` user
+  config file.
+* Progress bars (tqdm) for collection mode processing.
+* Replaced all ``eval()`` calls for module loading with ``getattr()``.
+* Added ``__all__`` to top-level ``__init__.py``.
+
+**Improvements:**
+
+* Updated CI to Python 3.10-3.13.
+* Replaced black + autoflake + pyupgrade with ruff for linting and formatting.
+* Updated all GitHub Actions to latest versions.
+* Modernized Sphinx documentation with updated intersphinx links.
+* Updated dependency version floors to modern releases.
+
 v0.1.70
 -------
 
