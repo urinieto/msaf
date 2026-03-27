@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "msaf"
+version = "1.0.0"
+description = "Music Structure Analysis Framework"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.10"
+authors = [{ name = "Oriol Nieto", email = "oriol@nyu.edu" }]
+keywords = ["audio", "music", "sound", "structure", "analysis", "segmentation"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+dependencies = [
+    "cvxopt",
+    "jams>=0.3.4",
+    "joblib",
+    "librosa>=0.10",
+    "matplotlib>=3.5",
+    "mir_eval",
+    "numpy>=1.23",
+    "omegaconf>=2.3",
+    "pandas>=1.5",
+    "scikit-learn>=1.2",
+    "scipy>=1.9",
+    "tqdm",
+    "vmo>=0.3.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+docs = [
+    "numpydoc",
+    "sphinx",
+    "sphinx-rtd-theme",
+]
+
+[project.urls]
+Homepage = "https://github.com/urinieto/msaf"
+Documentation = "https://msaf.readthedocs.io"
+Repository = "https://github.com/urinieto/msaf"
+
+[tool.setuptools.packages.find]
+include = ["msaf*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+msaf = ["algorithms/olda/models/*.npy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Note: tests use relative fixture paths, so run from the tests/ directory:
+#   cd tests && pytest
+
+[tool.coverage.report]
+omit = [
+    "*/olda/fit_olda_model.py",
+    "*/olda/OLDA.py",
+    "*/olda/make_train.py",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 99
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "W",   # pycodestyle warnings
+]
