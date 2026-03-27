@@ -67,7 +67,15 @@ msaf.config.sample_rate = 44100
 
 ## Citing MSAF
 
-Nieto, O., Bello, J. P., Systematic Exploration Of Computational Music Structure Research. Proc. of the 17th International Society for Music Information Retrieval Conference (ISMIR). New York City, NY, USA, 2016 ([PDF](https://ccrma.stanford.edu/~urinieto/MARL/publications/ISMIR2016-NietoBello.pdf)).
+```bibtex
+@inproceedings{nieto2016systematic,
+    title={Systematic Exploration of Computational Music Structure Research},
+    author={Nieto, Oriol and Bello, Juan Pablo},
+    booktitle={Proceedings of the 17th International Society for Music Information Retrieval Conference (ISMIR)},
+    year={2016},
+    address={New York City, NY, USA}
+}
+```
 
 ## Credits
 

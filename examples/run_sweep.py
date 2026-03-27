@@ -77,9 +77,13 @@ def process(
                                 "config_R_labels": R_labels,
                                 "config_rank_labels": rank_labels,
                             }
-                            results = results.append([new_columns], ignore_index=True)
-                            all_results = all_results.append(
-                                results.mean(), ignore_index=True
+                            results = pd.concat(
+                                [results, pd.DataFrame([new_columns])],
+                                ignore_index=True,
+                            )
+                            all_results = pd.concat(
+                                [all_results, results.mean().to_frame().T],
+                                ignore_index=True,
                             )
                             all_results.to_csv(results_file)
 
@@ -133,9 +137,13 @@ def process(
                                 "config_Mp": Mp,
                                 "config_ot": ot,
                             }
-                            results = results.append([new_columns], ignore_index=True)
-                            all_results = all_results.append(
-                                results.mean(), ignore_index=True
+                            results = pd.concat(
+                                [results, pd.DataFrame([new_columns])],
+                                ignore_index=True,
+                            )
+                            all_results = pd.concat(
+                                [all_results, results.mean().to_frame().T],
+                                ignore_index=True,
                             )
                             all_results.to_csv(results_file)
 
