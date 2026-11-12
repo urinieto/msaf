@@ -1,6 +1,6 @@
 import librosa
 import numpy as np
-from scipy import ndimage, signal
+from scipy import ndimage
 from scipy.spatial import distance
 
 import msaf.utils as U
@@ -22,15 +22,6 @@ def gaussian_filter(X, M=8, axis=0):
         elif axis == 0:
             X[i, :] = ndimage.gaussian_filter(X[i, :], sigma=M / 2.0)
     return X
-
-
-def compute_gaussian_krnl(M):
-    """Creates a gaussian kernel following Serra's paper."""
-    g = signal.gaussian(M, M / 3.0, sym=True)
-    G = np.dot(g.reshape(-1, 1), g.reshape(1, -1))
-    G[M // 2 :, : M // 2] = -G[M // 2 :, : M // 2]
-    G[: M // 2, M // 1 :] = -G[: M // 2, M // 1 :]
-    return G
 
 
 def compute_ssm(X, metric="seuclidean"):
