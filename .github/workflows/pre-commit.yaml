@@ -10,6 +10,9 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: pre-commit/action@v3.0.0
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          # Pinned: pyupgrade v3.15.0 crashes on Python 3.15
+          python-version: "3.12"
+      - uses: pre-commit/action@v3.0.1

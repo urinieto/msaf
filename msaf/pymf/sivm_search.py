@@ -14,11 +14,7 @@ Conf. on Information and Knowledge Management. ACM. 2010.
 
 
 import numpy as np
-
-try:
-    from scipy.misc import factorial
-except:
-    from scipy.special import factorial  # scipy > 1.3
+from scipy.special import factorial
 
 from .dist import *
 from .sivm import SIVM

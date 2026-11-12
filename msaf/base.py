@@ -386,8 +386,13 @@ class Features(metaclass=MetaFeatures):
 
     def _compute_all_features(self):
         """Computes all the features (beatsync, framesync) from the audio."""
-        # Read actual audio waveform
-        self._audio, _ = librosa.load(self.file_struct.audio_file, sr=self.sr)
+        # Read actual audio waveform. Check existence explicitly: librosa >= 1.0
+        # no longer falls back to audioread, so a missing file raises a
+        # soundfile error instead of FileNotFoundError.
+        audio_file = self.file_struct.audio_file
+        if not os.path.isfile(audio_file):
+            raise FileNotFoundError(f"Audio file not found: {audio_file}")
+        self._audio, _ = librosa.load(audio_file, sr=self.sr)
 
         # Get duration of audio file
         self.dur = len(self._audio) / float(self.sr)

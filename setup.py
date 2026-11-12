@@ -47,7 +47,7 @@ setup(
         "jams >= 0.3.0",
         "joblib",
         "librosa >= 0.6.0",
-        "mir_eval",
+        "mir_eval >= 0.8.0",
         "matplotlib >= 1.5",
         "numpy >= 1.8.0",
         "pandas",

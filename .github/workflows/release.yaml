@@ -9,20 +9,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
+          python-version: "3.12"
 
       - name: Install build tool
         run: pip install build
@@ -31,7 +24,7 @@ jobs:
         run: python -m build
 
       - name: Upload package as build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: package
           path: dist/
@@ -46,7 +39,7 @@ jobs:
       id-token: write
     steps:
       - name: Collect packages to release
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v8
         with:
           name: package
           path: dist/
