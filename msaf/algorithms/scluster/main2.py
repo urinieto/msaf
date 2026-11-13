@@ -11,7 +11,8 @@ import scipy
 import sklearn.cluster
 
 
-def embed_beats(A_rep, A_loc, config):
+def compute_laplacian(A_rep, A_loc, config):
+    """Normalized Laplacian of the combined recurrence and path graph."""
     R = librosa.segment.recurrence_matrix(
         A_rep, width=config["rec_width"], mode="affinity", metric="cosine", sym=True
     )
@@ -19,6 +20,11 @@ def embed_beats(A_rep, A_loc, config):
     # Enhance diagonals with a median filter (Equation 2)
     df = librosa.segment.timelag_filter(scipy.ndimage.median_filter)
     Rf = df(R, size=(1, config["rec_smooth"]))
+
+    # The time-lag median filter breaks the symmetry of R near the first and
+    # last frames. Restore it so that the graph is undirected and the result
+    # is a true normalized Laplacian (eigh only reads its lower triangle).
+    Rf = 0.5 * (Rf + Rf.T)
 
     path_distance = np.sum(np.diff(A_loc, axis=1) ** 2, axis=0)
     sigma = np.median(path_distance)
@@ -37,7 +43,11 @@ def embed_beats(A_rep, A_loc, config):
 
     #####################################################
     # Now let's compute the normalized Laplacian (Eq. 10)
-    L = scipy.sparse.csgraph.laplacian(A, normed=True)
+    return scipy.sparse.csgraph.laplacian(A, normed=True)
+
+
+def embed_beats(A_rep, A_loc, config):
+    L = compute_laplacian(A_rep, A_loc, config)
 
     # and its spectral decomposition
     evals, evecs = scipy.linalg.eigh(L)
