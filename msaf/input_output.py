@@ -356,13 +356,14 @@ def get_all_label_algorithms():
     return algo_ids
 
 
-def get_configuration(feature, annot_beats, framesync, boundaries_id, labels_id):
+def get_configuration(feature, annot_beats, framesync, multibeat, boundaries_id, labels_id):
     """Gets the configuration dictionary from the current parameters of the
     algorithms to be evaluated."""
     config = {}
     config["annot_beats"] = annot_beats
     config["feature"] = feature
     config["framesync"] = framesync
+    config["multibeat"] = multibeat
     bound_config = {}
     if boundaries_id != "gt":
         bound_config = eval(msaf.algorithms.__name__ + "." + boundaries_id).config

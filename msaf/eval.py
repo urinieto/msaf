@@ -337,6 +337,7 @@ def process(
     labels_id=msaf.config.default_label_id,
     annot_beats=False,
     framesync=False,
+    multibeat=False,
     feature="pcp",
     hier=False,
     save=False,
@@ -389,7 +390,7 @@ def process(
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(
-            feature, annot_beats, framesync, boundaries_id, labels_id
+            feature, annot_beats, framesync, multibeat, boundaries_id, labels_id
         )
 
     # Hierarchical segmentation

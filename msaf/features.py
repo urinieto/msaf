@@ -41,6 +41,7 @@ class CQT(Features):
         norm=config.cqt.norm,
         filter_scale=config.cqt.filter_scale,
         ref_power=config.cqt.ref_power,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -64,10 +65,12 @@ class CQT(Features):
         ref_power: str
             The reference power for logarithmic scaling.
             See `configdefaults.py` for the possible values.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         # Init the CQT parameters
         self.n_bins = n_bins
@@ -134,6 +137,7 @@ class Mel(Features):
         n_mels=config.mel.n_mels,
         f_min=config.mel.f_min,
         f_max=config.mel.f_max,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -156,10 +160,12 @@ class Mel(Features):
             Minimum frequency.
         f_min: int > 0
             Maximal frequency.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         self.n_fft = n_fft
         # Init the Mel parameters
@@ -213,6 +219,7 @@ class LogMel(Features):
         n_mels=config.mel.n_mels,
         f_min=config.mel.f_min,
         f_max=config.mel.f_max,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -235,10 +242,12 @@ class LogMel(Features):
             Minimum frequency.
         f_min: int > 0
             Maximal frequency.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         self.n_fft = n_fft
         # Init the Mel parameters
@@ -290,6 +299,7 @@ class MFCC(Features):
         n_mels=config.mfcc.n_mels,
         n_mfcc=config.mfcc.n_mfcc,
         ref_power=config.mfcc.ref_power,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -312,10 +322,12 @@ class MFCC(Features):
             Number of mel coefficients.
         ref_power: function
             The reference power for logarithmic scaling.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         # Init the MFCC parameters
         self.n_fft = n_fft
@@ -372,6 +384,7 @@ class PCP(Features):
         norm=config.pcp.norm,
         f_min=config.pcp.f_min,
         n_octaves=config.pcp.n_octaves,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -394,10 +407,12 @@ class PCP(Features):
             Minimum frequency.
         n_octaves: int > 0
             Number of octaves.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         # Init the PCP parameters
         self.n_bins = n_bins
@@ -460,6 +475,7 @@ class Tonnetz(Features):
         norm=config.tonnetz.norm,
         f_min=config.tonnetz.f_min,
         n_octaves=config.tonnetz.n_octaves,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -482,10 +498,12 @@ class Tonnetz(Features):
             Minimum frequency.
         n_octaves: int > 0
             Number of octaves.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         # Init the local parameters
         self.n_bins = n_bins
@@ -534,6 +552,7 @@ class Tempogram(Features):
         sr=config.sample_rate,
         hop_length=config.hop_size,
         win_length=config.tempogram.win_length,
+        frames_per_beat=config.frames_per_beat
     ):
         """Constructor of the class.
 
@@ -550,10 +569,12 @@ class Tempogram(Features):
             Hop size in frames for the analysis.
         win_length: int > 0
             The size of the window for the tempogram.
+        frames_per_beat: int
+            The number of frames to compute when using multibeat
         """
         # Init the parent
         super().__init__(
-            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type
+            file_struct=file_struct, sr=sr, hop_length=hop_length, feat_type=feat_type, frames_per_beat=frames_per_beat
         )
         # Init the local parameters
         self.win_length = win_length
