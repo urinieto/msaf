@@ -21,11 +21,6 @@ def compute_laplacian(A_rep, A_loc, config):
     df = librosa.segment.timelag_filter(scipy.ndimage.median_filter)
     Rf = df(R, size=(1, config["rec_smooth"]))
 
-    # The time-lag median filter breaks the symmetry of R near the first and
-    # last frames. Restore it so that the graph is undirected and the result
-    # is a true normalized Laplacian (eigh only reads its lower triangle).
-    Rf = 0.5 * (Rf + Rf.T)
-
     path_distance = np.sum(np.diff(A_loc, axis=1) ** 2, axis=0)
     sigma = np.median(path_distance)
     path_sim = np.exp(-path_distance / sigma)
@@ -46,11 +41,22 @@ def compute_laplacian(A_rep, A_loc, config):
     return scipy.sparse.csgraph.laplacian(A, normed=True)
 
 
+def spectral_decomposition(L):
+    """Eigenpairs of L, sorted by ascending eigenvalue.
+
+    L may be slightly asymmetric (due to the time-lag filter), so we use eig
+    instead of eigh. The leading eigenpairs are real.
+    """
+    evals, evecs = scipy.linalg.eig(L)
+    order = np.argsort(evals.real)
+    return evals[order].real, evecs[:, order].real
+
+
 def embed_beats(A_rep, A_loc, config):
     L = compute_laplacian(A_rep, A_loc, config)
 
     # and its spectral decomposition
-    evals, evecs = scipy.linalg.eigh(L)
+    evals, evecs = spectral_decomposition(L)
 
     # We can clean this up further with a median filter.
     # This can help smooth over small discontinuities
