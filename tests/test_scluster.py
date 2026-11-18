@@ -1,10 +1,9 @@
 import numpy as np
 import numpy.testing as npt
-import scipy.linalg
 import scipy.ndimage
 
 from msaf.algorithms.scluster import config
-from msaf.algorithms.scluster.main2 import compute_laplacian
+from msaf.algorithms.scluster.main2 import compute_laplacian, spectral_decomposition
 
 
 def _synthetic_features(n=400, d=12, seed=0):
@@ -17,13 +16,17 @@ def _synthetic_features(n=400, d=12, seed=0):
     return (C - C.min()).T
 
 
-def test_compute_laplacian_is_normalized_laplacian():
-    """The median-filtered recurrence graph must stay symmetric (#168)."""
+def test_spectral_decomposition_of_asymmetric_laplacian():
+    """The time-lag filter makes L asymmetric, so eigh would be wrong (#168)."""
     C = _synthetic_features()
     L = compute_laplacian(C, C, config)
+    assert np.abs(L - L.T).max() > 1e-3  # the case this test is about
 
-    npt.assert_allclose(L, L.T, atol=1e-12)
-    evals = scipy.linalg.eigvalsh(L)
-    # Spectrum of a normalized Laplacian lies in [0, 2]
-    assert evals.min() > -1e-10
-    assert evals.max() < 2 + 1e-10
+    evals, evecs = spectral_decomposition(L)
+    assert np.isrealobj(evals) and np.isrealobj(evecs)
+    assert np.all(np.diff(evals) >= 0)
+    npt.assert_allclose(evals[0], 0, atol=1e-10)
+
+    # The leading eigenpairs used for clustering are true eigenpairs of L
+    k = config["num_layers"]
+    npt.assert_allclose(L @ evecs[:, :k], evecs[:, :k] * evals[:k], atol=1e-10)
