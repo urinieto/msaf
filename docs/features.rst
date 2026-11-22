@@ -52,7 +52,7 @@ The format of the ``json`` file is as follows:
                 [0.0, 0.0, "..."],
                 "..."
             ],
-             "ann_multibeat": [
+            "ann_multibeat": [
                 [0.0, 0.0, "..."],
                 "..."
             ],
@@ -78,16 +78,16 @@ A brief description for the main keys of this ``json`` file follows:
 * ``ann_beats``: contains the set of reference beats, in seconds (only exists if reference beats are available).
 * ``est_beatsync_times``: contains the set times associated with each (estimated-)beat-synchronous feature (might differ with `est_beats` in the beginning or end).
 * ``ann_beatsync_times``: contains the set times associated with each (annotated-)beat-synchronous feature (might differ with `ann_beats` in the beginning or end).
-* ``est_beatsync_times``: contains the set times associated with each (estimated-)beat-synchronous feature when using multibeat (might differ with `est_beatsync_times` in the end).
-* ``ann_beatsync_times``: contains the set times associated with each (annotated-)beat-synchronous feature when using multibeat (might differ with `ann_beatsync_times` in the end).
+* ``est_multibeat_times``: contains the start time of each (estimated-)multibeat feature, i.e., all estimated beats except the last one.
+* ``ann_multibeat_times``: contains the start time of each (annotated-)multibeat feature, i.e., all annotated beats except the last one (only exists if reference beats are available).
 
 * ``<feature_id>`` (e.g., ``pcp``, ``mfcc``): contains the actual features of the given audio file. Inside this key the following sub-keys can be found:
 
     * ``framesync``: Actual frame-wise features.
     * ``est_beatsync``: Features synchronized to the estimated beats.
     * ``ann_beatsync``: Features synchronized to the reference beats (only exists if reference beats are available).
-    * ``est_multibeat``: Features synchronized to the estimated beats (`frames_per_beat` frames are computed for each beat).
-    * ``ann_multibeat``: Features synchronized to the reference beats (`frames_per_beat` frames are computed for each beat) (only exists if reference beats are available).
+    * ``est_multibeat``: Beatwise features using the estimated beats: one row per beat, made of the features of its `frames_per_beat` evenly spaced subdivisions (so each row has `frames_per_beat` times more dimensions).
+    * ``ann_multibeat``: Same as ``est_multibeat``, using the reference beats (only exists if reference beats are available). Multibeat features are not supported by OLDA, which uses a pre-trained transform.
     * ``params``: A set of parameters of the actual type of features.
 
 Pre-computed features for the `SPAM dataset <https://github.com/urinieto/msaf-data/tree/master/SPAM>`_ can be found `here <https://ccrma.stanford.edu/%7Eurinieto/SPAM/SPAM-features.tgz>`_.

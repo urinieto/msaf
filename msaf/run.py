@@ -254,7 +254,11 @@ def process_track(file_struct, boundaries_id, labels_id, config, annotator_id=0)
 
     # Get features
     config["features"] = Features.select_features(
-        config["feature"], file_struct, config["annot_beats"], config["framesync"], multibeat=config["multibeat"]
+        config["feature"],
+        file_struct,
+        config["annot_beats"],
+        config["framesync"],
+        multibeat=config.get("multibeat", False),
     )
 
     # Get estimations
@@ -286,7 +290,7 @@ def process(
     config=None,
     out_bounds="out_bounds.wav",
     out_sr=22050,
-    multibeat=False
+    multibeat=False,
 ):
     """Main process to segment a file or a collection of files.
 
@@ -341,7 +345,12 @@ def process(
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(
-            feature, annot_beats, framesync, multibeat, boundaries_id, labels_id
+            feature,
+            annot_beats,
+            framesync,
+            boundaries_id,
+            labels_id,
+            multibeat=multibeat,
         )
         config["features"] = None
 

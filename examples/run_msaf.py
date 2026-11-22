@@ -67,7 +67,7 @@ if __name__ == "__main__":
         "-mb",
         action="store_true",
         dest="multibeat",
-        help="Compute mulitple frames per beat",
+        help="Use multibeat features (multiple frames per beat)",
         default=False,
     )
     parser.add_argument(

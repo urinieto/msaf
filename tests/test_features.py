@@ -314,11 +314,15 @@ def test_select_features():
     assert isinstance(feature, CQT)
     assert feature.feat_type == FeatureTypes.ann_beatsync
 
-    feature = Features.select_features("mfcc", my_file_struct, False, False, multibeat=True)
+    feature = Features.select_features(
+        "mfcc", my_file_struct, False, False, multibeat=True
+    )
     assert isinstance(feature, MFCC)
     assert feature.feat_type == FeatureTypes.est_multibeat
 
-    feature = Features.select_features("cqt", my_file_struct, True, False, multibeat=True)
+    feature = Features.select_features(
+        "cqt", my_file_struct, True, False, multibeat=True
+    )
     assert isinstance(feature, CQT)
     assert feature.feat_type == FeatureTypes.ann_multibeat
 

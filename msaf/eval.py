@@ -390,7 +390,12 @@ def process(
     # Set up configuration based on algorithms parameters
     if config is None:
         config = io.get_configuration(
-            feature, annot_beats, framesync, multibeat, boundaries_id, labels_id
+            feature,
+            annot_beats,
+            framesync,
+            boundaries_id,
+            labels_id,
+            multibeat=multibeat,
         )
 
     # Hierarchical segmentation

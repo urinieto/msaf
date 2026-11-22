@@ -34,10 +34,18 @@ class Segmenter(SegmenterInterface):
         # This algorithm only accepts one specific kind of features:
         # Combination of PCP + MFCC. Let's get them:
         pcp_obj = Features.select_features(
-            "pcp", self.file_struct, self.annot_beats, self.framesync
+            "pcp",
+            self.file_struct,
+            self.annot_beats,
+            self.framesync,
+            multibeat=self.multibeat,
         )
         mfcc_obj = Features.select_features(
-            "mfcc", self.file_struct, self.annot_beats, self.framesync
+            "mfcc",
+            self.file_struct,
+            self.annot_beats,
+            self.framesync,
+            multibeat=self.multibeat,
         )
 
         # Get frame times and make sure they're the same in both features

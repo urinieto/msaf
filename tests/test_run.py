@@ -85,7 +85,7 @@ def test_run_algorithms():
         for label_id in label_ids:
             print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
             config = msaf.io.get_configuration(
-                feature, annot_beats, framesync, multibeat, bound_id, label_id
+                feature, annot_beats, framesync, bound_id, label_id, multibeat=multibeat
             )
             config["hier"] = False
             config["features"] = Features.select_features(
@@ -106,7 +106,7 @@ def test_run_algorithms():
     def _test_run_msaf(bound_id, label_id, hier=False):
         print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
         config = msaf.io.get_configuration(
-            feature, annot_beats, framesync, multibeat, bound_id, label_id
+            feature, annot_beats, framesync, bound_id, label_id, multibeat=multibeat
         )
         config["hier"] = hier
         config["features"] = Features.select_features(
@@ -176,7 +176,6 @@ def test_process_track():
     config["annot_beats"] = False
     config["framesync"] = False
     config["hier"] = False
-    config["multibeat"] = False
     est_times, est_labels = msaf.run.process_track(
         file_struct, bounds_id, labels_id, config
     )

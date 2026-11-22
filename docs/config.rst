@@ -129,7 +129,7 @@ import MSAF and print the config variable, as in:
     Positive int value, default: 3
 
     The number of frames kept per beat when using the multibeat features.
-    Must be lower than the number of computed between two beats.
+    Must not be larger than the number of frames between two consecutive beats.
 
 .. attribute:: features_tmp_file
 
