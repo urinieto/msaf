@@ -371,7 +371,12 @@ def process(
 
         if plot:
             plotting.plot_one_track(
-                file_struct, est_times, est_labels, boundaries_id, labels_id
+                file_struct,
+                est_times,
+                est_labels,
+                boundaries_id,
+                labels_id,
+                annotator_id=annotator_id,
             )
 
         # TODO: Only save if needed
