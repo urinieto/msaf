@@ -1,10 +1,12 @@
 import os
+import shutil
 from types import ModuleType
 
+import jams
 import matplotlib
 import matplotlib.style
 import numpy.testing as npt
-from pytest import raises
+from pytest import mark, raises
 
 import msaf
 from msaf.exceptions import FeaturesNotFound, NoAudioFileError, NoHierBoundaryError
@@ -191,6 +193,35 @@ def test_process_with_gt():
     )
     assert est_times[0] == 0
     assert len(est_times) == len(est_labels) + 1
+
+
+@mark.parametrize("options, boundary", [({}, 0.25), ({"annotator_id": 1}, 0.75)])
+def test_process_plots_selected_annotation(tmp_path, options, boundary):
+    import matplotlib.pyplot as plt
+
+    audio = tmp_path / "audio" / "chirp.mp3"
+    audio.parent.mkdir()
+    shutil.copyfile(audio_file, audio)
+    references = tmp_path / "references"
+    references.mkdir()
+    jam = jams.JAMS()
+    jam.file_metadata.duration = 1.0
+    for split in (0.25, 0.75):
+        annotation = jams.Annotation(namespace="segment_open")
+        annotation.append(time=0, duration=split, value="A")
+        annotation.append(time=split, duration=1 - split, value="B")
+        jam.annotations.append(annotation)
+    jam.save(str(references / "chirp.jams"))
+
+    plt.close(1)
+    try:
+        msaf.process(str(audio), plot=True, labels_id=None, **options)
+        reference = [
+            line.get_xdata()[0] for line in plt.gca().lines if line.get_color() == "g"
+        ]
+        npt.assert_allclose(reference, [0, boundary, 1])
+    finally:
+        plt.close(1)
 
 
 def test_process_wrong_feature():

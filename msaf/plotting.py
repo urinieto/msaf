@@ -151,7 +151,13 @@ def plot_labels(
 
 
 def plot_one_track(
-    file_struct, est_times, est_labels, boundaries_id, labels_id, title=None
+    file_struct,
+    est_times,
+    est_labels,
+    boundaries_id,
+    labels_id,
+    title=None,
+    annotator_id=0,
 ):
     """Plots the results of one track, with ground truth if it exists."""
     import matplotlib.pyplot as plt
@@ -163,7 +169,7 @@ def plot_one_track(
     try:
         # Read file
         jam = jams.load(file_struct.ref_file)
-        ann = jam.search(namespace="segment_.*")[0]
+        ann = jam.search(namespace="segment_.*")[annotator_id]
         ref_inters, ref_labels = ann.to_interval_values()
 
         # To times
