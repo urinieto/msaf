@@ -51,6 +51,7 @@ class SegmenterInterface:
         feature="pcp",
         annot_beats=False,
         framesync=False,
+        multibeat=False,
         features=None,
         **config
     ):
@@ -80,6 +81,7 @@ class SegmenterInterface:
         self.feature_str = feature
         self.annot_beats = annot_beats
         self.framesync = framesync
+        self.multibeat = multibeat
         self.config = config
         self.features = features
 

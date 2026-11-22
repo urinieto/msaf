@@ -78,6 +78,7 @@ def test_run_algorithms():
     feature = "pcp"
     annot_beats = False
     framesync = False
+    multibeat = False
     file_struct = msaf.io.FileStruct(audio_file)
     file_struct.features_file = msaf.config.features_tmp_file
 
@@ -86,7 +87,7 @@ def test_run_algorithms():
         for label_id in label_ids:
             print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
             config = msaf.io.get_configuration(
-                feature, annot_beats, framesync, bound_id, label_id
+                feature, annot_beats, framesync, bound_id, label_id, multibeat=multibeat
             )
             config["hier"] = False
             config["features"] = Features.select_features(
@@ -107,7 +108,7 @@ def test_run_algorithms():
     def _test_run_msaf(bound_id, label_id, hier=False):
         print(f"bound_id: {bound_id},\tlabel_id: {label_id}")
         config = msaf.io.get_configuration(
-            feature, annot_beats, framesync, bound_id, label_id
+            feature, annot_beats, framesync, bound_id, label_id, multibeat=multibeat
         )
         config["hier"] = hier
         config["features"] = Features.select_features(

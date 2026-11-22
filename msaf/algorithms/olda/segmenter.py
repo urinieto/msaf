@@ -12,6 +12,7 @@ import scipy.signal
 import msaf
 from msaf.algorithms.interface import SegmenterInterface
 from msaf.base import Features
+from msaf.exceptions import FeatureTypeNotFound
 
 REP_WIDTH = 3
 REP_FILTER = 7
@@ -257,6 +258,11 @@ class Segmenter(SegmenterInterface):
     .. _PDF: https://bmcfee.github.io/papers/icassp2014_segments.pdf
     """
 
+    def _check_features(self):
+        """OLDA uses a pre-trained transform with fixed feature dimensions."""
+        if self.multibeat:
+            raise FeatureTypeNotFound("OLDA does not support multibeat features")
+
     def processFlat(self):
         """Main process for flat segmentation.
 
@@ -268,6 +274,7 @@ class Segmenter(SegmenterInterface):
             Estimated labels for the segments.
         """
         # Preprocess to obtain features and duration
+        self._check_features()
         F, dur = features(self.file_struct, self.annot_beats, self.framesync)
 
         try:
@@ -307,6 +314,7 @@ class Segmenter(SegmenterInterface):
             as np.arrays
         """
         # Preprocess to obtain features, times, and input boundary indices
+        self._check_features()
         F, dur = features(self.file_struct, self.annot_beats, self.framesync)
 
         try:
